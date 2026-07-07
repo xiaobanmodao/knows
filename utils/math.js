@@ -2537,12 +2537,79 @@ function scoreMatch(keyword, title, bodyParts = []) {
   return score;
 }
 
-function searchMath(keyword) {
+const searchAliasMap = {
+  抛物线: ['二次函数'],
+  顶点式: ['二次函数', '顶点', '对称轴'],
+  顶点: ['二次函数', '最值'],
+  手拉手: ['手拉手模型', '旋转', '全等'],
+  一线三等角: ['等角', '相似'],
+  k型: ['K型', '相似'],
+  猪蹄: ['猪蹄模型', '平行线', '外角'],
+  直角: ['勾股定理', '三角函数'],
+  数形结合: ['坐标', '函数'],
+  消元: ['方程组'],
+  判别式: ['一元二次方程', '实数根'],
+  圆周角: ['圆', '圆心角'],
+  切线: ['圆', '半径'],
+  最短路径: ['轴对称', '勾股定理'],
+};
+
+function getSearchKeywords(keyword) {
   const normalizedKeyword = (keyword || '').trim().toLowerCase();
 
   if (!normalizedKeyword) {
     return [];
   }
+
+  const aliases = Object.keys(searchAliasMap)
+    .filter((alias) => alias.toLowerCase() === normalizedKeyword || normalizedKeyword.includes(alias.toLowerCase()))
+    .flatMap((alias) => searchAliasMap[alias]);
+
+  return uniqueList([normalizedKeyword, ...aliases.map((item) => String(item).toLowerCase())]);
+}
+
+function scoreSearchPool(keywords, title, bodyParts = []) {
+  return keywords.reduce((bestScore, keyword, index) => {
+    const score = scoreMatch(keyword, title, bodyParts);
+    const weightedScore = index === 0 ? score : Math.floor(score * 0.82);
+    return Math.max(bestScore, weightedScore);
+  }, 0);
+}
+
+function searchMath(keyword) {
+  const searchKeywords = getSearchKeywords(keyword);
+
+  if (!searchKeywords.length) {
+    return [];
+  }
+
+  const chapterResults = getAllChapters()
+    .map((chapter) => {
+      const pool = [
+        chapter.chapterNo,
+        chapter.subtitle,
+        chapter.highlight,
+        chapter.stage,
+        chapter.chapterLead,
+        ...(chapter.tags || []),
+        ...(chapter.outlineItems || []),
+        ...(chapter.chapterConcepts || []),
+      ];
+      const score = scoreSearchPool(searchKeywords, chapter.title, pool);
+      return score > 0 ? { chapter, score } : null;
+    })
+    .filter(Boolean)
+    .map(({ chapter, score }) => ({
+      score,
+      id: `chapter-${chapter.id}`,
+      refId: chapter.id,
+      type: 'chapter',
+      typeLabel: '章节',
+      title: chapter.title,
+      subtitle: `${chapter.stage} · ${chapter.chapterNo}`,
+      description: chapter.highlight || chapter.chapterLead,
+      tags: chapter.tags,
+    }));
 
   const knowledgeResults = getAllChapters()
     .flatMap((chapter) => chapter.knowledgeItems)
@@ -2553,7 +2620,7 @@ function searchMath(keyword) {
         ...(knowledge.tags || []),
         ...(knowledge.keywords || []),
       ];
-      const score = scoreMatch(normalizedKeyword, knowledge.title, pool.slice(1));
+      const score = scoreSearchPool(searchKeywords, knowledge.title, pool.slice(1));
       return score > 0 ? { knowledge, score } : null;
     })
     .filter(Boolean)
@@ -2575,7 +2642,7 @@ function searchMath(keyword) {
   const templateResults = templateLibrary
     .map((template) => {
       const pool = [template.name, template.category, template.summary, ...(template.keywords || [])];
-      const score = scoreMatch(normalizedKeyword, template.name, pool.slice(1));
+      const score = scoreSearchPool(searchKeywords, template.name, pool.slice(1));
       return score > 0 ? { template, score } : null;
     })
     .filter(Boolean)
@@ -2591,7 +2658,7 @@ function searchMath(keyword) {
       tags: template.keywords.slice(0, 4),
     }));
 
-  return [...knowledgeResults, ...templateResults]
+  return [...chapterResults, ...knowledgeResults, ...templateResults]
     .sort((a, b) => b.score - a.score || a.title.localeCompare(b.title, 'zh-Hans-CN'))
     .map(({ score, ...item }) => item);
 }

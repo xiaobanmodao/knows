@@ -23,6 +23,11 @@
 .search-bar__input {
   flex: 1;
   height: 92rpx;
+  line-height: 92rpx;
   font-size: 26rpx;
   color: #22304d;
+}
+
+.search-bar__placeholder {
+  color: #9aa3b8;
 }

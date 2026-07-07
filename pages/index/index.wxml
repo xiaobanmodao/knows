@@ -23,7 +23,7 @@
   </view>
 
   <view class="search-wrap">
-    <search-bar bindtap="openSearch" />
+    <search-bar disabled="{{true}}" bindtap="openSearch" />
   </view>
 
   <view class="section-title">

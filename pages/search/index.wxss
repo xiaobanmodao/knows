@@ -10,6 +10,53 @@
   color: #677086;
 }
 
+.quick-panel {
+  padding-bottom: 10rpx;
+}
+
+.keyword-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14rpx;
+}
+
+.keyword-chip {
+  padding: 12rpx 20rpx;
+  border-radius: 999rpx;
+  background: #ffffff;
+  color: #42506b;
+  font-size: 24rpx;
+  box-shadow: 0 10rpx 30rpx rgba(49, 83, 177, 0.08);
+}
+
+.keyword-chip--strong {
+  background: #eef3ff;
+  color: #2357d8;
+}
+
+.result-group {
+  margin-bottom: 30rpx;
+}
+
+.result-group__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16rpx;
+  padding: 0 4rpx;
+}
+
+.result-group__title {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #15213c;
+}
+
+.result-group__count {
+  font-size: 23rpx;
+  color: #7b8295;
+}
+
 .result-card {
   padding: 28rpx;
 }

@@ -1,6 +1,8 @@
 <view class="search-bar" bindtap="handleTap">
   <view class="search-bar__icon">搜</view>
+  <view wx:if="{{disabled}}" class="search-bar__input search-bar__placeholder">{{value || placeholder}}</view>
   <input
+    wx:else
     class="search-bar__input"
     value="{{value}}"
     placeholder="{{placeholder}}"
