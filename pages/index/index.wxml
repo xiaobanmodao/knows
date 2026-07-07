@@ -1,0 +1,74 @@
+<view class="page-shell">
+  <view class="hero-gradient hero card">
+    <view class="hero__label">知识库小程序</view>
+    <view class="hero__title">知识通</view>
+    <view class="hero__desc">
+      围绕初中数学整理目录、知识点、模板题和搜索入口。当前默认游客模式，打开即查、即看、即收藏。
+    </view>
+
+    <view class="hero__stats">
+      <view class="hero__stat">
+        <view class="hero__stat-num">{{totalChapters}}</view>
+        <view class="hero__stat-label">已录数学章节</view>
+      </view>
+      <view class="hero__stat">
+        <view class="hero__stat-num">{{favoritesCount}}</view>
+        <view class="hero__stat-label">本机收藏</view>
+      </view>
+      <view class="hero__stat">
+        <view class="hero__stat-num">{{recentsCount}}</view>
+        <view class="hero__stat-label">最近浏览</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="search-wrap">
+    <search-bar bindtap="openSearch" />
+  </view>
+
+  <view class="section-title">
+    <view class="section-title__main">学科入口</view>
+    <view class="section-title__sub">先开放数学，英语和物理预留</view>
+  </view>
+
+  <view class="grid">
+    <subject-card wx:for="{{subjects}}" wx:key="id" wx:for-item="subject" item="{{subject}}" bind:select="openSubject" />
+  </view>
+
+  <view class="shortcut-row">
+    <view class="shortcut card" bindtap="openFavorites">
+      <view class="shortcut__title">收藏夹</view>
+      <view class="shortcut__desc">保存高频模板题和关键知识点</view>
+    </view>
+    <view class="shortcut card" bindtap="openProfile">
+      <view class="shortcut__title">游客模式</view>
+      <view class="shortcut__desc">当前默认本机使用，不要求登录</view>
+    </view>
+  </view>
+
+  <view class="section-title top-space">
+    <view class="section-title__main">数学重点入口</view>
+    <view class="section-title__sub">先从高频章节切入，完整目录已铺开到 9 下</view>
+  </view>
+
+  <view class="grid">
+    <view
+      wx:for="{{featuredChapters}}"
+      wx:key="id"
+      wx:for-item="chapter"
+      class="chapter-teaser card"
+      data-id="{{chapter.id}}"
+      bindtap="openChapter"
+    >
+      <view class="chapter-teaser__top">
+        <view class="chapter-teaser__stage">{{chapter.stage}}</view>
+        <view class="chapter-teaser__tags">
+          <text wx:for="{{chapter.tags}}" wx:key="*this" wx:for-item="tag" class="tag">{{tag}}</text>
+        </view>
+      </view>
+      <view class="chapter-teaser__title">{{chapter.title}}</view>
+      <view class="chapter-teaser__subtitle">{{chapter.subtitle}}</view>
+      <view class="chapter-teaser__highlight">{{chapter.highlight}}</view>
+    </view>
+  </view>
+</view>

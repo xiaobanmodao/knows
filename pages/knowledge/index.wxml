@@ -1,0 +1,98 @@
+<view class="page-shell" wx:if="{{knowledge}}">
+  <view class="knowledge-hero card">
+    <view class="knowledge-hero__meta">
+      <view class="pill">{{chapter.stage}} · {{chapter.title}}</view>
+      <view class="collect-btn {{isFavorite ? 'collect-btn--active' : ''}}" bindtap="toggleFavorite">
+        {{isFavorite ? '已收藏' : '收藏'}}
+      </view>
+    </view>
+    <view class="knowledge-hero__title">{{knowledge.title}}</view>
+    <view class="knowledge-hero__summary">{{knowledge.summary}}</view>
+    <view wx:if="{{knowledge.coverImage}}" class="knowledge-figure">
+      <image class="knowledge-figure__image" src="{{knowledge.coverImage}}" mode="aspectFit" binderror="onImageError"></image>
+      <view class="knowledge-figure__caption">{{knowledge.figureCaption}}</view>
+    </view>
+    <view class="knowledge-hero__tags">
+      <text wx:for="{{knowledge.tags}}" wx:key="*this" class="tag">{{item}}</text>
+    </view>
+    <view wx:if="{{knowledge.knowledgePoints && knowledge.knowledgePoints.length}}" class="knowledge-hero__focus">
+      <view class="knowledge-hero__focus-title">本节核心知识点</view>
+      <view wx:for="{{knowledge.knowledgePoints}}" wx:key="index" class="knowledge-hero__focus-item">
+        {{item}}
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{knowledge.learningPath && knowledge.learningPath.length}}" class="study-card card top-gap">
+    <view class="study-card__title">学习路径</view>
+    <view wx:for="{{knowledge.learningPath}}" wx:key="index" class="study-card__item">
+      <view class="study-card__index">{{index + 1}}</view>
+      <view class="study-card__text">{{item}}</view>
+    </view>
+  </view>
+
+  <view wx:if="{{knowledge.mistakeChecklist && knowledge.mistakeChecklist.length}}" class="study-card study-card--warn card top-gap">
+    <view class="study-card__title">易错检查</view>
+    <view wx:for="{{knowledge.mistakeChecklist}}" wx:key="index" class="study-card__item">
+      <view class="study-card__index">!</view>
+      <view class="study-card__text">{{item}}</view>
+    </view>
+  </view>
+
+  <view class="top-gap">
+    <content-block wx:for="{{knowledge.sections}}" wx:key="title" section="{{item}}" />
+  </view>
+
+  <view class="template-box card">
+    <view class="template-box__title">答题模板</view>
+    <view class="template-box__name">{{knowledge.template.name}}</view>
+    <view class="template-box__when">{{knowledge.template.whenToUse}}</view>
+    <view wx:for="{{knowledge.template.steps}}" wx:key="index" class="template-box__step">
+      <view class="template-box__index">{{index + 1}}</view>
+      <view class="template-box__text">{{item}}</view>
+    </view>
+  </view>
+
+  <view class="section-title top-gap">
+    <view class="section-title__main">例题与层级训练</view>
+    <view class="section-title__sub">{{knowledge.problems.length}} 道示例</view>
+  </view>
+
+  <view class="grid">
+    <view wx:for="{{knowledge.problems}}" wx:key="title" wx:for-item="problem" class="problem-card card">
+      <view class="problem-card__top">
+        <view class="problem-card__title">{{problem.title}}</view>
+        <view class="pill">{{problem.difficulty}}</view>
+      </view>
+      <view class="problem-card__section">
+        <text class="problem-card__label">题干：</text>{{problem.stem}}
+      </view>
+      <image wx:if="{{problem.image}}" class="problem-card__image" src="{{problem.image}}" mode="aspectFit" binderror="onImageError"></image>
+      <view wx:if="{{problem.steps && problem.steps.length}}" class="problem-card__steps">
+        <view class="problem-card__label">解题过程：</view>
+        <view wx:for="{{problem.steps}}" wx:key="index" class="problem-step">
+          <view class="problem-step__index">{{index + 1}}</view>
+          <view class="problem-step__text">{{item}}</view>
+        </view>
+      </view>
+      <view class="problem-card__section">
+        <text class="problem-card__label">答案：</text>{{problem.answer}}
+      </view>
+      <view class="problem-card__section">
+        <text class="problem-card__label">解析：</text>{{problem.analysis}}
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{relatedItems.length}}" class="section-title top-gap">
+    <view class="section-title__main">本章关联知识点</view>
+    <view class="section-title__sub">继续串联学习</view>
+  </view>
+
+  <view wx:if="{{relatedItems.length}}" class="grid">
+    <view wx:for="{{relatedItems}}" wx:key="id" wx:for-item="related" class="related-card card" data-id="{{related.id}}" bindtap="openRelated">
+      <view class="related-card__title">{{related.title}}</view>
+      <view class="related-card__summary">{{related.summary}}</view>
+    </view>
+  </view>
+</view>

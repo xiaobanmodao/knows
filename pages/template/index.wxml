@@ -1,0 +1,66 @@
+<view class="page-shell" wx:if="{{template}}">
+  <view class="template-hero hero-gradient card">
+    <view class="pill template-hero__pill">{{template.category}}</view>
+    <view class="template-hero__title">{{template.name}}</view>
+    <view class="template-hero__summary">{{template.summary}}</view>
+    <view wx:if="{{template.figure}}" class="template-figure">
+      <image class="template-figure__image" src="{{template.figure}}" mode="aspectFit" binderror="onImageError"></image>
+    </view>
+    <view class="template-hero__tags">
+      <text wx:for="{{template.keywords}}" wx:key="*this" wx:for-item="keyword" class="tag template-hero__tag">{{keyword}}</text>
+    </view>
+  </view>
+
+  <view class="template-box card top-gap">
+    <view class="template-box__title">识别信号</view>
+    <view wx:for="{{template.cues}}" wx:key="index" wx:for-item="cue" class="template-box__item">
+      <view class="template-box__dot"></view>
+      <view class="template-box__text">{{cue}}</view>
+    </view>
+  </view>
+
+  <view class="template-box card top-gap">
+    <view class="template-box__title">解题步骤</view>
+    <view wx:for="{{template.steps}}" wx:key="index" wx:for-item="step" class="template-step">
+      <view class="template-step__index">{{index + 1}}</view>
+      <view class="template-step__text">{{step}}</view>
+    </view>
+  </view>
+
+  <view class="template-box card top-gap">
+    <view class="template-box__title">常见失误</view>
+    <view wx:for="{{template.pitfalls}}" wx:key="index" wx:for-item="pitfall" class="template-box__item">
+      <view class="template-box__dot template-box__dot--warn"></view>
+      <view class="template-box__text">{{pitfall}}</view>
+    </view>
+  </view>
+
+  <view wx:if="{{template.examples && template.examples.length}}" class="section-title top-gap">
+    <view class="section-title__main">模型样题</view>
+    <view class="section-title__sub">{{template.examples.length}} 道</view>
+  </view>
+
+  <view wx:if="{{template.examples && template.examples.length}}" class="grid">
+    <view wx:for="{{template.examples}}" wx:key="title" wx:for-item="example" class="related-card card">
+      <view class="related-card__title">{{example.title}}</view>
+      <view class="related-card__summary">题干：{{example.stem}}</view>
+      <view wx:for="{{example.steps}}" wx:key="index" wx:for-item="step" class="template-step template-step--compact">
+        <view class="template-step__index">{{index + 1}}</view>
+        <view class="template-step__text">{{step}}</view>
+      </view>
+      <view class="related-card__note">{{example.summary}}</view>
+    </view>
+  </view>
+
+  <view class="section-title top-gap">
+    <view class="section-title__main">适用章节</view>
+    <view class="section-title__sub">{{relatedChapters.length}} 个</view>
+  </view>
+
+  <view class="grid">
+    <view wx:for="{{relatedChapters}}" wx:key="id" wx:for-item="chapter" class="related-card card" data-id="{{chapter.id}}" bindtap="openChapter">
+      <view class="related-card__title">{{chapter.chapterNo}} {{chapter.title}}</view>
+      <view class="related-card__summary">{{chapter.stage}} · {{chapter.subtitle}}</view>
+    </view>
+  </view>
+</view>

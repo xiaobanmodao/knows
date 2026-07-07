@@ -1,0 +1,159 @@
+<view class="page-shell" wx:if="{{chapter}}">
+  <view class="chapter-hero card">
+    <view class="chapter-hero__head">
+      <view>
+        <view class="pill">{{chapter.stage}}</view>
+        <view class="chapter-hero__title">{{chapter.title}}</view>
+        <view class="chapter-hero__subtitle">{{chapter.subtitle}}</view>
+      </view>
+      <view class="chapter-hero__badge">知识库</view>
+    </view>
+
+    <view class="chapter-hero__highlight">{{chapter.highlight}}</view>
+
+    <view wx:if="{{chapter.chapterFigure && chapter.chapterFigure.image}}" class="chapter-figure">
+      <image class="chapter-figure__image" src="{{chapter.chapterFigure.image}}" mode="aspectFit" binderror="onImageError"></image>
+      <view class="chapter-figure__caption">{{chapter.chapterFigure.caption}}</view>
+    </view>
+
+    <view class="chapter-hero__stats">
+      <view class="chapter-hero__stat chapter-hero__stat--strong">
+        <view class="chapter-hero__stat-num">{{chapter.knowledgeCount}}</view>
+        <view class="chapter-hero__stat-label">核心知识点</view>
+      </view>
+      <view class="chapter-hero__stat">
+        <view class="chapter-hero__stat-num">{{chapter.totalProblems}}</view>
+        <view class="chapter-hero__stat-label">分层样题</view>
+      </view>
+      <view class="chapter-hero__stat">
+        <view class="chapter-hero__stat-num">{{chapter.templateItems.length}}</view>
+        <view class="chapter-hero__stat-label">题型模板</view>
+      </view>
+    </view>
+
+    <view class="chapter-hero__tags">
+      <text wx:for="{{chapter.tags}}" wx:key="*this" class="tag">{{item}}</text>
+    </view>
+  </view>
+
+  <view class="chapter-dashboard top-gap">
+    <view class="chapter-panel card">
+      <view class="chapter-panel__title">本章学习重点</view>
+      <view class="chapter-panel__intro">{{chapter.chapterLead}}</view>
+      <view class="chapter-panel__chips">
+        <view class="chapter-chip">
+          <text class="chapter-chip__label">先掌握</text>
+          <text class="chapter-chip__value">{{chapter.outlineItems.length ? chapter.outlineItems[0] : chapter.title}}</text>
+        </view>
+        <view class="chapter-chip">
+          <text class="chapter-chip__label">题型入口</text>
+          <text class="chapter-chip__value">{{chapter.templateItems.length ? chapter.templateItems[0].name : '基础例题训练'}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view wx:if="{{chapter.outlineItems.length}}" class="outline-card card">
+      <view class="outline-card__title">教材章节目录</view>
+      <view wx:for="{{chapter.outlineItems}}" wx:key="index" wx:for-item="outline" class="outline-card__item">
+        <view class="outline-card__index">{{index + 1}}</view>
+        <view class="outline-card__text">{{outline}}</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="textbook-card card top-gap">
+    <view class="textbook-card__title">本章核心概念</view>
+    <view wx:for="{{chapter.chapterConcepts}}" wx:key="index" class="textbook-card__item">
+      <view class="textbook-card__dot"></view>
+      <view class="textbook-card__text">{{item}}</view>
+    </view>
+  </view>
+
+  <view class="textbook-card card top-gap">
+    <view class="textbook-card__title">本章常见求解</view>
+    <view wx:for="{{chapter.chapterSolveText}}" wx:key="index" class="textbook-card__item">
+      <view class="textbook-card__dot textbook-card__dot--solve"></view>
+      <view class="textbook-card__text">{{item}}</view>
+    </view>
+  </view>
+
+  <view wx:if="{{chapter.chapterCautionText.length}}" class="textbook-card card top-gap">
+    <view class="textbook-card__title">本章易错提醒</view>
+    <view wx:for="{{chapter.chapterCautionText}}" wx:key="index" class="textbook-card__item">
+      <view class="textbook-card__dot textbook-card__dot--warn"></view>
+      <view class="textbook-card__text">{{item}}</view>
+    </view>
+  </view>
+
+  <view wx:if="{{chapter.studyGuide.length}}" class="guide-card card top-gap">
+    <view class="guide-card__title">建议学习路线</view>
+    <view wx:for="{{chapter.studyGuide}}" wx:key="index" wx:for-item="guide" class="guide-card__item">
+      <view class="guide-card__index">{{index + 1}}</view>
+      <view class="guide-card__text">{{guide}}</view>
+    </view>
+  </view>
+
+  <view wx:if="{{chapter.learningPath.length}}" class="learning-path card top-gap">
+    <view class="learning-path__title">真正学会本章</view>
+    <view wx:for="{{chapter.learningPath}}" wx:key="title" wx:for-item="step" class="learning-path__item">
+      <view class="learning-path__marker">{{index + 1}}</view>
+      <view class="learning-path__body">
+        <view class="learning-path__name">{{step.title}}</view>
+        <view class="learning-path__desc">{{step.desc}}</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="section-title top-gap">
+    <view class="section-title__main">本章知识点</view>
+    <view class="section-title__sub">先学知识，再做题</view>
+  </view>
+
+  <view class="grid">
+    <view
+      wx:for="{{chapter.knowledgeItems}}"
+      wx:key="id"
+      wx:for-item="knowledge"
+      class="knowledge-card card"
+      data-id="{{knowledge.id}}"
+      bindtap="openKnowledge"
+    >
+      <view class="knowledge-card__title">{{knowledge.title}}</view>
+      <view class="knowledge-card__summary">{{knowledge.summary}}</view>
+      <view wx:if="{{knowledge.knowledgePoints && knowledge.knowledgePoints.length}}" class="knowledge-card__points">
+        <view wx:for="{{knowledge.knowledgePoints}}" wx:key="index" wx:for-index="index" class="knowledge-card__point" wx:if="{{index < 2}}">
+          {{item}}
+        </view>
+      </view>
+      <view class="knowledge-card__tags">
+        <text wx:for="{{knowledge.tags}}" wx:key="*this" wx:for-item="tag" class="tag">{{tag}}</text>
+      </view>
+      <view class="knowledge-card__meta">
+        <text>{{knowledge.sections.length}} 个讲解模块</text>
+        <text>{{knowledge.problems.length}} 道题</text>
+      </view>
+      <view class="knowledge-card__footer">进入查看知识点、模板和例题</view>
+    </view>
+  </view>
+
+  <view wx:if="{{chapter.templateItems.length}}" class="section-title top-gap">
+    <view class="section-title__main">本章题型模板</view>
+    <view class="section-title__sub">放在知识点之后集中练</view>
+  </view>
+
+  <view wx:if="{{chapter.templateItems.length}}" class="grid">
+    <navigator
+      wx:for="{{chapter.templateItems}}"
+      wx:key="id"
+      wx:for-item="template"
+      class="model-card card"
+      url="/pages/template/index?id={{template.id}}"
+    >
+      <view class="model-card__top">
+        <view class="model-card__title">{{template.name}}</view>
+        <view class="pill">{{template.category}}</view>
+      </view>
+      <view class="model-card__summary">{{template.summary}}</view>
+    </navigator>
+  </view>
+</view>

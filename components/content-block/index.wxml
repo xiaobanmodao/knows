@@ -1,0 +1,35 @@
+<view class="content-block">
+  <view class="content-block__title">{{section.title}}</view>
+
+  <view wx:if="{{section.type === 'text'}}" class="content-block__text">{{section.content}}</view>
+
+  <view wx:if="{{section.type === 'formula'}}" class="formula-box">
+    <view class="formula-box__formula">{{section.formula}}</view>
+    <view class="formula-box__desc">{{section.description}}</view>
+  </view>
+
+  <view wx:if="{{section.type === 'tip'}}" class="tip-box">{{section.content}}</view>
+
+  <view wx:if="{{section.type === 'steps'}}" class="steps-box">
+    <view wx:for="{{section.steps}}" wx:key="index" class="steps-box__item">
+      <view class="steps-box__index">{{index + 1}}</view>
+      <view class="steps-box__text">{{item}}</view>
+    </view>
+  </view>
+
+  <view wx:if="{{section.type === 'list'}}" class="list-box">
+    <view wx:for="{{section.items}}" wx:key="index" class="list-box__item">
+      <view class="list-box__dot"></view>
+      <view class="list-box__text">{{item}}</view>
+    </view>
+  </view>
+
+  <view wx:if="{{section.type === 'table'}}" class="table-box">
+    <view class="table-box__row table-box__row--head">
+      <view wx:for="{{section.headers}}" wx:key="index" wx:for-item="header" class="table-box__cell table-box__cell--head">{{header}}</view>
+    </view>
+    <view wx:for="{{section.rows}}" wx:key="index" wx:for-item="row" class="table-box__row">
+      <view wx:for="{{row}}" wx:for-item="cell" wx:for-index="cellIndex" wx:key="cellIndex" class="table-box__cell">{{cell}}</view>
+    </view>
+  </view>
+</view>

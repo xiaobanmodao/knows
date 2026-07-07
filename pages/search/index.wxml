@@ -1,0 +1,32 @@
+<view class="page-shell">
+  <search-bar value="{{query}}" autoFocus="{{true}}" bind:change="onChange" bind:submit="onSubmit" />
+  <view class="search-note">统一搜索知识点和模型，例如“相似”“二次函数”“手拉手模型”“勾股定理”。</view>
+
+  <view class="section-title top-gap">
+    <view class="section-title__main">搜索结果</view>
+    <view class="section-title__sub">{{results.length}} 条</view>
+  </view>
+
+  <view wx:if="{{results.length}}" class="grid">
+    <view
+      wx:for="{{results}}"
+      wx:key="id"
+      wx:for-item="result"
+      class="result-card card"
+      data-type="{{result.type}}"
+      data-id="{{result.refId}}"
+      bindtap="openResult"
+    >
+      <view class="result-card__top">
+        <view class="result-card__title">{{result.title}}</view>
+        <view class="pill">{{result.typeLabel}}</view>
+      </view>
+      <view class="result-card__subtitle">{{result.subtitle}}</view>
+      <view class="result-card__desc">{{result.description}}</view>
+      <view class="result-card__tags">
+        <text wx:for="{{result.tags}}" wx:key="*this" wx:for-item="tag" class="tag">{{tag}}</text>
+      </view>
+    </view>
+  </view>
+  <empty-state wx:else title="没有找到匹配内容" description="换个关键词试试，比如章节名、题型名或公式名称。" />
+</view>

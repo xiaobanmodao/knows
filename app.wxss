@@ -1,0 +1,78 @@
+page {
+  min-height: 100%;
+  background: linear-gradient(180deg, #f7f8fc 0%, #eff3ff 100%);
+  color: #1f2a44;
+  font-family: "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+}
+
+.page-shell {
+  padding: 28rpx 24rpx 40rpx;
+}
+
+.card {
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 28rpx;
+  box-shadow: 0 14rpx 48rpx rgba(49, 83, 177, 0.09);
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20rpx;
+}
+
+.section-title__main {
+  font-size: 34rpx;
+  font-weight: 700;
+  color: #15213c;
+}
+
+.section-title__sub {
+  font-size: 24rpx;
+  color: #6d7488;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 8rpx 16rpx;
+  border-radius: 999rpx;
+  font-size: 22rpx;
+  background: #eef3ff;
+  color: #2357d8;
+}
+
+.muted {
+  color: #7b8295;
+}
+
+.grid {
+  display: grid;
+  gap: 20rpx;
+}
+
+.hero-gradient {
+  background: linear-gradient(135deg, #165dff 0%, #4589ff 60%, #91b5ff 100%);
+  color: #ffffff;
+}
+
+.clickable {
+  transition: transform 0.2s ease;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 12rpx;
+  margin-bottom: 12rpx;
+  padding: 8rpx 16rpx;
+  border-radius: 999rpx;
+  font-size: 22rpx;
+  background: #f0f4ff;
+  color: #2357d8;
+}
+
+.empty-gap {
+  height: 20rpx;
+}

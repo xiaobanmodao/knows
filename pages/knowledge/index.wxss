@@ -1,0 +1,282 @@
+.knowledge-hero {
+  padding: 30rpx;
+}
+
+.knowledge-hero__meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 16rpx;
+  align-items: center;
+}
+
+.collect-btn {
+  padding: 12rpx 22rpx;
+  border-radius: 999rpx;
+  background: #edf2ff;
+  color: #235ee7;
+  font-size: 22rpx;
+}
+
+.collect-btn--active {
+  background: #165dff;
+  color: #ffffff;
+}
+
+.knowledge-hero__title {
+  margin-top: 20rpx;
+  font-size: 40rpx;
+  font-weight: 800;
+  color: #18233d;
+}
+
+.knowledge-hero__summary {
+  margin-top: 16rpx;
+  font-size: 25rpx;
+  line-height: 1.9;
+  color: #556178;
+}
+
+.knowledge-figure {
+  margin-top: 22rpx;
+  padding: 18rpx;
+  border-radius: 22rpx;
+  background: #f8fbff;
+  border: 1rpx solid #e6edf8;
+}
+
+.knowledge-figure__image {
+  width: 100%;
+  height: 330rpx;
+  display: block;
+}
+
+.knowledge-figure__caption {
+  margin-top: 12rpx;
+  font-size: 22rpx;
+  line-height: 1.7;
+  color: #647089;
+}
+
+.knowledge-hero__tags {
+  margin-top: 18rpx;
+}
+
+.knowledge-hero__focus {
+  margin-top: 22rpx;
+  padding: 22rpx;
+  border-radius: 24rpx;
+  background: linear-gradient(135deg, #f8fbff 0%, #eff5ff 100%);
+  border: 1rpx solid #e9f0fb;
+}
+
+.knowledge-hero__focus-title {
+  font-size: 26rpx;
+  font-weight: 700;
+  color: #18356c;
+}
+
+.knowledge-hero__focus-item {
+  position: relative;
+  padding-left: 18rpx;
+  margin-top: 14rpx;
+  font-size: 24rpx;
+  line-height: 1.85;
+  color: #46536d;
+}
+
+.knowledge-hero__focus-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 16rpx;
+  width: 8rpx;
+  height: 8rpx;
+  border-radius: 50%;
+  background: #1d5de1;
+}
+
+.template-box {
+  margin-top: 8rpx;
+  padding: 30rpx;
+}
+
+.study-card {
+  padding: 28rpx;
+}
+
+.study-card--warn {
+  background: #fffdf8;
+}
+
+.study-card__title {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #1b2947;
+}
+
+.study-card__item {
+  display: flex;
+  align-items: flex-start;
+  margin-top: 16rpx;
+}
+
+.study-card__index {
+  width: 40rpx;
+  height: 40rpx;
+  margin-right: 14rpx;
+  border-radius: 50%;
+  background: #edf3ff;
+  color: #165dff;
+  text-align: center;
+  line-height: 40rpx;
+  font-size: 20rpx;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.study-card--warn .study-card__index {
+  background: #fff1d9;
+  color: #c77500;
+}
+
+.study-card__text {
+  flex: 1;
+  font-size: 24rpx;
+  line-height: 1.85;
+  color: #43506a;
+}
+
+.template-box__title {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #1b2947;
+}
+
+.template-box__name {
+  margin-top: 14rpx;
+  font-size: 34rpx;
+  font-weight: 700;
+  color: #165dff;
+}
+
+.template-box__when {
+  margin-top: 10rpx;
+  font-size: 24rpx;
+  color: #667089;
+  line-height: 1.8;
+}
+
+.template-box__step {
+  display: flex;
+  margin-top: 18rpx;
+}
+
+.template-box__index {
+  width: 42rpx;
+  height: 42rpx;
+  margin-right: 16rpx;
+  border-radius: 50%;
+  text-align: center;
+  line-height: 42rpx;
+  background: #165dff;
+  color: #ffffff;
+  font-size: 21rpx;
+}
+
+.template-box__text {
+  flex: 1;
+  font-size: 25rpx;
+  line-height: 1.8;
+  color: #30405d;
+}
+
+.problem-card {
+  padding: 28rpx;
+}
+
+.problem-card__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.problem-card__title {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #1a2540;
+}
+
+.problem-card__section {
+  margin-top: 14rpx;
+  font-size: 24rpx;
+  line-height: 1.9;
+  color: #4e5970;
+}
+
+.problem-card__label {
+  color: #165dff;
+  font-weight: 700;
+}
+
+.problem-card__image {
+  width: 100%;
+  height: 300rpx;
+  display: block;
+  margin-top: 16rpx;
+  border-radius: 20rpx;
+  background: #f8fbff;
+  border: 1rpx solid #e8eef8;
+}
+
+.problem-card__steps {
+  margin-top: 16rpx;
+}
+
+.problem-step {
+  display: flex;
+  align-items: flex-start;
+  margin-top: 12rpx;
+}
+
+.problem-step__index {
+  width: 38rpx;
+  height: 38rpx;
+  margin-right: 14rpx;
+  border-radius: 50%;
+  background: #edf3ff;
+  color: #165dff;
+  text-align: center;
+  line-height: 38rpx;
+  font-size: 20rpx;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.problem-step__text {
+  flex: 1;
+  font-size: 24rpx;
+  line-height: 1.85;
+  color: #43506a;
+}
+
+.related-card {
+  padding: 26rpx;
+}
+
+.related-card__title {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #192540;
+}
+
+.related-card__summary {
+  margin-top: 10rpx;
+  font-size: 24rpx;
+  line-height: 1.8;
+  color: #657087;
+}
+
+.top-gap {
+  margin-top: 26rpx;
+}

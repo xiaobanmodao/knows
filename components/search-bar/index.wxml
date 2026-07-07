@@ -1,0 +1,13 @@
+<view class="search-bar" bindtap="handleTap">
+  <view class="search-bar__icon">搜</view>
+  <input
+    class="search-bar__input"
+    value="{{value}}"
+    placeholder="{{placeholder}}"
+    placeholder-style="color:#9AA3B8"
+    confirm-type="search"
+    bindinput="handleInput"
+    bindconfirm="handleConfirm"
+    focus="{{autoFocus}}"
+  />
+</view>

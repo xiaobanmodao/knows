@@ -1,0 +1,49 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/math/index",
+    "pages/chapter/index",
+    "pages/knowledge/index",
+    "pages/template/index",
+    "pages/search/index",
+    "pages/favorites/index",
+    "pages/profile/index"
+  ],
+  "cloud": true,
+  "window": {
+    "navigationBarTitleText": "知识通",
+    "navigationBarBackgroundColor": "#F7F8FC",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#F4F6FB",
+    "backgroundTextStyle": "light"
+  },
+  "style": "v2",
+  "lazyCodeLoading": "requiredComponents",
+  "sitemapLocation": "sitemap.json",
+  "usingComponents": {
+    "subject-card": "/components/subject-card/index",
+    "content-block": "/components/content-block/index",
+    "search-bar": "/components/search-bar/index",
+    "empty-state": "/components/empty-state/index"
+  },
+  "tabBar": {
+    "color": "#7B8295",
+    "selectedColor": "#165DFF",
+    "backgroundColor": "#FFFFFF",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/favorites/index",
+        "text": "收藏"
+      },
+      {
+        "pagePath": "pages/profile/index",
+        "text": "我的"
+      }
+    ]
+  }
+}

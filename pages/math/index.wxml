@@ -1,0 +1,46 @@
+<view class="page-shell">
+  <view class="overview card">
+    <view class="overview__title">数学知识库</view>
+    <view class="overview__desc">
+      当前已按人教版初中数学 7 上到 9 下完整目录铺开，覆盖 {{totalChapters}} 个章节。现在统一通过一个搜索入口检索知识点和题型模型，阅读顺序更接近课本与教辅。
+    </view>
+    <view class="overview__tags">
+      <text class="tag">游客模式</text>
+      <text class="tag">统一搜索</text>
+      <text class="tag">知识点优先</text>
+      <text class="tag">题型模型</text>
+    </view>
+  </view>
+
+  <view class="search-slot top-space">
+    <search-bar bindtap="openSearch" />
+    <view class="search-tip">搜索知识点、公式名称、章节名称或模型名，例如“相似”“勾股定理”“手拉手模型”。</view>
+  </view>
+
+  <view wx:for="{{chapterGroups}}" wx:key="stage" wx:for-item="group" class="group-block">
+    <view class="section-title">
+      <view class="section-title__main">{{group.stage}}</view>
+      <view class="section-title__sub">{{group.items.length}} 个章节</view>
+    </view>
+
+    <view class="grid">
+      <view
+        wx:for="{{group.items}}"
+        wx:key="id"
+        wx:for-item="chapter"
+        class="chapter-card card"
+        data-id="{{chapter.id}}"
+        bindtap="openChapter"
+      >
+        <view class="chapter-card__chapter-no">{{chapter.chapterNo}}</view>
+        <view class="chapter-card__title">{{chapter.title}}</view>
+        <view class="chapter-card__subtitle">{{chapter.subtitle}}</view>
+        <view class="chapter-card__highlight">{{chapter.highlight}}</view>
+        <view class="chapter-card__meta">{{chapter.outlineItems.length}} 个小节 · {{chapter.templateItems.length}} 个高频模型</view>
+        <view class="chapter-card__tags">
+          <text wx:for="{{chapter.tags}}" wx:key="*this" wx:for-item="tag" class="tag">{{tag}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

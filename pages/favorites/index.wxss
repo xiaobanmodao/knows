@@ -1,0 +1,20 @@
+.bookmark-card {
+  padding: 28rpx;
+}
+
+.bookmark-card__title {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #18233e;
+}
+
+.bookmark-card__subtitle {
+  margin-top: 12rpx;
+  font-size: 24rpx;
+  color: #697286;
+  line-height: 1.8;
+}
+
+.top-gap {
+  margin-top: 32rpx;
+}

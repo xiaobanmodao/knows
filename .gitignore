@@ -1,0 +1,13 @@
+.DS_Store
+*.log
+
+.tmp-quicklook/
+dist/
+
+project.private.config.json
+
+assets/figures/generated/
+
+node_modules/
+cloudfunctions/**/node_modules/
+cloudfunctions/**/package-lock.json

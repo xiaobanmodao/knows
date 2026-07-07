@@ -1,0 +1,35 @@
+<view class="page-shell">
+  <view class="profile-card hero-gradient card">
+    <view class="profile-card__label">{{mode}}</view>
+    <view class="profile-card__title">{{releaseInfo.serviceName}}</view>
+    <view class="profile-card__desc">
+      当前版本不要求注册登录。收藏、最近浏览、搜索记录都保存在本机，适合快速查阅初中数学知识点和常见题型。
+    </view>
+  </view>
+
+  <view class="section-title top-gap">
+    <view class="section-title__main">服务说明</view>
+    <view class="section-title__sub">{{releaseInfo.serviceScope}}</view>
+  </view>
+
+  <view class="info-card card">
+    <view wx:for="{{serviceItems}}" wx:key="*this" class="info-card__item">{{item}}</view>
+  </view>
+
+  <view class="section-title top-gap">
+    <view class="section-title__main">版本信息</view>
+    <view class="section-title__sub">v{{releaseInfo.versionName}}</view>
+  </view>
+
+  <view class="grid">
+    <view wx:for="{{versionItems}}" wx:key="index" wx:for-item="step" class="roadmap-card card">
+      <view class="roadmap-card__index">{{index + 1}}</view>
+      <view class="roadmap-card__text">{{step}}</view>
+    </view>
+  </view>
+
+  <view wx:if="{{hasIcpBeian}}" class="info-card card beian-card" bindtap="copyBeianUrl">
+    <view class="info-card__item">备案号：{{releaseInfo.icpBeianNumber}}</view>
+    <view class="info-card__hint">点击复制工信部备案查询地址</view>
+  </view>
+</view>

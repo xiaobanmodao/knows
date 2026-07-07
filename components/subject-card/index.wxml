@@ -1,0 +1,10 @@
+<view class="subject-card {{item.theme}} {{item.status === 'coming' ? 'subject-card--coming' : ''}}" bindtap="handleTap">
+  <view class="subject-card__header">
+    <view>
+      <view class="subject-card__title">{{item.name}}</view>
+      <view class="subject-card__subtitle">{{item.subtitle}}</view>
+    </view>
+    <view class="subject-card__badge">{{item.status === 'active' ? '进入' : '预留'}}</view>
+  </view>
+  <view class="subject-card__desc">{{item.description}}</view>
+</view>

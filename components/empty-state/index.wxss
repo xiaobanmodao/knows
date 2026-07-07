@@ -1,0 +1,19 @@
+.empty-card {
+  padding: 36rpx 28rpx;
+  border-radius: 28rpx;
+  background: rgba(255, 255, 255, 0.9);
+  text-align: center;
+}
+
+.empty-card__title {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #1d2943;
+}
+
+.empty-card__desc {
+  margin-top: 12rpx;
+  font-size: 24rpx;
+  color: #7c8497;
+  line-height: 1.8;
+}

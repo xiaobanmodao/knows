@@ -1,0 +1,41 @@
+<view class="page-shell">
+  <view class="section-title">
+    <view class="section-title__main">收藏夹</view>
+    <view class="section-title__sub">{{favorites.length}} 条内容</view>
+  </view>
+
+  <view wx:if="{{favorites.length}}" class="grid">
+    <view
+      wx:for="{{favorites}}"
+      wx:key="id"
+      wx:for-item="favorite"
+      class="bookmark-card card"
+      data-id="{{favorite.id}}"
+      bindtap="openKnowledge"
+    >
+      <view class="bookmark-card__title">{{favorite.title}}</view>
+      <view class="bookmark-card__subtitle">{{favorite.subtitle}}</view>
+    </view>
+  </view>
+  <empty-state wx:else title="还没有收藏内容" description="进入知识点详情页后，可以把重要模板题收藏起来。" />
+
+  <view class="section-title top-gap">
+    <view class="section-title__main">最近浏览</view>
+    <view class="section-title__sub">{{recents.length}} 条记录</view>
+  </view>
+
+  <view wx:if="{{recents.length}}" class="grid">
+    <view
+      wx:for="{{recents}}"
+      wx:key="id"
+      wx:for-item="recent"
+      class="bookmark-card card"
+      data-id="{{recent.id}}"
+      bindtap="openKnowledge"
+    >
+      <view class="bookmark-card__title">{{recent.title}}</view>
+      <view class="bookmark-card__subtitle">{{recent.subtitle}}</view>
+    </view>
+  </view>
+  <empty-state wx:else title="还没有浏览记录" description="打开任意知识点后，这里会自动记录最近查看内容。" />
+</view>

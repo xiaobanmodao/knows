@@ -1,0 +1,77 @@
+.overview {
+  padding: 30rpx;
+}
+
+.overview__title {
+  font-size: 40rpx;
+  font-weight: 800;
+  color: #18233d;
+}
+
+.overview__desc {
+  margin-top: 14rpx;
+  line-height: 1.9;
+  font-size: 25rpx;
+  color: #576177;
+}
+
+.overview__tags {
+  margin-top: 18rpx;
+}
+
+.top-space {
+  margin-top: 28rpx;
+}
+
+.search-slot {
+  margin: 26rpx 0 12rpx;
+}
+
+.search-tip {
+  margin-top: 14rpx;
+  padding: 0 6rpx;
+  font-size: 23rpx;
+  line-height: 1.8;
+  color: #6b7387;
+}
+
+.group-block {
+  margin-top: 22rpx;
+}
+
+.chapter-card {
+  padding: 28rpx;
+}
+.chapter-card__title {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #16213c;
+}
+
+.chapter-card__chapter-no {
+  font-size: 22rpx;
+  color: #6e768a;
+}
+
+.chapter-card__subtitle {
+  margin-top: 10rpx;
+  font-size: 24rpx;
+  line-height: 1.7;
+  color: #4d586f;
+}
+
+.chapter-card__highlight {
+  margin-top: 14rpx;
+  font-size: 23rpx;
+  color: #7a8397;
+}
+
+.chapter-card__meta {
+  margin-top: 12rpx;
+  font-size: 22rpx;
+  color: #5f6980;
+}
+
+.chapter-card__tags {
+  margin-top: 14rpx;
+}

@@ -1,0 +1,2609 @@
+const { knowledgeList } = require('../data/math-data');
+const { chapterCatalog, templateLibrary } = require('../data/math-curriculum');
+const { lessonFocusMap } = require('../data/math-lesson-focus');
+const { lessonFactsMap } = require('../data/math-lesson-facts');
+const { resolveAssetUrl } = require('./asset-config');
+
+const figureByTag = {
+  几何: '/assets/figures/generated/right-triangle-345.png',
+  图形: '/assets/figures/generated/line-angle-bisector.png',
+  坐标: '/assets/figures/generated/coordinate-points.png',
+  函数: '/assets/figures/generated/linear-function.png',
+  视图: '/assets/figures/generated/three-views.png',
+};
+
+const legacyChapterAlias = {
+  'g7a-rational': 'ch01-rational',
+  'g7a-expression': 'ch02-expression',
+  'g7a-equation': 'ch03-linear-equation',
+  'g7a-geometry': 'ch04-basic-geometry',
+  'g7b-parallel': 'ch05-parallel',
+  'g7b-coordinate': 'ch07-coordinate',
+  'g7b-system': 'ch08-system',
+  'g8a-triangle': 'ch11-triangle',
+  'g8a-congruent': 'ch12-congruent',
+  'g8a-factor': 'ch14-polynomial',
+  'g8b-root': 'ch16-radical',
+  'g8b-pythagorean': 'ch17-pythagorean',
+  'g8b-linear-function': 'ch19-linear-function',
+  'g9a-quadratic-equation': 'ch21-quadratic-equation',
+  'g9a-quadratic-function': 'ch22-quadratic-function',
+  'g9a-circle': 'ch24-circle',
+  'g9b-similar': 'ch27-similarity',
+  'g9b-trigonometry': 'ch28-trigonometry',
+};
+
+const chapterSummaryMap = {
+  'ch01-rational': '先理解正负数与数轴，再熟练掌握有理数运算法则和绝对值、相反数。',
+  'ch02-expression': '核心是识别整式结构、掌握同类项和规范化简。',
+  'ch03-linear-equation': '围绕“等量关系”建立方程并解题，是建模意识的重要起点。',
+  'ch04-basic-geometry': '把几何对象、线段和角的语言真正学会，后续证明才会顺。',
+  'ch05-parallel': '判定与性质双向使用，是几何证明的第一座桥梁。',
+  'ch06-real': '重点掌握平方根、立方根和实数在数轴上的表示。',
+  'ch07-coordinate': '坐标系让图形问题和代数问题第一次真正打通。',
+  'ch08-system': '把“双未知量问题”转化成消元过程，是方程组的核心思想。',
+  'ch09-inequality': '从“求一个值”转向“求一段范围”，要学会数轴表达解集。',
+  'ch10-statistics': '统计章节重在会读图、会整理、会解释数据。',
+  'ch11-triangle': '三角形和多边形角度关系，是后续全等、相似和圆的前置基础。',
+  'ch12-congruent': '全等是证明题的主战场，判定与性质都要熟练到能反应出来。',
+  'ch13-symmetry': '轴对称和等腰三角形常与最短路径、折叠、作图一起出现。',
+  'ch14-polynomial': '代数变形能力决定很多综合题能不能顺利推进。',
+  'ch15-fraction': '分式方程要特别重视去分母后的验根。',
+  'ch16-radical': '根式计算先化简，再运算，是几何长度计算的常见配套能力。',
+  'ch17-pythagorean': '只要能构造直角三角形，很多复杂长度题都会变简单。',
+  'ch18-parallelogram': '要抓住定义、性质和判定，特别是特殊平行四边形的强条件。',
+  'ch19-linear-function': '用解析式、图像和实际含义三种方式同时理解一次函数。',
+  'ch20-data-analysis': '会算平均数、中位数、众数和方差，更要会解释哪个指标更合适。',
+  'ch21-quadratic-equation': '学会根据结构选择最省步骤的解法，而不是死套一种方法。',
+  'ch22-quadratic-function': '顶点、对称轴、开口方向和最值，是整章的主线。',
+  'ch23-rotation': '旋转、中心对称常与全等模型、图案设计和特殊角结合。',
+  'ch24-circle': '圆的性质、切线和弧长扇形面积，经常出现在综合证明与计算里。',
+  'ch25-probability': '列举法和频率估计要和情境结合起来理解“概率”的意义。',
+  'ch26-inverse-function': '反比例函数最常考图像性质、面积关系和实际建模。',
+  'ch27-similarity': '比例和相似比是压轴题的高频语言，常与辅助线同时出现。',
+  'ch28-trigonometry': '测高测距和解直角三角形都是把现实问题转成边比问题。',
+  'ch29-projection': '三视图与展开图考查的是空间想象和还原能力。',
+};
+
+const chapterPromptMap = {
+  'ch01-rational': ['会在数轴上表示数', '会比较大小', '会处理绝对值和相反数', '会做混合运算'],
+  'ch02-expression': ['会判断整式类型', '会找系数和次数', '会合并同类项', '会按规范书写结果'],
+  'ch03-linear-equation': ['会找等量关系', '会规范变形', '会解应用题', '会检查是否符合题意'],
+  'ch04-basic-geometry': ['认得清图形', '写得出关系', '看得懂角和线段条件', '会做简单设计'],
+  'ch05-parallel': ['会辨认角位关系', '会用判定', '会用性质', '会结合平移理解图形变化'],
+  'ch06-real': ['能区分有理数与无理数', '会开平方和立方', '会把实数放到数轴上理解'],
+  'ch07-coordinate': ['会读点坐标', '会判断象限', '会分析平移前后坐标变化'],
+  'ch08-system': ['会代入法', '会加减法', '会建立方程组解决实际问题'],
+  'ch09-inequality': ['会解不等式', '会在数轴上表示解集', '会处理不等式组'],
+  'ch10-statistics': ['会做调查表', '会看直方图', '会根据数据得出解释'],
+  'ch11-triangle': ['会用内角和', '会判断边角关系', '会处理多边形内角和'],
+  'ch12-congruent': ['会选判定条件', '会写全等证明', '会利用全等性质求边角'],
+  'ch13-symmetry': ['会找对称轴', '会作轴对称图形', '会用对称解决最短路径'],
+  'ch14-polynomial': ['会整式乘法', '会用乘法公式', '会因式分解'],
+  'ch15-fraction': ['会约分通分', '会做分式运算', '会解分式方程并验根'],
+  'ch16-radical': ['会化简根式', '会做乘除加减', '会把结果化到最简形式'],
+  'ch17-pythagorean': ['会判断斜边', '会正用勾股定理', '会逆用勾股定理'],
+  'ch18-parallelogram': ['会用定义判断', '会用性质求解', '会用判定证明'],
+  'ch19-linear-function': ['会识别函数关系', '会写一次函数解析式', '会读图像'],
+  'ch20-data-analysis': ['会比较平均数中位数众数', '会理解波动程度', '会做简单数据分析'],
+  'ch21-quadratic-equation': ['会识别方程结构', '会用配方法、公式法和因式分解法', '会做应用题'],
+  'ch22-quadratic-function': ['会找顶点与对称轴', '会看开口方向', '会处理最值和交点'],
+  'ch23-rotation': ['会判断旋转中心和角度', '会用中心对称', '会把变换转成证明'],
+  'ch24-circle': ['会用圆心角和圆周角', '会处理切线', '会算弧长和扇形面积'],
+  'ch25-probability': ['会判断随机事件', '会列举样本空间', '会用频率估计概率'],
+  'ch26-inverse-function': ['会写反比例解析式', '会看双曲线图像', '会处理面积与实际问题'],
+  'ch27-similarity': ['会判定相似', '会用相似比', '会处理面积比和位似'],
+  'ch28-trigonometry': ['会分清对边邻边斜边', '会选sin cos tan', '会解直角三角形'],
+  'ch29-projection': ['会区分投影', '会读三视图', '会由视图还原立体'],
+};
+
+const chapterPackMap = {
+  'ch01-rational': { concepts: ['正负数的意义', '数轴位置与大小规律', '相反数与绝对值', '有理数混合运算'], mistakes: ['绝对值结果写成负数', '减法不化成加法', '乘方与负号顺序混淆'], scenario: '温度变化、海拔升降、盈亏增减', advanced: '把数轴关系与分类讨论结合起来' },
+  'ch02-expression': { concepts: ['单项式与多项式', '系数与次数', '同类项', '整式规范化简'], mistakes: ['漏写系数 1 或 -1', '把不同次数项当同类项', '化简后顺序混乱'], scenario: '用字母表示数量关系', advanced: '把整式化简服务于方程求解和代数证明' },
+  'ch03-linear-equation': { concepts: ['方程思想', '合并同类项', '移项', '去括号去分母', '应用题建模'], mistakes: ['移项不变号', '去分母漏乘常数项', '列方程后忘记验题意'], scenario: '人数、路程、利润、工程问题', advanced: '用方程刻画更复杂的实际关系' },
+  'ch04-basic-geometry': { concepts: ['几何图形分类', '直线射线线段', '角与角度关系', '图形设计'], mistakes: ['线段、射线概念混淆', '补角余角总量记错', '图形条件不会翻译成文字'], scenario: '包装设计、测量和画图', advanced: '把图形直观转成几何语言与条件链' },
+  'ch05-parallel': { concepts: ['对顶角与邻补角', '平行线判定', '平行线性质', '平移'], mistakes: ['性质和判定方向混用', '角位关系看错', '平移前后对应点乱掉'], scenario: '轨道、栅栏、平移图案', advanced: '用角关系串联证明题' },
+  'ch06-real': { concepts: ['平方根', '立方根', '无理数', '实数与数轴'], mistakes: ['把平方根和算术平方根混淆', '开方后漏写正负', '无理数判断失误'], scenario: '面积与边长、体积与边长关系', advanced: '把实数近似值用于计算和比较大小' },
+  'ch07-coordinate': { concepts: ['坐标系建立', '象限判断', '点的坐标', '坐标法描述图形'], mistakes: ['横纵坐标顺序写反', '象限符号判断错误', '平移只改一个坐标'], scenario: '地图定位、平面位置表示', advanced: '用坐标法处理几何问题' },
+  'ch08-system': { concepts: ['二元一次方程组', '代入消元', '加减消元', '三元一次方程组'], mistakes: ['回代求另一未知数出错', '消元过程符号错', '应用题未知量设置不清'], scenario: '价格数量、鸡兔同笼、配套生产', advanced: '多元方程组与图像思想衔接' },
+  'ch09-inequality': { concepts: ['不等式意义', '一元一次不等式', '不等式组', '数轴表示解集'], mistakes: ['乘除负数时不等号不变向', '不等式组公共部分找错'], scenario: '范围限制、最低标准、最多最少问题', advanced: '把不等式与方程、函数图像结合' },
+  'ch10-statistics': { concepts: ['统计调查', '样本与总体', '直方图', '用数据表达结论'], mistakes: ['频数与频率混淆', '图表读数不准确', '只会计算不会解释'], scenario: '问卷调查、节水数据、成绩分布', advanced: '从数据分布反推问题特征' },
+  'ch11-triangle': { concepts: ['中线高角平分线', '三角形内角和与外角', '多边形内角和'], mistakes: ['特殊线段定义混淆', '外角性质使用不完整'], scenario: '三角支架、屋架结构', advanced: '为全等和相似铺路' },
+  'ch12-congruent': { concepts: ['全等定义', 'SSS SAS ASA AAS HL', '角平分线性质'], mistakes: ['对应顶点写错顺序', '条件不够强就硬判全等'], scenario: '折叠、作图、镜面对称', advanced: '把全等作为证明中间桥梁' },
+  'ch13-symmetry': { concepts: ['轴对称性质', '画轴对称图形', '等腰三角形性质', '最短路径'], mistakes: ['对称点找错', '把对称轴和平分线混淆'], scenario: '镜面、折叠、路径设计', advanced: '把对称转化为最短路模型' },
+  'ch14-polynomial': { concepts: ['整式乘法', '完全平方公式', '平方差公式', '因式分解'], mistakes: ['中间项符号错', '因式分解不彻底'], scenario: '面积拼接与代数结构分析', advanced: '把公式和因式分解双向转换' },
+  'ch15-fraction': { concepts: ['分式意义', '约分通分', '分式运算', '分式方程'], mistakes: ['公分母找错', '增根不验'], scenario: '效率、速度、比例关系', advanced: '分式与整式、方程综合' },
+  'ch16-radical': { concepts: ['二次根式定义', '化简', '乘除', '加减'], mistakes: ['被开方数没化到最简', '不同根式直接相加'], scenario: '长度、面积与勾股计算', advanced: '根式运算与几何计算联动' },
+  'ch17-pythagorean': { concepts: ['勾股定理', '逆定理', '直角结构识别'], mistakes: ['斜边判断错', '勾股关系套到非直角三角形'], scenario: '楼梯、对角线、最短路径', advanced: '和坐标、最值、折叠问题结合' },
+  'ch18-parallelogram': { concepts: ['平行四边形定义', '性质', '判定', '矩形菱形正方形'], mistakes: ['特殊四边形性质混淆', '判定条件不足'], scenario: '窗框、地砖、方格图', advanced: '四边形模型与旋转、全等结合' },
+  'ch19-linear-function': { concepts: ['函数概念', '一次函数解析式', '图像与性质', '方案选择'], mistakes: ['k、b 含义不清', '图像单调性判断错'], scenario: '收费方案、路程时间、温度变化', advanced: '与方程组、最值问题衔接' },
+  'ch20-data-analysis': { concepts: ['平均数中位数众数', '方差与波动程度', '数据评价'], mistakes: ['指标选用不当', '波动程度直觉判断代替计算'], scenario: '体测、成绩、调查数据', advanced: '比较不同方案的数据表现' },
+  'ch21-quadratic-equation': { concepts: ['一元二次方程概念', '配方法', '公式法', '因式分解法', '应用题'], mistakes: ['判别式算错', '因式分解法漏根'], scenario: '面积、增长率、几何建模', advanced: '与二次函数关系联动' },
+  'ch22-quadratic-function': { concepts: ['图像与性质', '顶点式', '对称轴', '最值', '与方程关系'], mistakes: ['开口方向和最值对应错', '顶点坐标读取不准'], scenario: '抛物线运动、面积最值、利润最优', advanced: '压轴题中的动点与面积模型' },
+  'ch23-rotation': { concepts: ['旋转中心与角度', '中心对称', '图案设计'], mistakes: ['旋转前后对应点找错', '只会看图不会写性质'], scenario: '风车图案、旋转拼图', advanced: '与手拉手模型、正方形模型结合' },
+  'ch24-circle': { concepts: ['圆心角圆周角', '切线性质与判定', '正多边形与圆', '弧长扇形面积'], mistakes: ['同弧关系用错', '切线性质和判定方向混用'], scenario: '车轮、跑道、圆形构件', advanced: '圆几何综合证明与计算' },
+  'ch25-probability': { concepts: ['随机事件', '列举法', '频率估计概率'], mistakes: ['样本空间漏数', '把频率当固定概率'], scenario: '抽奖、摸球、掷骰子', advanced: '把统计实验结果与理论概率比较' },
+  'ch26-inverse-function': { concepts: ['反比例函数解析式', '双曲线图像', '象限与单调性', '面积关系'], mistakes: ['k 的符号和图像象限对应错', '面积不变量不会用'], scenario: '工作效率、压强、电学物理量', advanced: '与一次函数、几何面积、最值综合' },
+  'ch27-similarity': { concepts: ['相似图形', '相似三角形判定', '位似', '相似比与面积比'], mistakes: ['对应边顺序混乱', '面积比误当边比'], scenario: '放大缩小、影子测高、图形变换', advanced: 'A 型 K 型 手拉手等压轴模型' },
+  'ch28-trigonometry': { concepts: ['sin cos tan', '特殊角值', '解直角三角形'], mistakes: ['对边邻边斜边判断错', '角度单位与实际语境脱节'], scenario: '测高测距、坡度、仰角俯角', advanced: '和勾股、相似一起解决综合题' },
+  'ch29-projection': { concepts: ['平行投影与中心投影', '三视图', '展开图与立体模型'], mistakes: ['视角方向看反', '展开图对应面拼接错'], scenario: '工程图纸、包装盒、立体还原', advanced: '空间想象与动手制作结合' },
+};
+
+const chapterTextOverrideMap = {
+  'ch01-rational': {
+    lead: '这一章像整册书的起点页。先学会用正负数描述现实中的相反意义，再借助数轴认识大小规律，最后把加减乘除与乘方的运算法则连成一条完整主线。',
+    concepts: [
+      '先把“基准量”找出来，再判断一个量应该写成正数还是负数。',
+      '数轴是本章的核心工具，大小比较、绝对值、相反数都要回到数轴理解。',
+      '有理数运算不只是会算，更要会判断符号、顺序和结果是否合理。',
+      '乘方要分清底数、指数和负号位置，这是后面整式学习的铺垫。',
+    ],
+    solveText: [
+      '常见求解是先把生活语言翻译成带符号的数，再列式计算。',
+      '遇到字母或点在线上的题，优先用绝对值、相反数和数轴距离关系。',
+      '综合题常把正负号、绝对值和混合运算放在一起考查。',
+    ],
+  },
+  'ch02-expression': {
+    lead: '这一章开始正式进入代数表达。重点不是背名词，而是学会看清“项、系数、次数、同类项”这些结构，并把复杂式子整理成规范结果。',
+    concepts: [
+      '整式的学习先看“由哪些项组成”，再看每一项的系数和次数。',
+      '同类项的本质是所含字母相同且相同字母的指数也相同。',
+      '整式加减先去括号，再合并同类项，最后按规范顺序书写。',
+      '整式化简是后面列方程、因式分解和函数表达的基础。',
+    ],
+    solveText: [
+      '常见求解是先辨认结构，再合并同类项或代入求值。',
+      '字母求值题常结合平方差、整体代入与系数分析。',
+      '综合题里经常把整式化简作为第一步，再进入方程或应用题。',
+    ],
+  },
+  'ch03-linear-equation': {
+    lead: '这一章要真正建立“方程思想”。书上从算式到方程，再从解方程到应用题，主线很清楚：先会设未知数，再会列关系式，最后把求得的结果解释回题意。',
+    concepts: [
+      '方程的核心是“等量关系”，设未知数只是为了把关系写出来。',
+      '解一元一次方程时，合并同类项、移项、去括号、去分母都要有顺序感。',
+      '应用题不是先算，而是先找题中的数量关系和单位。',
+      '解出结果后要回到题意检查是否符合实际意义。',
+    ],
+    solveText: [
+      '常见求解是设未知数，列出一元一次方程，再规范求解。',
+      '行程、工程、销售、分配等应用题都可以落到同一类方程模型。',
+      '复杂题常把“去分母”和“实际意义检验”放成关键得分点。',
+    ],
+  },
+  'ch04-basic-geometry': {
+    lead: '这一章像几何的识字课。重点是从“看图”过渡到“会用几何语言描述图”，把点、线、面、角、线段之间的关系说清楚、写清楚。',
+    concepts: [
+      '几何对象先分清平面图形与立体图形，再看它们的基本特征。',
+      '直线、射线、线段的差别要能用端点和延伸方向准确表达。',
+      '角的学习重点是角的表示、度量、分类以及角平分线的意义。',
+      '课题学习要把空间想象和实际制作联系起来，关注面与面、棱与棱的对应关系。',
+    ],
+    solveText: [
+      '常见求解是根据线段和角的定义列出关系，再求长度或角度。',
+      '几何入门题得分关键不在难算，而在图形标注与语言表达准确。',
+      '包装盒和展开图问题常先还原立体，再分析哪几个面相邻。',
+    ],
+  },
+};
+
+const lessonTextOverrideMap = {
+  '1.1 正数和负数': {
+    summary: '先借助温度、海拔、收支这些熟悉情境，学会用正负数表示相反意义的量，再过渡到带符号计算。',
+    intro: '教材先从生活中的“上升与下降、收入与支出、前进与后退”切入，目的不是让你背定义，而是让你意识到：当一个量围绕某个基准发生相反方向的变化时，就需要用正负数加以区分。',
+    points: ['确定正负数之前必须先明确题目中的基准量。', '0 是分界点，本身既不是正数也不是负数。', '正负号表示方向或意义，不只表示大小。'],
+    plainTalk: '可以把正数和负数想成“朝两个相反方向记账”。只要题目里出现升降、盈亏、前后、上下，就要先问一句：题目把谁当作零点或基准？',
+  },
+  '1.2 有理数': {
+    summary: '把正整数、负整数、正分数、负分数统一放到有理数系统中，并通过数轴理解大小规律、绝对值和相反数。',
+    intro: '这一节是整章的核心枢纽。教材会把已经学过的整数和分数统一到“有理数”概念之下，再借助数轴把大小、绝对值、相反数这些性质串联起来。',
+    points: ['有理数按正负和 0 分类，也可按整数与分数分类。', '绝对值表示到原点的距离，相反数表示关于原点对称。', '比较两个有理数大小时，数轴是最稳的工具。'],
+    plainTalk: '这一节像是在给学过的数“重新分班”。整数、分数只要能写成两个整数相除的形式，都归到有理数这一大类里。',
+  },
+  '1.3 有理数的加减法': {
+    summary: '从同号相加、异号相加到减法化加法，建立有理数加减运算法则。',
+    intro: '教材通常先通过温度变化或存取款变化引出有理数加法，再总结同号、异号的处理方式，最后把减法统一转化成加法。',
+    points: ['有理数减法统一转化为加上这个数的相反数。', '异号相加先比较绝对值，再决定结果符号。', '混合加减要先统一成加法再看结构。'],
+    plainTalk: '加减法最稳的想法不是背口诀，而是把它看成“在数轴上往左走还是往右走”。减去一个数，其实就是加上这个数的相反数。',
+  },
+  '1.4 有理数的乘除法': {
+    summary: '掌握乘除法符号法则与绝对值法则，能熟练完成有理数乘除混合运算。',
+    intro: '这一节重点不在机械记忆“正负得正负得负”，而在理解乘除法中符号与绝对值分别怎样决定结果。',
+    points: ['乘除法先看符号，再算绝对值。', '多个有理数相乘可先判断负因数个数。', '0 不能作除数。'],
+    plainTalk: '乘除法可以拆成两件事：先决定结果是正还是负，再计算大小。这样一来，复杂题也能分层处理，不容易乱。',
+  },
+  '1.5 有理数的乘方': {
+    summary: '从相同因数相乘出发理解乘方，特别注意底数带不带括号时结果的差别。',
+    intro: '教材通过把若干个相同因数连乘缩写成乘方，引出底数、指数、幂这些概念。最容易出错的地方就是负号是否属于底数。',
+    points: ['底数带括号时，负号一起参与乘方。', '偶次幂和奇次幂的符号规律要结合底数理解。', '乘方在混合运算中优先级高于乘除加减。'],
+    plainTalk: '乘方最像“重复乘同一个数”。判断符号时，先看负号是不是跟底数绑在一起，这一步比计算本身更重要。',
+  },
+  '2.1 整式': {
+    summary: '认识单项式、多项式以及系数、次数等概念，会从实际问题中抽象出整式。',
+    intro: '这一节从“用字母表示数量关系”起步，核心是看懂一个式子由哪些项组成，每一项的字母与指数意味着什么。',
+    points: ['单项式的次数是所有字母指数之和。', '多项式的次数取各项次数的最大值。', '列式时既要符合题意，也要注意书写规范。'],
+    plainTalk: '整式就像由很多“项”拼成的积木。先看一共有几块，再看每一块上有什么字母、指数和系数。',
+  },
+  '2.2 整式的加减': {
+    summary: '围绕同类项展开，学习去括号、合并同类项和规范书写结果。',
+    intro: '整式加减的主线很像“整理柜子”：先把同类项找出来，再把系数合并。教材会通过多个例题让你熟悉“去括号后再合并”的顺序。',
+    points: ['同类项只看字母和字母指数，不看系数。', '去括号时尤其注意括号前是负号的情况。', '结果通常按某一字母的降幂排列。'],
+    plainTalk: '同类项可以理解成“标签完全一样的项”。只有标签一样，才能放到一组去合并，系数只是数量，字母结构才是身份。',
+  },
+  '3.1 从算式到方程': {
+    summary: '从具体算式过渡到含有未知数的方程，理解方程的意义与解。',
+    intro: '教材通过“已知结果求原数”这类问题说明：当题目中有未知量时，光靠算式往往不够，需要用方程表达等量关系。',
+    points: ['方程的本质是含有未知数的等式。', '方程的解是使方程左右两边相等的未知数的值。', '列方程前要先判断未知量和等量关系。'],
+    plainTalk: '算式是“我已经知道数字了，只要算”；方程是“有个数还不知道，但我知道它和别的量之间的关系”。',
+  },
+  '3.2 解一元一次方程（一）——合并同类项与移项': {
+    summary: '掌握通过合并同类项和移项解一元一次方程的基本方法。',
+    intro: '这一节的重点是“把未知数集中到一边，把常数集中到另一边”。教材中的例题通常先让你看到式子怎样一步步变简单，再总结移项法则。',
+    points: ['移项时一定改变符号。', '先合并同类项，再移项更稳。', '每一步变形都要保持等式两边相等。'],
+    plainTalk: '移项可以理解成“把一个数搬到等号另一边”，但搬过去以后身份变了，所以符号也要跟着变。',
+  },
+  '3.3 解一元一次方程（二）——去括号与去分母': {
+    summary: '继续解决更复杂的一元一次方程，重点是去括号和去分母。',
+    intro: '教材会把含括号、含分母的方程当作升级版，让你在规范变形中进一步巩固等式性质。最容易出错的是去分母时漏乘项、去括号时漏变号。',
+    points: ['去分母时方程两边的每一项都要乘最小公倍数。', '去括号后要及时合并同类项。', '分母中如果有未知数，要注意隐含条件。'],
+    plainTalk: '这一节的难点不在道理，而在细节。去括号像拆包裹，去分母像统一单位，任何一项漏掉都会把整题带偏。',
+  },
+  '3.4 实际问题与一元一次方程': {
+    summary: '把路程、工程、销售、分配等实际问题转化成一元一次方程求解。',
+    intro: '这一节像把前面所有方程知识用在现实里。教材最重视的不是算得快，而是能不能把题目语言翻译成等量关系。',
+    points: ['先设未知数并说明含义。', '再依据题意找等量关系列方程。', '求解后必须检验是否符合实际意义。'],
+    plainTalk: '应用题不是“读完就算”，而是“先翻译再列式”。谁是未知数，谁和谁相等，这两件事想清楚了，题就通了。',
+  },
+  '4.1 几何图形': {
+    summary: '认识平面图形与立体图形，建立几何学习最基本的直观印象。',
+    intro: '这一节更像几何的“目录页”。教材先让你看见各种图形，再慢慢把它们分成平面图形和立体图形，为后续线、角、体的学习做准备。',
+    points: ['平面图形只研究一个平面内的形状。', '立体图形研究空间中的形体。', '观察图形时要同时关注形状与构成要素。'],
+    plainTalk: '这节先别急着做难题，重点是把“图形长什么样、属于哪一类”认清楚，这是后面几何表达的起点。',
+  },
+  '4.2 直线、射线、线段': {
+    summary: '区分直线、射线、线段的特点，并掌握线段比较与中点的概念。',
+    intro: '教材会反复强调端点个数和延伸方向，因为这正是直线、射线、线段最根本的区别。线段的和、差、中点也是后面求值题的重要基础。',
+    points: ['直线没有端点，向两方无限延伸。', '射线有一个端点，向一方无限延伸。', '线段有两个端点，可比较长短、求和差、找中点。'],
+    plainTalk: '记这三个对象最简单的方法就是数端点：没有端点的是直线，一个端点的是射线，两个端点的是线段。',
+  },
+  '4.3 角': {
+    summary: '学习角的表示、度量、比较和分类，理解角平分线等基本概念。',
+    intro: '这一节是几何语言的关键一环。教材从“角是怎样形成的”讲起，再逐步进入角的表示方法、度分秒和常见角度关系。',
+    points: ['角可用一个大写字母或三个字母表示。', '平角是 180°，周角是 360°。', '角平分线把一个角分成两个相等的角。'],
+    plainTalk: '角可以看成两条射线张开的程度。学角时最重要的是会读图、会表示、会比较大小。',
+  },
+  '4.4 课题学习 设计制作长方体形状的包装纸盒': {
+    summary: '把立体图形、展开图与实际制作联系起来，培养空间想象和动手能力。',
+    intro: '这一节更接近教材中的项目学习。重点是从长方体的面、棱、顶点出发，思考展开图如何拼接，哪些面相邻，怎样保证制作后能顺利还原。',
+    points: ['展开图要保证相邻面关系正确。', '长方体相对的面形状和大小对应。', '设计时要留出粘贴边并考虑实际制作。'],
+    plainTalk: '这节像把几何课变成手工课。你要一边看图，一边想象折起来以后哪个面会贴到一起。',
+  },
+};
+
+const lessonProblemOverrideMap = {
+  '1.3 有理数的加减法': [
+    { title: '基础例题', difficulty: '基础', stem: '计算：(-8)+13。', answer: '5。', analysis: '异号两数相加，先求绝对值差，再取绝对值较大数的符号。', steps: ['13 的绝对值大于 8。', '13-8=5。', '结果取正号，所以答案是 5。'] },
+    { title: '提升例题', difficulty: '提升', stem: '计算：7-(-5)+(-9)。', answer: '3。', analysis: '先把减法改写成加法。', steps: ['7-(-5)=7+5。', '原式=7+5-9=12-9。', '所以结果是 3。'] },
+    { title: '变式训练', difficulty: '提升', stem: '一只潜水艇先下潜 20 m，又上升 8 m，最后再下潜 5 m。求它相对初始位置的变化。', answer: '下潜了 17 m。', analysis: '下潜记负，上升记正，再做加法。', steps: ['变化量为 -20+8-5。', '先算 -20+8=-12。', '再算 -12-5=-17。', '所以相对初始位置下潜了 17 m。'] },
+    { title: '模型迁移题', difficulty: '压轴', stem: '已知 a=-4，b=7，c=-3，求 a+b-c 的值。', answer: '6。', analysis: '把减 c 看成加上 c 的相反数。', steps: ['a+b-c=-4+7-(-3)。', '原式=-4+7+3。', '先算 -4+7=3。', '再算 3+3=6。'] },
+    { title: '压轴提醒', difficulty: '压轴', stem: '计算：(-12)-(+5)-(-8)。', answer: '-9。', analysis: '连续减法一定先统一改写成加法。', steps: ['原式=-12-5+8。', '先算 -12-5=-17。', '再算 -17+8=-9。'] },
+  ],
+  '1.4 有理数的乘除法': [
+    { title: '基础例题', difficulty: '基础', stem: '计算：(-6)×4。', answer: '-24。', analysis: '一负一正相乘得负。', steps: ['先判断符号，负×正得负。', '再算绝对值 6×4=24。', '所以结果是 -24。'] },
+    { title: '提升例题', difficulty: '提升', stem: '计算：(-18)÷(-3)×2。', answer: '12。', analysis: '乘除同级，按从左到右顺序计算。', steps: ['(-18)÷(-3)=6。', '6×2=12。', '所以结果是 12。'] },
+    { title: '变式训练', difficulty: '提升', stem: '计算：(-2)×3×(-5)。', answer: '30。', analysis: '两个负因数相乘，最终结果为正。', steps: ['先看负因数个数，一共有 2 个。', '所以结果是正数。', '绝对值为 2×3×5=30。'] },
+    { title: '模型迁移题', difficulty: '压轴', stem: '已知 a=-3，b=4，求 ab÷a 的值。', answer: '4。', analysis: '先算 ab，再做除法，或直接约化理解。', steps: ['ab=(-3)×4=-12。', '-12÷(-3)=4。', '所以结果是 4。'] },
+    { title: '压轴提醒', difficulty: '压轴', stem: '计算：(-24)÷6×(-2)。', answer: '8。', analysis: '注意不要把乘除顺序随意交换。', steps: ['(-24)÷6=-4。', '-4×(-2)=8。', '所以结果是 8。'] },
+  ],
+  '1.5 有理数的乘方': [
+    { title: '基础例题', difficulty: '基础', stem: '计算：(-2)^3。', answer: '-8。', analysis: '底数是 -2，连乘三次后结果仍为负。', steps: ['(-2)^3=(-2)×(-2)×(-2)。', '先算前两个得 4。', '4×(-2)=-8。'] },
+    { title: '提升例题', difficulty: '提升', stem: '比较 (-3)^2 与 -3^2 的大小。', answer: '(-3)^2 大。', analysis: '前者底数是 -3，后者是先算 3² 再添负号。', steps: ['(-3)^2=9。', '-3^2=-(3^2)=-9。', '所以 9>-9。'] },
+    { title: '变式训练', difficulty: '提升', stem: '计算：2^4-(-1)^5。', answer: '17。', analysis: '先算两个乘方，再做减法。', steps: ['2^4=16。', '(-1)^5=-1。', '16-(-1)=17。'] },
+    { title: '模型迁移题', difficulty: '压轴', stem: '已知 a=-2，求 a^4-a^3 的值。', answer: '24。', analysis: '分别计算两个幂，再相减。', steps: ['a^4=(-2)^4=16。', 'a^3=(-2)^3=-8。', '16-(-8)=24。'] },
+    { title: '压轴提醒', difficulty: '压轴', stem: '计算：-2^3+(-2)^2。', answer: '-4。', analysis: '前一项负号不在底数里，后一项负号在底数里。', steps: ['-2^3=-(2^3)=-8。', '(-2)^2=4。', '-8+4=-4。'] },
+  ],
+  '2.1 整式': [
+    { title: '基础例题', difficulty: '基础', stem: '指出单项式 5a²b 的系数和次数。', answer: '系数是 5，次数是 3。', analysis: '次数等于各字母指数之和。', steps: ['系数就是数字因数，所以是 5。', '次数为 2+1=3。'] },
+    { title: '提升例题', difficulty: '提升', stem: '判断 3x²y-2x+1 是几次几项式。', answer: '三次三项式。', analysis: '先看项数，再看最高次数。', steps: ['它由 3x²y、-2x、1 三项组成。', '各项次数分别是 3、1、0。', '最高次数是 3，所以它是三次三项式。'] },
+    { title: '变式训练', difficulty: '提升', stem: '用整式表示：一个长方形长为 x，宽为 x+3，它的周长是多少？', answer: '4x+6。', analysis: '周长等于长和宽的 2 倍。', steps: ['周长=2(x+x+3)。', '化简得 2(2x+3)。', '结果为 4x+6。'] },
+    { title: '模型迁移题', difficulty: '压轴', stem: '已知单项式 -4a³b² 的次数是多少？若 a=1，b=-2，求它的值。', answer: '次数是 5，值是 -16。', analysis: '先认概念，再代入求值，注意负号不是平方的一部分。', steps: ['次数为 3+2=5。', '代入得 -4×1³×(-2)²。', '(-2)²=4，所以原式=-4×1×4=-16。'] },
+    { title: '压轴提醒', difficulty: '压轴', stem: '多项式 2x²y+3xy²-5 的最高次数是多少？', answer: '3。', analysis: '不要把所有项的次数再相加。', steps: ['第一项次数为 2+1=3。', '第二项次数为 1+2=3。', '常数项次数为 0。', '最高次数是 3。'] },
+  ],
+  '2.2 整式的加减': [
+    { title: '基础例题', difficulty: '基础', stem: '化简：3x+5x。', answer: '8x。', analysis: '同类项只需要把系数相加。', steps: ['3x 和 5x 是同类项。', '把系数 3 和 5 相加得 8。', '所以结果是 8x。'] },
+    { title: '提升例题', difficulty: '提升', stem: '化简：4a-3b+2a+b。', answer: '6a-2b。', analysis: '先把同类项放在一起。', steps: ['4a+2a=6a。', '-3b+b=-2b。', '所以原式化简为 6a-2b。'] },
+    { title: '变式训练', difficulty: '提升', stem: '化简：2(x+3)-3(x-1)。', answer: '-x+9。', analysis: '先去括号，再合并同类项。', steps: ['2(x+3)=2x+6。', '-3(x-1)=-3x+3。', '原式=2x+6-3x+3。', '化简得 -x+9。'] },
+    { title: '模型迁移题', difficulty: '压轴', stem: '已知 A=2x²-3x+1，B=x²+5x-4，求 A-B。', answer: 'x²-8x+5。', analysis: '减去一个整式时，要给整个括号变号。', steps: ['A-B=2x²-3x+1-(x²+5x-4)。', '去括号得 2x²-3x+1-x²-5x+4。', '合并同类项得 x²-8x+5。'] },
+    { title: '压轴提醒', difficulty: '压轴', stem: '化简：5m-[2m-(3m-1)]。', answer: '6m-1。', analysis: '括号前有负号时，内部每一项都要变号。', steps: ['先算中括号内：2m-(3m-1)=2m-3m+1=-m+1。', '原式=5m-(-m+1)。', '去括号得 5m+m-1=6m-1。'] },
+  ],
+  '3.1 从算式到方程': [
+    { title: '基础例题', difficulty: '基础', stem: 'x 加上 5 等于 12，列出方程并求 x。', answer: '方程是 x+5=12，x=7。', analysis: '先把“加上 5 等于 12”翻译成等式。', steps: ['根据题意列方程 x+5=12。', '两边同时减 5。', '得 x=7。'] },
+    { title: '提升例题', difficulty: '提升', stem: '一个数的 3 倍比 20 少 4，设这个数为 x，列方程。', answer: '3x=20-4 或 3x+4=20。', analysis: '先抓住“3 倍”和“少 4”这两个关系词。', steps: ['“一个数的 3 倍”写成 3x。', '“比 20 少 4”表示结果比 20 小 4。', '所以可列 3x+4=20。'] },
+    { title: '变式训练', difficulty: '提升', stem: '判断 x=2 是否是一元一次方程 4x-3=5 的解。', answer: '是。', analysis: '把 x=2 代入方程左右两边检验。', steps: ['左边 4×2-3=5。', '右边也是 5。', '左右两边相等，所以 x=2 是方程的解。'] },
+    { title: '模型迁移题', difficulty: '压轴', stem: '若 2x+1=9，求 x 的值，并说明这是算式还是方程。', answer: 'x=4，它是方程。', analysis: '含有未知数且表示相等关系的式子是方程。', steps: ['2x+1=9 含有未知数 x，所以是方程。', '移项得 2x=8。', '所以 x=4。'] },
+    { title: '压轴提醒', difficulty: '压轴', stem: '“某数减 7 等于 15”应列成什么式子并求解？', answer: 'x-7=15，x=22。', analysis: '先设未知数，再按语言顺序列方程。', steps: ['设这个数为 x。', '列方程 x-7=15。', '两边同时加 7，得 x=22。'] },
+  ],
+  '3.2 解一元一次方程（一）——合并同类项与移项': [
+    { title: '基础例题', difficulty: '基础', stem: '解方程：5x-8=17。', answer: 'x=5。', analysis: '先移项，再除以系数。', steps: ['移项得 5x=25。', '两边同除以 5。', '所以 x=5。'] },
+    { title: '提升例题', difficulty: '提升', stem: '解方程：3x+4=2x+11。', answer: 'x=7。', analysis: '把含 x 的项移到一边，常数移到另一边。', steps: ['移项得 3x-2x=11-4。', '化简得 x=7。'] },
+    { title: '变式训练', difficulty: '提升', stem: '解方程：7x-3=4x+12。', answer: 'x=5。', analysis: '移项后先合并同类项。', steps: ['移项得 7x-4x=12+3。', '3x=15。', 'x=5。'] },
+    { title: '模型迁移题', difficulty: '压轴', stem: '解方程：2x-5=5x-14。', answer: 'x=3。', analysis: '移项时要注意符号变化。', steps: ['移项得 2x-5x=-14+5。', '-3x=-9。', 'x=3。'] },
+    { title: '压轴提醒', difficulty: '压轴', stem: '解方程：6x+9=3x-6。', answer: 'x=-5。', analysis: '未知数可以是负数，不要先入为主。', steps: ['移项得 6x-3x=-6-9。', '3x=-15。', 'x=-5。'] },
+  ],
+  '3.3 解一元一次方程（二）——去括号与去分母': [
+    { title: '基础例题', difficulty: '基础', stem: '解方程：2(x+3)=10。', answer: 'x=2。', analysis: '先去括号，再解方程。', steps: ['去括号得 2x+6=10。', '移项得 2x=4。', 'x=2。'] },
+    { title: '提升例题', difficulty: '提升', stem: '解方程：3(x-1)+2=2x+5。', answer: 'x=6。', analysis: '先去括号，再合并同类项。', steps: ['去括号得 3x-3+2=2x+5。', '化简得 3x-1=2x+5。', '移项得 x=6。'] },
+    { title: '变式训练', difficulty: '提升', stem: '解方程：(x-2)/3=4。', answer: 'x=14。', analysis: '去分母要让方程两边同乘 3。', steps: ['方程两边同乘 3，得 x-2=12。', '两边同时加 2。', 'x=14。'] },
+    { title: '模型迁移题', difficulty: '压轴', stem: '解方程：(2x+1)/2-(x-1)/3=2。', answer: 'x=7/4。', analysis: '先找分母的最小公倍数 6。', steps: ['方程两边同乘 6。', '得 3(2x+1)-2(x-1)=12。', '化简得 6x+3-2x+2=12，即 4x+5=12。', '所以 x=7/4。'] },
+    { title: '压轴提醒', difficulty: '压轴', stem: '解方程：2(x+1)-[x-(2x-3)]=9。', answer: 'x=10/3。', analysis: '有括号套括号时，按层去括号更稳。', steps: ['先算中括号内：x-(2x-3)=x-2x+3=-x+3。', '原式变成 2x+2-(-x+3)=9。', '化简得 3x-1=9。', '3x=10，所以 x=10/3。'] },
+  ],
+  '3.4 实际问题与一元一次方程': [
+    { title: '基础例题', difficulty: '基础', stem: '某数加上 8 等于 21，求这个数。', answer: '13。', analysis: '先设未知数，再列方程。', steps: ['设这个数为 x。', '列方程 x+8=21。', '解得 x=13。'] },
+    { title: '提升例题', difficulty: '提升', stem: '一件上衣按八折出售后售价 96 元，求原价。', answer: '120 元。', analysis: '八折表示现价是原价的 0.8。', steps: ['设原价为 x 元。', '根据题意得 0.8x=96。', '解得 x=120。'] },
+    { title: '变式训练', difficulty: '提升', stem: '某班有学生若干人，每人分 3 本练习册，还剩 6 本；若每人分 4 本，则少 8 本。求这个班有多少名学生。', answer: '14 名。', analysis: '同一批练习册总数不变，可列等量关系。', steps: ['设有 x 名学生。', '练习册总数可表示为 3x+6，也可表示为 4x-8。', '列方程 3x+6=4x-8。', '解得 x=14。'] },
+    { title: '模型迁移题', difficulty: '压轴', stem: '一条路长 360 m，甲每分钟走 60 m，乙每分钟走 45 m，两人同时从两端出发，相向而行，几分钟后相遇？', answer: '24/7 分钟。', analysis: '相遇问题用“速度和×时间=路程”列方程。', steps: ['设 x 分钟后相遇。', '甲走了 60x m，乙走了 45x m。', '列方程 60x+45x=360。', '解得 x=24/7。'] },
+    { title: '压轴提醒', difficulty: '压轴', stem: '一个工程队原计划每天修 x m，6 天修完，实际每天多修 20 m，4 天修完。求原计划每天修多少米。', answer: '40 m。', analysis: '抓住“总工作量不变”列方程。', steps: ['原计划总量为 6x。', '实际总量为 4(x+20)。', '列方程 6x=4(x+20)。', '解得 x=40。'] },
+  ],
+  '4.1 几何图形': [
+    { title: '基础例题', difficulty: '基础', stem: '下列图形中，哪些是平面图形：三角形、圆柱、正方形、球？', answer: '三角形、正方形。', analysis: '平面图形只在一个平面内。', steps: ['三角形在一个平面内，是平面图形。', '圆柱和球是立体图形。', '正方形是平面图形。'] },
+    { title: '提升例题', difficulty: '提升', stem: '长方体有多少个面、多少条棱、多少个顶点？', answer: '6 个面，12 条棱，8 个顶点。', analysis: '这是立体图形的基本构成知识。', steps: ['长方体由 6 个长方形面围成。', '每个面相交形成棱，共 12 条。', '棱与棱相交形成顶点，共 8 个。'] },
+    { title: '变式训练', difficulty: '提升', stem: '圆锥、球、长方体中，哪一个只有一个曲面且没有棱？', answer: '球。', analysis: '要抓住“曲面”和“棱”的区别。', steps: ['圆锥有一个底面和一个曲面，还有一条侧面边界。', '球只有一个曲面，没有棱。', '长方体有平面和棱。'] },
+    { title: '模型迁移题', difficulty: '压轴', stem: '一个正方体有 6 个面，每个面都是正方形。若一个面的面积是 9 cm²，求这个正方体的表面积。', answer: '54 cm²。', analysis: '先求一个面的面积，再乘 6。', steps: ['每个面的面积是 9 cm²。', '正方体共有 6 个面。', '表面积=6×9=54 cm²。'] },
+    { title: '压轴提醒', difficulty: '压轴', stem: '一个长方体的上、下两个面面积都是 12 cm²，前、后两个面面积都是 15 cm²，左、右两个面面积都是 20 cm²，求它的表面积。', answer: '94 cm²。', analysis: '表面积等于三组对面面积之和。', steps: ['上下面共 24 cm²。', '前后面共 30 cm²。', '左右面共 40 cm²。', '总表面积=24+30+40=94 cm²。'] },
+  ],
+  '4.2 直线、射线、线段': [
+    { title: '基础例题', difficulty: '基础', stem: '已知线段 AB=6 cm，点 C 在线段 AB 上，且 AC=2 cm，求 CB。', answer: '4 cm。', analysis: '线段整体等于部分之和。', steps: ['AB=AC+CB。', '6=2+CB。', '所以 CB=4。'] },
+    { title: '提升例题', difficulty: '提升', stem: '线段 AB=10 cm，点 M 是 AB 的中点，求 AM 和 MB。', answer: 'AM=MB=5 cm。', analysis: '中点把线段分成两段相等的线段。', steps: ['M 是中点，说明 AM=MB。', 'AM+MB=10。', '所以 AM=MB=5。'] },
+    { title: '变式训练', difficulty: '提升', stem: '从点 O 出发画两条射线 OA 和 OB，它们与直线 l 的关系能否用“长度”来比较？', answer: '不能。', analysis: '直线和射线都可以无限延伸，不能比较长度。', steps: ['射线只有起点，没有终点。', '直线没有端点。', '所以它们都不能像线段那样比较长度。'] },
+    { title: '模型迁移题', difficulty: '压轴', stem: '已知点 C 在线段 AB 上，AC:CB=2:3，且 AB=20 cm，求 AC 和 CB。', answer: 'AC=8 cm，CB=12 cm。', analysis: '按比例分配总长度。', steps: ['总份数为 2+3=5。', '每份长度是 20÷5=4 cm。', 'AC=2×4=8 cm，CB=3×4=12 cm。'] },
+    { title: '压轴提醒', difficulty: '压轴', stem: '已知 A、B、C 三点在同一直线上，AB=7 cm，BC=4 cm。若 B 在线段 AC 上，求 AC。', answer: '11 cm。', analysis: '先判断点的位置关系，再决定是和还是差。', steps: ['B 在线段 AC 上，说明 A-B-C 或 C-B-A。', '因此 AC=AB+BC。', 'AC=7+4=11 cm。'] },
+  ],
+  '4.3 角': [
+    { title: '基础例题', difficulty: '基础', stem: '已知 ∠AOB=70°，OC 平分 ∠AOB，求 ∠AOC。', answer: '35°。', analysis: '角平分线把一个角分成两个相等的角。', steps: ['OC 平分 ∠AOB。', '∴ ∠AOC=∠BOC。', '∠AOC=70°÷2=35°。'] },
+    { title: '提升例题', difficulty: '提升', stem: '一个角的补角是 128°，求这个角。', answer: '52°。', analysis: '互补的两个角和为 180°。', steps: ['设这个角为 x。', 'x+128°=180°。', 'x=52°。'] },
+    { title: '变式训练', difficulty: '提升', stem: '一个角的余角比它小 20°，求这个角。', answer: '55°。', analysis: '互余的两个角和为 90°，余角比原角小 20°。', steps: ['设这个角为 x，则余角为 x-20。', 'x+x-20=90。', '2x=110。', 'x=55°。'] },
+    { title: '模型迁移题', difficulty: '压轴', stem: '如图，射线 OC 把平角 AOB 分成两个角，∠AOC:∠COB=2:7，求这两个角的度数。', answer: '∠AOC=40°，∠COB=140°。', analysis: '按比例分配平角 180°。', steps: ['总份数为 2+7=9。', '每份角度是 180°÷9=20°。', '∠AOC=2×20°=40°，∠COB=7×20°=140°。'] },
+    { title: '压轴提醒', difficulty: '压轴', stem: '若 ∠1 和 ∠2 互余，且 ∠1=3∠2，求 ∠1 与 ∠2。', answer: '∠1=67.5°，∠2=22.5°。', analysis: '先设较小角，再用和为 90° 列方程。', steps: ['设 ∠2=x，则 ∠1=3x。', '3x+x=90°。', '4x=90°，x=22.5°。', '所以 ∠1=67.5°。'] },
+  ],
+  '4.4 课题学习 设计制作长方体形状的包装纸盒': [
+    { title: '基础例题', difficulty: '基础', stem: '一个长方体包装盒的长、宽、高分别是 8 cm、5 cm、3 cm，求它的表面积。', answer: '158 cm²。', analysis: '长方体表面积等于 2(ab+ah+bh)。', steps: ['表面积=2(8×5+8×3+5×3)。', '括号内为 40+24+15=79。', '所以表面积=2×79=158 cm²。'] },
+    { title: '提升例题', difficulty: '提升', stem: '一个长方体纸盒长 10 cm，宽 6 cm，高 4 cm，求它的体积。', answer: '240 cm³。', analysis: '长方体体积=长×宽×高。', steps: ['V=10×6×4。', '10×6=60。', '60×4=240。'] },
+    { title: '变式训练', difficulty: '提升', stem: '制作一个无盖长方体盒子时，是否需要把上面那个面也画进展开图？', answer: '不需要。', analysis: '无盖表示顶面不存在。', steps: ['展开图要和实际物体一一对应。', '无盖盒子没有顶面。', '因此展开图中不画顶面。'] },
+    { title: '模型迁移题', difficulty: '压轴', stem: '一个长方体盒子的展开图中，底面长 12 cm、宽 8 cm，高 5 cm。若要在侧面外沿留出 1 cm 粘贴边，至少多准备多少平方厘米纸板？', answer: '约 25 cm²。', analysis: '粘贴边通常按侧边长度与预留宽度估算。', steps: ['长方体有 4 条竖向侧边需要粘贴。', '每条预留面积约为 5×1=5 cm²。', '共约 4×5=20 cm²。', '再考虑一个连接边，约再加 5 cm²，合计约 25 cm²。'] },
+    { title: '压轴提醒', difficulty: '压轴', stem: '设计展开图时，为什么相邻面的顺序不能画错？', answer: '因为折叠后面与面的对应关系会改变，纸盒可能无法闭合。', analysis: '展开图的本质是立体表面的平面展开。', steps: ['先确定底面周围分别连接哪些面。', '再判断相对的面不能画成直接相邻。', '最后检查折叠后是否能闭合。'] },
+  ],
+};
+
+const lessonFigureCaptionMap = {
+  'number-sign': '这张插图用正负方向和生活情境帮助你建立“带符号描述”的感觉。',
+  'number-line': '先看数轴位置，再回到大小、相反数和绝对值，理解会更稳。',
+  'integer-op': '先确定符号，再处理绝对值或运算顺序，能避免大多数计算错误。',
+  power: '乘方图示主要帮助区分“底数整体”和“负号在外”的不同。',
+  algebra: '代数式类插图建议一边看结构，一边用语言说出每一项代表什么。',
+  equation: '方程类插图把“平衡”和“等量关系”放在一起理解，更容易建模。',
+  'geometry-basic': '几何入门章节的关键是看清对象，再把图形语言翻译成文字关系。',
+  'line-angle': '线段与角的题先把点、线、角标清，再判断相等、互补或平分关系。',
+  parallel: '平行线图示重点看同位角、内错角、同旁内角的位置对应。',
+  translation: '平移插图提醒你同时盯住方向和距离，两个条件缺一不可。',
+  'real-number': '根式和实数图示建议配合数轴、面积或体积一起理解。',
+  coordinate: '坐标图要同步看横纵坐标、象限和图形变化方向。',
+  system: '方程组图示强调“两个关系一起用”，再通过消元化成一元问题。',
+  inequality: '不等式图示一定要和数轴联动，才能真正形成“范围感”。',
+  statistics: '统计图示重点帮助你看懂表格、柱形高度和区间分布。',
+  triangle: '三角形类图示先把特殊线段和角关系标清，再开始推理。',
+  proof: '证明类插图的作用是帮你快速看出对应边、对应角和辅助线入口。',
+  symmetry: '对称问题要盯住“对应点到对称轴或对称中心的关系”。',
+  polynomial: '整式图示把代数结构和面积拼接联系起来，便于看公式。',
+  fraction: '分式类插图提醒你先看分母条件，再做约分、通分和方程变形。',
+  radical: '根式图示的主线是“先化简，再运算”，不要跳步。',
+  pythagorean: '勾股类图示先认定直角和斜边，再去套边长关系。',
+  quadrilateral: '四边形图示要先用定义锁定类型，再用它自带的强性质。',
+  'linear-function': '一次函数类插图要同时读解析式、图像斜率和实际意义。',
+  'data-analysis': '数据分析图示用于区分“平均水平”和“波动大小”两件事。',
+  'quadratic-equation': '二次方程图示帮助你从结构上选解法，而不是见题就套公式。',
+  'quadratic-function': '二次函数插图的主线是顶点、对称轴、开口方向和最值。',
+  rotation: '旋转类图示先找中心和角度，再看对应点如何转过去。',
+  circle: '圆的题先看圆心、弦、切点和弧，再判断要用哪条性质。',
+  probability: '概率图示帮助你区分“所有可能结果”和“满足条件的结果”。',
+  'inverse-function': '反比例函数图示重点看象限、增减和面积不变量。',
+  similarity: '相似类图示先锁定对应顶点，再写对应边比和面积比。',
+  trigonometry: '三角函数图示一定要先认清参考角与对边、邻边、斜边。',
+  spatial: '视图和展开图类插图主要训练观察方向和面与面的对应关系。',
+};
+
+const themeGroupMap = {
+  'number-sign': 'number',
+  'number-line': 'number',
+  'integer-op': 'operation',
+  power: 'operation',
+  algebra: 'algebra',
+  equation: 'equation',
+  'geometry-basic': 'geometry',
+  'line-angle': 'geometry',
+  parallel: 'geometry',
+  translation: 'geometry',
+  'real-number': 'number',
+  coordinate: 'function',
+  system: 'equation',
+  inequality: 'equation',
+  statistics: 'statistics',
+  triangle: 'geometry',
+  proof: 'geometry',
+  symmetry: 'geometry',
+  polynomial: 'algebra',
+  fraction: 'algebra',
+  radical: 'number',
+  pythagorean: 'geometry',
+  quadrilateral: 'geometry',
+  'linear-function': 'function',
+  'data-analysis': 'statistics',
+  'quadratic-equation': 'equation',
+  'quadratic-function': 'function',
+  rotation: 'geometry',
+  circle: 'geometry',
+  probability: 'statistics',
+  'inverse-function': 'function',
+  similarity: 'geometry',
+  trigonometry: 'function',
+  spatial: 'geometry',
+};
+
+const templateByTheme = {
+  'number-sign': { name: '符号判断模板', when: '遇到“增加/减少、上升/下降、收入/支出”这类相反意义的量时使用。', steps: ['先找基准量', '判断方向或增减', '写出正负号', '回到题意解释符号含义'] },
+  'number-line': { name: '数轴分析模板', when: '比较大小、判断相反数和绝对值时使用。', steps: ['在数轴上定位', '看左右位置', '看与原点的距离', '写出大小规律与绝对值结论'] },
+  'integer-op': { name: '有理数运算模板', when: '遇到带符号数的四则运算和混合运算时使用。', steps: ['先分清运算层级', '化减为加或整体看底数', '处理符号', '检查最终结果符号'] },
+  power: { name: '乘方判断模板', when: '区分底数、指数和负号位置时使用。', steps: ['先看底数是否带括号', '再看指数奇偶或大小', '按顺序计算', '回看符号是否合理'] },
+  algebra: { name: '整式识别模板', when: '判断整式类型、系数次数和化简结构时使用。', steps: ['先看每一项', '找系数和次数', '识别同类项', '规范书写结果'] },
+  equation: { name: '方程建模模板', when: '列方程、解方程和处理实际问题时使用。', steps: ['设未知数', '找等量关系', '规范变形求解', '检验是否符合题意'] },
+  'geometry-basic': { name: '图形识别模板', when: '刚进入几何对象、立体和平面图形识别时使用。', steps: ['先认对象', '再说特征', '把图形条件翻译成关系', '回到题目要求作答'] },
+  'line-angle': { name: '线角分析模板', when: '线段、角、角平分线和补余角问题中使用。', steps: ['标清点线角', '写出已知关系', '寻找 180° 或平分关系', '整理出目标角或线段'] },
+  parallel: { name: '平行线追角模板', when: '平行线判定、性质和追角计算中使用。', steps: ['先找角位关系', '判断是用判定还是性质', '连成推理链', '检查每一步依据'] },
+  translation: { name: '图形平移模板', when: '平移作图或判断对应关系时使用。', steps: ['定方向', '定距离', '找对应点', '整体平移图形'] },
+  'real-number': { name: '开方理解模板', when: '平方根、立方根和实数分类题中使用。', steps: ['先看被开方数条件', '确定平方根或立方根性质', '必要时在数轴上估位', '回到原题解释'] },
+  coordinate: { name: '坐标法模板', when: '坐标描点、读点和平移分析时使用。', steps: ['先看横坐标再看纵坐标', '判断象限或轴上位置', '对应图形变化', '写出坐标结论'] },
+  system: { name: '消元模板', when: '二元或三元一次方程组问题中使用。', steps: ['先观察适合代入还是加减', '消去一个未知数', '解出剩余未知数', '回代并验题意'] },
+  inequality: { name: '不等式范围模板', when: '求范围、限制条件或区间题时使用。', steps: ['先列出不等关系', '规范变形', '若乘除负数则改方向', '在数轴上表示解集'] },
+  statistics: { name: '统计读图模板', when: '统计调查和读直方图、频数表时使用。', steps: ['看研究对象', '读表格或图像数据', '整理成频数频率', '用数据解释现象'] },
+  triangle: { name: '三角形关系模板', when: '三角形线段、角和多边形问题中使用。', steps: ['先标清特殊线段和角', '写出已知关系', '利用角和或边角大小规律', '回到目标量'] },
+  proof: { name: '全等证明模板', when: '需要证明边角相等或角平分线性质时使用。', steps: ['先找对应元素', '匹配判定条件', '写出全等或性质依据', '回收题目目标'] },
+  symmetry: { name: '对称转化模板', when: '轴对称、等腰三角形和最短路径问题中使用。', steps: ['找对称轴或对称点', '写出对应关系', '必要时作辅助线', '利用对称性质完成推理'] },
+  polynomial: { name: '整式变形模板', when: '整式乘法、公式变形和因式分解时使用。', steps: ['观察结构', '决定展开还是分解', '按规则运算', '检查是否还能继续化简'] },
+  fraction: { name: '分式处理模板', when: '分式意义、运算或分式方程时使用。', steps: ['先看分母条件', '再约分或通分', '需要时去分母', '最后验根或验条件'] },
+  radical: { name: '根式计算模板', when: '二次根式化简和运算时使用。', steps: ['先化简到最简', '识别同类根式', '再做乘除加减', '把结果整理规范'] },
+  pythagorean: { name: '勾股模型模板', when: '求长度或判断直角结构时使用。', steps: ['先找直角', '确认斜边', '套用勾股或逆定理', '检查图形条件是否满足'] },
+  quadrilateral: { name: '四边形性质模板', when: '平行四边形和特殊平行四边形题中使用。', steps: ['先判断图形类型', '列出自带性质', '选定义、性质或判定推进', '回到题目目标'] },
+  'linear-function': { name: '一次函数模板', when: '求解析式、读图像或比较方案时使用。', steps: ['先确定自变量和函数值', '写出解析式或读图像', '利用 k、b 或交点分析', '解释实际意义'] },
+  'data-analysis': { name: '数据分析模板', when: '比较集中趋势和波动程度时使用。', steps: ['先整理数据', '计算或读取统计量', '比较差异', '说明哪个指标更适合'] },
+  'quadratic-equation': { name: '一元二次方程模板', when: '解二次方程或处理二次建模时使用。', steps: ['先整理到一般形式', '判断最合适解法', '规范求根', '筛选符合题意的解'] },
+  'quadratic-function': { name: '二次函数模板', when: '分析抛物线、最值和交点问题时使用。', steps: ['先看开口方向', '找对称轴和顶点', '结合图像或解析式求最值', '检查自变量范围'] },
+  rotation: { name: '旋转变换模板', when: '处理旋转、中心对称和图案设计时使用。', steps: ['先找旋转中心', '确定旋转角和方向', '找对应点', '回到几何关系或图案规律'] },
+  circle: { name: '圆几何模板', when: '处理圆心角、圆周角、切线和弧长扇形面积时使用。', steps: ['先认弦弧角和切点', '选择对应性质', '写出关系式或证明链', '回收结论'] },
+  probability: { name: '概率求解模板', when: '随机事件、列举法和频率估计题中使用。', steps: ['先明确试验和样本空间', '再数有利结果', '求概率或频率', '解释结果大小'] },
+  'inverse-function': { name: '反比例函数模板', when: '求解析式、看象限和解决实际问题时使用。', steps: ['先设 y=k/x', '代入已知点求 k', '结合象限和图像分析', '解释实际量变化'] },
+  similarity: { name: '相似模型模板', when: '判定相似、求相似比和面积比时使用。', steps: ['找对应三角形或图形', '写出判定依据', '列对应边比', '用比例解决目标量'] },
+  trigonometry: { name: '解直角三角形模板', when: '测高测距或边角求解时使用。', steps: ['先画示意图', '确定参考角', '分清对边邻边斜边', '选函数列式求值'] },
+  spatial: { name: '视图还原模板', when: '投影、三视图和展开图题中使用。', steps: ['先确定观察方向', '对应长宽高或相邻面', '画草图辅助还原', '再判断最终结构'] },
+};
+
+function pickFigure(chapter) {
+  const referenceCaptions = {
+    'ch01-rational': '参考公开数轴与有理数图示重画的章节图，先建立“数轴-符号-运算”的整体感。',
+    'ch05-parallel': '参考公开平行线判定教学图示重画的章节图，先看角位关系，再看判定与性质。',
+    'ch19-linear-function': '参考公开一次函数图像教学图重画的章节图，重点是“式子-图像-实际意义”三者对应。',
+    'ch24-circle': '参考公开圆、直径和切线的教学图示重画的章节图，帮助你快速进入圆心、弦、切线和弧的关系。',
+  };
+
+  return {
+    image: getGeneratedChapterFigurePath(chapter.id) || '/assets/figures/generated/line-angle-bisector.png',
+    caption: referenceCaptions[chapter.id] || `这张图是按“${chapter.title}”这一章的核心对象重画的章节图，用来帮助你快速建立本章主线。`,
+  };
+}
+
+function uniqueList(items) {
+  return Array.from(new Set(items.filter(Boolean)));
+}
+
+function getLessonFigurePath(chapterId, index) {
+  return '/assets/figures/generated/line-angle-bisector.png';
+}
+
+function getUniqueKnowledgeFigurePath(knowledgeId) {
+  return `/assets/figures/generated/unique/${knowledgeId}/cover.png`;
+}
+
+function getUniqueProblemFigurePath(knowledgeId, problemIndex) {
+  return `/assets/figures/generated/unique/${knowledgeId}/problem-${String(problemIndex + 1).padStart(2, '0')}.png`;
+}
+
+function getGeneratedLessonFigurePath(theme, sectionTitle) {
+  const bySection = {
+    '1.1 正数和负数': '/assets/figures/generated/number-line.png',
+    '1.2 有理数': '/assets/figures/generated/number-line.png',
+    '1.3 有理数的加减法': '/assets/figures/generated/integer-operations.png',
+    '1.4 有理数的乘除法': '/assets/figures/generated/integer-operations.png',
+    '1.5 有理数的乘方': '/assets/figures/generated/algebra-tiles.png',
+    '3.1 从算式到方程': '/assets/figures/generated/equation-balance.png',
+    '3.2 解一元一次方程（一）——合并同类项与移项': '/assets/figures/generated/equation-balance.png',
+    '3.3 解一元一次方程（二）——去括号与去分母': '/assets/figures/generated/equation-balance.png',
+    '3.4 实际问题与一元一次方程': '/assets/figures/generated/fraction-equation-work.png',
+    '4.1 几何图形': '/assets/figures/generated/cuboid-net.png',
+    '5.4 平移': '/assets/figures/generated/translation-grid.png',
+    '4.4 课题学习 设计制作长方体形状的包装纸盒': '/assets/figures/generated/cuboid-net.png',
+    '6.1 平方根': '/assets/figures/generated/radical-square-root.png',
+    '6.2 立方根': '/assets/figures/generated/real-number-classification.png',
+    '6.3 实数': '/assets/figures/generated/real-number-classification.png',
+    '8.1 二元一次方程组': '/assets/figures/generated/system-intersection.png',
+    '8.2 消元——解二元一次方程组': '/assets/figures/generated/system-intersection.png',
+    '8.3 实际问题与二元一次方程组': '/assets/figures/generated/fraction-equation-work.png',
+    '8.4 三元一次方程组的解法': '/assets/figures/generated/system-intersection.png',
+    '11.1 与三角形有关的线段': '/assets/figures/generated/right-triangle-345.png',
+    '11.2 与三角形有关的角': '/assets/figures/generated/triangle-angle-sum.png',
+    '11.3 多边形及其内角和': '/assets/figures/generated/triangle-angle-sum.png',
+    '13.3 等腰三角形': '/assets/figures/generated/triangle-angle-sum.png',
+    '15.3 分式方程': '/assets/figures/generated/fraction-equation-work.png',
+    '16.1 二次根式': '/assets/figures/generated/radical-square-root.png',
+    '16.2 二次根式的乘除': '/assets/figures/generated/radical-square-root.png',
+    '16.3 二次根式的加减': '/assets/figures/generated/radical-square-root.png',
+    '17.1 勾股定理': '/assets/figures/generated/right-triangle-345.png',
+    '17.2 勾股定理的逆定理': '/assets/figures/generated/right-triangle-345.png',
+    '20.1 数据的集中趋势': '/assets/figures/generated/data-analysis-dotplot.png',
+    '20.2 数据的波动程度': '/assets/figures/generated/data-analysis-dotplot.png',
+    '20.3 课题学习 体质健康测试中的数据分析': '/assets/figures/generated/data-analysis-dotplot.png',
+    '21.1 一元二次方程': '/assets/figures/generated/quadratic-equation-roots.png',
+    '21.2 解一元二次方程': '/assets/figures/generated/quadratic-equation-roots.png',
+    '21.3 实际问题与一元二次方程': '/assets/figures/generated/quadratic-equation-roots.png',
+    '23.2 中心对称': '/assets/figures/generated/center-symmetry-coordinate.png',
+    '24.3 正多边形和圆': '/assets/figures/generated/circle-sector.png',
+    '24.4 弧长和扇形面积': '/assets/figures/generated/circle-sector.png',
+    '25.3 用频率估计概率': '/assets/figures/generated/probability-frequency.png',
+    '29.3 课题学习 制作立体模型': '/assets/figures/generated/cuboid-net.png',
+    '28.1 锐角三角函数': '/assets/figures/generated/right-triangle-345.png',
+    '28.2 解直角三角形': '/assets/figures/generated/trigonometry-height.png',
+  };
+
+  if (bySection[sectionTitle]) {
+    return bySection[sectionTitle];
+  }
+
+  if (theme === 'number-line' || theme === 'number-sign') {
+    return '/assets/figures/generated/number-line.png';
+  }
+
+  if (theme === 'integer-op') {
+    return '/assets/figures/generated/integer-operations.png';
+  }
+
+  if (theme === 'power') {
+    return '/assets/figures/generated/algebra-tiles.png';
+  }
+
+  if (theme === 'algebra') {
+    return '/assets/figures/generated/algebra-tiles.png';
+  }
+
+  if (theme === 'equation' || theme === 'system' || theme === 'quadratic-equation') {
+    return '/assets/figures/generated/equation-balance.png';
+  }
+
+  if (theme === 'inequality') {
+    return '/assets/figures/generated/inequality-number-line.png';
+  }
+
+  if (theme === 'statistics' || theme === 'data-analysis') {
+    return '/assets/figures/generated/statistics-histogram.png';
+  }
+
+  if (theme === 'parallel' && !/相交线/.test(sectionTitle)) {
+    return '/assets/figures/generated/parallel-lines-angle.png';
+  }
+
+  if (theme === 'line-angle' || /相交线/.test(sectionTitle)) {
+    return '/assets/figures/generated/line-angle-bisector.png';
+  }
+
+  if (theme === 'geometry-basic' || theme === 'triangle') {
+    return '/assets/figures/generated/right-triangle-345.png';
+  }
+
+  if (theme === 'translation' || theme === 'symmetry') {
+    return '/assets/figures/generated/axis-symmetry.png';
+  }
+
+  if (theme === 'proof') {
+    return '/assets/figures/generated/congruent-triangles.png';
+  }
+
+  if (theme === 'polynomial') {
+    return '/assets/figures/generated/polynomial-area.png';
+  }
+
+  if (theme === 'fraction') {
+    return '/assets/figures/generated/fraction-condition.png';
+  }
+
+  if (theme === 'real-number' || theme === 'radical') {
+    return '/assets/figures/generated/radical-square-root.png';
+  }
+
+  if (theme === 'coordinate') {
+    return '/assets/figures/generated/coordinate-points.png';
+  }
+
+  if (theme === 'pythagorean' || theme === 'trigonometry') {
+    return '/assets/figures/generated/right-triangle-345.png';
+  }
+
+  if (theme === 'circle') {
+    return '/assets/figures/generated/circle-diameter-tangent.png';
+  }
+
+  if (theme === 'quadratic-function') {
+    return '/assets/figures/generated/quadratic-vertex.png';
+  }
+
+  if (theme === 'quadrilateral') {
+    return '/assets/figures/generated/parallelogram-diagonals.png';
+  }
+
+  if (theme === 'linear-function') {
+    return '/assets/figures/generated/linear-function.png';
+  }
+
+  if (theme === 'rotation') {
+    return '/assets/figures/generated/rotation-center.png';
+  }
+
+  if (theme === 'probability') {
+    return '/assets/figures/generated/probability-sample-space.png';
+  }
+
+  if (theme === 'inverse-function') {
+    return '/assets/figures/generated/inverse-function.png';
+  }
+
+  if (theme === 'similarity') {
+    return '/assets/figures/generated/similar-triangles.png';
+  }
+
+  if (theme === 'spatial') {
+    return '/assets/figures/generated/three-views.png';
+  }
+
+  return '';
+}
+
+function getGeneratedChapterFigurePath(chapterId) {
+  const map = {
+    'ch01-rational': '/assets/figures/generated/number-line.png',
+    'ch02-expression': '/assets/figures/generated/algebra-tiles.png',
+    'ch03-linear-equation': '/assets/figures/generated/equation-balance.png',
+    'ch04-basic-geometry': '/assets/figures/generated/line-angle-bisector.png',
+    'ch05-parallel': '/assets/figures/generated/parallel-lines-angle.png',
+    'ch06-real': '/assets/figures/generated/real-number-classification.png',
+    'ch07-coordinate': '/assets/figures/generated/coordinate-points.png',
+    'ch08-system': '/assets/figures/generated/system-intersection.png',
+    'ch09-inequality': '/assets/figures/generated/inequality-number-line.png',
+    'ch10-statistics': '/assets/figures/generated/statistics-histogram.png',
+    'ch11-triangle': '/assets/figures/generated/triangle-angle-sum.png',
+    'ch12-congruent': '/assets/figures/generated/congruent-triangles.png',
+    'ch13-symmetry': '/assets/figures/generated/axis-symmetry.png',
+    'ch14-polynomial': '/assets/figures/generated/polynomial-area.png',
+    'ch15-fraction': '/assets/figures/generated/fraction-condition.png',
+    'ch16-radical': '/assets/figures/generated/radical-square-root.png',
+    'ch17-pythagorean': '/assets/figures/generated/right-triangle-345.png',
+    'ch18-parallelogram': '/assets/figures/generated/parallelogram-diagonals.png',
+    'ch19-linear-function': '/assets/figures/generated/linear-function.png',
+    'ch20-data-analysis': '/assets/figures/generated/statistics-histogram.png',
+    'ch21-quadratic-equation': '/assets/figures/generated/quadratic-equation-roots.png',
+    'ch22-quadratic-function': '/assets/figures/generated/quadratic-vertex.png',
+    'ch23-rotation': '/assets/figures/generated/rotation-center.png',
+    'ch24-circle': '/assets/figures/generated/circle-diameter-tangent.png',
+    'ch25-probability': '/assets/figures/generated/probability-sample-space.png',
+    'ch26-inverse-function': '/assets/figures/generated/inverse-function.png',
+    'ch27-similarity': '/assets/figures/generated/similar-triangles.png',
+    'ch28-trigonometry': '/assets/figures/generated/trigonometry-height.png',
+    'ch29-projection': '/assets/figures/generated/three-views.png',
+  };
+
+  return map[chapterId] || '';
+}
+
+function getLessonProfile(chapter, sectionTitle) {
+  const promptItems = chapterPromptMap[chapter.id] || ['会辨认概念', '会规范书写', '会做基础题'];
+  const pack = chapterPackMap[chapter.id] || {
+    concepts: ['核心概念', '基本性质', '常见题型'],
+    mistakes: ['条件识别不完整', '步骤书写不规范'],
+    scenario: '教材典型情境',
+    advanced: '与综合题结合迁移',
+  };
+  const profile = lessonFocusMap[sectionTitle];
+
+  if (profile) {
+    return {
+      ...profile,
+      know: profile.know && profile.know.length ? profile.know : promptItems.slice(0, 3),
+      pitfalls: profile.pitfalls && profile.pitfalls.length ? profile.pitfalls : pack.mistakes.slice(0, 2),
+    };
+  }
+
+  return {
+    focus: `${sectionTitle}重点在于把本章核心概念、性质和方法落到具体题型中。`,
+    theme: 'geometry-basic',
+    know: promptItems.slice(0, 3),
+    scenario: pack.scenario,
+    pitfalls: pack.mistakes.slice(0, 2),
+  };
+}
+
+function getThemeGroup(theme) {
+  return themeGroupMap[theme] || 'geometry';
+}
+
+function getLessonCaption(theme) {
+  return lessonFigureCaptionMap[theme] || '先看图示结构，再把关键关系翻译成文字和式子。';
+}
+
+function getLessonPlainTalk(sectionTitle, profile, pack) {
+  const know = (profile.know || pack.concepts || []).slice(0, 2).join('、');
+  const pitfall = (profile.pitfalls || pack.mistakes || [])[0] || '条件识别不完整';
+
+  return `可以把“${sectionTitle}”先理解成一个小工具：它主要帮你处理“${know}”这类问题。学习时不要先背整段结论，先问自己：题目给了什么、要我求什么、哪个定义或性质能把两者接起来。最容易出错的地方是“${pitfall}”，所以每做一步都要回到题目条件核对一次。`;
+}
+
+function getLessonFacts(sectionTitle, profile, pack) {
+  const facts = lessonFactsMap[sectionTitle];
+  if (facts && facts.length) {
+    return facts;
+  }
+
+  return uniqueList([
+    `${sectionTitle}的核心是：${profile.focus}`,
+    `常见考查入口包括：${(profile.know || []).slice(0, 2).join('、')}。`,
+    `综合题里常与“${pack.advanced}”一起出现。`,
+  ]).slice(0, 4);
+}
+
+function getLessonFormulaSection(theme, sectionTitle) {
+  const formulaMap = {
+    'number-line': {
+      formula: '|a|',
+      description: '绝对值表示数 a 到原点的距离；比较大小时要先回到数轴位置。',
+    },
+    'integer-op': {
+      formula: 'a-b=a+(-b)',
+      description: '有理数减法统一转成加法，再按同号、异号加法法则处理。',
+    },
+    power: {
+      formula: '(-a)^2=a^2，-a^2=-(a^2)',
+      description: '是否带括号决定负号是否参与乘方。',
+    },
+    algebra: {
+      formula: 'ax^m 与 bx^m 才能合并',
+      description: '同类项要求字母相同，且相同字母的指数也相同。',
+    },
+    equation: {
+      formula: 'ax+b=0 ⇒ x=-b/a（a≠0）',
+      description: '一元一次方程的本质是通过等量变形，把未知数单独留下来。',
+    },
+    'line-angle': {
+      formula: '平角=180°，周角=360°',
+      description: '线角题多数围绕平角、余角、补角和角平分线展开。',
+    },
+    parallel: {
+      formula: '同位角相等 ⇒ 两直线平行',
+      description: '平行线章节要分清“判定”和“性质”两个方向。',
+    },
+    'real-number': {
+      formula: '若 x²=a，则 x=±√a（a>0）',
+      description: '平方根与算术平方根不同，算术平方根只取非负值。',
+    },
+    coordinate: {
+      formula: '点 P(x,y) 向右平移 a 个单位后坐标为 (x+a,y)',
+      description: '坐标变化要和图形变化方向一起理解。',
+    },
+    system: {
+      formula: '消元：二元 ⇒ 一元',
+      description: '方程组题本质上都是通过代入或加减把未知数减少一个。',
+    },
+    inequality: {
+      formula: '若 a>b，c<0，则 ac<bc',
+      description: '乘或除以负数时，不等号方向改变，是本章最高频细节。',
+    },
+    triangle: {
+      formula: '三角形内角和=180°',
+      description: '三角形章节大多数计算和证明都围绕角和、外角和特殊线段展开。',
+    },
+    proof: {
+      formula: 'SSS / SAS / ASA / AAS / HL',
+      description: '全等证明先找对应元素，再判断最适合的判定方法。',
+    },
+    symmetry: {
+      formula: '对称点到对称轴距离相等',
+      description: '轴对称和最短路径的核心是“先对称，再转化”。',
+    },
+    polynomial: {
+      formula: '(a+b)^2=a^2+2ab+b^2',
+      description: '整式题要先看能否套公式，再决定展开还是因式分解。',
+    },
+    fraction: {
+      formula: '分式有意义 ⇔ 分母≠0',
+      description: '分式章节的第一反应一定是先写定义域条件。',
+    },
+    radical: {
+      formula: '√a·√b=√ab（a,b≥0）',
+      description: '根式运算一定要先化简，再判断能否合并。',
+    },
+    pythagorean: {
+      formula: 'a²+b²=c²',
+      description: '勾股定理只适用于直角三角形，先找直角再列式。',
+    },
+    quadrilateral: {
+      formula: '平行四边形对角线互相平分',
+      description: '四边形综合题通常要先锁定图形类别，再用强性质。',
+    },
+    'linear-function': {
+      formula: 'y=kx+b（k≠0）',
+      description: 'k 看增减，b 看与 y 轴交点，解析式和图像要同步理解。',
+    },
+    'data-analysis': {
+      formula: '平均数 / 中位数 / 众数 / 波动程度',
+      description: '数据题不是只会算，还要会解释为什么用这个指标。',
+    },
+    'quadratic-equation': {
+      formula: 'x=[-b±√(b²-4ac)]/(2a)',
+      description: '一元二次方程要根据结构决定解法，不必见题就套公式。',
+    },
+    'quadratic-function': {
+      formula: 'y=a(x-h)^2+k',
+      description: '顶点式最适合看对称轴和最值。',
+    },
+    rotation: {
+      formula: '旋转前后：对应边相等，对应角相等',
+      description: '旋转型题多数要先找旋转中心和旋转角。',
+    },
+    circle: {
+      formula: '圆心角=同弧所对圆周角的 2 倍',
+      description: '圆几何几乎都要从弦、弧、圆周角、切线这几个关键词切入。',
+    },
+    probability: {
+      formula: '概率=有利结果数/总结果数',
+      description: '列举法适用于结果有限且等可能的情形。',
+    },
+    'inverse-function': {
+      formula: 'y=k/x（k≠0）',
+      description: '反比例函数要先求 k，再结合象限和面积关系看图像。',
+    },
+    similarity: {
+      formula: '面积比=相似比²',
+      description: '相似题最关键的是先找对应顶点和对应边。',
+    },
+    trigonometry: {
+      formula: 'sinA=对边/斜边，cosA=邻边/斜边，tanA=对边/邻边',
+      description: '三角函数题先确定参考角，再分清三条边。',
+    },
+    spatial: {
+      formula: '主视图 / 左视图 / 俯视图',
+      description: '三视图题一定要统一观察方向和长宽高对应关系。',
+    },
+  };
+
+  const matched = formulaMap[theme];
+  if (!matched) {
+    return null;
+  }
+
+  return {
+    type: 'formula',
+    title: '关键公式与结论',
+    formula: matched.formula,
+    description: `${matched.description} 本节对应的是“${sectionTitle}”。`,
+  };
+}
+
+function buildLessonRows(profile, sectionTitle, pack) {
+  const rows = (profile.know || []).slice(0, 3).map((item, index) => {
+    if (index === 0) {
+      return [item, `先围绕“${sectionTitle}”认准定义、图形或数量关系。`];
+    }
+
+    if (index === 1) {
+      return [item, `再把本节和“${profile.scenario}”这类情境联系起来做基础训练。`];
+    }
+
+    return [item, `最后把本节方法迁移到“${pack.advanced}”这类综合题中。`];
+  });
+
+  return rows.length ? rows : [[pack.concepts[0], `围绕“${sectionTitle}”完成基本理解与训练。`]];
+}
+
+function buildWorkbookStyleReplacement(title, sectionTitle, profile, relatedTemplate, pack) {
+  const theme = profile.theme;
+  const themeGroup = getThemeGroup(theme);
+  const templateName = relatedTemplate ? relatedTemplate.name : '本节题型入口';
+
+  if (theme === 'number-sign') {
+    return title === '模型迁移题'
+      ? {
+          title,
+          difficulty: relatedTemplate ? '压轴' : '提升',
+          stem: `某潜水员先下潜 12 m，又上升 5 m，随后再下潜 9 m。若海平面记为 0 m，求此时潜水员所在位置。`,
+          answer: '-16 m。',
+          analysis: '先把“下潜”记为负，“上升”记为正，再顺次计算。',
+          steps: ['以海平面为基准，原位置记为 0。', '下潜 12 m 后到达 -12 m。', '上升 5 m 后到达 -7 m。', '再下潜 9 m 后到达 -16 m。'],
+        }
+      : {
+          title,
+          difficulty: '压轴',
+          stem: `甲、乙两地海拔分别为 +28 m 和 -47 m，求两地的高度差。`,
+          answer: '75 m。',
+          analysis: '高度差等于较高点减较低点。',
+          steps: ['甲地海拔为 +28 m，乙地海拔为 -47 m。', '两地高度差为 28-(-47)。', '28+47=75。'],
+        };
+  }
+
+  if (theme === 'number-line') {
+    return title === '模型迁移题'
+      ? {
+          title,
+          difficulty: relatedTemplate ? '压轴' : '提升',
+          stem: `点 A 在数轴上表示 -4，点 B 在数轴上表示 3，求线段 AB 的长度。`,
+          answer: '7。',
+          analysis: '数轴上两点间距离等于两数差的绝对值。',
+          steps: ['AB=|3-(-4)|。', '|3+4|=7。', '∴ AB=7。'],
+        }
+      : {
+          title,
+          difficulty: '压轴',
+          stem: `点 P 在数轴上表示 x，且点 P 到 -2 和 6 的距离相等，求 x 的值。`,
+          answer: 'x=2。',
+          analysis: '距离相等说明点 P 在线段两端点的中点位置。',
+          steps: ['点 P 到 -2 和 6 距离相等。', '∴ x 是 -2 和 6 的中点。', 'x=(-2+6)÷2=2。'],
+        };
+  }
+
+  if (theme === 'integer-op' || theme === 'power') {
+    return title === '模型迁移题'
+      ? {
+          title,
+          difficulty: relatedTemplate ? '压轴' : '提升',
+          stem: theme === 'power' ? '计算：(-3)^3+2^4。' : '计算：(-8)+15-(-6)-9。',
+          answer: theme === 'power' ? '-11。' : '4。',
+          analysis: '按“先乘方、后加减”或“先化减为加”处理。',
+          steps: theme === 'power'
+            ? ['(-3)^3=-27。', '2^4=16。', '-27+16=-11。']
+            : ['原式=-8+15+6-9。', '-8+15=7。', '7+6-9=4。'],
+        }
+      : {
+          title,
+          difficulty: '压轴',
+          stem: theme === 'power' ? '比较 (-2)^5 与 -2^5 的大小。' : '计算：(-2)×(-5)+(-20)÷4。',
+          answer: theme === 'power' ? '二者相等，都是 -32。' : '5。',
+          analysis: '先看乘方结构或混合运算顺序。',
+          steps: theme === 'power'
+            ? ['(-2)^5=-32。', '-2^5=-(2^5)=-32。', '∴ 二者相等。']
+            : ['(-2)×(-5)=10。', '(-20)÷4=-5。', '10+(-5)=5。'],
+        };
+  }
+
+  if (themeGroup === 'algebra') {
+    return title === '模型迁移题'
+      ? {
+          title,
+          difficulty: relatedTemplate ? '压轴' : '提升',
+          stem: theme === 'fraction'
+            ? '已知 x=3，求分式 (2x+1)/(x-1) 的值。'
+            : '已知 a+b=5，ab=6，求 a²+b² 的值。',
+          answer: theme === 'fraction' ? '7/2。' : '13。',
+          analysis: '代数题要先看结构，再代入运算。',
+          steps: theme === 'fraction'
+            ? ['把 x=3 代入分式。', '(2x+1)/(x-1)=(2×3+1)/(3-1)=7/2。']
+            : ['a²+b²=(a+b)²-2ab。', '(a+b)²-2ab=25-12。', '∴ a²+b²=13。'],
+        }
+      : {
+          title,
+          difficulty: '压轴',
+          stem: theme === 'polynomial'
+            ? '已知 x+y=7，xy=10，求 (x-y)² 的值。'
+            : '已知 a-b=2，ab=3，求 a²+b² 的值。',
+          answer: theme === 'polynomial' ? '9。' : '10。',
+          analysis: '优先选恒等变形，不要硬设未知数。',
+          steps: theme === 'polynomial'
+            ? ['(x-y)²=(x+y)²-4xy。', '(x+y)²-4xy=49-40。', '∴ (x-y)²=9。']
+            : ['(a-b)²=a²+b²-2ab。', '4=a²+b²-6。', '∴ a²+b²=10。'],
+        };
+  }
+
+  if (themeGroup === 'equation') {
+    return title === '模型迁移题'
+      ? {
+          title,
+          difficulty: relatedTemplate ? '压轴' : '提升',
+          stem: theme === 'system'
+            ? '解方程组：2x+y=9，x-y=3。'
+            : theme === 'inequality'
+              ? '解不等式组：x+1>3，2x-1≤5。'
+              : theme === 'quadratic-equation'
+                ? '解方程：x²-7x+12=0。'
+                : '解方程：5x-3=2x+9。',
+          answer: theme === 'system'
+            ? 'x=4，y=1。'
+            : theme === 'inequality'
+              ? '2<x≤3。'
+              : theme === 'quadratic-equation'
+                ? 'x=3 或 x=4。'
+                : 'x=4。',
+          analysis: '这类题关键是整理结构后稳定求解。',
+          steps: theme === 'system'
+            ? ['由 x-y=3，得 y=x-3。', '代入 2x+y=9，得 2x+x-3=9。', '解得 x=4，再得 y=1。']
+            : theme === 'inequality'
+              ? ['由 x+1>3，得 x>2。', '由 2x-1≤5，得 2x≤6，所以 x≤3。', '∴ 解集为 2<x≤3。']
+              : theme === 'quadratic-equation'
+                ? ['x²-7x+12=(x-3)(x-4)。', '∴ (x-3)(x-4)=0。', '∴ x=3 或 x=4。']
+                : ['移项得 5x-2x=9+3。', '3x=12。', 'x=4。'],
+        }
+      : {
+          title,
+          difficulty: '压轴',
+          stem: theme === 'quadratic-equation'
+            ? '一个矩形面积为 15 cm²，长比宽多 2 cm，求长和宽。'
+            : '某数加上它的 2 倍等于 18，求这个数。',
+          answer: theme === 'quadratic-equation' ? '长 5 cm，宽 3 cm。' : '6。',
+          analysis: '应用题先设元，再列关系式。',
+          steps: theme === 'quadratic-equation'
+            ? ['设宽为 x cm，则长为 x+2 cm。', '由题意得 x(x+2)=15。', '整理得 x²+2x-15=0。', '因式分解得 (x+5)(x-3)=0。', '取正值得 x=3，故长为 5。']
+            : ['设这个数为 x。', '由题意得 x+2x=18。', '3x=18，x=6。'],
+        };
+  }
+
+  if (themeGroup === 'function') {
+    return title === '模型迁移题'
+      ? {
+          title,
+          difficulty: relatedTemplate ? '压轴' : '提升',
+          stem: theme === 'linear-function'
+            ? '一次函数 y=2x+1 经过点 A(a,7)，求 a 的值。'
+            : theme === 'quadratic-function'
+              ? '抛物线 y=x²-4x+3 的对称轴是什么？顶点坐标是什么？'
+              : theme === 'inverse-function'
+                ? '反比例函数 y=k/x 经过点 (2,6)，求 k 的值。'
+                : '已知点 A(3,4)，求它位于第几象限。',
+          answer: theme === 'linear-function'
+            ? 'a=3。'
+            : theme === 'quadratic-function'
+              ? '对称轴 x=2，顶点坐标 (2,-1)。'
+              : theme === 'inverse-function'
+                ? 'k=12。'
+                : '第一象限。',
+          analysis: '函数题要在“图像、解析式、点坐标”之间切换。',
+          steps: theme === 'linear-function'
+            ? ['点 A(a,7) 在直线 y=2x+1 上。', '∴ 7=2a+1。', '2a=6，a=3。']
+            : theme === 'quadratic-function'
+              ? ['对称轴 x=-b/(2a)=4/2=2。', '把 x=2 代入 y=x²-4x+3。', '得 y=4-8+3=-1。', '∴ 顶点是 (2,-1)。']
+              : theme === 'inverse-function'
+                ? ['把 (2,6) 代入 y=k/x。', '得 6=k/2。', '∴ k=12。']
+                : ['点 A 的横坐标、纵坐标都大于 0。', '∴ A 在第一象限。'],
+        }
+      : {
+          title,
+          difficulty: '压轴',
+          stem: theme === 'linear-function'
+            ? '若直线 y=kx+4 经过点 (2,10)，求 k。'
+            : theme === 'quadratic-function'
+              ? '已知抛物线 y=x²+bx+2 经过点 (1,0)，求 b。'
+              : '已知反比例函数 y=k/x 经过点 (-3,4)，求其解析式。',
+          answer: theme === 'linear-function'
+            ? 'k=3。'
+            : theme === 'quadratic-function'
+              ? 'b=-3。'
+              : 'y=-12/x。',
+          analysis: '已知点求参数，是函数章最常见的求解入口。',
+          steps: theme === 'linear-function'
+            ? ['把点 (2,10) 代入 y=kx+4。', '得 10=2k+4。', '2k=6，k=3。']
+            : theme === 'quadratic-function'
+              ? ['把 (1,0) 代入 y=x²+bx+2。', '得 0=1+b+2。', '∴ b=-3。']
+              : ['把 (-3,4) 代入 y=k/x。', '得 4=k/(-3)。', '∴ k=-12，所以解析式为 y=-12/x。'],
+        };
+  }
+
+  if (themeGroup === 'statistics') {
+    return title === '模型迁移题'
+      ? {
+          title,
+          difficulty: relatedTemplate ? '压轴' : '提升',
+          stem: theme === 'probability'
+            ? '一个不透明袋中有 3 个白球和 2 个黑球，从中任取 1 个球，求取到白球的概率。'
+            : '一组数据 4，5，5，6，10 的平均数是多少？',
+          answer: theme === 'probability' ? '3/5。' : '6。',
+          analysis: '统计和概率题都要先看“总体”。',
+          steps: theme === 'probability'
+            ? ['总球数为 3+2=5。', '取到白球的有利结果数为 3。', '∴ 概率为 3/5。']
+            : ['平均数=(4+5+5+6+10)÷5。', '和为 30。', '30÷5=6。'],
+        }
+      : {
+          title,
+          difficulty: '压轴',
+          stem: theme === 'probability'
+            ? '掷一枚骰子一次，求点数大于 4 的概率。'
+            : '数据 2，3，3，4，8 的中位数和众数分别是多少？',
+          answer: theme === 'probability' ? '1/3。' : '中位数是 3，众数是 3。',
+          analysis: '先列出样本空间或先排好数据顺序。',
+          steps: theme === 'probability'
+            ? ['骰子的样本空间共有 6 个结果。', '点数大于 4 的结果有 5、6 两种。', '∴ 概率为 2/6=1/3。']
+            : ['把数据按大小规律排列：2，3，3，4，8。', '中间一个数是 3，所以中位数是 3。', '出现次数最多的是 3，所以众数是 3。'],
+        };
+  }
+
+  return title === '模型迁移题'
+    ? {
+        title,
+        difficulty: relatedTemplate ? '压轴' : '提升',
+        stem: `一道综合题同时出现“${sectionTitle}”和“${templateName}”的结构时，应该怎样确定第一步？`,
+        answer: `先把“${sectionTitle}”对应的定义或性质写出来，再判断“${templateName}”是否能缩短推理链。`,
+        analysis: '综合题先抓最直接的数量关系，再决定是否需要模型提速。',
+        steps: ['先圈出题目给出的本节关键词。', '把关键词翻译成本节定义、性质、公式或图形关系。', '再观察是否触发题型模型。', '最后把模型结论回收到题目目标。'],
+      }
+    : {
+        title,
+        difficulty: '压轴',
+        stem: `把“${sectionTitle}”放进压轴题时，怎样避免一上来就乱用模型？`,
+        answer: `先确认本节最核心的条件是否出现，再决定用定义、性质、公式、图形关系还是题型模型。`,
+        analysis: '压轴题不是先想模型，而是先找到第一条能落笔的等式或关系。',
+        steps: ['先把已知条件逐条翻译成数学语言。', '找最能推进目标的一条关系。', '能算就先算，能证就先证。', '最后再接入模型或辅助线。'],
+      };
+}
+
+function rewriteProblemsForWorkbookStyle(problems, sectionTitle, profile, relatedTemplate, pack, figurePath) {
+  const keepSpecificProblems = new Set([
+    '5.1 相交线',
+    '5.4 平移',
+    '6.1 平方根',
+    '6.2 立方根',
+    '6.3 实数',
+    '7.1 平面直角坐标系',
+    '7.2 坐标方法的简单应用',
+    '8.1 二元一次方程组',
+    '8.2 消元——解二元一次方程组',
+    '8.3 实际问题与二元一次方程组',
+    '8.4 三元一次方程组的解法',
+    '9.1 不等式',
+    '9.2 一元一次不等式',
+    '9.3 一元一次不等式组',
+    '10.1 统计调查',
+    '10.2 直方图',
+    '10.3 课题学习 从数据谈节水',
+    '11.1 与三角形有关的线段',
+    '11.2 与三角形有关的角',
+    '11.3 多边形及其内角和',
+    '12.1 全等三角形',
+    '12.2 三角形全等的判定',
+    '12.3 角的平分线的性质',
+    '13.1 轴对称',
+    '13.2 画轴对称图形',
+    '13.3 等腰三角形',
+    '13.4 课题学习 最短路径问题',
+    '14.1 整式的乘法',
+    '14.2 乘法公式',
+    '14.3 因式分解',
+    '15.1 分式',
+    '15.2 分式的运算',
+    '15.3 分式方程',
+    '16.1 二次根式',
+    '16.2 二次根式的乘除',
+    '16.3 二次根式的加减',
+    '17.1 勾股定理',
+    '17.2 勾股定理的逆定理',
+    '18.1 平行四边形',
+    '18.2 特殊的平行四边形',
+    '19.1 函数',
+    '19.2 一次函数',
+    '19.3 课题学习 选择方案',
+    '20.1 数据的集中趋势',
+    '20.2 数据的波动程度',
+    '20.3 课题学习 体质健康测试中的数据分析',
+    '21.1 一元二次方程',
+    '21.2 解一元二次方程',
+    '21.3 实际问题与一元二次方程',
+    '22.1 二次函数的图象和性质',
+    '22.2 二次函数与一元二次方程',
+    '22.3 实际问题与二次函数',
+    '23.1 图形的旋转',
+    '23.2 中心对称',
+    '23.3 课题学习 图案设计',
+    '24.1 圆的有关性质',
+    '24.2 点和圆、直线和圆的位置关系',
+    '24.3 正多边形和圆',
+    '24.4 弧长和扇形面积',
+    '25.1 随机事件与概率',
+    '25.2 用列举法求概率',
+    '25.3 用频率估计概率',
+    '26.1 反比例函数',
+    '26.2 实际问题与反比例函数',
+    '27.1 图形的相似',
+    '27.2 相似三角形',
+    '27.3 位似',
+    '28.1 锐角三角函数',
+    '28.2 解直角三角形',
+    '29.1 投影',
+    '29.2 三视图',
+    '29.3 课题学习 制作立体模型',
+  ]);
+  return problems.map((problem) => {
+    if (!keepSpecificProblems.has(sectionTitle) && (problem.title === '模型迁移题' || problem.title === '压轴提醒')) {
+      return { ...buildWorkbookStyleReplacement(problem.title, sectionTitle, profile, relatedTemplate, pack), image: figurePath };
+    }
+    return { ...problem, image: problem.image || figurePath };
+  });
+}
+
+function buildLessonProblems(chapter, sectionTitle, profile, relatedTemplate, pack, figurePath) {
+  const theme = profile.theme;
+  const themeGroup = getThemeGroup(theme);
+  const templateHint = relatedTemplate ? `并留意“${relatedTemplate.name}”的触发条件。` : '并回到题意检查结论是否合理。';
+
+  if (sectionTitle === '6.1 平方根') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '求 25 的平方根和算术平方根。', answer: '平方根是 5 和 -5，算术平方根是 5。', analysis: '平方根有两个，算术平方根只取非负的那个。', steps: ['因为 5^2=25，(-5)^2=25。', '所以 25 的平方根是 5 和 -5。', '算术平方根是非负平方根，即 5。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '一个正方形的面积是 49 cm^2，求它的边长。', answer: '7 cm。', analysis: '正方形边长是面积的算术平方根。', steps: ['设边长为 x cm。', 'x^2=49。', '边长为正，所以 x=7。'], image: figurePath },
+      { title: '样题拓展', difficulty: '提升', stem: '判断：-4 有没有平方根？16 的平方根有几个？', answer: '-4 没有平方根；16 的平方根有两个，是 4 和 -4。', analysis: '在实数范围内，负数没有平方根，正数有两个平方根。', steps: ['任何实数的平方都大于等于 0。', '所以 -4 没有平方根。', '4^2=16，(-4)^2=16，所以 16 的平方根是 4 和 -4。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '已知 x^2=81，求 x 的值。', answer: 'x=9 或 x=-9。', analysis: '方程 x^2=a（a>0）有两个相反数解。', steps: ['9^2=81，(-9)^2=81。', '所以 x=9 或 x=-9。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '为什么求平方根时容易漏掉负数解？', answer: '因为算术平方根只有一个非负值，而平方根通常有两个相反数。', analysis: '题目问“平方根”还是“算术平方根”，答案个数不同。', steps: ['先看题目问法。', '平方根写 ±。', '算术平方根只写非负值。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '6.2 立方根') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '求 27 和 -8 的立方根。', answer: '27 的立方根是 3，-8 的立方根是 -2。', analysis: '立方根保留原数的正负号。', steps: ['3^3=27，所以 27 的立方根是 3。', '(-2)^3=-8，所以 -8 的立方根是 -2。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '一个正方体的体积是 64 cm^3，求它的棱长。', answer: '4 cm。', analysis: '正方体棱长是体积的立方根。', steps: ['设棱长为 x cm。', 'x^3=64。', '所以 x=4。'], image: figurePath },
+      { title: '样题拓展', difficulty: '提升', stem: '比较平方根和立方根：为什么 -27 有立方根但没有平方根？', answer: '-27 有立方根 -3，但没有平方根。', analysis: '负数可以开立方，但不能在实数范围内开平方。', steps: ['(-3)^3=-27，所以 -27 有立方根 -3。', '任何实数平方都不为负，所以 -27 没有平方根。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '已知 x^3=-125，求 x 的值。', answer: 'x=-5。', analysis: '立方根只有一个，符号与被开方数相同。', steps: ['(-5)^3=-125。', '所以 x=-5。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '立方根题最容易和平方根混淆在哪里？', answer: '平方根可能有两个，立方根只有一个；负数也有立方根。', analysis: '先判断是平方还是立方，再决定答案个数和符号。', steps: ['看根指数。', '平方根注意 ±。', '立方根保留正负号且只有一个。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '6.3 实数') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '把 0，-3，1/2，√2，π，0.333… 分成有理数和无理数。', answer: '有理数：0，-3，1/2，0.333…；无理数：√2，π。', analysis: '有理数能写成分数形式，无理数不能写成分数形式。', steps: ['整数、分数和循环小数是有理数。', '√2、π 是无理数。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '在数轴上估计 √2 的位置。', answer: '√2 在 1 和 2 之间，约为 1.4。', analysis: '因为 1^2<2<2^2，所以 1<√2<2。', steps: ['1^2=1，2^2=4。', '1<2<4。', '所以 1<√2<2，约 1.4。'], image: figurePath },
+      { title: '样题拓展', difficulty: '提升', stem: '判断：每一个实数都能在数轴上找到唯一的点吗？', answer: '能。实数与数轴上的点一一对应。', analysis: '实数包括有理数和无理数，都可以在数轴上表示。', steps: ['有理数能在数轴上表示。', '无理数也能在数轴上表示。', '所以实数与数轴上的点一一对应。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '比较 √5 和 2 的大小。', answer: '√5>2。', analysis: '比较根号数时，可以比较平方。', steps: ['2^2=4。', '5>4。', '所以 √5>2。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '实数分类题最容易错在哪里？', answer: '把无限不循环小数和循环小数混淆。', analysis: '循环小数是有理数，无限不循环小数是无理数。', steps: ['先看能否写成分数。', '循环小数归入有理数。', 'π、开方开不尽的数多为无理数。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '7.1 平面直角坐标系') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '写出点 A(-2,3) 所在象限，并在方格坐标系中描述点 B(1,-4) 的位置。', answer: 'A 在第二象限，B 在第四象限。', analysis: '横坐标看左右，纵坐标看上下。', steps: ['A 的横坐标为负、纵坐标为正，所以 A 在第二象限。', 'B 的横坐标为正、纵坐标为负，所以 B 在第四象限。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '点 P(a,2) 在 y 轴上，求 a；再说明点 Q(-3,0) 在哪里。', answer: 'a=0，Q 在 x 轴负半轴上。', analysis: 'y 轴上的点横坐标为 0，x 轴上的点纵坐标为 0。', steps: ['P 在 y 轴上，所以横坐标 a=0。', 'Q 的纵坐标为 0，横坐标为 -3。', '所以 Q 在 x 轴负半轴上。'], image: figurePath },
+      { title: '图像理解题', difficulty: '提升', stem: '点 M 向右平移 3 个单位、再向下平移 2 个单位，平移后为 M′(4,-1)，求 M 的原坐标。', answer: 'M(1,1)。', analysis: '求原坐标要把平移过程反过来。', steps: ['向右 3 后横坐标变为 4，所以原横坐标是 4-3=1。', '向下 2 后纵坐标变为 -1，所以原纵坐标是 -1+2=1。', '所以 M(1,1)。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '已知点 C(0,-5)、D(4,0)、E(-2,-3)，分别判断它们在坐标轴上还是哪个象限。', answer: 'C 在 y 轴负半轴上，D 在 x 轴正半轴上，E 在第三象限。', analysis: '先看是否有一个坐标为 0，再判断象限。', steps: ['C 的横坐标为 0，所以在 y 轴上；纵坐标为负，在负半轴。', 'D 的纵坐标为 0，所以在 x 轴上；横坐标为正，在正半轴。', 'E 的两个坐标都为负，所以在第三象限。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '为什么写坐标时不能把 (横坐标，纵坐标) 的顺序颠倒？', answer: '因为 (a,b) 和 (b,a) 通常表示不同的点。', analysis: '平面直角坐标系中的有序数对强调“有序”。', steps: ['先沿 x 轴确定横坐标。', '再沿 y 轴确定纵坐标。', '例如 (2,5) 与 (5,2) 是两个不同位置。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '7.2 坐标方法的简单应用') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '三角形 ABC 的顶点为 A(0,0)、B(3,0)、C(1,2)。把它向右平移 2 个单位，写出 A′、B′、C′。', answer: 'A′(2,0)，B′(5,0)，C′(3,2)。', analysis: '向右平移只改变横坐标，纵坐标不变。', steps: ['每个点的横坐标都加 2。', 'A′(0+2,0)，B′(3+2,0)，C′(1+2,2)。', '得到 A′(2,0)，B′(5,0)，C′(3,2)。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '点 A(-1,4) 平移到 A′(2,1)。点 B(3,-2) 作同样平移，求 B′。', answer: 'B′(6,-5)。', analysis: '先从 A 到 A′ 求平移量，再作用到 B。', steps: ['横坐标从 -1 到 2，向右 3。', '纵坐标从 4 到 1，向下 3。', 'B(3,-2) 同样平移后为 B′(6,-5)。'], image: figurePath },
+      { title: '图像理解题', difficulty: '提升', stem: '在坐标纸上表示长方形 OABC，其中 O(0,0)、A(4,0)、C(0,3)，写出 B 的坐标。', answer: 'B(4,3)。', analysis: '长方形的对边分别平行于坐标轴时，右上顶点同时取横向长度和纵向高度。', steps: ['A 给出横向长度 4。', 'C 给出纵向高度 3。', '所以右上顶点 B 的坐标是 (4,3)。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '把线段 PQ 的两个端点 P(-2,1)、Q(1,1) 向上平移 4 个单位，求新端点坐标。', answer: 'P′(-2,5)，Q′(1,5)。', analysis: '向上平移只改变纵坐标。', steps: ['横坐标不变。', '纵坐标都加 4。', '得到 P′(-2,5)，Q′(1,5)。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '用坐标描述图形平移时，为什么必须同时移动所有顶点？', answer: '因为平移保持图形的形状、大小和对应边方向，不能只移动一个点。', analysis: '图形由所有顶点共同确定，每个对应点都要加同一个平移量。', steps: ['先求统一的平移量。', '把这个平移量加到每个顶点坐标上。', '再按对应顺序连接新顶点。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '8.1 二元一次方程组') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '判断 x+y=7，x-y=1 是否组成二元一次方程组，并检验 x=4，y=3 是否为解。', answer: '能组成；x=4，y=3 是它的解。', analysis: '两个方程都含 x、y，且未知数次数都是 1。', steps: ['x+y=7 与 x-y=1 都是二元一次方程。', '代入 x=4，y=3，得到 4+3=7，4-3=1。', '所以这组数是方程组的解。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '某商店买 2 支笔和 3 本本子共 19 元，买 4 支笔和 1 本本子共 17 元。设笔 x 元、本子 y 元，列方程组。', answer: '2x+3y=19，4x+y=17。', analysis: '两个未知量需要两个独立等量关系。', steps: ['设每支笔 x 元，每本本子 y 元。', '2 支笔和 3 本本子共 19 元，得 2x+3y=19。', '4 支笔和 1 本本子共 17 元，得 4x+y=17。'], image: figurePath },
+      { title: '规范书写题', difficulty: '提升', stem: '列二元一次方程组时，为什么要先设未知数并写清含义？', answer: '这样能让每个式子中的 x、y 含义固定，便于检查单位和回到题意。', analysis: '建模题最怕未知数含义变化。', steps: ['先写“设 x 表示什么，y 表示什么”。', '每个等量关系都用同一组未知数表达。', '最后答案要带回题意解释。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '不解方程，检验 (2,5) 是否是方程组 x+y=7，2x-y=-1 的解。', answer: '是。', analysis: '检验解只需代入两个方程都成立。', steps: ['代入第一个方程：2+5=7，成立。', '代入第二个方程：2*2-5=-1，成立。', '两个方程都成立，所以 (2,5) 是解。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '为什么一个二元一次方程通常有很多解，而二元一次方程组可能只有一个解？', answer: '一个方程只给出一条限制，两个独立方程的共同限制通常确定一个公共解。', analysis: '“组”的意义在于取公共解。', steps: ['一个方程对应很多有序数对。', '两个方程要同时满足。', '公共部分才是方程组的解。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '8.2 消元——解二元一次方程组') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '用加减消元解方程组：x+y=7，x-y=1。', answer: 'x=4，y=3。', analysis: '两个方程相加可以消去 y。', steps: ['两式相加，得 2x=8。', '所以 x=4。', '代入 x+y=7，得 y=3。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '用代入消元解方程组：y=2x-1，x+y=8。', answer: 'x=3，y=5。', analysis: '已知 y 的表达式，适合直接代入。', steps: ['把 y=2x-1 代入 x+y=8。', 'x+2x-1=8，得 3x=9。', 'x=3，y=5。'], image: figurePath },
+      { title: '规范书写题', difficulty: '提升', stem: '解方程组时，为什么消元后还要把解代回去求另一个未知数？', answer: '消元只先求出一个未知数，完整解必须给出 x、y 的值。', analysis: '二元方程组的解是一个有序数对。', steps: ['消元得到一元一次方程。', '解出一个未知数。', '代回原方程求另一个未知数。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '解方程组：2x+y=9，x-y=3。', answer: 'x=4，y=1。', analysis: '两式相加可以直接消去 y。', steps: ['两式相加，得 3x=12。', 'x=4。', '代入 x-y=3，得 y=1。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '选择代入法还是加减法时，先看什么？', answer: '先看是否有某个未知数系数为 1 或相反数/相同数。', analysis: '系数为 1 常用代入，系数相同或相反常用加减。', steps: ['若某个方程能很快表示 y=...，优先代入。', '若同一未知数系数相同或相反，优先加减。', '目标都是把二元化为一元。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '8.3 实际问题与二元一次方程组') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '鸡兔同笼共有 10 只、脚 28 只。设鸡 x 只、兔 y 只，列方程组并求解。', answer: '鸡 6 只，兔 4 只。', analysis: '数量关系和脚数关系各给一个方程。', steps: ['x+y=10。', '2x+4y=28。', '解得 x=6，y=4。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '买 2 支笔和 3 本本子共 19 元，买 4 支笔和 1 本本子共 17 元，求单价。', answer: '笔 3.2 元，本子 4.2 元。', analysis: '按两次购买分别列等量关系。', steps: ['设笔 x 元，本子 y 元。', '2x+3y=19，4x+y=17。', '解得 x=3.2，y=4.2。'], image: figurePath },
+      { title: '规范书写题', difficulty: '提升', stem: '实际问题中列方程组，怎样检查两个关系是否独立？', answer: '看两个方程是否来自不同条件，且不能只是同一个关系的倍数。', analysis: '两个未知数需要两个真正不同的限制。', steps: ['先列出题目给出的两类信息。', '分别转成两个等量关系。', '检查其中一个不能由另一个简单倍乘得到。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '一张成人票和两张学生票共 70 元，两张成人票和一张学生票共 80 元，求两种票价。', answer: '成人票 30 元，学生票 20 元。', analysis: '票价问题常用二元一次方程组。', steps: ['设成人票 x 元，学生票 y 元。', 'x+2y=70，2x+y=80。', '解得 x=30，y=20。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '方程组解出来后，为什么还要回到实际问题检查？', answer: '因为实际量可能要求非负、整数或符合单位。', analysis: '数学解必须满足现实意义。', steps: ['检查数量是否为负。', '检查是否需要整数。', '检查单位和题目问法是否一致。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '8.4 三元一次方程组的解法') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '解三元方程组：x+y+z=6，x+y-z=2，x-y=0。', answer: 'x=2，y=2，z=2。', analysis: '先由前两式消去 z，再结合第三式求 x、y。', steps: ['前两式相加，得 2x+2y=8，即 x+y=4。', '又 x-y=0，所以 x=2，y=2。', '代入 x+y+z=6，得 z=2。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '已知 x+y=5，y+z=7，x+z=6，求 x、y、z。', answer: 'x=2，y=3，z=4。', analysis: '三式相加可得到 x+y+z。', steps: ['三式相加，得 2x+2y+2z=18。', '所以 x+y+z=9。', '分别减去 y+z=7、x+z=6、x+y=5，得 x=2，y=3，z=4。'], image: figurePath },
+      { title: '规范书写题', difficulty: '提升', stem: '三元一次方程组为什么通常要先“消去一个未知数”？', answer: '这样可以把三元问题转化为二元问题，再继续化为一元问题。', analysis: '多元方程组的核心仍是逐步降元。', steps: ['选择两组方程消去同一个未知数。', '得到两个二元一次方程。', '解二元方程组后再回代。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '解方程组：x+y+z=10，x-y=2，z=3。', answer: 'x=4.5，y=2.5，z=3。', analysis: '已有 z=3，可先代入前两个方程。', steps: ['由 z=3，代入 x+y+z=10，得 x+y=7。', '又 x-y=2。', '解得 x=4.5，y=2.5，z=3。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '三元方程组回代时最容易错在哪里？', answer: '容易把已求出的值代入错方程，或漏求其中一个未知数。', analysis: '回代应选择最简单的原方程，并检查三个方程都成立。', steps: ['记录已求出的未知数。', '选最简单方程回代。', '最后把 x、y、z 都代入原方程检查。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '9.1 不等式') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '用不等式表示：某数 x 的 3 倍减 5 大于 7，并求满足条件的范围。', answer: '3x-5>7，解得 x>4。', analysis: '先把文字翻译成不等式，再像方程一样移项合并。', steps: ['“3 倍减 5 大于 7”写成 3x-5>7。', '移项得 3x>12。', '所以 x>4。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '判断 x=3、x=5 是否是不等式 3x-5>7 的解。', answer: 'x=3 不是，x=5 是。', analysis: '检验不等式的解要代入后判断真假。', steps: ['x=3 时，3x-5=4，不大于 7。', 'x=5 时，3x-5=10，大于 7。', '所以 3 不是解，5 是解。'], image: figurePath },
+      { title: '规范书写题', difficulty: '提升', stem: '为什么不等式的答案通常写成一个范围，而不是单个数？', answer: '因为满足同一个不等式的数通常有无数多个。', analysis: '不等式描述的是一类数的集合。', steps: ['例如 x>4 包含 5、6、4.1 等很多数。', '这些数共同构成解集。', '所以答案要写成范围。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '在数轴上表示不等式 x>=-1 的解集。', answer: '从 -1 开始向右，-1 处用实心点。', analysis: '含等号的端点要取到，用实心点表示。', steps: ['先在数轴上找到 -1。', 'x>=-1 表示 -1 及其右边所有点。', '端点 -1 用实心点。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '把生活限制写成不等式时，最先要判断什么？', answer: '先判断“至少、至多、超过、不超过”等关键词对应的不等号方向。', analysis: '关键词决定边界是否取等号。', steps: ['“超过”通常用 >。', '“不超过、至多”通常用 <=。', '“至少、不少于”通常用 >=。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '9.2 一元一次不等式') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '解不等式：3x-5>7。', answer: 'x>4。', analysis: '移项、合并、系数化为 1。', steps: ['3x-5>7。', '3x>12。', 'x>4。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '解不等式：-2x+6>=10。', answer: 'x<=-2。', analysis: '两边除以负数时，不等号要改变方向。', steps: ['-2x+6>=10。', '-2x>=4。', '两边除以 -2，不等号变向，得 x<=-2。'], image: figurePath },
+      { title: '规范书写题', difficulty: '提升', stem: '为什么不等式两边同时乘或除以负数时，不等号要变向？', answer: '因为负数乘法会改变数轴上的大小顺序。', analysis: '例如 2<3，但乘以 -1 后 -2>-3。', steps: ['先看一个简单例子：2<3。', '同时乘 -1，得到 -2 和 -3。', '大小关系变成 -2>-3，所以不等号要变向。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '解不等式：5-3x<14。', answer: 'x>-3。', analysis: '移项后除以负数，方向改变。', steps: ['5-3x<14。', '-3x<9。', '除以 -3，得 x>-3。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '解一元一次不等式最容易漏掉哪一步？', answer: '乘除负数时改变不等号方向。', analysis: '这是不等式与方程运算最关键的差异。', steps: ['移项和合并类似方程。', '检查最后一步是否除以负数。', '若除以负数，必须变向。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '9.3 一元一次不等式组') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '解不等式组：x+1>3，2x-1<=5。', answer: '2<x<=3。', analysis: '分别求解，再取公共部分。', steps: ['由 x+1>3，得 x>2。', '由 2x-1<=5，得 x<=3。', '公共部分为 2<x<=3。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '在数轴上表示不等式组 x>=-2，x<4 的解集。', answer: '-2<=x<4。', analysis: '同时满足两个条件的部分才是解集。', steps: ['x>=-2 表示从 -2 向右。', 'x<4 表示 4 左边。', '重叠部分是 -2<=x<4。'], image: figurePath },
+      { title: '规范书写题', difficulty: '提升', stem: '求不等式组解集时，为什么要画数轴找公共部分？', answer: '数轴能直观看出两个范围的重叠区域，减少方向和端点错误。', analysis: '公共部分就是同时满足每个不等式的数。', steps: ['分别在数轴上画出两个解集。', '观察重叠区间。', '根据端点是否取到写出最终解集。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '解不等式组：-1<x+2<=5。', answer: '-3<x<=3。', analysis: '连写不等式可以同时对三边减 2。', steps: ['-1<x+2<=5。', '三边同时减 2。', '得到 -3<x<=3。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '不等式组无解通常怎样在数轴上看出来？', answer: '两个范围没有重叠公共部分。', analysis: '例如 x>3 与 x<1 无法同时成立。', steps: ['分别画出每个不等式的解集。', '查看是否有重叠。', '没有重叠就写无解。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '10.1 统计调查') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '某班 40 名同学中抽取 8 名调查每日阅读时间。指出总体、样本和样本容量。', answer: '总体是全班 40 名同学的每日阅读时间；样本是被抽取 8 名同学的每日阅读时间；样本容量是 8。', analysis: '总体看研究对象的全体，样本看实际被调查的部分。', steps: ['先确定研究对象：每日阅读时间。', '总体对应全班 40 名同学。', '样本对应抽取的 8 名同学。', '样本容量是样本中个体数，即 8。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '调查全校学生最喜欢的社团，怎样设计一个更合理的抽样方案？', answer: '按年级或班级分层随机抽样，保证各类学生都有代表。', analysis: '抽样要避免只调查身边同学造成偏差。', steps: ['先确定调查对象是全校学生。', '按年级或班级分层。', '每层随机抽取一定人数。', '汇总后再分析。'], image: figurePath },
+      { title: '读图解释题', difficulty: '提升', stem: '某调查问卷只在午休时发给图书馆里的同学，结论能代表全校吗？为什么？', answer: '不能。样本来源偏向爱去图书馆的同学，代表性不足。', analysis: '样本偏差会让统计结论失真。', steps: ['观察样本来源。', '午休时在图书馆的人群不等于全校学生。', '所以结论不能直接推广到全校。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '某小组统计 20 名同学的课外阅读本数：0 本 2 人，1 本 6 人，2 本 8 人，3 本 4 人。求读 2 本及以上的人数和比例。', answer: '12 人，占 60%。', analysis: '先合并目标频数，再除以总人数。', steps: ['读 2 本及以上的人数为 8+4=12。', '总人数为 20。', '比例为 12/20=60%。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '统计调查题最容易把“样本”和“样本容量”混在哪里？', answer: '样本是一组被调查的数据或对象，样本容量是数量。', analysis: '一个是内容，一个是个数。', steps: ['先写出样本是什么。', '再数样本中有多少个个体。', '不要把“8 名同学”直接写成样本本身而漏掉研究内容。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '10.2 直方图') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '某班成绩分组频数为 60-70：3，70-80：8，80-90：15，90-100：4。哪一组频数最高？', answer: '80-90 这一组频数最高，为 15。', analysis: '直方图柱高表示频数。', steps: ['读横轴分组。', '读每个柱子的频数。', '80-90 组柱高最大，为 15。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '若分组 50-60、60-70、70-80 的组距相同，为什么可以直接比较柱高？', answer: '因为组距相同，柱高越高表示频数越大。', analysis: '初中常见等距直方图中，柱高对应频数。', steps: ['先确认各组组距相同。', '再比较柱高。', '柱高大的组频数更大。'], image: figurePath },
+      { title: '读图解释题', difficulty: '提升', stem: '一张直方图中 70-80 组最高，能否说明每个人成绩都在 70-80？', answer: '不能，只能说明这一组人数最多。', analysis: '最高柱表示集中区间，不表示所有数据都在该区间。', steps: ['读最高柱对应的分组。', '说明这个分组频数最大。', '还要看其他柱子是否也有数据。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '某直方图四组频数为 4、7、6、3，总人数是多少？第二组频率是多少？', answer: '总人数 20；第二组频率 35%。', analysis: '总频数为各组频数之和，频率为本组频数除以总数。', steps: ['总人数为 4+7+6+3=20。', '第二组频率为 7/20=35%。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '读直方图时，为什么不能只看最高柱就下结论？', answer: '还要看横轴分组、组距、总数和研究目标。', analysis: '统计解释必须回到数据背景。', steps: ['看清横轴表示什么。', '看清纵轴是频数还是频率。', '结合研究问题解释。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '10.3 课题学习 从数据谈节水') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '某家庭连续 5 天用水量为 12、10、11、9、8 吨。求平均每天用水量。', answer: '10 吨。', analysis: '平均数等于总量除以天数。', steps: ['总用水量为 12+10+11+9+8=50。', '共有 5 天。', '平均每天用水量为 50/5=10 吨。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '节水前平均每天 10 吨，节水后平均每天 8 吨。每天节约多少吨？节约百分比是多少？', answer: '每天节约 2 吨，节约 20%。', analysis: '节约百分比用节约量除以原用量。', steps: ['节约量为 10-8=2 吨。', '节约百分比为 2/10=20%。'], image: figurePath },
+      { title: '读图解释题', difficulty: '提升', stem: '若折线图显示一周用水量整体下降，能直接说明节水措施有效吗？还要看什么？', answer: '不能直接下结论，还要看样本天数、是否有特殊情况和对比数据。', analysis: '真实课题学习要用数据支撑观点。', steps: ['先观察趋势。', '再确认数据来源和时间范围。', '最后结合对比组或原因分析。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '某班调查 30 户家庭，18 户安装节水器。安装比例是多少？', answer: '60%。', analysis: '比例等于目标户数除以总户数。', steps: ['安装节水器的户数为 18。', '总户数为 30。', '比例为 18/30=60%。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '从数据谈节水时，怎样避免只喊口号没有证据？', answer: '要给出调查对象、数据表或统计图，并用平均数、比例或变化趋势支持结论。', analysis: '课题学习的关键是让观点有数据依据。', steps: ['先说明数据从哪里来。', '再用图表整理。', '最后用具体指标支持观点。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '11.1 与三角形有关的线段') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '在三角形 ABC 中，D 是 BC 的中点。线段 AD 是什么线？若 BC=10，求 BD。', answer: 'AD 是中线，BD=5。', analysis: '连接顶点和对边中点的线段叫中线。', steps: ['D 是 BC 的中点。', '所以 AD 是 BC 边上的中线。', 'BD=BC/2=5。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '在三角形 ABC 中，AD 垂直 BC 于 D。线段 AD 是什么线？', answer: 'AD 是 BC 边上的高。', analysis: '从顶点向对边所在直线作垂线，所得线段是高。', steps: ['AD 从顶点 A 出发。', 'AD 垂直 BC。', '所以 AD 是 BC 边上的高。'], image: figurePath },
+      { title: '样题拓展', difficulty: '提升', stem: '在三角形 ABC 中，AD 平分 ∠A。若 ∠BAD=25°，求 ∠CAD。', answer: '∠CAD=25°。', analysis: '角平分线把一个角分成两个相等的角。', steps: ['AD 平分 ∠A。', '所以 ∠BAD=∠CAD。', '已知 ∠BAD=25°，故 ∠CAD=25°。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '三角形的三边长可能是 3、4、8 吗？为什么？', answer: '不可能，因为 3+4<8，不满足两边之和大于第三边。', analysis: '三角形任意两边之和大于第三边。', steps: ['检查最短两边之和。', '3+4=7。', '7<8，所以不能构成三角形。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '看到三角形中的中线、高、角平分线，第一步应先做什么？', answer: '先回到定义，看它连接的是中点、垂足还是把角分成相等两份。', analysis: '三类线段长得相似，但定义不同。', steps: ['中线找中点。', '高找垂直。', '角平分线找角相等。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '11.2 与三角形有关的角') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '在三角形 ABC 中，∠A=50°，∠B=60°，求 ∠C。', answer: '∠C=70°。', analysis: '三角形内角和为 180°。', steps: ['∠A+∠B+∠C=180°。', '∠C=180°-50°-60°。', '∠C=70°。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '三角形 ABC 中，∠A 的外角为 120°，∠B=45°，求 ∠C。', answer: '∠C=75°。', analysis: '三角形的一个外角等于与它不相邻的两个内角和。', steps: ['∠A 的外角=∠B+∠C。', '120°=45°+∠C。', '∠C=75°。'], image: figurePath },
+      { title: '样题拓展', difficulty: '提升', stem: '一个三角形两个内角分别为 35° 和 65°，它是什么角三角形？', answer: '锐角三角形。', analysis: '先求第三个角，再判断类型。', steps: ['第三个角为 180°-35°-65°=80°。', '没有角等于或大于 90°。', '所以它是锐角三角形。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '三角形一个外角为 100°，与它不相邻的一个内角为 40°，另一个不相邻内角是多少？', answer: '60°。', analysis: '外角等于两个不相邻内角之和。', steps: ['设另一个不相邻内角为 x。', '40°+x=100°。', 'x=60°。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '三角形角度题中，什么时候用内角和，什么时候用外角性质？', answer: '已知三个内角关系时用内角和；出现外角时优先用外角等于两个不相邻内角和。', analysis: '外角性质常能少算一步。', steps: ['先看图中是否有外角。', '有外角先写外角关系。', '没有外角再用内角和。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '11.3 多边形及其内角和') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '求五边形的内角和。', answer: '540°。', analysis: 'n 边形内角和为 (n-2)*180°。', steps: ['五边形 n=5。', '内角和=(5-2)*180°。', '结果为 540°。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '一个正六边形每个内角是多少度？', answer: '120°。', analysis: '正多边形每个内角相等。', steps: ['六边形内角和=(6-2)*180°=720°。', '正六边形 6 个内角相等。', '每个内角=720°/6=120°。'], image: figurePath },
+      { title: '样题拓展', difficulty: '提升', stem: '从一个六边形的一个顶点出发，可以把它分成几个三角形？', answer: '4 个。', analysis: 'n 边形可从一个顶点分成 n-2 个三角形。', steps: ['六边形 n=6。', '从一个顶点向不相邻顶点连对角线。', '可分成 6-2=4 个三角形。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '若一个多边形内角和为 900°，它是几边形？', answer: '七边形。', analysis: '用 (n-2)*180°=900° 求 n。', steps: ['设为 n 边形。', '(n-2)*180°=900°。', 'n-2=5，n=7。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '多边形内角和题为什么常要画出从一个顶点出发的对角线？', answer: '因为它能把多边形分割成若干三角形，公式来源更清楚。', analysis: '理解公式比死记更稳。', steps: ['选一个顶点。', '连接所有不相邻顶点。', '数出三角形个数。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '12.1 全等三角形') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '若三角形 ABC 与三角形 DEF 全等，且对应顺序为 A-D，B-E，C-F，写出三组对应边。', answer: 'AB=DE，BC=EF，AC=DF。', analysis: '全等三角形对应边相等、对应角相等。', steps: ['按对应顶点 A-D，B-E，C-F。', 'AB 对应 DE。', 'BC 对应 EF。', 'AC 对应 DF。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '已知三角形 ABC 全等于三角形 DEF，∠B=48°，求对应角 ∠E。', answer: '∠E=48°。', analysis: '全等三角形的对应角相等。', steps: ['对应顺序中 B 对应 E。', '所以 ∠B=∠E。', '∠E=48°。'], image: figurePath },
+      { title: '样题拓展', difficulty: '提升', stem: '写全等符号时，为什么顶点顺序不能随意写？', answer: '因为顶点顺序决定对应边和对应角。', analysis: '顺序错了，后面推出的对应关系就会错。', steps: ['先标出对应顶点。', '再按对应顺序写全等式。', '最后由全等推出边角相等。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '若三角形 ABC 全等于三角形 A′B′C′，AB=5，BC=7，AC=6，求 A′B′、B′C′、A′C′。', answer: 'A′B′=5，B′C′=7，A′C′=6。', analysis: '全等图形形状和大小完全相同。', steps: ['AB 对应 A′B′。', 'BC 对应 B′C′。', 'AC 对应 A′C′。', '对应边长度相等。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '由全等得到结论前，必须先确认什么？', answer: '必须先确认对应关系。', analysis: '对应关系是使用全等性质的入口。', steps: ['确认两个三角形是否全等。', '确认顶点对应顺序。', '再写对应边或对应角相等。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '12.2 三角形全等的判定') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '在三角形 ABC 与 DEF 中，AB=DE，AC=DF，∠A=∠D，能用什么方法判定全等？', answer: 'SAS。', analysis: '两边及其夹角分别相等，可用 SAS。', steps: ['AB 对应 DE。', 'AC 对应 DF。', '夹角 ∠A 对应 ∠D。', '所以用 SAS 判定全等。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '两三角形三边分别相等，能否判定全等？使用哪种方法？', answer: '能，使用 SSS。', analysis: '三边对应相等可判定三角形全等。', steps: ['找三组对应边。', '确认三组边分别相等。', '用 SSS 判定全等。'], image: figurePath },
+      { title: '样题拓展', difficulty: '提升', stem: '两角及其夹边分别相等，能用什么方法判定全等？', answer: 'ASA。', analysis: '两个角和夹在它们之间的边对应相等，可用 ASA。', steps: ['确认两组对应角相等。', '确认这两个角的夹边也对应相等。', '用 ASA 判定全等。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '两个直角三角形斜边和一条直角边分别相等，能否判定全等？', answer: '能，用 HL。', analysis: '直角三角形可用斜边和一条直角边判定全等。', steps: ['先确认两个都是直角三角形。', '确认斜边对应相等。', '确认一条直角边对应相等。', '用 HL 判定全等。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '选择全等判定方法时，怎样避免把 SSA 当成定理？', answer: '先看已知条件是否落在 SSS、SAS、ASA、AAS、HL 之一；SSA 一般不能判定全等。', analysis: '判定方法必须是教材允许的条件组合。', steps: ['列出已知边角。', '判断角是不是夹角。', '只使用合法判定方法。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '12.3 角的平分线的性质') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '点 P 在 ∠AOB 的平分线上，PM 垂直 OA，PN 垂直 OB。若 PM=4，求 PN。', answer: 'PN=4。', analysis: '角平分线上的点到角两边距离相等。', steps: ['P 在角平分线上。', 'PM、PN 分别是到两边的距离。', '所以 PM=PN=4。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '点 P 到 ∠AOB 两边的距离相等，能说明 OP 是角平分线吗？', answer: '能，在角的内部时，OP 是 ∠AOB 的平分线。', analysis: '到角两边距离相等的点在角平分线上。', steps: ['确认 P 在角的内部。', '确认 P 到两边距离相等。', '所以 OP 平分 ∠AOB。'], image: figurePath },
+      { title: '样题拓展', difficulty: '提升', stem: '角平分线性质中，为什么必须作垂线段表示距离？', answer: '点到直线的距离是垂线段长度。', analysis: '斜线段不能表示点到边的距离。', steps: ['从点向角的两边作垂线。', '垂线段长度才是距离。', '再比较两个距离是否相等。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '在 ∠AOB 内，OP 平分 ∠AOB，P 到 OA 的距离为 6。求 P 到 OB 的距离。', answer: '6。', analysis: '同一角平分线上的点到两边距离相等。', steps: ['OP 是角平分线。', 'P 到 OA 的距离等于 P 到 OB 的距离。', '所以 P 到 OB 的距离为 6。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '角平分线题中，看到“距离相等”应立刻检查什么？', answer: '检查距离是否都是垂线段，并确认点在角的内部。', analysis: '性质和判定都依赖“点到边的距离”。', steps: ['先作或找垂线。', '确认两个垂足分别在两边上。', '再使用角平分线性质或判定。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '13.1 轴对称') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '点 A(-3,2) 关于 y 轴的对称点 A′ 坐标是多少？', answer: 'A′(3,2)。', analysis: '关于 y 轴对称时，横坐标互为相反数，纵坐标不变。', steps: ['A 的横坐标为 -3。', '关于 y 轴对称后横坐标变为 3。', '纵坐标仍为 2。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '线段 AB 关于直线 l 对称到 A′B′，若 AB=6 cm，求 A′B′。', answer: 'A′B′=6 cm。', analysis: '轴对称保持对应线段长度相等。', steps: ['A 对应 A′，B 对应 B′。', '轴对称不改变长度。', '所以 A′B′=AB=6 cm。'], image: figurePath },
+      { title: '样题拓展', difficulty: '提升', stem: '判断：两个点到某条直线距离相等，就一定关于这条直线对称吗？', answer: '不一定，还要看它们是否在直线两侧且连线被对称轴垂直平分。', analysis: '轴对称点的连线应垂直于对称轴，且被对称轴平分。', steps: ['距离相等只是条件之一。', '还要检查是否在两侧。', '再检查连线与对称轴是否垂直且中点在轴上。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '点 P(4,-1) 关于 x 轴的对称点 P′ 坐标是多少？', answer: 'P′(4,1)。', analysis: '关于 x 轴对称时，横坐标不变，纵坐标互为相反数。', steps: ['横坐标仍为 4。', '纵坐标 -1 变为 1。', '所以 P′(4,1)。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '判断轴对称图形时，最可靠的检查是什么？', answer: '沿对称轴折叠后两部分能完全重合。', analysis: '对应点到对称轴距离相等，并且连线垂直于对称轴。', steps: ['先找可能的对称轴。', '检查对应点是否在轴两侧等距。', '想象折叠后是否重合。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '13.2 画轴对称图形') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '在方格纸中，点 A(2,3) 关于 y 轴的对称点 A′ 坐标是多少？', answer: 'A′(-2,3)。', analysis: '画对称点时要保持到对称轴的距离相等。', steps: ['A 到 y 轴距离为 2。', '在 y 轴另一侧同距离处取点。', '得到 A′(-2,3)。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '三角形 ABC 的顶点 A(1,1)、B(4,1)、C(2,3)，画出它关于 y 轴的对称图形。', answer: 'A′(-1,1)，B′(-4,1)，C′(-2,3)。', analysis: '先画关键点的对称点，再按对应顺序连接。', steps: ['分别求 A、B、C 的对称点。', '关于 y 轴对称，横坐标变号。', '按 A′B′C′ 顺序连接。'], image: figurePath },
+      { title: '样题拓展', difficulty: '提升', stem: '画轴对称图形时，为什么不能只凭感觉“翻过去”？', answer: '必须逐个找关键点的对称点，保证到对称轴距离相等。', analysis: '关键点准确，整个图形才准确。', steps: ['找关键点。', '过关键点作对称轴的垂线。', '在另一侧取等距离点。', '连接对应点。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '点 B(-3,-2) 关于 x 轴的对称点坐标是多少？', answer: 'B′(-3,2)。', analysis: '关于 x 轴对称，纵坐标变号。', steps: ['横坐标不变，为 -3。', '纵坐标 -2 变成 2。', '所以 B′(-3,2)。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '画完整图形的对称图时，最后一步应检查什么？', answer: '检查对应点连线是否垂直于对称轴，且被对称轴平分。', analysis: '这是发现画歪、距离不等的最快办法。', steps: ['检查每个对应点。', '检查距离是否相等。', '检查连接顺序是否正确。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '13.3 等腰三角形') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '等腰三角形 ABC 中，AB=AC，若 ∠B=50°，求 ∠C。', answer: '∠C=50°。', analysis: '等边对等角。', steps: ['AB=AC，所以底角 ∠B=∠C。', '已知 ∠B=50°。', '所以 ∠C=50°。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '等腰三角形 ABC 中，AB=AC，顶角 ∠A=40°，求两个底角。', answer: '∠B=∠C=70°。', analysis: '底角相等，再用三角形内角和。', steps: ['∠B=∠C。', '∠B+∠C=180°-40°=140°。', '所以 ∠B=∠C=70°。'], image: figurePath },
+      { title: '样题拓展', difficulty: '提升', stem: '等腰三角形 ABC 中，AB=AC，AD 平分 ∠A 交 BC 于 D。说明 AD 与 BC 的关系。', answer: 'AD⊥BC，且 BD=DC。', analysis: '等腰三角形顶角平分线、底边中线、底边高三线合一。', steps: ['AB=AC。', 'AD 平分顶角 ∠A。', '所以 AD 也是底边 BC 的中线和高。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '一个等腰三角形的两边长为 5 和 8，第三边可能是多少？', answer: '可能是 5 或 8。', analysis: '等腰三角形至少有两边相等，同时要满足三角形三边关系。', steps: ['若腰为 5，则三边 5、5、8，能成三角形。', '若腰为 8，则三边 8、8、5，也能成三角形。', '所以第三边可能是 5 或 8。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '等腰三角形题中，看到“相等的边”后应先想到什么？', answer: '先想到对应底角相等；若出现顶角平分线，再想到三线合一。', analysis: '等腰三角形的边角转化非常常见。', steps: ['标出相等边。', '推出相等角。', '若有顶角平分线或中线，检查三线合一。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '13.4 课题学习 最短路径问题') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '点 A、B 在直线 l 同侧，要在 l 上找点 P，使 AP+PB 最短，怎样作图？', answer: '作 A 关于 l 的对称点 A′，连接 A′B 交 l 于 P。', analysis: '把折线路径转化为一条直线段最短。', steps: ['作 A 关于 l 的对称点 A′。', '连接 A′B。', 'A′B 与 l 的交点就是 P。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '为什么连接 A′B 与 l 的交点能使 AP+PB 最短？', answer: '因为 AP=A′P，所以 AP+PB=A′P+PB，而两点之间线段最短。', analysis: '对称把“折线和”转成“直线段”。', steps: ['由轴对称得 AP=A′P。', '所以 AP+PB=A′P+PB。', '当 A′、P、B 共线时最短。'], image: figurePath },
+      { title: '样题拓展', difficulty: '提升', stem: '若点 A、B 在直线 l 异侧，最短路径点 P 怎样找？', answer: '直接连接 AB，AB 与 l 的交点即为 P。', analysis: '异侧时本来就能用一条直线穿过 l。', steps: ['连接 A、B。', '找到 AB 与 l 的交点。', '该点就是最短路径点 P。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '最短路径问题中，什么时候要作对称点？', answer: '当路径被一条直线反射或要求经过直线上的一点时，常作对称点把折线拉直。', analysis: '对称点是把折线转直线的工具。', steps: ['判断是否有固定直线。', '判断路径是否需要经过这条直线。', '作一端点的对称点，再连线求交点。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '最短路径图容易画错在哪里？', answer: '容易把对称点作错侧，或没有让最终路径点落在指定直线上。', analysis: '对称点、交点、指定直线三者都要检查。', steps: ['检查对称点到直线距离相等。', '检查连线交点在指定直线上。', '检查折线是否按题意连接。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '14.1 整式的乘法') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '计算：3x^2·2x^3。', answer: '6x^5。', analysis: '单项式相乘，系数相乘，同底数幂指数相加。', steps: ['系数：3×2=6。', '同底数幂：x^2·x^3=x^5。', '所以结果为 6x^5。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '展开：2x(x-3)。', answer: '2x^2-6x。', analysis: '单项式乘多项式，用分配律逐项相乘。', steps: ['2x·x=2x^2。', '2x·(-3)=-6x。', '所以 2x(x-3)=2x^2-6x。'], image: figurePath },
+      { title: '图形迁移题', difficulty: '提升', stem: '若长方形长为 x+2，宽为 x+3，面积怎样表示？', answer: 'x^2+5x+6。', analysis: '长方形面积等于长乘宽。', steps: ['面积=(x+2)(x+3)。', '展开得 x^2+3x+2x+6。', '合并得 x^2+5x+6。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '展开：(x-1)(x+4)。', answer: 'x^2+3x-4。', analysis: '多项式乘多项式，每一项都要相乘。', steps: ['x(x+4)=x^2+4x。', '-1(x+4)=-x-4。', '合并得 x^2+3x-4。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '整式乘法最容易漏哪一项？', answer: '最容易漏掉交叉相乘产生的一次项。', analysis: '多项式乘多项式要按项逐一分配。', steps: ['先写出每项相乘。', '再合并同类项。', '最后检查项数和符号。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '14.2 乘法公式') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '用平方差公式计算：(x+3)(x-3)。', answer: 'x^2-9。', analysis: '(a+b)(a-b)=a^2-b^2。', steps: ['这里 a=x，b=3。', '(x+3)(x-3)=x^2-3^2。', '结果为 x^2-9。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '展开：(x+4)^2。', answer: 'x^2+8x+16。', analysis: '(a+b)^2=a^2+2ab+b^2。', steps: ['a=x，b=4。', '(x+4)^2=x^2+2·x·4+4^2。', '得到 x^2+8x+16。'], image: figurePath },
+      { title: '图形迁移题', difficulty: '提升', stem: '用面积图解释 (a+b)^2 的展开式。', answer: '(a+b)^2=a^2+2ab+b^2。', analysis: '大正方形可分成一个 a^2、两个 ab 和一个 b^2。', steps: ['边长为 a+b 的正方形面积为 (a+b)^2。', '分割后面积为 a^2+ab+ab+b^2。', '所以等于 a^2+2ab+b^2。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '已知 a+b=5，ab=6，求 a^2+b^2。', answer: '13。', analysis: '由 (a+b)^2=a^2+2ab+b^2 变形。', steps: ['(a+b)^2=25。', 'a^2+b^2=(a+b)^2-2ab。', 'a^2+b^2=25-12=13。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '乘法公式题最常见的符号错误是什么？', answer: '把 (a-b)^2 的中间项写成 +2ab，或把平方差写成加法。', analysis: '公式结构要先辨认清楚。', steps: ['先判断是平方差还是完全平方。', '再确定中间项符号。', '最后检查平方项。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '14.3 因式分解') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '因式分解：3x+6。', answer: '3(x+2)。', analysis: '先找公因式。', steps: ['3x 和 6 的公因式是 3。', '提取 3。', '得到 3(x+2)。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '因式分解：x^2-9。', answer: '(x+3)(x-3)。', analysis: '平方差公式 a^2-b^2=(a+b)(a-b)。', steps: ['x^2-9=x^2-3^2。', '套用平方差公式。', '得到 (x+3)(x-3)。'], image: figurePath },
+      { title: '图形迁移题', difficulty: '提升', stem: '因式分解：x^2+5x+6。', answer: '(x+2)(x+3)。', analysis: '找两个数，和为 5，积为 6。', steps: ['2+3=5。', '2×3=6。', '所以 x^2+5x+6=(x+2)(x+3)。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '因式分解：2x^2+4x。', answer: '2x(x+2)。', analysis: '多项式各项都有公因式 2x。', steps: ['2x^2 和 4x 的公因式是 2x。', '提取 2x。', '得到 2x(x+2)。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '因式分解为什么要分解到“不能再分”为止？', answer: '因为最终结果应是几个整式因式的完整乘积。', analysis: '提公因式后还要继续检查括号内能否用公式。', steps: ['先提公因式。', '再看公式法。', '最后检查能否继续分解。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '15.1 分式') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '当 x 取何值时，分式 (x+1)/(x-2) 有意义？', answer: 'x≠2。', analysis: '分式有意义的条件是分母不为 0。', steps: ['分母为 x-2。', '要求 x-2≠0。', '所以 x≠2。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '分式 (x-3)/(x+1) 的值为 0，x 应满足什么条件？', answer: 'x=3。', analysis: '分式值为 0 要分子为 0，分母不为 0。', steps: ['分子 x-3=0，得 x=3。', '分母 x+1 在 x=3 时不为 0。', '所以 x=3。'], image: figurePath },
+      { title: '图形迁移题', difficulty: '提升', stem: '若速度为 v，走 12 km 所需时间怎样表示？v 能为 0 吗？', answer: '时间为 12/v，且 v≠0。', analysis: '时间=路程/速度，分母不能为 0。', steps: ['时间=12÷v=12/v。', '速度不能为 0。', '所以 v≠0。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '已知 x=3，求分式 (2x+1)/(x-1) 的值。', answer: '7/2。', analysis: '先确认分母不为 0，再代入计算。', steps: ['x=3 时，x-1=2，不为 0。', '分子 2x+1=7。', '分式值为 7/2。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '分式题最先检查什么？', answer: '先检查分母不为 0。', analysis: '定义域条件比化简和代入更先。', steps: ['找所有分母。', '列出不等于 0 的条件。', '再化简或代入。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '15.2 分式的运算') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '约分：6x^2/(3x)。', answer: '2x（x≠0）。', analysis: '分子分母同时除以公因式 3x。', steps: ['分子分母公因式为 3x。', '6x^2÷3x=2x。', '结果为 2x，且 x≠0。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '计算：1/x + 1/(2x)。', answer: '3/(2x)，x≠0。', analysis: '异分母分式加法要先通分。', steps: ['最简公分母为 2x。', '1/x=2/(2x)。', '2/(2x)+1/(2x)=3/(2x)。'], image: figurePath },
+      { title: '图形迁移题', difficulty: '提升', stem: '化简：(2x)/(x^2-1) ÷ (x+1)/(x-1)。', answer: '2x/(x+1)^2。', analysis: '除以分式等于乘它的倒数，并先分解因式。', steps: ['原式=(2x)/(x^2-1)·(x-1)/(x+1)。', 'x^2-1=(x-1)(x+1)。', '约去 x-1，得 2x/(x+1)^2。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '计算：(x+1)/x · x/(x-1)。', answer: '(x+1)/(x-1)。', analysis: '乘法先分子乘分子、分母乘分母，再约分。', steps: ['原式=(x+1)x/[x(x-1)]。', '约去 x。', '得到 (x+1)/(x-1)。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '分式运算为什么要边算边写限制条件？', answer: '因为约分或通分前的分母不能为 0，最后答案必须保留这些限制。', analysis: '化简不能丢掉原式的有意义条件。', steps: ['先写原分母限制。', '再分解、通分或约分。', '最后保留限制条件。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '15.3 分式方程') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '解方程：1/x=2。', answer: 'x=1/2。', analysis: '去分母前要注意 x≠0。', steps: ['x≠0。', '两边同乘 x，得 1=2x。', '所以 x=1/2。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '解方程：2/(x-1)=1。', answer: 'x=3。', analysis: '先限制 x≠1，再去分母。', steps: ['x-1≠0，所以 x≠1。', '两边同乘 x-1，得 2=x-1。', '解得 x=3，符合限制。'], image: figurePath },
+      { title: '图形迁移题', difficulty: '提升', stem: '解方程：x/(x-2)=2/(x-2)。', answer: '无解。', analysis: '去分母后可能得到使原分母为 0 的增根，要验根。', steps: ['限制 x≠2。', '两边同乘 x-2，得 x=2。', '但 x=2 会使原分母为 0，所以是增根，原方程无解。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '甲单独完成需 x 天，乙单独完成需 6 天。合作 2 天完成，列出方程。', answer: '2/x+2/6=1。', analysis: '工程问题常用工作效率之和乘时间等于总工作量。', steps: ['甲效率为 1/x。', '乙效率为 1/6。', '合作 2 天完成：2(1/x+1/6)=1。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '分式方程最后为什么必须验根？', answer: '因为去分母可能产生使原分母为 0 的增根。', analysis: '只解整式方程还不够，必须回到原方程检查。', steps: ['先列限制条件。', '去分母解整式方程。', '把解代回原分母检查。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '16.1 二次根式') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '当 x 取何值时，√(x-2) 有意义？', answer: 'x>=2。', analysis: '二次根式有意义要求被开方数非负。', steps: ['被开方数为 x-2。', '要求 x-2>=0。', '所以 x>=2。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '化简 √50。', answer: '5√2。', analysis: '把被开方数分解出完全平方因子。', steps: ['50=25×2。', '√50=√25×√2。', '所以 √50=5√2。'], image: figurePath },
+      { title: '样题拓展', difficulty: '提升', stem: '判断 √12 是否为最简二次根式，并化简。', answer: '不是，√12=2√3。', analysis: '根号内含有平方因子 4。', steps: ['12=4×3。', '√12=√4×√3。', '所以 √12=2√3。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '若 √(3-a) 有意义，求 a 的取值范围。', answer: 'a<=3。', analysis: '根号内 3-a 必须大于等于 0。', steps: ['3-a>=0。', '-a>=-3。', '所以 a<=3。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '二次根式题最先检查什么？', answer: '先检查被开方数是否非负。', analysis: '有意义条件是后续化简和运算的前提。', steps: ['先找根号内的式子。', '列非负条件。', '再化简或计算。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '16.2 二次根式的乘除') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '计算：√3·√12。', answer: '6。', analysis: '二次根式相乘，根号内相乘，再化简。', steps: ['√3·√12=√36。', '√36=6。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '计算：√18/√2。', answer: '3。', analysis: '二次根式相除，根号内相除。', steps: ['√18/√2=√(18/2)。', '=√9。', '=3。'], image: figurePath },
+      { title: '样题拓展', difficulty: '提升', stem: '化简：2√3·√6。', answer: '6√2。', analysis: '先把根号内相乘，再把平方因子移到根号外。', steps: ['2√3·√6=2√18。', '√18=3√2。', '所以结果为 6√2。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '化简：√(27/3)。', answer: '3。', analysis: '先算根号内的除法。', steps: ['27/3=9。', '√(27/3)=√9。', '结果为 3。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '二次根式乘除最容易错在哪里？', answer: '容易忘记最后化简，或把不能相乘除的根号外系数混进根号内。', analysis: '根号内外要分别处理。', steps: ['根号外系数先相乘除。', '根号内被开方数再相乘除。', '最后化成最简二次根式。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '16.3 二次根式的加减') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '计算：2√3+5√3。', answer: '7√3。', analysis: '同类二次根式可以合并系数。', steps: ['根号部分都是 √3。', '系数 2+5=7。', '所以结果为 7√3。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '计算：√12+√27。', answer: '5√3。', analysis: '先化简，再合并同类二次根式。', steps: ['√12=2√3。', '√27=3√3。', '2√3+3√3=5√3。'], image: figurePath },
+      { title: '样题拓展', difficulty: '提升', stem: '判断 √2+√3 能否继续合并。', answer: '不能。', analysis: '根号内不同，且都已最简，不是同类二次根式。', steps: ['√2 与 √3 都是最简二次根式。', '根号内不同。', '所以不能合并。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '计算：3√8-√18。', answer: '3√2。', analysis: '先把每个根式化成同类二次根式。', steps: ['√8=2√2，所以 3√8=6√2。', '√18=3√2。', '6√2-3√2=3√2。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '二次根式加减为什么不能一上来合并根号内的数？', answer: '加减只能合并同类二次根式的系数，不能把根号内直接相加减。', analysis: '√2+√3 不等于 √5。', steps: ['先化简每个根式。', '看根号内是否相同。', '相同才合并系数。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '17.1 勾股定理') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '在 Rt△ABC 中，∠C=90°，AC=3，BC=4，求 AB。', answer: 'AB=5。', analysis: 'AB 是斜边，用 a^2+b^2=c^2。', steps: ['AB^2=AC^2+BC^2。', 'AB^2=3^2+4^2=25。', '所以 AB=5。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '直角三角形斜边为 13，一条直角边为 5，求另一条直角边。', answer: '12。', analysis: '已知斜边和一条直角边，用减法求另一边平方。', steps: ['设另一条直角边为 x。', 'x^2+5^2=13^2。', 'x^2=144，所以 x=12。'], image: figurePath },
+      { title: '样题拓展', difficulty: '提升', stem: '一个长方形长 6、宽 8，求对角线长。', answer: '10。', analysis: '长方形对角线与长、宽构成直角三角形。', steps: ['对角线^2=6^2+8^2。', '=36+64=100。', '对角线长为 10。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '直角三角形两直角边为 7 和 24，求斜边。', answer: '25。', analysis: '直接使用勾股定理。', steps: ['斜边^2=7^2+24^2。', '=49+576=625。', '斜边=25。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '勾股定理题最先要辨认哪条边？', answer: '先辨认斜边，也就是直角所对的边。', analysis: '斜边放在等式右边的平方和结果中，不能和直角边混淆。', steps: ['先找直角。', '直角对边是斜边。', '再代入 a^2+b^2=c^2。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '17.2 勾股定理的逆定理') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '三角形三边为 5、12、13，判断是否为直角三角形。', answer: '是直角三角形。', analysis: '最长边为 13，检查 5^2+12^2 是否等于 13^2。', steps: ['5^2+12^2=25+144=169。', '13^2=169。', '所以是直角三角形。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '三角形三边为 6、8、11，判断是否为直角三角形。', answer: '不是直角三角形。', analysis: '按最长边 11 检查。', steps: ['6^2+8^2=36+64=100。', '11^2=121。', '100≠121，所以不是直角三角形。'], image: figurePath },
+      { title: '样题拓展', difficulty: '提升', stem: '判断三边 9、12、15 的三角形类型。', answer: '直角三角形。', analysis: '最长边为 15，9^2+12^2=15^2。', steps: ['9^2+12^2=81+144=225。', '15^2=225。', '所以是直角三角形。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '若三边满足 a^2+b^2=c^2，且 c 最大，能得出什么结论？', answer: '这个三角形是直角三角形，c 是斜边。', analysis: '这是勾股定理的逆定理。', steps: ['确认 c 是最长边。', '确认 a^2+b^2=c^2。', '推出三角形为直角三角形。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '用逆定理判断时，为什么要先找最长边？', answer: '因为最长边若是直角三角形的边，它应当是斜边。', analysis: '必须用最长边的平方与另外两边平方和比较。', steps: ['先把三边从小到大排列。', '用最长边作 c。', '检查 a^2+b^2 与 c^2。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '18.1 平行四边形') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '平行四边形 ABCD 中，AB=6，BC=4，求 CD 和 AD。', answer: 'CD=6，AD=4。', analysis: '平行四边形对边相等。', steps: ['AB=CD。', 'BC=AD。', '所以 CD=6，AD=4。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '平行四边形 ABCD 的对角线 AC、BD 交于 O，若 AO=5，BO=3，求 AC 和 BD。', answer: 'AC=10，BD=6。', analysis: '平行四边形对角线互相平分。', steps: ['AO=OC，所以 AC=2AO=10。', 'BO=OD，所以 BD=2BO=6。'], image: figurePath },
+      { title: '样题拓展', difficulty: '提升', stem: '四边形 ABCD 中，AB∥CD，AD∥BC，能否判定它是平行四边形？', answer: '能。', analysis: '两组对边分别平行的四边形是平行四边形。', steps: ['AB∥CD。', 'AD∥BC。', '满足平行四边形定义。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '平行四边形 ABCD 中，∠A=70°，求 ∠C。', answer: '∠C=70°。', analysis: '平行四边形对角相等。', steps: ['∠A 与 ∠C 是对角。', '平行四边形对角相等。', '所以 ∠C=70°。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '平行四边形题中，看到对角线交点应先想到什么？', answer: '先想到对角线互相平分。', analysis: '交点 O 常常给出 AO=OC、BO=OD。', steps: ['标出交点 O。', '写出 AO=OC、BO=OD。', '再代入长度或证明。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '18.2 特殊的平行四边形') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '矩形 ABCD 中，对角线 AC=10，求 BD。', answer: 'BD=10。', analysis: '矩形的对角线相等。', steps: ['矩形是特殊平行四边形。', '矩形对角线相等。', '所以 BD=AC=10。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '菱形 ABCD 中，AB=5，求四条边的长度。', answer: '四条边都为 5。', analysis: '菱形四条边都相等。', steps: ['AB=BC=CD=AD。', '已知 AB=5。', '所以四条边都为 5。'], image: figurePath },
+      { title: '样题拓展', difficulty: '提升', stem: '正方形 ABCD 的边长为 6，求周长和面积。', answer: '周长 24，面积 36。', analysis: '正方形四边相等且四个角都是直角。', steps: ['周长=4×6=24。', '面积=6×6=36。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '菱形的两条对角线有什么位置关系？', answer: '互相垂直平分。', analysis: '菱形对角线互相垂直，并且作为平行四边形也互相平分。', steps: ['菱形是平行四边形，所以对角线互相平分。', '菱形的对角线还互相垂直。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '特殊平行四边形题中，怎样避免把矩形和菱形性质混用？', answer: '先辨认图形：矩形抓直角和对角线相等，菱形抓四边相等和对角线垂直。', analysis: '正方形同时具有矩形和菱形性质。', steps: ['先判断是矩形、菱形还是正方形。', '再调用对应性质。', '不要只凭图形外观猜。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '19.1 函数') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '某出租车收费 y=8+2x，其中 x 表示行驶千米数。指出自变量和函数值。', answer: '自变量是 x，函数值是 y。', analysis: '函数描述一个变量随另一个变量变化而确定。', steps: ['行驶千米数 x 可以主动取值。', '费用 y 由 x 唯一确定。', '所以 x 是自变量，y 是函数值。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '关系“一个学生对应一个学号”是否能看作函数？为什么？', answer: '能。每个学生都有唯一确定的学号。', analysis: '判断函数看一个输入是否只对应一个输出。', steps: ['输入是学生。', '输出是学号。', '每个学生对应唯一学号，所以构成函数。'], image: figurePath },
+      { title: '图像理解题', difficulty: '提升', stem: '一张图像中，同一个 x 对应两个不同的 y，它能表示 y 是 x 的函数吗？', answer: '不能。', analysis: '函数要求每个自变量值最多对应一个函数值。', steps: ['观察同一个 x 的竖直方向。', '若有两个点，说明有两个 y。', '不满足函数定义。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '若 y=3x-2，当 x=4 时，求 y。', answer: 'y=10。', analysis: '函数值由自变量代入解析式得到。', steps: ['把 x=4 代入 y=3x-2。', 'y=3×4-2=10。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '判断函数关系时，最容易忽略什么？', answer: '最容易忽略“一个 x 只能对应一个 y”。', analysis: '不是所有两个变量关系都是函数。', steps: ['先确定输入变量。', '再看同一个输入是否有唯一输出。', '若输出不唯一，就不是函数。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '19.2 一次函数') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '已知一次函数 y=2x+1，求 x=3 时的函数值。', answer: '7。', analysis: '把自变量代入解析式。', steps: ['y=2×3+1。', 'y=7。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '已知一次函数图像经过点 (0,2) 和 (3,8)，求解析式。', answer: 'y=2x+2。', analysis: '先求斜率 k，再求截距 b。', steps: ['k=(8-2)/(3-0)=2。', '点 (0,2) 给出 b=2。', '所以 y=2x+2。'], image: figurePath },
+      { title: '图像理解题', difficulty: '提升', stem: '一次函数 y=kx+b 中，k>0 时图像怎样变化？', answer: 'y 随 x 增大而增大，图像从左下向右上。', analysis: 'k 决定增减性。', steps: ['k>0 表示斜率为正。', 'x 增大时 y 增大。', '图像上升。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '一次函数 y=2x+1 经过点 A(a,7)，求 a。', answer: 'a=3。', analysis: '点在函数图像上，就满足解析式。', steps: ['把 (a,7) 代入 y=2x+1。', '7=2a+1。', 'a=3。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '若直线 y=kx+4 经过点 (2,10)，求 k。', answer: 'k=3。', analysis: '代入点坐标求未知系数。', steps: ['10=2k+4。', '2k=6。', 'k=3。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '19.3 课题学习 选择方案') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '方案 A 收费 y=20+2x，方案 B 收费 y=5x。当 x=10 时，哪个更省？', answer: '方案 A 40 元，方案 B 50 元，方案 A 更省。', analysis: '把同一个 x 代入两个函数比较。', steps: ['A：20+2×10=40。', 'B：5×10=50。', '40<50，所以 A 更省。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '方案 A：y=20+2x，方案 B：y=5x。求两方案费用相等时的 x。', answer: 'x=20/3。', analysis: '费用相等就是两个函数值相等。', steps: ['20+2x=5x。', '3x=20。', 'x=20/3。'], image: figurePath },
+      { title: '图像理解题', difficulty: '提升', stem: '两条费用直线的交点表示什么？', answer: '表示两种方案费用相等的临界点。', analysis: '交点左右分别比较哪条直线更低。', steps: ['交点处 y 值相同。', '左侧比较两条线高度。', '右侧也要重新比较。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '购买会员需 30 元，之后每次 4 元；非会员每次 7 元。使用多少次时费用相等？', answer: '10 次。', analysis: '建立两个费用函数并令它们相等。', steps: ['会员：y=30+4x。', '非会员：y=7x。', '30+4x=7x，x=10。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '选择方案题最后为什么不能只给交点？', answer: '还要说明交点两侧分别选哪种方案更合适。', analysis: '方案题关注的是区间上的最优选择。', steps: ['先求交点。', '再取交点两侧的数比较。', '最后分情况给出选择。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '20.1 数据的集中趋势') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '数据 78、82、82、90、96 的平均数和众数分别是多少？', answer: '平均数 85.6，众数 82。', analysis: '平均数看整体水平，众数看出现次数最多的数。', steps: ['平均数=(78+82+82+90+96)/5=85.6。', '82 出现两次最多，所以众数为 82。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '数据 70、80、90、100、100 的中位数是多少？', answer: '90。', analysis: '排好顺序后，中间位置的数据是中位数。', steps: ['数据已经从小到大排列。', '共有 5 个数据。', '第 3 个数是 90。'], image: figurePath },
+      { title: '读图解释题', difficulty: '提升', stem: '为什么有极端值时，中位数有时比平均数更能反映一般水平？', answer: '因为中位数受极端值影响较小。', analysis: '平均数会被特别大或特别小的数据拉动。', steps: ['观察是否有极端值。', '平均数会受极端值影响。', '中位数只看中间位置。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '一组数据 4、5、5、6、10 的平均数是多少？', answer: '6。', analysis: '平均数=总和/数据个数。', steps: ['总和=4+5+5+6+10=30。', '数据个数为 5。', '平均数=30/5=6。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '数据 2、3、3、4、8 的中位数和众数分别是多少？', answer: '中位数是 3，众数是 3。', analysis: '先排序，再分别找中间值和出现次数最多的数。', steps: ['数据已排序。', '中间数是 3。', '3 出现最多，所以众数是 3。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '20.2 数据的波动程度') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '甲组数据 8、9、10、11、12，乙组数据 6、8、10、12、14，哪组波动更大？', answer: '乙组波动更大。', analysis: '两组平均数相同，乙组数据离平均数更远。', steps: ['两组平均数都是 10。', '甲组围绕 10 更集中。', '乙组离 10 更分散，所以波动更大。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '若甲方差为 2，乙方差为 8，哪组更稳定？', answer: '甲组更稳定。', analysis: '方差越小，数据波动越小，越稳定。', steps: ['比较方差大小。', '2<8。', '所以甲组更稳定。'], image: figurePath },
+      { title: '读图解释题', difficulty: '提升', stem: '两组平均数相同，为什么还要比较波动程度？', answer: '平均数相同不代表稳定性相同，波动程度能反映数据离散情况。', analysis: '集中趋势和离散程度描述的是不同方面。', steps: ['先比较平均水平。', '再看数据是否集中。', '用方差等指标描述稳定性。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '数据 9、10、11 的平均数为 10，求它们离平均数的偏差。', answer: '-1、0、1。', analysis: '偏差=每个数据-平均数。', steps: ['9-10=-1。', '10-10=0。', '11-10=1。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '比较稳定性时，为什么不能只看平均数？', answer: '因为平均数只说明中心位置，不能说明数据是否分散。', analysis: '稳定性要看方差、极差或偏差。', steps: ['先看平均数是否相近。', '再看数据围绕平均数的分散程度。', '方差小的一组更稳定。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '20.3 课题学习 体质健康测试中的数据分析') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '某组 5 名同学体测成绩为 78、82、82、90、96，求平均成绩。', answer: '85.6。', analysis: '课题数据也要先算基本统计量。', steps: ['总分=428。', '人数=5。', '平均成绩=428/5=85.6。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '甲班平均分 82，方差 4；乙班平均分 82，方差 16。哪个班成绩更稳定？', answer: '甲班更稳定。', analysis: '平均数相同，方差小的更稳定。', steps: ['两班平均分相同。', '甲方差 4，小于乙方差 16。', '所以甲班更稳定。'], image: figurePath },
+      { title: '读图解释题', difficulty: '提升', stem: '分析体质健康数据时，为什么要同时看平均数和优秀率？', answer: '平均数反映整体水平，优秀率反映达到较高标准的人数比例。', analysis: '单一指标容易漏掉数据结构。', steps: ['平均数看整体。', '优秀率看高水平比例。', '结合两者更全面。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '某班 40 人中 12 人优秀，优秀率是多少？', answer: '30%。', analysis: '优秀率=优秀人数/总人数。', steps: ['优秀人数 12。', '总人数 40。', '12/40=30%。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '写体测数据分析结论时，怎样避免空泛？', answer: '要引用具体统计量，如平均数、方差、优秀率，并说明它们支持什么结论。', analysis: '课题学习要用数据支撑判断。', steps: ['先列统计指标。', '比较不同组数据。', '用指标解释结论。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '21.1 一元二次方程') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '判断 x^2-3x+2=0 是否是一元二次方程，并指出二次项、一次项、常数项。', answer: '是；二次项 x^2，一次项 -3x，常数项 2。', analysis: '只含一个未知数，最高次数为 2。', steps: ['未知数只有 x。', '最高次数是 2。', '所以是一元二次方程。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '把方程 x(x-2)=3 整理成一般形式。', answer: 'x^2-2x-3=0。', analysis: '一元二次方程一般形式是 ax^2+bx+c=0。', steps: ['展开 x(x-2)=x^2-2x。', '移项得 x^2-2x-3=0。'], image: figurePath },
+      { title: '规范书写题', difficulty: '提升', stem: '为什么方程 3x-7=11 不是一元二次方程？', answer: '因为未知数最高次数是 1，不是 2。', analysis: '一元二次方程必须最高次数为 2。', steps: ['方程只有一次项 3x。', '没有 x^2 项。', '所以不是一元二次方程。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '方程 (m-1)x^2+2x+1=0 是一元二次方程，m 应满足什么条件？', answer: 'm≠1。', analysis: '二次项系数不能为 0。', steps: ['二次项系数是 m-1。', '要求 m-1≠0。', '所以 m≠1。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '判断一元二次方程时，最先检查哪两点？', answer: '先检查是否只有一个未知数，再检查最高次数是否为 2 且二次项系数不为 0。', analysis: '整理成一般形式后再判断最稳。', steps: ['整理方程。', '看未知数个数。', '看最高次数和二次项系数。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '21.2 解一元二次方程') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '解方程：x^2-5x+6=0。', answer: 'x=2 或 x=3。', analysis: '因式分解法。', steps: ['x^2-5x+6=(x-2)(x-3)。', '(x-2)(x-3)=0。', '所以 x=2 或 x=3。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '解方程：(x-4)^2=9。', answer: 'x=1 或 x=7。', analysis: '直接开平方法。', steps: ['x-4=3 或 x-4=-3。', '所以 x=7 或 x=1。'], image: figurePath },
+      { title: '规范书写题', difficulty: '提升', stem: '为什么一元二次方程可能有两个解？', answer: '因为平方关系可能对应两个相反方向的取值。', analysis: '例如 x^2=9 有 x=3 和 x=-3。', steps: ['先观察方程结构。', '直接开平方时要写正负两个可能。', '最后检查两个根。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '解方程：x^2-7x+12=0。', answer: 'x=3 或 x=4。', analysis: '找两个数和为 7，积为 12。', steps: ['x^2-7x+12=(x-3)(x-4)。', '所以 x=3 或 x=4。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '选择解法时，先看方程的什么结构？', answer: '先看能否因式分解、是否是平方形式，再考虑公式法。', analysis: '结构清楚，解法才省力。', steps: ['能分解先分解。', '平方形式用直接开平方法。', '不易处理再用公式法。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '21.3 实际问题与一元二次方程') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '一个长方形面积为 48 cm^2，长比宽多 2 cm，求长和宽。', answer: '长 8 cm，宽 6 cm。', analysis: '设宽为 x，长为 x+2。', steps: ['设宽为 x cm，则长为 x+2 cm。', 'x(x+2)=48。', '解得 x=6 或 x=-8。', '宽为正，取 x=6，长为 8。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '一个矩形面积为 15 cm^2，长比宽多 2 cm，求长和宽。', answer: '长 5 cm，宽 3 cm。', analysis: '建立面积方程并筛选正根。', steps: ['设宽为 x cm，长为 x+2 cm。', 'x(x+2)=15。', 'x^2+2x-15=0。', '解得 x=3 或 x=-5，取 x=3。'], image: figurePath },
+      { title: '规范书写题', difficulty: '提升', stem: '为什么一元二次方程应用题常常只取一个根？', answer: '因为另一个根可能不符合实际意义，如长度不能为负。', analysis: '数学解必须回到题意筛选。', steps: ['先解出所有根。', '检查是否满足实际范围。', '舍去不符合题意的根。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '一个数与它大 3 的数的乘积为 40，求这个数。', answer: '5 或 -8。', analysis: '设这个数为 x，则另一个数为 x+3。', steps: ['x(x+3)=40。', 'x^2+3x-40=0。', '(x-5)(x+8)=0。', 'x=5 或 x=-8。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '列一元二次方程应用题，最关键的第一步是什么？', answer: '设未知数并把二次关系准确翻译成方程。', analysis: '常见二次关系来自面积、乘积、增长率等。', steps: ['设合适的未知数。', '用题意表示另一个相关量。', '列出乘积或面积关系。', '解后检验。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '22.1 二次函数的图象和性质') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '已知抛物线 y=(x-1)^2-4，写出顶点坐标和对称轴。', answer: '顶点为 (1,-4)，对称轴为 x=1。', analysis: '顶点式 y=a(x-h)^2+k 的顶点是 (h,k)。', steps: ['把解析式与 y=a(x-h)^2+k 对照。', 'h=1，k=-4。', '所以顶点为 (1,-4)，对称轴为 x=1。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '二次函数 y=-x^2+6x+7 的最大值是多少？', answer: '最大值为 16。', analysis: '配方得到顶点式，开口向下时顶点纵坐标是最大值。', steps: ['y=-x^2+6x+7=-(x-3)^2+16。', 'a=-1<0，抛物线开口向下。', '所以最大值为 16。'], image: figurePath },
+      { title: '图像理解题', difficulty: '提升', stem: '二次函数图象开口向上时，顶点表示什么？', answer: '顶点表示函数的最低点，也就是最小值位置。', analysis: '开口向上时，抛物线两侧都从顶点向上延伸。', steps: ['先判断 a>0，图象开口向上。', '顶点处的 y 值最小。', '所以顶点表示最小值。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '求 y=x^2-4x+3 的对称轴和顶点坐标。', answer: '对称轴 x=2，顶点 (2,-1)。', analysis: '配方成顶点式。', steps: ['y=x^2-4x+3=(x-2)^2-1。', '顶点为 (2,-1)。', '对称轴为 x=2。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '若二次函数 y=x^2+bx+2 的图象经过点 (1,0)，求 b。', answer: 'b=-3。', analysis: '点在图象上，坐标必须满足解析式。', steps: ['把 x=1，y=0 代入。', '0=1+b+2。', '所以 b=-3。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '22.2 二次函数与一元二次方程') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '抛物线 y=x^2-5x+6 与 x 轴的交点横坐标是多少？', answer: '2 和 3。', analysis: '与 x 轴交点满足 y=0。', steps: ['令 x^2-5x+6=0。', '分解得 (x-2)(x-3)=0。', '所以横坐标为 2 和 3。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '若抛物线与 x 轴只有一个公共点，对应一元二次方程的根有什么特点？', answer: '有两个相等的实数根，也可说只有一个不同的实根。', analysis: '抛物线与 x 轴相切时，交点横坐标就是重根。', steps: ['公共点在 x 轴上，所以 y=0。', '只有一个公共点表示只有一个不同横坐标。', '对应方程有两个相等实根。'], image: figurePath },
+      { title: '图像理解题', difficulty: '提升', stem: '若抛物线与 x 轴没有公共点，对应方程有实数根吗？', answer: '没有实数根。', analysis: '实数根对应图象与 x 轴的交点横坐标。', steps: ['方程 f(x)=0 表示图象上 y=0 的点。', 'y=0 的点在 x 轴上。', '没有交点就没有实数根。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '利用图象思想解 x^2-4x+3=0。', answer: 'x=1 或 x=3。', analysis: '方程的解是抛物线 y=x^2-4x+3 与 x 轴交点的横坐标。', steps: ['观察或计算交点。', 'x^2-4x+3=(x-1)(x-3)。', '所以交点横坐标为 1 和 3。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '为什么判别式能判断抛物线与 x 轴的交点个数？', answer: '因为判别式判断对应一元二次方程实根个数，而实根就是交点横坐标。', analysis: '代数的根和图象的交点是一一对应的。', steps: ['令二次函数 y=0。', '得到一元二次方程。', '判别式大于、等于、小于 0 分别对应两个、一个、零个交点。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '22.3 实际问题与二次函数') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '用长 10 的线围成矩形，设一边为 x，面积 y=x(10-x)。面积最大是多少？', answer: '最大面积为 25。', analysis: '面积函数是开口向下的二次函数。', steps: ['y=x(10-x)=-x^2+10x。', '配方得 y=-(x-5)^2+25。', '所以 x=5 时最大面积为 25。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '某商品利润 y=-x^2+6x+7，求最大利润。', answer: '最大利润为 16。', analysis: '实际最值题通常看二次函数顶点。', steps: ['y=-x^2+6x+7=-(x-3)^2+16。', '开口向下。', '所以最大利润为 16。'], image: figurePath },
+      { title: '图像理解题', difficulty: '提升', stem: '物体高度 h=-5t^2+20t，最高高度是多少？', answer: '最高高度为 20。', analysis: '高度随时间变化形成开口向下的抛物线。', steps: ['h=-5(t^2-4t)=-5(t-2)^2+20。', '顶点时 t=2。', '最高高度为 20。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '某围栏一边靠墙，另三边总长 20，设垂直墙的一边为 x，面积 y=x(20-2x)。最大面积是多少？', answer: '最大面积为 50。', analysis: '先列面积函数，再求顶点。', steps: ['y=x(20-2x)=-2x^2+20x。', 'y=-2(x-5)^2+50。', '所以最大面积为 50。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '二次函数实际问题求最值时，为什么必须检查自变量范围？', answer: '因为顶点给出的数学最值不一定落在实际允许范围内。', analysis: '实际问题的长度、时间、数量都有取值限制。', steps: ['先列函数解析式。', '写出自变量范围。', '若顶点在范围内取顶点，否则比较端点。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '23.1 图形的旋转') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '点 A(2,0) 绕原点 O 逆时针旋转 90° 后到点 A′，求 A′ 坐标。', answer: 'A′(0,2)。', analysis: '绕原点逆时针旋转 90°，点从 x 轴正半轴转到 y 轴正半轴。', steps: ['OA=2。', '旋转后 OA′=OA。', '方向变为 y 轴正方向，所以 A′(0,2)。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '三角形绕一点旋转后，边长和角的大小会改变吗？', answer: '不会。旋转前后对应边相等、对应角相等。', analysis: '旋转是全等变换，保持图形形状和大小。', steps: ['旋转只改变位置和方向。', '对应点到旋转中心的距离相等。', '图形整体保持全等。'], image: figurePath },
+      { title: '图像理解题', difficulty: '提升', stem: '判断一个旋转变换时，需要说明哪三个要素？', answer: '旋转中心、旋转方向和旋转角。', analysis: '三个要素确定后，旋转变换才明确。', steps: ['先找固定点或中心。', '再判断顺时针还是逆时针。', '最后读出旋转角。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '正方形 ABCD 绕中心 O 逆时针旋转 90°，点 A 会转到哪个顶点的位置？', answer: '转到点 B 的位置。', analysis: '正方形相邻顶点对应的中心角是 90°。', steps: ['连接中心与各顶点。', '相邻顶点对应中心角为 90°。', '逆时针转 90°，A 到 B。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '证明点 A 旋转到 A′ 时，最常用哪两个关系？', answer: 'OA=OA′，且 ∠AOA′ 等于旋转角。', analysis: '旋转中心到对应点距离相等，对应射线夹角就是旋转角。', steps: ['连接 O 与 A、A′。', '写出 OA=OA′。', '写出 ∠AOA′ 为旋转角。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '23.2 中心对称') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '点 A(3,-2) 关于原点 O 的中心对称点 A′ 坐标是什么？', answer: 'A′(-3,2)。', analysis: '关于原点中心对称时，横纵坐标都变为相反数。', steps: ['A 的横坐标 3 变为 -3。', '纵坐标 -2 变为 2。', '所以 A′(-3,2)。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '若点 P 与 P′ 关于点 O 中心对称，O 与线段 PP′ 有什么关系？', answer: 'O 是 PP′ 的中点。', analysis: '中心对称点在同一直线上，且到中心距离相等。', steps: ['P、O、P′ 三点共线。', 'OP=OP′。', '所以 O 是 PP′ 的中点。'], image: figurePath },
+      { title: '图像理解题', difficulty: '提升', stem: '平行四边形的中心对称中心在哪里？', answer: '在两条对角线的交点。', analysis: '平行四边形对角线互相平分。', steps: ['画出两条对角线。', '它们交于 O。', 'O 平分每条对角线，所以是中心对称中心。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '点 P(4,1) 关于原点的中心对称点 P′ 是什么？', answer: 'P′(-4,-1)。', analysis: '原点是 PP′ 的中点。', steps: ['设 P′(a,b)。', '中点坐标为 ((4+a)/2,(1+b)/2)=(0,0)。', '解得 a=-4，b=-1。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '中心对称可以看作怎样的旋转？', answer: '可以看作绕对称中心旋转 180°。', analysis: '旋转 180° 后，对应点落在中心的另一侧。', steps: ['确定对称中心。', '连接对应点。', '中心是对应点连线的中点。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '23.3 课题学习 图案设计') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '把一个三角形绕中心 O 每次旋转 90°，连续得到 4 个图形，这种设计利用了什么变换？', answer: '利用了旋转变换。', analysis: '每个图形由同一基本图形绕同一中心转动得到。', steps: ['找到基本图形。', '找共同旋转中心 O。', '相邻图形的旋转角为 90°。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '图案中某个基本图形沿同一方向平移重复，主要利用了哪种变换？', answer: '平移变换。', analysis: '平移只改变位置，不改变方向和大小。', steps: ['观察方向是否改变。', '若没有转动或翻折，只是等距离移动。', '判定为平移。'], image: figurePath },
+      { title: '图像理解题', difficulty: '提升', stem: '把一个花瓣形基本图形绕中心每次旋转 60°，一周可得到几个重复图形？', answer: '6 个。', analysis: '一周是 360°，每次 60°。', steps: ['总角度为 360°。', '360°÷60°=6。', '所以可得到 6 个重复图形。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '设计轴对称图案时，必须明确什么？', answer: '必须明确对称轴以及基本图形与对应图形的位置关系。', analysis: '轴对称图案由翻折对应关系生成。', steps: ['先画对称轴。', '再画基本图形。', '最后按等距、垂直的关系画对应图形。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '说明一个图案的形成过程时，为什么不能只说“移动了一下”？', answer: '因为需要准确说明是哪种变换，以及中心、角度、方向、距离或对称轴。', analysis: '图案设计重在把视觉变化翻译成几何变换语言。', steps: ['先判断平移、旋转还是轴对称。', '再写出变换要素。', '最后说明重复次数或形成结果。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '24.1 圆的有关性质') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: 'AB 是圆 O 的直径，点 C 在圆上，求 ∠ACB。', answer: '∠ACB=90°。', analysis: '直径所对的圆周角是直角。', steps: ['AB 是直径。', 'C 是圆上一点。', '所以 ∠ACB 是直径 AB 所对的圆周角，等于 90°。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '点 C、D 在同圆上，且都在弦 AB 的同侧。若 ∠ACB=40°，求 ∠ADB。', answer: '∠ADB=40°。', analysis: '同弧所对的圆周角相等。', steps: ['∠ACB 与 ∠ADB 都对同一条弧 AB。', '同弧所对圆周角相等。', '所以 ∠ADB=40°。'], image: figurePath },
+      { title: '图像理解题', difficulty: '提升', stem: '圆心角 ∠AOB=100°，点 C 在圆上且对着同一弧 AB，求 ∠ACB。', answer: '∠ACB=50°。', analysis: '同弧所对圆周角等于圆心角的一半。', steps: ['∠AOB 是弧 AB 所对圆心角。', '∠ACB 是同弧所对圆周角。', '∠ACB=100°÷2=50°。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '同圆中两条弦相等，它们所对的弧和圆心角有什么关系？', answer: '所对的弧相等，所对的圆心角也相等。', analysis: '同圆或等圆中，等弦对等弧、等圆心角。', steps: ['确认在同圆中。', '已知两弦相等。', '推出对应弧和圆心角相等。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '圆的角度题中，为什么常常要连接圆心和圆上的点？', answer: '因为连接后能得到半径、圆心角或等腰三角形。', analysis: '半径相等常常能把圆周角、圆心角和三角形角联系起来。', steps: ['先标出圆心 O。', '连接 O 与相关圆上点。', '利用半径相等或圆心角关系求角。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '24.2 点和圆、直线和圆的位置关系') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '圆 O 半径为 5，OP=3、5、7 时，点 P 分别在圆的什么位置？', answer: 'OP=3 在圆内，OP=5 在圆上，OP=7 在圆外。', analysis: '比较点到圆心距离 d 与半径 r。', steps: ['d<r，点在圆内。', 'd=r，点在圆上。', 'd>r，点在圆外。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '圆 O 半径为 5，圆心到直线 l 的距离 d=5，直线 l 与圆有什么位置关系？', answer: '相切。', analysis: '直线到圆心距离等于半径时，直线是切线。', steps: ['比较 d 与 r。', 'd=5，r=5。', 'd=r，所以直线与圆相切。'], image: figurePath },
+      { title: '图像理解题', difficulty: '提升', stem: '直线 l 与圆 O 相切于 T，半径 OT 与切线 l 有什么关系？', answer: 'OT⊥l。', analysis: '切线垂直于经过切点的半径。', steps: ['T 是切点。', 'OT 是过切点的半径。', '所以 OT 垂直于切线 l。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '从圆外一点 P 引圆的两条切线 PA、PB，PA 与 PB 有什么关系？', answer: 'PA=PB。', analysis: '从同一点引圆的两条切线，切线长相等。', steps: ['P 是圆外一点。', 'PA、PB 都是切线段。', '所以 PA=PB。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '判断直线和圆的位置关系时，第一步比较什么？', answer: '比较圆心到直线的距离 d 与半径 r。', analysis: 'd<r 相交，d=r 相切，d>r 相离。', steps: ['先作或识别圆心到直线的垂线段。', '得到距离 d。', '与半径 r 比较。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '24.3 正多边形和圆') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '正六边形内接于圆，相邻两个顶点所对的圆心角是多少？', answer: '60°。', analysis: '圆周一周 360° 被 6 等分。', steps: ['正六边形有 6 条相等的边。', '圆心角平均分成 6 份。', '360°÷6=60°。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '正 n 边形内接于圆，每个中心角是多少？', answer: '360°/n。', analysis: '正多边形把圆周和圆心角等分。', steps: ['一周为 360°。', '正 n 边形分成 n 个相等中心角。', '每个中心角为 360°/n。'], image: figurePath },
+      { title: '图像理解题', difficulty: '提升', stem: '正五边形内接于圆，每个中心角是多少？', answer: '72°。', analysis: '用 360° 除以边数。', steps: ['正五边形有 5 个相等中心角。', '360°÷5=72°。', '所以每个中心角是 72°。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '什么叫正多边形内接于圆？', answer: '正多边形的所有顶点都在同一个圆上。', analysis: '这个圆叫正多边形的外接圆。', steps: ['观察每个顶点是否在圆上。', '若都在同圆上，就是内接于圆。', '圆心常作为分割三角形的中心。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '连接圆心和正多边形各顶点后，会得到什么图形结构？', answer: '会得到若干个全等的等腰三角形。', analysis: '圆心到各顶点都是半径，所以相邻半径与一边构成等腰三角形。', steps: ['连接圆心与所有顶点。', '每条半径相等。', '相邻半径与边组成全等等腰三角形。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '24.4 弧长和扇形面积') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '半径 r=6、圆心角 60° 的弧长是多少？', answer: '弧长为 2π。', analysis: '弧长公式 l=nπr/180。', steps: ['l=60π×6/180。', 'l=2π。', '所以弧长为 2π。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '半径 r=6、圆心角 60° 的扇形面积是多少？', answer: '面积为 6π。', analysis: '扇形面积公式 S=nπr^2/360。', steps: ['S=60π×6^2/360。', 'S=6π。', '所以扇形面积为 6π。'], image: figurePath },
+      { title: '图像理解题', difficulty: '提升', stem: '半径 r=3、圆心角 120° 的弧长是多少？', answer: '弧长为 2π。', analysis: '代入弧长公式。', steps: ['l=120π×3/180。', 'l=2π。', '所以弧长为 2π。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '在同一个圆中，扇形面积与圆心角有什么关系？', answer: '半径不变时，扇形面积与圆心角成正比。', analysis: '扇形面积是整圆面积的一部分。', steps: ['整圆面积为 πr^2。', '扇形占整圆的 n/360。', '所以圆心角越大，扇形面积越大。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '用弧长和扇形面积公式时，最容易把哪个量代错？', answer: '最容易把圆心角、半径和直径混淆，尤其把直径当半径。', analysis: '公式里的 r 是半径，n 是圆心角的度数。', steps: ['先确认给的是半径还是直径。', '再确认角度是圆心角。', '最后代入公式并化简。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '25.1 随机事件与概率') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '指出“明天会下雨”“太阳从东方升起”“掷骰子点数为 7”分别是什么事件。', answer: '随机事件、必然事件、不可能事件。', analysis: '按事件是否一定发生、一定不发生或可能发生来分类。', steps: ['明天是否下雨不确定，是随机事件。', '太阳从东方升起一定发生，是必然事件。', '普通骰子没有 7 点，是不可能事件。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '掷一枚质地均匀的硬币一次，求正面朝上的概率。', answer: '1/2。', analysis: '所有等可能结果有正面、反面两个。', steps: ['样本空间有 2 个结果。', '正面朝上有 1 个有利结果。', '概率为 1/2。'], image: figurePath },
+      { title: '样题拓展', difficulty: '提升', stem: '从写有 1、2、3、4 的四张卡片中任取一张，取到偶数的概率是多少？', answer: '1/2。', analysis: '偶数卡片有 2、4 两张。', steps: ['总结果数为 4。', '有利结果数为 2。', '概率为 2/4=1/2。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '不透明袋中有 3 个白球和 2 个黑球，任取 1 个，求取到白球的概率。', answer: '3/5。', analysis: '概率=有利结果数/所有等可能结果数。', steps: ['总球数为 5。', '白球有 3 个。', '取到白球的概率为 3/5。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '掷一枚骰子一次，求点数大于 4 的概率。', answer: '1/3。', analysis: '大于 4 的点数是 5 和 6。', steps: ['骰子共有 6 个等可能结果。', '有利结果有 2 个。', '概率为 2/6=1/3。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '25.2 用列举法求概率') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '同时抛两枚硬币，用列表法求“两枚都是正面”的概率。', answer: '1/4。', analysis: '列出所有等可能结果。', steps: ['结果有 正正、正反、反正、反反。', '两枚都是正面只有 正正。', '概率为 1/4。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '袋中有红、蓝两球，连续摸两次且不放回，求先红后蓝的概率。', answer: '1/2。', analysis: '不放回时要按顺序列举。', steps: ['可能顺序为 红蓝、蓝红。', '先红后蓝有 1 种。', '概率为 1/2。'], image: figurePath },
+      { title: '样题拓展', difficulty: '提升', stem: '甲、乙两人各从 1、2 中选一个数，用树状图求两数相同的概率。', answer: '1/2。', analysis: '先列甲的选择，再列乙的选择。', steps: ['所有结果：(1,1)、(1,2)、(2,1)、(2,2)。', '相同结果有 2 个。', '概率为 2/4=1/2。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '掷两枚骰子，求点数和为 7 的概率。', answer: '1/6。', analysis: '两枚骰子共有 36 个等可能有序结果。', steps: ['点数和为 7 的结果有 6 个。', '总结果数为 36。', '概率为 6/36=1/6。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '用列举法求概率时，怎样避免漏列或重复？', answer: '按固定顺序列表或画树状图，并确认每个结果等可能。', analysis: '列举法的关键不是算，而是样本空间完整。', steps: ['先确定是否有顺序。', '再列表或画树。', '最后数总数和有利结果数。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '25.3 用频率估计概率') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '抛硬币 100 次，其中正面 48 次，用频率估计正面朝上的概率。', answer: '约为 0.48。', analysis: '频率=事件发生次数/试验总次数。', steps: ['正面出现 48 次。', '总试验 100 次。', '频率为 48/100=0.48。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '某射手 200 次射击命中 162 次，估计命中概率。', answer: '约为 0.81。', analysis: '用大量重复试验中的稳定频率估计概率。', steps: ['命中频率为 162/200。', '162/200=0.81。', '估计命中概率约为 0.81。'], image: figurePath },
+      { title: '图像理解题', difficulty: '提升', stem: '频率折线逐渐稳定在 0.6 附近，可以怎样估计概率？', answer: '概率约为 0.6。', analysis: '大量重复试验后，频率会在概率附近波动。', steps: ['观察试验次数增大后的稳定水平。', '稳定值约为 0.6。', '用 0.6 估计概率。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '某种种子发芽试验 500 粒，发芽 455 粒，估计发芽概率。', answer: '约为 0.91。', analysis: '用发芽频率估计发芽概率。', steps: ['发芽频率为 455/500。', '455/500=0.91。', '估计发芽概率为 0.91。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '为什么试验次数太少时不能轻易用频率估计概率？', answer: '因为少量试验的偶然性较大，频率可能不稳定。', analysis: '频率估计概率依赖大量重复试验。', steps: ['先看试验次数是否足够多。', '再看频率是否趋于稳定。', '最后用稳定值估计概率。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '26.1 反比例函数') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '已知反比例函数 y=k/x 经过点 (2,3)，求 k。', answer: 'k=6。', analysis: '点在图象上，坐标满足解析式。', steps: ['把 x=2，y=3 代入 y=k/x。', '3=k/2。', '所以 k=6。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '反比例函数 y=6/x，当 x=3 时，y 等于多少？', answer: 'y=2。', analysis: '直接代入 x 值。', steps: ['y=6/3。', 'y=2。'], image: figurePath },
+      { title: '图像理解题', difficulty: '提升', stem: '反比例函数 y=k/x 的图象为什么不与坐标轴相交？', answer: '因为 x 不能为 0，且 k≠0 时 y 也不能为 0。', analysis: '坐标轴对应 x=0 或 y=0，都不满足反比例函数条件。', steps: ['解析式分母 x 不能为 0。', '若 y=0，则 k/x=0，推出 k=0，与反比例函数矛盾。', '所以图象不与坐标轴相交。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '反比例函数 y=k/x 经过点 (2,6)，求 k 的值。', answer: 'k=12。', analysis: 'k=xy。', steps: ['k=xy。', 'k=2×6=12。', '所以 k=12。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '已知反比例函数 y=k/x 经过点 (-3,4)，求解析式。', answer: 'y=-12/x。', analysis: '先求 k，再写解析式。', steps: ['k=xy=(-3)×4=-12。', '把 k=-12 代回。', '解析式为 y=-12/x。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '26.2 实际问题与反比例函数') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '一项工程工作总量为 120，设人数为 x，完成天数为 y，写出 y 与 x 的关系。', answer: 'y=120/x。', analysis: '总工作量一定时，人数与天数成反比例。', steps: ['人数×天数=120。', 'xy=120。', '所以 y=120/x。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '路程 240 km 一定，速度 v 与时间 t 满足什么关系？若 v=60，t 是多少？', answer: 't=240/v；v=60 时 t=4。', analysis: '路程一定时，速度与时间成反比例。', steps: ['vt=240。', '所以 t=240/v。', 'v=60 时，t=4。'], image: figurePath },
+      { title: '图像理解题', difficulty: '提升', stem: '反比例函数实际问题中，为什么通常只取第一象限图象？', answer: '因为人数、速度、时间等实际量通常为正数。', analysis: '实际意义限制了自变量和函数值范围。', steps: ['先看实际量能否为负。', '若两量都为正，只取第一象限。', '再在实际范围内读图。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '长方形面积为 24，宽 y 与长 x 的关系是什么？当 x=6 时，y 是多少？', answer: 'y=24/x；x=6 时 y=4。', analysis: '面积一定时，长和宽成反比例。', steps: ['xy=24。', 'y=24/x。', 'x=6 时，y=4。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '反比例函数应用题最后为什么要检查实际意义？', answer: '因为数学图象可能有两个分支，但实际量的范围常常只允许其中一部分。', analysis: '应用题必须写清自变量取值范围。', steps: ['先列乘积关系。', '再写自变量范围。', '最后解释图象或结果的实际意义。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '27.1 图形的相似') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '两个矩形长宽分别为 4、2 和 8、4，它们相似吗？', answer: '相似。', analysis: '对应边成比例，且对应角相等。', steps: ['两个矩形对应角都为 90°。', '对应边比为 4:8=2:4=1:2。', '所以两个矩形相似。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '若两个相似图形的相似比为 2:3，小图形一条边长 8，求对应大图形边长。', answer: '12。', analysis: '对应边之比等于相似比。', steps: ['设对应边为 x。', '8:x=2:3。', '解得 x=12。'], image: figurePath },
+      { title: '图像理解题', difficulty: '提升', stem: '相似图形和全等图形有什么区别？', answer: '相似图形形状相同，大小可以不同；全等图形形状和大小都相同。', analysis: '全等可以看作相似比为 1 的相似。', steps: ['先比较角是否对应相等。', '再比较边是否对应成比例。', '若相似比为 1，则全等。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '照片按比例放大时，宽从 6 cm 变为 9 cm，长从 8 cm 应变为多少？', answer: '12 cm。', analysis: '放大前后图形相似，放大倍数相同。', steps: ['放大倍数为 9/6=3/2。', '长变为 8×3/2。', '结果为 12 cm。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '判断图形相似时，为什么必须先找对应关系？', answer: '因为只有对应边、对应角才能比较比例和相等关系。', analysis: '对应关系写错，后续比例式就会全错。', steps: ['先标对应顶点。', '再写对应边比例。', '最后检查对应角。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '27.2 相似三角形') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '在△ABC 与 △DEF 中，∠A=∠D，∠B=∠E，能判定两个三角形相似吗？', answer: '能，△ABC∽△DEF。', analysis: '两角分别相等的两个三角形相似。', steps: ['已知两组对应角相等。', '满足 AA 判定。', '所以两个三角形相似。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '已知 △ABC∽△DEF，AB:DE=2:3，若 AB=8，求 DE。', answer: 'DE=12。', analysis: '相似三角形对应边成比例。', steps: ['AB:DE=2:3。', '8:DE=2:3。', '解得 DE=12。'], image: figurePath },
+      { title: '图像理解题', difficulty: '提升', stem: 'A 型相似中，若 DE∥BC，为什么 △ADE∽△ABC？', answer: '因为平行线产生对应角相等。', analysis: '同位角和公共角给出两组角相等。', steps: ['∠A 是公共角。', 'DE∥BC，所以对应角相等。', '由 AA 可得 △ADE∽△ABC。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '若 △ABC∽△DEF，相似比为 1:2，△ABC 周长为 15，求 △DEF 周长。', answer: '30。', analysis: '相似三角形周长比等于相似比。', steps: ['周长比为 1:2。', '15:周长=1:2。', '△DEF 周长为 30。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '相似三角形题中，写比例式前最容易错什么？', answer: '最容易把对应边顺序写错。', analysis: '顶点顺序决定对应边。', steps: ['先按相似符号顺序写顶点。', '再写对应边。', '最后代入比例。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '27.3 位似') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '以原点 O 为位似中心，把点 A(2,1) 放大 2 倍，求对应点 A′ 坐标。', answer: 'A′(4,2)。', analysis: '以原点为中心的位似，坐标按位似比同时放大。', steps: ['位似比为 2。', '横坐标 2×2=4。', '纵坐标 1×2=2。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '位似图形与原图形一定相似吗？', answer: '一定相似。', analysis: '位似是一种特殊的相似变换。', steps: ['对应点与位似中心共线。', '对应边互相平行或在同一直线上。', '对应边成比例，所以图形相似。'], image: figurePath },
+      { title: '图像理解题', difficulty: '提升', stem: '位似中心 O、对应点 A 和 A′ 有什么位置关系？', answer: 'O、A、A′ 三点共线。', analysis: '这是位似图形最重要的识别特征。', steps: ['连接对应点。', '观察连线是否经过同一点 O。', '若都经过 O，则 O 是位似中心。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '以原点为位似中心，位似比为 -2，点 B(1,-3) 的对应点坐标是什么？', answer: 'B′(-2,6)。', analysis: '负位似比表示对应点在中心的异侧。', steps: ['横坐标 1×(-2)=-2。', '纵坐标 -3×(-2)=6。', '所以 B′(-2,6)。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '在坐标系中作位似图形时，最先确定什么？', answer: '最先确定位似中心和位似比。', analysis: '中心和比值决定对应点位置。', steps: ['先标位似中心。', '再确定比值及正负。', '最后逐点作对应点。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '28.1 锐角三角函数') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '在 Rt△ABC 中，∠C=90°，若 AC=4、BC=3、AB=5，求 sinA、cosA、tanA。', answer: 'sinA=3/5，cosA=4/5，tanA=3/4。', analysis: '先确定参考角 A，再分清对边、邻边、斜边。', steps: ['A 的对边是 BC=3。', 'A 的邻边是 AC=4，斜边是 AB=5。', '所以 sinA=3/5，cosA=4/5，tanA=3/4。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '在直角三角形中，斜边为 10，sinA=3/5，求 A 的对边长。', answer: '6。', analysis: 'sinA=对边/斜边。', steps: ['设 A 的对边为 x。', 'x/10=3/5。', '解得 x=6。'], image: figurePath },
+      { title: '图像理解题', difficulty: '提升', stem: '为什么三角函数题必须先确定参考角？', answer: '因为对边和邻边都相对于参考角而定。', analysis: '换一个锐角，原来的对边和邻边会互换。', steps: ['先圈出参考角。', '再标对边、邻边、斜边。', '最后代入三角函数定义。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '若 tanA=3/4，且 A 的邻边为 8，求 A 的对边。', answer: '6。', analysis: 'tanA=对边/邻边。', steps: ['设对边为 x。', 'x/8=3/4。', '解得 x=6。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '锐角三角函数题中最容易混淆哪两条边？', answer: '最容易混淆参考角的对边和邻边。', analysis: '斜边固定是直角所对的边，对边和邻边要看参考角。', steps: ['先找直角，确定斜边。', '再找参考角对面的边。', '剩下靠着参考角的直角边是邻边。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '28.2 解直角三角形') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '在 Rt△ABC 中，∠C=90°，AB=10，∠A=30°，求 BC。', answer: 'BC=5。', analysis: 'BC 是 ∠A 的对边，sin30°=1/2。', steps: ['sinA=BC/AB。', 'BC=10×sin30°。', 'BC=5。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '在 Rt△ABC 中，∠C=90°，AC=8，∠A=60°，求 BC。', answer: 'BC=8√3。', analysis: 'BC 是 ∠A 的对边，AC 是邻边，用 tanA。', steps: ['tanA=BC/AC。', 'BC=8×tan60°。', 'BC=8√3。'], image: figurePath },
+      { title: '图像理解题', difficulty: '提升', stem: '解直角三角形通常需要先补齐哪些信息？', answer: '先确定直角、已知边角、所求边角，再选择三角函数或勾股定理。', analysis: '解直角三角形就是由已知边角推出未知边角。', steps: ['标出直角和锐角。', '标出已知边。', '根据所求选择 sin、cos、tan 或勾股定理。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '一根 10 m 长的梯子靠墙，与地面成 60°，梯子顶端离地多高？', answer: '5√3 m。', analysis: '高度是 60° 的对边，梯子是斜边。', steps: ['设高度为 h。', 'h/10=sin60°。', 'h=10×√3/2=5√3。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '实际测量问题中，为什么要画直角三角形示意图？', answer: '因为仰角、水平距离、高度需要先转化成直角三角形的边角关系。', analysis: '没有图，参考角和边的对应关系很容易错。', steps: ['先画水平线和垂直线。', '标出仰角或俯角。', '再用三角函数列式。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '29.1 投影') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '太阳光近似看作平行光，竖直杆在地面上形成的影子属于什么投影？', answer: '平行投影。', analysis: '太阳光线近似平行。', steps: ['判断光线是否平行。', '太阳光可近似看成平行光。', '所以形成平行投影。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '路灯下同一根杆离灯越远，影子通常怎样变化？', answer: '影子通常变长。', analysis: '路灯光线从一点发出，属于中心投影。', steps: ['确定光源是点光源。', '点光源产生中心投影。', '物体远离光源时影子变长。'], image: figurePath },
+      { title: '图像理解题', difficulty: '提升', stem: '平行投影和中心投影的主要区别是什么？', answer: '平行投影的投射线互相平行，中心投影的投射线都经过同一个点。', analysis: '先看投射线关系。', steps: ['若投射线平行，是平行投影。', '若投射线交于光源点，是中心投影。', '再判断影子形状变化。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '同一时刻，1.5 m 的人影长 2 m，旗杆影长 8 m，求旗杆高度。', answer: '6 m。', analysis: '同一时刻太阳光形成相似三角形。', steps: ['设旗杆高度为 h。', 'h:8=1.5:2。', '解得 h=6。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '投影应用题中，什么时候可以用相似三角形？', answer: '当物体与影子构成的三角形有相同光线方向和相同地面角时。', analysis: '太阳光投影常转化为相似三角形。', steps: ['画出物体、影子和光线。', '找两组对应角。', '列相似比例求长度。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '29.2 三视图') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '一个正方体的主视图、左视图、俯视图分别是什么图形？', answer: '都是正方形。', analysis: '正方体从三个正交方向看，看到的外形都是正方形。', steps: ['从正面看是正方形。', '从左面看是正方形。', '从上面看也是正方形。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '一个圆柱竖直放置，它的主视图和俯视图通常是什么？', answer: '主视图是长方形，俯视图是圆。', analysis: '竖直圆柱正面看侧面轮廓，上面看底面。', steps: ['从正面看到高和直径，轮廓为长方形。', '从上面看到圆形底面。', '所以俯视图为圆。'], image: figurePath },
+      { title: '图像理解题', difficulty: '提升', stem: '为什么不能只根据一个视图确定立体图形？', answer: '因为不同立体可能有相同的一个视图。', analysis: '三视图从三个方向补充空间信息。', steps: ['主视图给长和高。', '俯视图给长和宽。', '左视图给宽和高。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '由小正方体组成的立体，主视图看列高为 1、2、1，应怎样读图？', answer: '从正面看，每一列看到的最高小正方体数分别为 1、2、1。', analysis: '主视图反映正面方向每列的最大高度。', steps: ['确定观察方向。', '按从左到右读列。', '记录每列最高层数。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '根据三视图还原立体时，最先核对哪三个量？', answer: '长、宽、高。', analysis: '三个视图分别提供两个方向的信息，合起来确定空间范围。', steps: ['由主视图读长和高。', '由俯视图读长和宽。', '由左视图读宽和高。'], image: figurePath },
+    ];
+  }
+
+  if (sectionTitle === '29.3 课题学习 制作立体模型') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '制作正方体模型时，至少需要几个全等正方形面？', answer: '6 个。', analysis: '正方体有 6 个面，且每个面都是全等正方形。', steps: ['正方体有上、下、左、右、前、后 6 个面。', '每个面都是正方形。', '所以需要 6 个全等正方形面。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '判断一个正方体展开图是否可行，关键看什么？', answer: '关键看 6 个正方形能否折成互不重叠的 6 个面。', analysis: '展开图相邻关系要能折回立体。', steps: ['数是否有 6 个正方形。', '检查连接关系。', '想象折叠后是否重叠或缺面。'], image: figurePath },
+      { title: '图像理解题', difficulty: '提升', stem: '用三视图制作模型时，为什么要先统一比例尺？', answer: '否则各方向尺寸会不一致，模型无法准确还原。', analysis: '模型制作需要把视图尺寸转成统一实际尺寸。', steps: ['确定比例尺。', '把长、宽、高统一换算。', '再制作各个面。'], image: figurePath },
+      { title: '模型迁移题', difficulty: '提升', stem: '一个长方体长、宽、高分别为 6、4、3，制作展开图时需要哪些矩形面？', answer: '需要 2 个 6×4、2 个 6×3、2 个 4×3 的矩形。', analysis: '长方体相对面全等。', steps: ['上下面为 6×4。', '前后面为 6×3。', '左右面为 4×3。', '每类各 2 个。'], image: figurePath },
+      { title: '压轴提醒', difficulty: '压轴', stem: '制作立体模型前，为什么要先从三视图或展开图核对尺寸？', answer: '因为尺寸关系一错，折叠后的模型就会错位或不能闭合。', analysis: '模型制作考查空间想象和尺寸对应。', steps: ['先读三视图确定长宽高。', '再画展开图。', '最后检查相邻面能否闭合。'], image: figurePath },
+    ];
+  }
+
+  if (theme === 'number-sign') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '某天早晨气温是 3℃，中午上升 5℃，夜里又下降 8℃。用正负数表示两次变化，并求夜里的气温。', answer: '上升记作 +5，下降记作 -8，夜里气温为 0℃。', analysis: '先把变化写成带符号的数，再按顺序处理增减。', steps: ['以早晨气温 3℃ 为起点。', '中午上升 5℃，记作 +5，得到 3+5=8。', '夜里下降 8℃，记作 -8，得到 8-8=0。', '所以夜里气温为 0℃。'] },
+      { title: '提升例题', difficulty: '提升', stem: '以海平面为基准，甲地海拔 +120 m，乙地海拔 -35 m。比较两地海拔高低，并求它们相差多少米。', answer: '甲地更高，相差 155 m。', analysis: '正数在海平面以上，负数在海平面以下，比较时先看大小再求差。', steps: ['∵ +120＞-35，∴甲地海拔高于乙地。', '两地海拔差为 120-(-35)。', '120+35=155。', '∴ 两地相差 155 m。'] },
+      { title: '变式训练', difficulty: '提升', stem: '某账户原有 200 元，先支出 80 元，再收入 35 元，用正负数表示变化过程，并求最后余额。', answer: '变化分别记作 -80、+35，最后余额为 155 元。', analysis: '“支出”记负，“收入”记正。', steps: ['先把支出 80 元记作 -80。', '把收入 35 元记作 +35。', '余额变化为 200-80+35。', '计算得 155 元。'] },
+      { title: '模型迁移题', difficulty: relatedTemplate ? '压轴' : '提升', stem: `在“${profile.scenario}”情境中，怎样先确定基准量，再决定正负号？${templateHint}`, answer: '先找“零点”或基准线，再判断量是增加还是减少、上升还是下降。', analysis: '这类题的关键不是计算，而是先把含义翻译成正确的正负号。', steps: ['先问自己：题目以谁为基准。', '再判断每个量是高于基准还是低于基准。', '最后再进入加减计算。'] },
+      { title: '压轴提醒', difficulty: '压轴', stem: '遇到多次变化叠加的问题，最先检查什么？', answer: '最先检查基准量是否统一，再看每一步变化的方向是否写对。', analysis: '一旦基准量不统一，后续正负号和最终结论都会出错。', steps: ['先核对题中是否始终围绕同一个基准量。', '再核对每次变化方向。', '最后统一列式。'] },
+    ];
+  }
+
+  if (theme === 'number-line') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: '在数轴上，点 A 表示 -3，点 B 表示 2。比较 A、B 的大小，并写出 A 的绝对值和相反数。', answer: '-3<2，|-3|=3，-3 的相反数是 3。', analysis: '数轴上越靠右的数越大，绝对值表示到原点的距离。', steps: ['A 在原点左侧，B 在原点右侧。', '∵ 数轴上右边的数大于左边的数，∴ -3<2。', '|-3| 表示 -3 到原点的距离，所以 |-3|=3。', '-3 的相反数与它关于原点对称，所以是 3。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: '若点 C 在点 A(-2) 的右边 5 个单位，则点 C 表示什么数？它与点 B(4) 相距多少个单位？', answer: '点 C 表示 3，与点 B 相距 1 个单位。', analysis: '先按左右方向确定坐标，再比较两点距离。', steps: ['A 点坐标是 -2。', '向右 5 个单位表示加 5，所以 C 点坐标为 -2+5=3。', 'B 点坐标为 4。', '两点距离为 |4-3|=1。'], image: figurePath },
+      { title: '图形理解题', difficulty: '提升', stem: '点 D、E 关于原点对称，且点 D 表示 -6，求点 E 表示的数。', answer: '点 E 表示 6。', analysis: '关于原点对称的两个点互为相反数。', steps: ['∵ D、E 关于原点对称，∴ 它们互为相反数。', 'D=-6，故 E=6。'], image: figurePath },
+      { title: '模型迁移题', difficulty: relatedTemplate ? '压轴' : '提升', stem: `数轴题中，什么时候要同时用到绝对值和相反数？${templateHint}`, answer: '当题目既考位置关系又考到原点距离或对称点时，绝对值与相反数往往要一起用。', analysis: '绝对值解决“距离”，相反数解决“关于原点对称”。', steps: ['若题目问“离原点多远”，先想到绝对值。', '若题目问“关于原点对称”，先想到相反数。', '若两种问法同时出现，就两者联用。'] },
+      { title: '压轴提醒', difficulty: '压轴', stem: '复杂数轴题最容易丢哪一步？', answer: '最容易丢掉“先标位置、再读意义”的步骤。', analysis: '一旦跳过数轴定位，大小比较和距离判断都容易出错。', steps: ['先在脑中或纸上画数轴。', '再把题目条件全部对应到数轴位置上。', '最后才做比较和计算。'] },
+    ];
+  }
+
+  if (theme === 'integer-op' || theme === 'power') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: theme === 'power' ? '计算：(-2)^4 与 -2^4，并比较结果。' : '计算：(-6)+9-(-4)。', answer: theme === 'power' ? '(-2)^4=16，-2^4=-16。' : '7。', analysis: theme === 'power' ? '底数是否整体带括号，会直接影响符号。' : '先化减为加，再按法则运算。', steps: theme === 'power' ? ['∵ (-2)^4 表示 4 个 -2 相乘，偶次幂结果为正，∴ (-2)^4=16。', '-2^4 表示先算 2^4，再添负号，所以 -2^4=-16。', '∴ 16>-16。'] : ['原式=(-6)+9+4。', '先算 (-6)+9=3。', '再算 3+4=7。'] },
+      { title: '提升例题', difficulty: '提升', stem: theme === 'power' ? '计算：2^3×(-1)^5，并说明每一步先后顺序。' : '计算：(-3)×4÷(-2)+5。', answer: theme === 'power' ? '-8。' : '11。', analysis: '先处理乘方，再做乘除，最后加减。', steps: theme === 'power' ? ['先算 2^3=8。', '再算 (-1)^5=-1。', '最后 8×(-1)=-8。'] : ['原式=(-12)÷(-2)+5。', '先算乘法得 -12。', '再算除法得 6。', '最后 6+5=11。'] },
+      { title: '易错变式', difficulty: '提升', stem: theme === 'power' ? '比较 (-3)^2 和 -3^2。' : '计算：-2-(-5)+(-3)。', answer: theme === 'power' ? '(-3)^2=9，-3^2=-9，所以前者大。' : '0。', analysis: '负号是否在括号里，是最常见易错点。', steps: theme === 'power' ? ['(-3)^2 中底数是 -3，平方后得 9。', '-3^2 中先算 3^2=9，再添负号得 -9。', '∴ 9>-9。'] : ['原式=-2+5-3。', '先算 -2+5=3。', '再算 3-3=0。'] },
+      { title: '模型迁移题', difficulty: relatedTemplate ? '压轴' : '提升', stem: `带负号和括号的运算题，怎样避免符号出错？${templateHint}`, answer: '先整体看底数或括号，再分层级计算，最后统一检查符号。', analysis: '运算题出错多半不是不会算，而是没有先处理结构。', steps: ['先圈出括号、乘方和负号。', '按顺序逐层计算。', '最后单独核对符号。'] },
+      { title: '压轴提醒', difficulty: '压轴', stem: '混合运算题先做什么最稳？', answer: '先分清层级，再把所有“减法、负号、乘方”这些高风险点标出来。', analysis: '顺序和符号稳住了，整道题就稳了一半。', steps: ['先读结构。', '再写中间式。', '最后才口算或笔算。'] },
+    ];
+  }
+
+  if (themeGroup === 'algebra') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: theme === 'polynomial' ? '展开：(x+2)(x-3)。' : theme === 'fraction' ? '当 x 取何值时，分式 (x+1)/(x-2) 有意义？' : '判断 3x^2y、-4ab、5 是否都是整式，并指出 3x^2y 的系数和次数。', answer: theme === 'polynomial' ? 'x^2-x-6。' : theme === 'fraction' ? 'x≠2。' : '都是整式；系数为 3，次数为 3。', analysis: '先抓住结构，再按对应规则处理。', steps: theme === 'polynomial' ? ['(x+2)(x-3)=x(x-3)+2(x-3)。', '=x^2-3x+2x-6。', '=x^2-x-6。'] : theme === 'fraction' ? ['分式有意义的条件是分母不为 0。', '∵ x-2≠0，∴ x≠2。'] : ['3x^2y、-4ab、5 都是单项式或常数项，所以都是整式。', '3x^2y 的系数是 3。', '次数是 2+1=3。'] },
+      { title: '提升例题', difficulty: '提升', stem: theme === 'polynomial' ? '因式分解：x^2-9。' : theme === 'fraction' ? '化简：(2x)/(x^2-1) ÷ (x+1)/(x-1)。' : '化简：3a+2b-5a+b。', answer: theme === 'polynomial' ? '(x+3)(x-3)。' : theme === 'fraction' ? '2x/(x+1)^2。' : '-2a+3b。', analysis: '代数题最关键的是识别结构，分清是合并、展开、分解还是化简。', steps: theme === 'polynomial' ? ['x^2-9=x^2-3^2。', '∵ 这是平方差公式，∴ x^2-9=(x+3)(x-3)。'] : theme === 'fraction' ? ['原式=(2x)/(x^2-1)×(x-1)/(x+1)。', '∵ x^2-1=(x-1)(x+1)，∴ 原式=(2x)/[(x-1)(x+1)]×(x-1)/(x+1)。', '约去 (x-1) 后得 2x/(x+1)^2。'] : ['3a-5a=-2a。', '2b+b=3b。', '∴ 原式=-2a+3b。'] },
+      { title: '图形迁移题', difficulty: '提升', stem: theme === 'polynomial' ? '若一个长方形长为 x+2，宽为 x-3，面积怎样表示？' : theme === 'fraction' ? '若效率为 x，时间为 1/x，这样的式子为什么常出现分式？' : '用字母表示“每盒 a 支笔，买了 3 盒，又多送 2 支”应写成什么整式？', answer: theme === 'polynomial' ? '面积为 x^2-x-6。' : theme === 'fraction' ? '因为“单位量”常写成总量除以另一个变化量，所以会出现分式。' : '3a+2。', analysis: '代数表达要回到实际意义。', steps: ['先找数量关系。', '再用字母按运算顺序表示。', '最后看是否需要化简。'] },
+      { title: '模型迁移题', difficulty: relatedTemplate ? '压轴' : '提升', stem: `看到“${sectionTitle}”时，先观察式子的哪一层结构？${templateHint}`, answer: '先看项与项之间的关系，再看有没有公因式、公式结构或分母条件。', analysis: '代数变形题并不靠蛮算，而靠结构识别。', steps: ['先分清项。', '再看结构。', '最后才下手运算。'] },
+      { title: '压轴提醒', difficulty: '压轴', stem: '代数综合题最值得提前防的错误是什么？', answer: `最值得提前防的是：${profile.pitfalls[0]}。`, analysis: '很多综合题并不难在思路，而难在一步符号或条件失误。', steps: ['每一步都尽量写中间式。', '特别注意括号、分母和公式符号。'] },
+    ];
+  }
+
+  if (themeGroup === 'equation') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: theme === 'system' ? '解方程组：x+y=7，x-y=1。' : theme === 'inequality' ? '解不等式：3x-5>7。' : theme === 'quadratic-equation' ? '解方程：x^2-5x+6=0。' : '解方程：3x-7=11。', answer: theme === 'system' ? 'x=4，y=3。' : theme === 'inequality' ? 'x>4。' : theme === 'quadratic-equation' ? 'x=2 或 x=3。' : 'x=6。', analysis: '先把结构整理清楚，再选对应方法处理。', steps: theme === 'system' ? ['两式相加得 2x=8。', '∴ x=4。', '把 x=4 代入 x+y=7，得 y=3。'] : theme === 'inequality' ? ['移项得 3x>12。', '两边同除以 3，得 x>4。'] : theme === 'quadratic-equation' ? ['x^2-5x+6=0。', '∵ 6 可拆成 2 和 3，且 2+3=5，∴ (x-2)(x-3)=0。', '∴ x=2 或 x=3。'] : ['3x-7=11。', '∴ 3x=18。', '∴ x=6。'] },
+      { title: '提升例题', difficulty: '提升', stem: theme === 'system' ? '某商店买 2 支笔和 3 本本子共 19 元，买 4 支笔和 1 本本子共 17 元，求笔和本子的单价。' : theme === 'inequality' ? '某班订书，若每人订 2 本还差 6 本，若每人订 3 本则多出 12 本，设学生人数为 x，列出并求解对应不等式组中的人数范围。' : theme === 'quadratic-equation' ? '一个长方形面积为 48 cm²，长比宽多 2 cm，求长和宽。' : '某商品打八折后售价 96 元，求原价。', answer: theme === 'system' ? '笔 3 元，本子 5 元。' : theme === 'inequality' ? '由条件可建立人数范围并求得符合区间。' : theme === 'quadratic-equation' ? '长 8 cm，宽 6 cm。' : '原价 120 元。', analysis: '应用题的关键不是代数技巧，而是先把等量或范围关系列准。', steps: theme === 'system' ? ['设笔单价为 x 元，本子单价为 y 元。', '由题意得 2x+3y=19，4x+y=17。', '由第二式得 y=17-4x。', '代入第一式：2x+3(17-4x)=19。', '解得 x=3，回代得 y=5。'] : theme === 'quadratic-equation' ? ['设宽为 x cm，则长为 x+2 cm。', '由面积得 x(x+2)=48。', '整理得 x^2+2x-48=0。', '因式分解得 (x-6)(x+8)=0。', '∵ 宽为正，∴ x=6，长为 8。'] : ['先把题意翻译成关系式。', '再按对应的方程或不等式步骤求解。', '最后回到题意检验。'] },
+      { title: '规范书写题', difficulty: '提升', stem: theme === 'system' ? '列方程组时为什么要先设未知数并写清含义？' : theme === 'inequality' ? '为什么不等式结果通常要写成“解集”而不是单个数？' : theme === 'quadratic-equation' ? '为什么一元二次方程应用题常常只取一个根？' : '列方程应用题时，为什么要写“设……为 x”？', answer: '因为这是把文字条件转成数学模型的第一步，也方便最后回到题意解释。', analysis: '规范书写不是形式，而是思路的一部分。', steps: ['先说明未知量代表什么。', '再列关系式。', '最后解释结果。'] },
+      { title: '模型迁移题', difficulty: relatedTemplate ? '压轴' : '提升', stem: `列方程或不等式前，最先要从“${profile.scenario}”里抓什么？${templateHint}`, answer: '最先抓“等量关系”或“范围限制”，再决定设元方式。', analysis: '建模题最怕一开始就算，应该先翻译题意。', steps: ['圈出题干中的关系词。', '决定设几个未知数。', '再列式。'] },
+      { title: '压轴提醒', difficulty: '压轴', stem: '这类题最后为什么一定要回到题意检查？', answer: '因为数学上求出的解不一定全部符合实际条件或范围限制。', analysis: '特别是应用题、分式方程和二次方程，筛选解很关键。', steps: ['检查单位。', '检查范围。', '检查是否有实际意义。'] },
+    ];
+  }
+
+  if (themeGroup === 'function') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: theme === 'coordinate' ? '写出点 A(-2,3) 所在象限，并在方格坐标系中描述点 B(1,-4) 的位置。' : theme === 'quadratic-function' ? '已知抛物线 y=(x-1)^2-4，写出它的顶点坐标和对称轴。' : theme === 'inverse-function' ? '已知反比例函数 y=k/x 过点 (2,3)，求 k。' : theme === 'trigonometry' ? '在 Rt△ABC 中，∠C=90°，若 sinA=3/5，写出 A 的对边与斜边之比。' : '已知一次函数 y=2x+1，写出当 x=3 时的函数值。', answer: theme === 'coordinate' ? 'A 在第二象限，B 在第四象限。' : theme === 'quadratic-function' ? '顶点 (1,-4)，对称轴 x=1。' : theme === 'inverse-function' ? 'k=6。' : theme === 'trigonometry' ? '3:5。' : '7。', analysis: '函数类基础题要同时会“读式子”和“读图像或定义”。', steps: theme === 'coordinate' ? ['A(-2,3) 中横坐标负、纵坐标正，∴ A 在第二象限。', 'B(1,-4) 中横坐标正、纵坐标负，∴ B 在第四象限。'] : theme === 'quadratic-function' ? ['y=(x-1)^2-4 已是顶点式。', '∴ 顶点为 (1,-4)。', '对称轴为 x=1。'] : theme === 'inverse-function' ? ['把点 (2,3) 代入 y=k/x。', '得 3=k/2。', '∴ k=6。'] : theme === 'trigonometry' ? ['由 sinA=对边/斜边。', '∴ A 的对边与斜边之比为 3:5。'] : ['把 x=3 代入 y=2x+1。', '得 y=2×3+1=7。'], image: figurePath },
+      { title: '提升例题', difficulty: '提升', stem: theme === 'coordinate' ? '点 P(a,2) 在 y 轴上，求 a；再说明点 Q(-3,0) 在哪里。' : theme === 'quadratic-function' ? '某商品利润 y 与销量 x 的关系为 y=-x^2+6x+7，求最大利润。' : theme === 'inverse-function' ? '已知反比例函数图像经过第一、三象限，说明 k 的符号，并求经过点 (4,m) 时 m 的值。' : theme === 'trigonometry' ? '在直角三角形中，已知斜边为 10，sinA=3/5，求 A 的对边长。' : '已知一次函数图像经过点 (0,2) 和 (3,8)，求解析式。', answer: theme === 'coordinate' ? 'a=0，Q 在 x 轴负半轴上。' : theme === 'quadratic-function' ? '最大利润为 16。' : theme === 'inverse-function' ? 'k>0，m=k/4。' : theme === 'trigonometry' ? '6。' : 'y=2x+2。', analysis: '提升题的关键是把定义、图像和解析式联成一条线。', steps: theme === 'quadratic-function' ? ['y=-x^2+6x+7=-(x-3)^2+16。', '∴ 抛物线开口向下，顶点纵坐标为 16。', '∴ 最大利润为 16。'] : theme === 'linear-function' ? ['设一次函数为 y=kx+b。', '把 (0,2) 代入得 b=2。', '再把 (3,8) 代入得 3k+2=8。', '解得 k=2。', '∴ 解析式为 y=2x+2。'] : ['先把已知条件代入定义或公式。', '再联立关系式或读图得结果。'], image: figurePath },
+      { title: '图像理解题', difficulty: '提升', stem: theme === 'coordinate' ? '点 M 向右平移 3 个单位、再向下平移 2 个单位，若平移后坐标为 (4,-1)，求原坐标。' : theme === 'quadratic-function' ? '二次函数开口向上时，顶点表示什么？' : theme === 'inverse-function' ? '反比例函数图像为什么不会与坐标轴相交？' : theme === 'trigonometry' ? '在三角函数题中，为什么必须先确定参考角？' : '一次函数 y=kx+b 中，为什么 k 的正负能决定增减性？', answer: '因为图像与解析式是一一对应的。', analysis: '理解题用来训练“看图说理”。', steps: ['先回到定义。', '再把图像特征翻译成数量关系。', '最后用数学语言表达。'], image: figurePath },
+      { title: '模型迁移题', difficulty: relatedTemplate ? '压轴' : '提升', stem: `函数题中，什么时候该先读图像，什么时候该先列式？${templateHint}`, answer: '图像直接给趋势和交点时先读图；关系清晰而式子未知时先列式求解析式。', analysis: '函数不是只靠算，图像和代数表达要来回切换。', steps: ['图像给趋势，式子给精确关系。', '解题时要能来回切换。'] },
+      { title: '压轴提醒', difficulty: '压轴', stem: '函数应用题最容易漏掉哪一步？', answer: '最容易漏掉自变量取值范围和数学结论的实际含义。', analysis: '最值题、方案题和反比例函数应用题尤其要防这一点。', steps: ['看自变量范围。', '看交点和顶点的实际意义。', '把数学结果翻译回情境。'] },
+    ];
+  }
+
+  if (themeGroup === 'statistics') {
+    return [
+      { title: '基础例题', difficulty: '基础', stem: theme === 'probability' ? '掷一枚质地均匀的硬币一次，写出“正面朝上”的概率。' : '某小组 5 名同学的成绩分别为 78、82、82、90、96，求这组数据的平均数和众数。', answer: theme === 'probability' ? '1/2。' : '平均数为 85.6，众数为 82。', analysis: '先分清是“列举结果”还是“概括数据特征”。', steps: theme === 'probability' ? ['样本空间为 {正面, 反面}。', '“正面朝上”是其中 1 个有利结果。', '∴ 概率为 1/2。'] : ['平均数=(78+82+82+90+96)÷5=85.6。', '82 出现次数最多，所以众数是 82。'] },
+      { title: '提升例题', difficulty: '提升', stem: theme === 'probability' ? '袋中有 2 个白球、3 个黑球，任取 1 个，求取到黑球的概率。' : '某班体测成绩的中位数是 82，平均数是 80，说明这两个指标各自反映了什么。', answer: theme === 'probability' ? '3/5。' : '中位数反映中间水平，平均数反映总体平均水平。', analysis: '统计与概率题要先确定研究对象和全部可能结果。', steps: theme === 'probability' ? ['总球数为 5。', '有利结果为黑球 3 个。', '∴ 概率=3/5。'] : ['中位数关注排序后的中间位置。', '平均数关注整体平均水平。', '所以两个指标反映的角度不同。'] },
+      { title: '读图解释题', difficulty: '提升', stem: '面对一张统计图，为什么不能只看最高柱形就下结论？', answer: '因为统计结论要结合总体、分组方式和研究目标一起看。', analysis: '数据题最怕“只看一眼图形”就草率判断。', steps: ['先看研究对象。', '再看横轴和纵轴含义。', '最后解释为什么某组高或低。'] },
+      { title: '模型迁移题', difficulty: relatedTemplate ? '压轴' : '提升', stem: `面对“${sectionTitle}”类题目，先看“所有数据/结果”还是先看“目标事件/指标”？${templateHint}`, answer: '先看总体或样本空间，再回到目标事件或目标指标。', analysis: '不先看全体范围，后面的概率和统计解释很容易失真。', steps: ['统计先看总体。', '概率先看样本空间。', '再看目标量。'] },
+      { title: '压轴提醒', difficulty: '压轴', stem: '统计和概率综合题最容易出现什么理解偏差？', answer: `最容易出现的是：${profile.pitfalls[0]}。`, analysis: '图表会看、样本会列，结论才不会漂在空中。', steps: ['核对总数。', '核对分组。', '核对所求对象。'] },
+    ];
+  }
+
+  if (themeGroup === 'geometry') {
+    if (sectionTitle === '5.1 相交线') {
+      return [
+        { title: '基础例题', difficulty: '基础', stem: '两条直线 AB、CD 相交于点 O，若 ∠AOC=58°，求它的对顶角 ∠BOD。', answer: '∠BOD=58°。', analysis: '对顶角相等。', steps: ['AB 与 CD 相交于 O。', '∠AOC 与 ∠BOD 是对顶角。', '∴ ∠BOD=∠AOC=58°。'], image: figurePath },
+        { title: '提升例题', difficulty: '提升', stem: '两条直线 AB、CD 相交于点 O，若 ∠AOC=125°，求邻补角 ∠BOC。', answer: '∠BOC=55°。', analysis: '邻补角互补，和为 180°。', steps: ['∠AOC 与 ∠BOC 组成平角。', '∠AOC+∠BOC=180°。', '∠BOC=180°-125°=55°。'], image: figurePath },
+        { title: '样题拓展', difficulty: '提升', stem: '直线 AB 与 CD 相交于 O，若 ∠1=3∠2，且 ∠1 与 ∠2 是邻补角，求 ∠1 和 ∠2。', answer: '∠1=135°，∠2=45°。', analysis: '邻补角互补，再用倍数关系列方程。', steps: ['设 ∠2=x，则 ∠1=3x。', '3x+x=180°。', 'x=45°。', '∴ ∠1=135°，∠2=45°。'], image: figurePath },
+        { title: '模型迁移题', difficulty: '提升', stem: '已知直线 l 与 m 相交于点 O，若其中一个角是直角，说明 l 与 m 的位置关系。', answer: 'l⊥m。', analysis: '两条直线相交成直角时，这两条直线互相垂直。', steps: ['直线 l 与 m 相交。', '其中一个角为 90°。', '∴ l⊥m，O 为垂足。'], image: figurePath },
+        { title: '压轴提醒', difficulty: '压轴', stem: '相交线角度题中，看到一个已知角后应先找哪两类角？', answer: '先找对顶角和邻补角。', analysis: '对顶角给相等关系，邻补角给 180° 关系。', steps: ['先找对顶角，写出相等。', '再找邻补角，写出互补。', '最后再计算未知角。'], image: figurePath },
+      ];
+    }
+
+    if (sectionTitle === '5.4 平移') {
+      return [
+        { title: '基础例题', difficulty: '基础', stem: '在方格纸中，点 A(2,3) 向右平移 4 个单位、向上平移 1 个单位到点 A′，求 A′ 的坐标。', answer: "A′(6,4)。", analysis: '向右横坐标加 4，向上纵坐标加 1。', steps: ['横坐标：2+4=6。', '纵坐标：3+1=4。', "∴ A′(6,4)。"], image: figurePath },
+        { title: '提升例题', difficulty: '提升', stem: '△ABC 平移后得到 △A′B′C′，若 A 到 A′ 是“向右 3 格、向下 2 格”，点 B(1,5)，求 B′ 的坐标。', answer: "B′(4,3)。", analysis: '同一次平移中，每个对应点移动的方向和距离都相同。', steps: ['B 与 B′ 是对应点。', 'B 也向右 3 格、向下 2 格。', "B′=(1+3,5-2)=(4,3)。"], image: figurePath },
+        { title: '样题拓展', difficulty: '提升', stem: '判断：一个图形只改变位置，形状和大小都不变，这一定是平移吗？', answer: '不一定，还要看对应点移动方向和距离是否相同。', analysis: '平移不仅保持形状和大小，还要求所有对应点按同一方向、同一距离移动。', steps: ['先看形状大小是否不变。', '再看对应点连线是否平行且相等。', '方向和距离都一致，才是平移。'], image: figurePath },
+        { title: '模型迁移题', difficulty: '提升', stem: '在方格纸中，正方形 ABCD 向右平移 5 格得到 A′B′C′D′。若 A(0,0)，B(2,0)，写出 A′、B′ 的坐标。', answer: "A′(5,0)，B′(7,0)。", analysis: '向右平移只改变横坐标，纵坐标不变。', steps: ["A′=(0+5,0)=(5,0)。", "B′=(2+5,0)=(7,0)。", '对应边长度保持不变。'], image: figurePath },
+        { title: '压轴提醒', difficulty: '压轴', stem: '平移作图时，为什么不能只移动一个顶点就结束？', answer: '因为必须把每个顶点都按同一方向、同一距离平移，再连接对应点。', analysis: '平移的是整个图形，不是单个点。', steps: ['先确定平移方向和距离。', '逐一平移所有顶点。', '按原来的连接顺序连成新图形。'], image: figurePath },
+      ];
+    }
+
+    if (theme === 'parallel') {
+      return [
+        { title: '基础例题', difficulty: '基础', stem: '如图，AB∥CD，若 ∠1=58°，求与它构成内错角的 ∠2 的度数。', answer: '∠2=58°。', analysis: '平行线性质：内错角相等。', steps: ['∵ AB∥CD。', '∴ ∠1=∠2（两直线平行，内错角相等）。', '又 ∠1=58°，∴ ∠2=58°。'], image: figurePath },
+        { title: '提升例题', difficulty: '提升', stem: '如图，若 ∠1=∠2，求证：AB∥CD。', answer: 'AB∥CD。', analysis: '平行线判定：内错角相等，两直线平行。', steps: ['已知 ∠1=∠2。', '这两个角是一组内错角。', '∵ 内错角相等，∴ AB∥CD。'], image: figurePath },
+        { title: '样题拓展', difficulty: '提升', stem: 'AB∥CD，EF 交两线于 E、F，若 ∠AEF=125°，求与其同旁内角对应的角。', answer: '与其同旁内角对应的角为 55°。', analysis: '同旁内角互补。', steps: ['∵ AB∥CD。', '∴ 同旁内角互补。', '故所求角=180°-125°=55°。'], image: figurePath },
+        { title: '模型迁移题', difficulty: relatedTemplate ? '压轴' : '提升', stem: `平行线题遇到“${relatedTemplate ? relatedTemplate.name : '交叉结构'}”时，最先要做什么？`, answer: '先把所有由平行产生的等角关系转出来，再决定能否进入模型。', analysis: '平行线综合题的第一步通常不是算，而是“转角”。', steps: ['先找同位角、内错角、同旁内角。', '把角关系写出来。', '再判断是否能进入相似、全等或模型。'], image: figurePath },
+        { title: '压轴提醒', difficulty: '压轴', stem: '平行线综合题为什么总强调“先转角”？', answer: '因为很多后续的全等、相似、角度计算都依赖这一步。', analysis: '先把角关系显化出来，综合题就会清楚很多。', steps: ['先标角。', '再转角。', '最后进入全等、相似或计算。'], image: figurePath },
+      ];
+    }
+
+    if (theme === 'line-angle' || theme === 'geometry-basic') {
+      return [
+        { title: '基础例题', difficulty: '基础', stem: '在△ABC中，AB=AC，∠A=40°，求 ∠ABC。', answer: '∠ABC=70°。', analysis: '等腰三角形两底角相等。', steps: ['∵ AB=AC，∴ ∠ABC=∠ACB。', '设 ∠ABC=x，则 ∠ACB=x。', '由三角形内角和得 40°+x+x=180°。', '∴ 2x=140°，x=70°。'], image: figurePath },
+        { title: '提升例题', difficulty: '提升', stem: '已知 ∠AOB=90°，OC 平分 ∠AOB，求 ∠AOC 与 ∠BOC。', answer: '∠AOC=45°，∠BOC=45°。', analysis: '角平分线把一个角分成两个相等的角。', steps: ['∵ OC 平分 ∠AOB。', '∴ ∠AOC=∠BOC。', '又 ∠AOB=90°。', '∴ ∠AOC=∠BOC=45°。'], image: figurePath },
+        { title: '样题拓展', difficulty: '提升', stem: '一条射线把平角分成 32° 和另一个角，求另一个角。', answer: '148°。', analysis: '平角等于 180°。', steps: ['平角=180°。', '设另一个角为 x。', '则 32°+x=180°。', '∴ x=148°。'], image: figurePath },
+        { title: '模型迁移题', difficulty: relatedTemplate ? '压轴' : '提升', stem: '线段与角的题，为什么总建议先把图画清、字母标全？', answer: '因为没有清晰图形，后续的相等、垂直、平分关系都容易认错。', analysis: '几何入门题的基本功就是“图清楚、字母清楚、关系清楚”。', steps: ['先标点。', '再标线和角。', '最后写已知关系。'], image: figurePath },
+        { title: '压轴提醒', difficulty: '压轴', stem: '线角题最常见的低级失误是什么？', answer: '图形关系看对了，但没有用规范几何语言写出来。', analysis: '能看懂不等于能得分，规范表达很关键。', steps: ['每得出一步结论，都写清依据。', '避免只写结果不写原因。'], image: figurePath },
+      ];
+    }
+
+    if (theme === 'triangle') {
+      return [
+        { title: '基础例题', difficulty: '基础', stem: '在△ABC中，∠A=50°，∠B=60°，求 ∠C。', answer: '∠C=70°。', analysis: '三角形内角和等于 180°。', steps: ['∵ ∠A+∠B+∠C=180°。', '∴ 50°+60°+∠C=180°。', '∴ ∠C=70°。'], image: figurePath },
+        { title: '提升例题', difficulty: '提升', stem: '在△ABC中，AB=AC，D 是 BC 的中点，求证：AD⊥BC。', answer: 'AD⊥BC。', analysis: '等腰三角形顶角平分线、中线、高互相重合。', steps: ['∵ AB=AC，且 D 为 BC 中点，∴ BD=DC。', '在 △ABD 和 △ACD 中，AB=AC，BD=DC，AD=AD。', '∴ △ABD≌△ACD（SSS）。', '∴ ∠ADB=∠ADC。', '又二者互为邻补角，∴ ∠ADB=∠ADC=90°。', '∴ AD⊥BC。'], image: figurePath },
+        { title: '样题拓展', difficulty: '提升', stem: '求一个五边形的内角和。', answer: '540°。', analysis: 'n 边形内角和=(n-2)×180°。', steps: ['五边形的边数 n=5。', '内角和=(5-2)×180°。', '∴ 内角和=540°。'], image: figurePath },
+        { title: '模型迁移题', difficulty: relatedTemplate ? '压轴' : '提升', stem: '三角形综合题为什么总绕不开“角和”和“特殊线段”？', answer: '因为它们是三角形中最稳定、最容易连成推理链的入口。', analysis: '多数综合题先从基础关系打开，再走向全等或相似。', steps: ['先看角和。', '再看中线、高、角平分线。', '最后决定是否进入全等或相似。'], image: figurePath },
+        { title: '压轴提醒', difficulty: '压轴', stem: '三角形证明题写不完整时，最应该补哪一类依据？', answer: '最应该补“为什么两角相等、为什么两边相等、为什么垂直”的依据。', analysis: '证明题丢分大多因为依据没写出来。', steps: ['每一步结论后面都跟上理由。', '尤其是等角、等边、垂直这三类。'], image: figurePath },
+      ];
+    }
+
+    if (theme === 'proof' || theme === 'symmetry' || theme === 'rotation' || theme === 'similarity') {
+      return [
+        { title: '基础例题', difficulty: '基础', stem: '在△ABC 与 △DEF 中，已知 AB=DE，AC=DF，∠A=∠D，求证：△ABC≌△DEF。', answer: '△ABC≌△DEF。', analysis: '两边及其夹角对应相等，可用 SAS。', steps: ['∵ AB=DE，AC=DF，且 ∠A=∠D。', '∴ △ABC≌△DEF（SAS）。', '进而可得对应边对应角都相等。'], image: figurePath },
+        { title: '提升例题', difficulty: '提升', stem: theme === 'similarity' ? '已知 △ABC∽△DEF，且 AB:DE=2:3，若 AB=8，求 DE。' : '等腰三角形 ABC 中，AB=AC，求证：底角相等。', answer: theme === 'similarity' ? 'DE=12。' : '∠ABC=∠ACB。', analysis: '相似或对称、全等类题，关键是对应关系。', steps: theme === 'similarity' ? ['∵ △ABC∽△DEF，∴ AB:DE=2:3。', '又 AB=8。', '∴ 8:DE=2:3。', '解得 DE=12。'] : ['作出或联想对称关系。', '由两腰相等可构成全等或对称。', '所以两底角相等。'], image: figurePath },
+        { title: '样题拓展', difficulty: '提升', stem: theme === 'rotation' ? '一个图形绕点 O 旋转 90° 后，对应边和对应角有什么变化？' : '相似、全等或对称题中，为什么总要先找“对应”？', answer: '对应边仍相等（或成比例），对应角仍相等。', analysis: '这类题的主线都是“先对应，再判定”。', steps: ['先标对应顶点。', '再比较边和角。', '最后才能写全等或相似。'], image: figurePath },
+        { title: '模型迁移题', difficulty: relatedTemplate ? '压轴' : '提升', stem: `如果题中出现“${relatedTemplate ? relatedTemplate.name : '经典几何结构'}”，怎样把证明主线接起来？`, answer: '先识别对应关系，再判断是全等、相似还是旋转/对称。', analysis: '几何模型本质上是在帮你更快找到“对应”。', steps: ['识别模型。', '写对应。', '选判定。', '回收目标。'], image: figurePath },
+        { title: '压轴提醒', difficulty: '压轴', stem: '证明题中最容易丢的分是什么？', answer: '是“理由不完整”，不是“不会看图”。', analysis: '会看图只是开始，得分要靠完整的逻辑书写。', steps: ['结论后面跟理由。', '对应顺序别写乱。', '最终目标要落回题目。'], image: figurePath },
+      ];
+    }
+
+    if (theme === 'pythagorean' || theme === 'quadrilateral' || theme === 'circle' || theme === 'spatial') {
+      return [
+        { title: '基础例题', difficulty: '基础', stem: theme === 'pythagorean' ? '在 Rt△ABC 中，∠C=90°，AC=3，BC=4，求 AB。' : theme === 'quadrilateral' ? '平行四边形 ABCD 中，AB=6，BC=4，求 CD 的长。' : theme === 'circle' ? 'AB 是⊙O 的直径，点 C 在圆上，求 ∠ACB。' : '一个正方体的主视图是什么图形？', answer: theme === 'pythagorean' ? 'AB=5。' : theme === 'quadrilateral' ? 'CD=6。' : theme === 'circle' ? '90°。' : '正方形。', analysis: '这类题都要先抓住最基本的性质。', steps: theme === 'pythagorean' ? ['∵ ∠C=90°。', '∴ AB²=AC²+BC²=3²+4²=25。', '∴ AB=5。'] : theme === 'quadrilateral' ? ['∵ ABCD 是平行四边形。', '∴ AB=CD。', '又 AB=6，∴ CD=6。'] : theme === 'circle' ? ['∵ AB 是直径。', '∴ ∠ACB=90°（直径所对的圆周角是直角）。'] : ['正方体从正面看，看到的是一个正方形。'], image: figurePath },
+        { title: '提升例题', difficulty: '提升', stem: theme === 'pythagorean' ? '若三角形三边为 5、12、13，判断该三角形是否是直角三角形。' : theme === 'quadrilateral' ? '矩形 ABCD 中，对角线 AC 与 BD 有什么关系？' : theme === 'circle' ? '圆的切线与过切点半径有何关系？' : '俯视图与主视图为什么要一起看？', answer: theme === 'pythagorean' ? '是直角三角形。' : theme === 'quadrilateral' ? '对角线相等。' : theme === 'circle' ? '切线垂直于过切点半径。' : '因为单独一幅视图信息不完整。', analysis: '提升题的关键是把性质用成判断依据。', steps: theme === 'pythagorean' ? ['最大边为 13。', '∵ 5²+12²=25+144=169=13²。', '∴ 该三角形是直角三角形。'] : theme === 'quadrilateral' ? ['矩形是特殊平行四边形。', '矩形的对角线相等。', '∴ AC=BD。'] : theme === 'circle' ? ['连接圆心与切点。', '利用切线性质：半径垂直切线。', '所以可形成直角。'] : ['主视图给高度和长度信息。', '俯视图给长度和宽度信息。', '结合后才能还原立体。'], image: figurePath },
+        { title: '样题拓展', difficulty: '提升', stem: '为什么这类题总要先辨认图形类型？', answer: '因为图形一旦认准，许多强性质就能直接调用。', analysis: '先认图形，再列性质，是几何计算题的稳定做法。', steps: ['先看直角、平行、相等等关键词。', '认准图形类别。', '再调用对应性质。'], image: figurePath },
+        { title: '模型迁移题', difficulty: relatedTemplate ? '压轴' : '提升', stem: `如果题中出现“${relatedTemplate ? relatedTemplate.name : '辅助线结构'}”，这类题先从性质还是模型入手？`, answer: '先从基础性质入手，把图形关系稳定下来，再决定是否进入模型。', analysis: '模型不是替代性质，而是在性质基础上提速。', steps: ['先列基础性质。', '再识别模型信号。', '最后把两者接起来。'], image: figurePath },
+        { title: '压轴提醒', difficulty: '压轴', stem: '这类章节综合题的共同难点是什么？', answer: '共同难点是基础性质多，容易漏掉最关键的一条。', analysis: '会做题的人通常不是知道得更多，而是筛得更快。', steps: ['先列最强性质。', '再决定哪一条最能推进。', '不要一上来就乱加辅助线。'], image: figurePath },
+      ];
+    }
+  }
+
+  return [
+    {
+      title: '基础例题',
+      difficulty: '基础',
+      stem: `围绕“${sectionTitle}”，先完成一道基础判断或基础计算题，重点训练“${(profile.know || [pack.concepts[0]])[0]}”。`,
+      answer: `先抓住“${(profile.know || [pack.concepts[0]])[0]}”这一核心，再把题目条件与本节定义或性质对应起来。`,
+      analysis: '基础题的目标是把本节的概念链条真正走通。',
+      steps: getThemeGroup(theme) === 'geometry'
+        ? ['先把图形中的已知条件标出来。', '如果题中有“AB=AC、AB∥CD、∠A=∠B”这类条件，就立刻翻译成等角、平行或特殊三角形信息。', '再根据本节定义或性质逐步推出结论。']
+        : ['先读清定义。', '再把条件代入本节规律。', '最后整理结果。'],
+      image: figurePath,
+    },
+    {
+      title: '提升例题',
+      difficulty: '提升',
+      stem: `如果把“${sectionTitle}”放进“${profile.scenario}”这类情境里，最先要观察哪些条件？`,
+      answer: `先观察 ${uniqueList([...(profile.know || []), ...pack.concepts]).slice(0, 2).join('、')} 这些信息，再决定用哪种方法。`,
+      analysis: '提升题不是换知识，而是把同一知识点放进更复杂的场景里。',
+      steps: ['先找题型入口。', '再决定用定义、性质还是模型。', '最后回到题目真正要求的量。'],
+      image: figurePath,
+    },
+    {
+      title: '样题拓展',
+      difficulty: '提升',
+      stem: `本节如果和本章其他知识组合，最常见的变式会落在哪一步？`,
+      answer: '通常会在“条件识别”和“步骤书写”两处加难度。', 
+      analysis: '变式题不是新增知识，而是换条件、换图形或换问法。',
+      steps: ['先把原题中的关键条件抽出来。', '观察变式后哪些条件被替换。', '再决定原方法是否还能直接使用。'],
+      image: figurePath,
+    },
+    {
+      title: '模型迁移题',
+      difficulty: relatedTemplate ? '压轴' : '提升',
+      stem: relatedTemplate
+        ? `若题目中出现和“${relatedTemplate.name}”类似的结构，怎样把“${sectionTitle}”接进去？`
+        : `本节和本章其他内容组合时，解题入口通常在哪里？`,
+      answer: relatedTemplate
+        ? `先识别“${relatedTemplate.name}”的触发条件，再把本节作为局部工具嵌进去。`
+        : `通常先看图形关系、数量关系或函数关系，再决定从本节哪个性质切入。`,
+      analysis: '综合题的关键是先定入口，再展开细节。',
+      steps: relatedTemplate
+        ? ['先看图形或数量结构是否触发该模型。', '再把本节定义或性质接进去。', '最后回到题目目标量。']
+        : ['先判断题型属于计算、证明还是建模。', '再决定本节哪个工具最合适。'],
+      image: figurePath,
+    },
+    {
+      title: '压轴提醒',
+      difficulty: '压轴',
+      stem: `处理“${sectionTitle}”压轴题时，最值得提前警惕什么？`,
+      answer: `最值得提前警惕的是：${profile.pitfalls[0] || pack.mistakes[0]}。`,
+      analysis: '压轴题很少败在不会，更多败在细节和条件识别。',
+      steps: ['先核对条件有没有看漏。', '再核对推理链有没有断。', '最后核对答案是否真正回应题意。'],
+      image: figurePath,
+    },
+  ];
+}
+
+function buildLessonKnowledge(chapter, sectionTitle, index) {
+  const knowledgeId = `${chapter.id}-lesson-${index + 1}`;
+  const templates = getChapterTemplates(chapter.id);
+  const relatedTemplate = templates[index % Math.max(templates.length, 1)] || null;
+  const pack = chapterPackMap[chapter.id] || {
+    concepts: ['核心概念', '基本性质', '常见题型'],
+    mistakes: ['条件识别不完整', '步骤书写不规范'],
+    scenario: '教材典型情境',
+    advanced: '和综合题结合迁移',
+  };
+  const profile = getLessonProfile(chapter, sectionTitle);
+  const lessonTemplate = templateByTheme[profile.theme] || {
+    name: `${sectionTitle}通用模板`,
+    when: `当题目直接考查“${sectionTitle}”的定义、性质、计算或证明时使用。`,
+    steps: ['审题找关键词', '匹配本节定义或性质', '列式或证明', '回到题目要求作答'],
+  };
+  const figurePath = getGeneratedLessonFigurePath(profile.theme, sectionTitle) || getLessonFigurePath(chapter.id, index);
+  const formulaSection = getLessonFormulaSection(profile.theme, sectionTitle);
+  const knowledgeFacts = getLessonFacts(sectionTitle, profile, pack);
+  const override = lessonTextOverrideMap[sectionTitle] || null;
+  const problemOverride = lessonProblemOverrideMap[sectionTitle] || null;
+  const summaryText = override?.summary || `${profile.focus} 学习时要特别留意：${(profile.know || []).slice(0, 2).join('、')}。`;
+  const introText = override?.intro || `${chapter.chapterNo}《${chapter.title}》中的“${sectionTitle}”聚焦的是：${profile.focus}${chapterSummaryMap[chapter.id]} 本节最常放在“${profile.scenario}”这类情境中考查。`;
+  const knowledgeItems = override?.points || knowledgeFacts;
+  const mustItems = override?.must || (profile.know || []).map((item) => `${item}，并能围绕“${sectionTitle}”完成基础题和变式题。`);
+  const plainTalk = override?.plainTalk || getLessonPlainTalk(sectionTitle, profile, pack);
+  const problems = (problemOverride || rewriteProblemsForWorkbookStyle(buildLessonProblems(chapter, sectionTitle, profile, relatedTemplate, pack, figurePath), sectionTitle, profile, relatedTemplate, pack, figurePath))
+    .map((problem, problemIndex) => ({
+      ...problem,
+      stem: problem.stem && problem.stem.startsWith(`【${sectionTitle}】`) ? problem.stem : `【${sectionTitle}】${problem.stem}`,
+      sourceImage: problem.image || figurePath,
+      image: getUniqueProblemFigurePath(knowledgeId, problemIndex),
+    }));
+
+  return {
+    id: knowledgeId,
+    chapterId: chapter.id,
+    title: sectionTitle,
+    lessonNo: index + 1,
+    tags: uniqueList([...chapter.tags, '教材同步', profile.theme]),
+    keywords: uniqueList([chapter.title, sectionTitle, ...(profile.know || []), ...(relatedTemplate ? relatedTemplate.keywords.slice(0, 3) : [])]),
+    summary: summaryText,
+    coverImage: getUniqueKnowledgeFigurePath(knowledgeId),
+    sourceImage: figurePath,
+    figureCaption: getLessonCaption(profile.theme),
+    knowledgePoints: knowledgeItems,
+    learningPath: [
+      `先读“通俗理解”，确认本节到底解决哪类问题。`,
+      `再掌握：${(knowledgeItems || []).slice(0, 3).join('；')}。`,
+      `做题时套用“${relatedTemplate ? relatedTemplate.name : lessonTemplate.name}”，并在每一步后核对依据。`,
+    ],
+    mistakeChecklist: uniqueList(profile.pitfalls || pack.mistakes).slice(0, 3),
+    sections: [
+      {
+        type: 'text',
+        title: '学习说明',
+        content: introText,
+      },
+      {
+        type: 'text',
+        title: '通俗理解',
+        content: plainTalk,
+      },
+      {
+        type: 'list',
+        title: '具体知识点',
+        items: knowledgeItems,
+      },
+      {
+        type: 'list',
+        title: '本节必会',
+        items: mustItems,
+      },
+      ...(formulaSection ? [formulaSection] : []),
+      {
+        type: 'table',
+        title: '学习抓手',
+        headers: ['抓手', '怎么学'],
+        rows: buildLessonRows(profile, sectionTitle, pack),
+      },
+      {
+        type: 'steps',
+        title: '通用学习步骤',
+        steps: uniqueList([...(lessonTemplate.steps || []), '做完题后回看本节易错点']).slice(0, 5),
+      },
+      {
+        type: 'tip',
+        title: '易错提醒',
+        content: relatedTemplate
+          ? `本节最常见的失误有：${(profile.pitfalls || pack.mistakes).join('、')}。另外它经常和“${relatedTemplate.name}”联动考查，不能只背结论，必须会识别题型入口。`
+          : `本节最常见的失误有：${(profile.pitfalls || pack.mistakes).join('、')}。做题时一定要把定义、图形或数量关系真正落到题目条件上。`,
+      },
+      {
+        type: 'text',
+        title: '进阶提醒',
+        content: `当“${sectionTitle}”进入综合题时，往往会和“${pack.advanced}”一起出现。建议先稳住本节基础，再逐步把它和本章模型串起来。`,
+      },
+    ],
+    problems,
+    template: {
+      name: relatedTemplate ? relatedTemplate.name : lessonTemplate.name,
+      whenToUse: relatedTemplate ? buildTemplateSummary(relatedTemplate) : lessonTemplate.when,
+      steps: relatedTemplate ? relatedTemplate.steps : lessonTemplate.steps,
+    },
+    synthetic: true,
+  };
+}
+
+function resolveChapterId(chapterId) {
+  return legacyChapterAlias[chapterId] || chapterId;
+}
+
+function getChapterTemplates(chapterId) {
+  return templateLibrary
+    .filter((template) => template.relatedChapters.includes(chapterId))
+    .map((template) => enrichTemplate(template));
+}
+
+function buildTemplateSummary(template) {
+  return `${template.category} · ${template.summary}`;
+}
+
+function getChapterTextBlocks(chapter) {
+  const pack = chapterPackMap[chapter.id] || { concepts: [], mistakes: [], advanced: '综合应用' };
+  const prompts = chapterPromptMap[chapter.id] || [];
+  const override = chapterTextOverrideMap[chapter.id] || null;
+  const conceptText = pack.concepts.map((item) => `理解并会用“${item}”处理本章基础题。`);
+  const solveText = prompts.slice(0, 3).map((item) => `常见求解入口：${item}。`);
+  const cautionText = (pack.mistakes || []).slice(0, 3).map((item) => `常见失误：${item}。`);
+  return {
+    concepts: override?.concepts || conceptText,
+    solveText: override?.solveText || solveText,
+    cautionText,
+    chapterLead: override?.lead || `本章学习时，建议先吃透 ${pack.concepts.slice(0, 2).join('、')}，再过渡到 ${pack.advanced} 这一类综合题。`,
+  };
+}
+
+function getTemplateFigurePath(templateId) {
+  const generated = getGeneratedTemplateFigurePath(templateId);
+  return generated || '/assets/figures/generated/line-angle-bisector.png';
+}
+
+function getGeneratedTemplateFigurePath(templateId) {
+  const map = {
+    'model-hand-in-hand': '/assets/figures/generated/rotation-center.png',
+    'model-cross': '/assets/figures/generated/parallelogram-diagonals.png',
+    'model-eight-shape': '/assets/figures/generated/similar-triangles.png',
+    'model-dart': '/assets/figures/generated/line-angle-bisector.png',
+    'model-child-mother': '/assets/figures/generated/similar-triangles.png',
+    'model-k-equal-angle': '/assets/figures/generated/similar-triangles.png',
+    'model-pig-hoof': '/assets/figures/generated/parallel-lines-angle.png',
+    'model-round-helper': '/assets/figures/generated/circle-diameter-tangent.png',
+    'model-midline-extension': '/assets/figures/generated/right-triangle-345.png',
+    'model-midpoint': '/assets/figures/generated/parallelogram-diagonals.png',
+    'model-angle-bisector': '/assets/figures/generated/line-angle-bisector.png',
+    'model-tangent': '/assets/figures/generated/circle-diameter-tangent.png',
+    'model-k-similarity': '/assets/figures/generated/similar-triangles.png',
+    'model-sine-cosine': '/assets/figures/generated/right-triangle-345.png',
+    'model-a-similarity': '/assets/figures/generated/similar-triangles.png',
+    'model-visualization': '/assets/figures/generated/coordinate-points.png',
+    'model-pythagorean-shortest': '/assets/figures/generated/right-triangle-345.png',
+    'model-completing-square': '/assets/figures/generated/quadratic-vertex.png',
+    'model-square': '/assets/figures/generated/polynomial-area.png',
+    'model-function-extreme': '/assets/figures/generated/quadratic-vertex.png',
+    'model-general-meets-horse': '/assets/figures/generated/line-angle-bisector.png',
+    'model-classification': '/assets/figures/generated/statistics-histogram.png',
+    'model-undetermined-coeff': '/assets/figures/generated/linear-function.png',
+  };
+
+  return map[templateId] || '';
+}
+
+function getTemplateExamples(template) {
+  const examples = {
+    'model-hand-in-hand': [
+      {
+        title: '等边三角形里的手拉手',
+        stem: '如图，△ABC 和 △DCE 均为等边三角形，连接 AE、BD，求证：BD=AE。',
+        steps: ['∵ △ABC、△DCE 为等边三角形，∴ BC=AC，DC=EC，且 ∠BCA=∠DCE=60°。', '把 △BCD 看作由 △ACE 旋转得到。', '可证 △BCD≌△ACE。', '∴ BD=AE。'],
+        summary: '识别“等线段 + 共顶点 + 60°”后，优先想到旋转构造全等。',
+      },
+    ],
+    'model-cross': [
+      {
+        title: '正方形十字架基础题',
+        stem: '正方形 ABCD 中，E、F 分别在 BC、CD 上，且 AE⊥BF。判断 AE 与 BF 的关系。',
+        steps: ['在正方形中先用边相等、邻边垂直建立直角三角形。', '十字架结构常把“垂直”转成“相等”，再构造全等。', '由全等可得对应线段相等。', '所以可推出 AE=BF。'],
+        summary: '正方形里的十字架经常出现“垂直推出相等”的双向关系。',
+      },
+    ],
+    'model-pig-hoof': [
+      {
+        title: '猪蹄模型求角',
+        stem: 'AB∥CD，AE 与 CE 相交于 E，若 ∠A=42°，∠C=28°，求 ∠AEC。',
+        steps: ['延长 CE 交 AB 于点 F。', '∵ AB∥CD，∴ ∠AFC=∠C=28°。', '∵ ∠AEC 是 △AEF 的外角，∴ ∠AEC=∠A+∠AFC。', '∴ ∠AEC=42°+28°=70°。'],
+        summary: '猪蹄模型的主线是“平行线转角 + 外角定理”。',
+      },
+    ],
+    'model-k-equal-angle': [
+      {
+        title: '一线三等角基础题',
+        stem: '已知 ∠1=∠2=∠3，点 A、C、D 在同一直线上，求证：△AEC∽△BDE。',
+        steps: ['先把一线上的三个等角按顺序标清。', '由 ∠1=∠2=∠3 可得到两组对应角相等。', '∴ △AEC 与 △BDE 满足两角对应相等。', '∴ △AEC∽△BDE。'],
+        summary: '一线三等角最关键的是按“同一条线上的顺序”写对应关系。',
+      },
+    ],
+    'model-round-helper': [
+      {
+        title: '圆辅助线入门题',
+        stem: 'AB 是⊙O 的直径，点 C 在圆上，求证：∠ACB=90°。',
+        steps: ['连接 OA、OB、OC。', '∵ OA=OB=OC，∴ 可围绕等腰三角形与圆周角关系展开。', '由直径所对的圆周角是直角。', '∴ ∠ACB=90°。'],
+        summary: '圆题见直径先想直角，见切线先连半径，是最基本的模型反应。',
+      },
+    ],
+  };
+
+  return examples[template.id] || [
+    {
+      title: `${template.name}基础样题`,
+      stem: `若题目中出现“${template.name}”的典型结构，请写出第一条可用关系，并据此求出目标量。`,
+      steps: ['先判断图形或数量结构是否命中该模型。', '写出模型中最关键的一组相等关系或比例关系。', '再把目标量代入关系式求解。'],
+      summary: `这类模型题要落实到求角、求边、求比或求字母的值，不能只停留在识别层面。`,
+    },
+  ];
+}
+
+function enrichTemplate(template) {
+  return {
+    ...template,
+    figure: resolveAssetUrl(getTemplateFigurePath(template.id)),
+    examples: getTemplateExamples(template),
+  };
+}
+
+function resolveProblemAssets(problem) {
+  return {
+    ...problem,
+    sourceImage: resolveAssetUrl(problem.sourceImage),
+    image: resolveAssetUrl(problem.image),
+  };
+}
+
+function resolveKnowledgeAssets(knowledge) {
+  return {
+    ...knowledge,
+    coverImage: resolveAssetUrl(knowledge.coverImage),
+    sourceImage: resolveAssetUrl(knowledge.sourceImage),
+    problems: (knowledge.problems || []).map(resolveProblemAssets),
+  };
+}
+
+function getDetailedKnowledgeForChapter(chapterId) {
+  return knowledgeList
+    .filter((knowledge) => resolveChapterId(knowledge.chapterId) === chapterId)
+    .map((knowledge) => ({
+      ...knowledge,
+      chapterId,
+      synthetic: false,
+    }));
+}
+
+function getChapterById(chapterId) {
+  const chapter = chapterCatalog.find((item) => item.id === chapterId);
+
+  if (!chapter) {
+    return null;
+  }
+
+  const knowledgeItems = chapter.officialSections.map((sectionTitle, index) => buildLessonKnowledge(chapter, sectionTitle, index));
+  const templateItems = getChapterTemplates(chapter.id);
+  const figure = pickFigure(chapter);
+  const textBlocks = getChapterTextBlocks(chapter);
+
+  return {
+    ...chapter,
+    chapterFigure: {
+      ...figure,
+      image: resolveAssetUrl(figure.image),
+    },
+    studyGuide: [
+      `先通读本章目录，建立“${chapter.chapterNo}—小节—题型”的整体印象。`,
+      '先做基础题稳住概念，再做变式题提升迁移能力。',
+      templateItems.length ? `本章高频模型有：${templateItems.map((item) => item.name).join('、')}。` : '本章重点是把基础方法练熟，再逐步进入综合题。',
+    ],
+    chapterLead: textBlocks.chapterLead,
+    chapterConcepts: textBlocks.concepts,
+    chapterSolveText: textBlocks.solveText,
+    chapterCautionText: textBlocks.cautionText,
+    outlineItems: chapter.officialSections,
+    templateItems,
+    knowledgeItems: knowledgeItems.map(resolveKnowledgeAssets),
+    learningPath: [
+      {
+        title: '1. 建立概念',
+        desc: `先按教材目录学完 ${chapter.officialSections.slice(0, 2).join('、')}，把定义、公式和图形语言说清楚。`,
+      },
+      {
+        title: '2. 跟例题走步骤',
+        desc: '每个小节先看基础例题，再照着“题干-步骤-答案-解析”完整复述一遍。',
+      },
+      {
+        title: '3. 进入模型训练',
+        desc: templateItems.length
+          ? `最后集中练 ${templateItems.map((item) => item.name).slice(0, 3).join('、')}，把本章知识接到综合题。`
+          : '最后把本章基础方法混合使用，练会从条件中选择工具。',
+      },
+    ],
+    knowledgeCount: knowledgeItems.length,
+    totalProblems: knowledgeItems.reduce((sum, item) => sum + (item.problems ? item.problems.length : 0), 0),
+  };
+}
+
+function getAllChapters() {
+  return chapterCatalog.map((chapter) => getChapterById(chapter.id));
+}
+
+function getChapterGroups() {
+  const stageMap = {};
+
+  chapterCatalog.forEach((chapter) => {
+    const hydratedChapter = getChapterById(chapter.id);
+
+    if (!stageMap[chapter.stage]) {
+      stageMap[chapter.stage] = {
+        stage: chapter.stage,
+        grade: chapter.grade,
+        volume: chapter.volume,
+        items: [],
+      };
+    }
+
+    stageMap[chapter.stage].items.push(hydratedChapter);
+  });
+
+  return Object.keys(stageMap).map((stage) => stageMap[stage]);
+}
+
+function getFeaturedChapters() {
+  return chapterCatalog.slice(0, 8).map((chapter) => getChapterById(chapter.id));
+}
+
+function getKnowledgeById(knowledgeId) {
+  const detailed = knowledgeList.find((item) => item.id === knowledgeId);
+
+  if (detailed) {
+    return resolveKnowledgeAssets({
+      ...detailed,
+      chapterId: resolveChapterId(detailed.chapterId),
+      synthetic: false,
+    });
+  }
+
+  for (const chapter of chapterCatalog) {
+    const chapterDetail = getChapterById(chapter.id);
+    const matched = chapterDetail.knowledgeItems.find((item) => item.id === knowledgeId);
+    if (matched) {
+      return matched;
+    }
+  }
+
+  return null;
+}
+
+function getKnowledgeCards(ids) {
+  return ids.map((id) => getKnowledgeById(id)).filter(Boolean);
+}
+
+function getTemplateById(templateId) {
+  const template = templateLibrary.find((item) => item.id === templateId) || null;
+  return template ? enrichTemplate(template) : null;
+}
+
+function getFeaturedTemplates() {
+  return templateLibrary.slice(0, 8).map((template) => enrichTemplate(template));
+}
+
+function scoreMatch(keyword, title, bodyParts = []) {
+  const normalizedTitle = String(title || '').toLowerCase();
+  const normalizedBody = bodyParts.join(' ').toLowerCase();
+
+  let score = 0;
+
+  if (normalizedTitle === keyword) {
+    score += 120;
+  } else if (normalizedTitle.startsWith(keyword)) {
+    score += 90;
+  } else if (normalizedTitle.includes(keyword)) {
+    score += 70;
+  }
+
+  if (normalizedBody.includes(keyword)) {
+    score += 30;
+  }
+
+  return score;
+}
+
+function searchMath(keyword) {
+  const normalizedKeyword = (keyword || '').trim().toLowerCase();
+
+  if (!normalizedKeyword) {
+    return [];
+  }
+
+  const knowledgeResults = getAllChapters()
+    .flatMap((chapter) => chapter.knowledgeItems)
+    .map((knowledge) => {
+      const pool = [
+        knowledge.title,
+        knowledge.summary,
+        ...(knowledge.tags || []),
+        ...(knowledge.keywords || []),
+      ];
+      const score = scoreMatch(normalizedKeyword, knowledge.title, pool.slice(1));
+      return score > 0 ? { knowledge, score } : null;
+    })
+    .filter(Boolean)
+    .map(({ knowledge, score }) => {
+      const chapter = getChapterById(knowledge.chapterId);
+      return {
+        score,
+        id: `knowledge-${knowledge.id}`,
+        refId: knowledge.id,
+        type: 'knowledge',
+        typeLabel: '知识点',
+        title: knowledge.title,
+        subtitle: chapter ? `${chapter.stage} · ${chapter.title}` : '数学知识点',
+        description: knowledge.summary,
+        tags: knowledge.tags,
+      };
+    });
+
+  const templateResults = templateLibrary
+    .map((template) => {
+      const pool = [template.name, template.category, template.summary, ...(template.keywords || [])];
+      const score = scoreMatch(normalizedKeyword, template.name, pool.slice(1));
+      return score > 0 ? { template, score } : null;
+    })
+    .filter(Boolean)
+    .map(({ template, score }) => ({
+      score,
+      id: `template-${template.id}`,
+      refId: template.id,
+      type: 'template',
+      typeLabel: '模型',
+      title: template.name,
+      subtitle: `${template.category} · 题型模型库`,
+      description: template.summary,
+      tags: template.keywords.slice(0, 4),
+    }));
+
+  return [...knowledgeResults, ...templateResults]
+    .sort((a, b) => b.score - a.score || a.title.localeCompare(b.title, 'zh-Hans-CN'))
+    .map(({ score, ...item }) => item);
+}
+
+module.exports = {
+  getAllChapters,
+  getChapterGroups,
+  getFeaturedChapters,
+  getChapterById,
+  getKnowledgeById,
+  getKnowledgeCards,
+  getTemplateById,
+  getFeaturedTemplates,
+  searchMath,
+};

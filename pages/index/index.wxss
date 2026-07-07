@@ -1,0 +1,116 @@
+.hero {
+  padding: 34rpx 30rpx;
+}
+
+.hero__label {
+  display: inline-flex;
+  padding: 8rpx 18rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.18);
+  font-size: 22rpx;
+}
+
+.hero__title {
+  margin-top: 18rpx;
+  font-size: 52rpx;
+  font-weight: 800;
+}
+
+.hero__desc {
+  margin-top: 18rpx;
+  font-size: 26rpx;
+  line-height: 1.9;
+  opacity: 0.95;
+}
+
+.hero__stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16rpx;
+  margin-top: 28rpx;
+}
+
+.hero__stat {
+  padding: 18rpx;
+  border-radius: 22rpx;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.hero__stat-num {
+  font-size: 34rpx;
+  font-weight: 700;
+}
+
+.hero__stat-label {
+  margin-top: 8rpx;
+  font-size: 20rpx;
+  opacity: 0.88;
+}
+
+.search-wrap {
+  margin: 24rpx 0 30rpx;
+}
+
+.shortcut-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20rpx;
+  margin-top: 26rpx;
+}
+
+.shortcut {
+  padding: 26rpx;
+}
+
+.shortcut__title {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #1f2c46;
+}
+
+.shortcut__desc {
+  margin-top: 12rpx;
+  line-height: 1.8;
+  font-size: 24rpx;
+  color: #727b90;
+}
+
+.top-space {
+  margin-top: 32rpx;
+}
+
+.chapter-teaser {
+  padding: 28rpx;
+}
+
+.chapter-teaser__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12rpx;
+}
+
+.chapter-teaser__stage {
+  font-size: 22rpx;
+  color: #5f6981;
+}
+
+.chapter-teaser__title {
+  margin-top: 12rpx;
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #17233d;
+}
+
+.chapter-teaser__subtitle {
+  margin-top: 10rpx;
+  font-size: 24rpx;
+  color: #4e5970;
+  line-height: 1.7;
+}
+
+.chapter-teaser__highlight {
+  margin-top: 14rpx;
+  font-size: 23rpx;
+  color: #7c8397;
+}

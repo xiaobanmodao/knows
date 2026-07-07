@@ -1,0 +1,137 @@
+.template-hero {
+  padding: 32rpx 30rpx;
+}
+
+.template-hero__pill {
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+}
+
+.template-hero__title {
+  margin-top: 18rpx;
+  font-size: 42rpx;
+  font-weight: 800;
+}
+
+.template-hero__summary {
+  margin-top: 16rpx;
+  font-size: 25rpx;
+  line-height: 1.9;
+}
+
+.template-figure {
+  margin-top: 22rpx;
+  padding: 16rpx;
+  border-radius: 22rpx;
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.template-figure__image {
+  width: 100%;
+  height: 320rpx;
+  display: block;
+}
+
+.template-hero__tags {
+  margin-top: 18rpx;
+}
+
+.template-hero__tag {
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+}
+
+.top-gap {
+  margin-top: 26rpx;
+}
+
+.template-box {
+  padding: 28rpx;
+}
+
+.template-box__title {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #1c2743;
+}
+
+.template-box__item {
+  display: flex;
+  align-items: flex-start;
+  margin-top: 16rpx;
+}
+
+.template-box__dot {
+  width: 14rpx;
+  height: 14rpx;
+  margin-top: 12rpx;
+  margin-right: 16rpx;
+  border-radius: 50%;
+  background: #1660ff;
+  flex-shrink: 0;
+}
+
+.template-box__dot--warn {
+  background: #f59e0b;
+}
+
+.template-box__text {
+  flex: 1;
+  font-size: 25rpx;
+  line-height: 1.8;
+  color: #40506c;
+}
+
+.template-step {
+  display: flex;
+  align-items: flex-start;
+  margin-top: 18rpx;
+}
+
+.template-step__index {
+  width: 42rpx;
+  height: 42rpx;
+  margin-right: 16rpx;
+  border-radius: 50%;
+  background: #165dff;
+  color: #ffffff;
+  line-height: 42rpx;
+  text-align: center;
+  font-size: 21rpx;
+  font-weight: 700;
+}
+
+.template-step__text {
+  flex: 1;
+  font-size: 25rpx;
+  line-height: 1.8;
+  color: #384863;
+}
+
+.template-step--compact {
+  margin-top: 14rpx;
+}
+
+.related-card {
+  padding: 26rpx;
+}
+
+.related-card__title {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #17243f;
+}
+
+.related-card__summary {
+  margin-top: 10rpx;
+  font-size: 24rpx;
+  line-height: 1.8;
+  color: #617087;
+}
+
+.related-card__note {
+  margin-top: 16rpx;
+  font-size: 23rpx;
+  line-height: 1.8;
+  color: #8d6420;
+}
