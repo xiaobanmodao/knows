@@ -12,7 +12,8 @@
     <view class="chapter-hero__highlight">{{chapter.highlight}}</view>
 
     <view wx:if="{{chapter.chapterFigure && chapter.chapterFigure.image}}" class="chapter-figure">
-      <image class="chapter-figure__image" src="{{chapter.chapterFigure.image}}" mode="aspectFit" binderror="onImageError"></image>
+      <image wx:if="{{!chapterFigureLoadFailed}}" class="chapter-figure__image" src="{{chapter.chapterFigure.image}}" mode="aspectFit" binderror="onImageError"></image>
+      <view wx:else class="chapter-figure__fallback">图示暂未加载，文字内容可继续阅读</view>
       <view class="chapter-figure__caption">{{chapter.chapterFigure.caption}}</view>
     </view>
 

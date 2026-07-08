@@ -9,7 +9,8 @@
     <view class="knowledge-hero__title">{{knowledge.title}}</view>
     <view class="knowledge-hero__summary">{{knowledge.summary}}</view>
     <view wx:if="{{knowledge.coverImage}}" class="knowledge-figure">
-      <image class="knowledge-figure__image" src="{{knowledge.coverImage}}" mode="aspectFit" binderror="onImageError"></image>
+      <image wx:if="{{!coverImageLoadFailed}}" class="knowledge-figure__image" src="{{knowledge.coverImage}}" mode="aspectFit" binderror="onCoverImageError"></image>
+      <view wx:else class="knowledge-figure__fallback">图示暂未加载，文字内容可继续阅读</view>
       <view class="knowledge-figure__caption">{{knowledge.figureCaption}}</view>
     </view>
     <view class="knowledge-hero__tags">
@@ -67,7 +68,8 @@
       <view class="problem-card__section">
         <text class="problem-card__label">题干：</text>{{problem.stem}}
       </view>
-      <image wx:if="{{problem.image}}" class="problem-card__image" src="{{problem.image}}" mode="aspectFit" binderror="onImageError"></image>
+      <image wx:if="{{problem.image && !problem.imageLoadFailed}}" class="problem-card__image" src="{{problem.image}}" mode="aspectFit" data-index="{{index}}" binderror="onProblemImageError"></image>
+      <view wx:elif="{{problem.image && problem.imageLoadFailed}}" class="problem-card__image-fallback">例题图暂未加载，可先阅读题干和解析</view>
       <view wx:if="{{problem.steps && problem.steps.length}}" class="problem-card__steps">
         <view class="problem-card__label">解题过程：</view>
         <view wx:for="{{problem.steps}}" wx:key="index" class="problem-step">

@@ -4,7 +4,8 @@
     <view class="template-hero__title">{{template.name}}</view>
     <view class="template-hero__summary">{{template.summary}}</view>
     <view wx:if="{{template.figure}}" class="template-figure">
-      <image class="template-figure__image" src="{{template.figure}}" mode="aspectFit" binderror="onImageError"></image>
+      <image wx:if="{{!figureLoadFailed}}" class="template-figure__image" src="{{template.figure}}" mode="aspectFit" binderror="onImageError"></image>
+      <view wx:else class="template-figure__fallback">模型图暂未加载，文字步骤可继续阅读</view>
     </view>
     <view class="template-hero__tags">
       <text wx:for="{{template.keywords}}" wx:key="*this" wx:for-item="keyword" class="tag template-hero__tag">{{keyword}}</text>

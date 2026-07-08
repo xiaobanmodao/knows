@@ -4,6 +4,7 @@ const { applyTempFileURL, getTempFileURLMap } = require('../../utils/cloud-asset
 Page({
   data: {
     chapter: null,
+    chapterFigureLoadFailed: false,
   },
 
   async onLoad(options) {
@@ -21,18 +22,26 @@ Page({
       title: chapter.title,
     });
 
-    const image = chapter.chapterFigure && chapter.chapterFigure.image;
-    const fileMap = await getTempFileURLMap([image]);
-
     this.setData({
+      chapterFigureLoadFailed: false,
       chapter: {
         ...chapter,
         chapterFigure: {
           ...chapter.chapterFigure,
-          image: applyTempFileURL(image, fileMap),
         },
       },
     });
+
+    const image = chapter.chapterFigure && chapter.chapterFigure.image;
+    const fileMap = await getTempFileURLMap([image]);
+    const signedImage = applyTempFileURL(image, fileMap);
+
+    if (signedImage) {
+      this.setData({
+        chapterFigureLoadFailed: false,
+        'chapter.chapterFigure.image': signedImage,
+      });
+    }
   },
 
   openKnowledge(event) {
@@ -44,5 +53,8 @@ Page({
 
   onImageError(event) {
     console.warn('章节图片加载失败', event.detail);
+    this.setData({
+      chapterFigureLoadFailed: true,
+    });
   },
 });

@@ -5,6 +5,7 @@ Page({
   data: {
     template: null,
     relatedChapters: [],
+    figureLoadFailed: false,
   },
 
   async onLoad(options) {
@@ -22,15 +23,23 @@ Page({
       title: template.name,
     });
 
-    const fileMap = await getTempFileURLMap([template.figure]);
-
     this.setData({
+      figureLoadFailed: false,
       template: {
         ...template,
-        figure: applyTempFileURL(template.figure, fileMap),
       },
       relatedChapters: template.relatedChapters.map((chapterId) => getChapterById(chapterId)).filter(Boolean),
     });
+
+    const fileMap = await getTempFileURLMap([template.figure]);
+    const signedFigure = applyTempFileURL(template.figure, fileMap);
+
+    if (signedFigure) {
+      this.setData({
+        figureLoadFailed: false,
+        'template.figure': signedFigure,
+      });
+    }
   },
 
   openChapter(event) {
@@ -42,5 +51,8 @@ Page({
 
   onImageError(event) {
     console.warn('模型图片加载失败', event.detail);
+    this.setData({
+      figureLoadFailed: true,
+    });
   },
 });

@@ -32,6 +32,21 @@
   display: block;
 }
 
+.template-figure__fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 220rpx;
+  border-radius: 18rpx;
+  background: #f4f7ff;
+  border: 1rpx dashed #cbd7ee;
+  color: #5e6984;
+  font-size: 24rpx;
+  line-height: 1.7;
+  text-align: center;
+}
+
 .template-hero__tags {
   margin-top: 18rpx;
 }

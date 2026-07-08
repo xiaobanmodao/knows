@@ -7,6 +7,7 @@ Page({
     chapter: null,
     isFavorite: false,
     relatedItems: [],
+    coverImageLoadFailed: false,
   },
 
   onLoad(options) {
@@ -26,6 +27,8 @@ Page({
   },
 
   async loadKnowledge(knowledgeId) {
+    this.currentKnowledgeId = knowledgeId;
+
     const knowledge = getKnowledgeById(knowledgeId);
 
     if (!knowledge) {
@@ -54,17 +57,11 @@ Page({
       title: knowledge.title,
     });
 
-    const imagePaths = [
-      knowledge.coverImage,
-      ...(knowledge.problems || []).map((problem) => problem.image),
-    ];
-    const fileMap = await getTempFileURLMap(imagePaths);
     const displayKnowledge = {
       ...knowledge,
-      coverImage: applyTempFileURL(knowledge.coverImage, fileMap),
       problems: (knowledge.problems || []).map((problem) => ({
         ...problem,
-        image: applyTempFileURL(problem.image, fileMap),
+        imageLoadFailed: false,
       })),
     };
 
@@ -72,7 +69,31 @@ Page({
       knowledge: displayKnowledge,
       chapter,
       relatedItems,
+      coverImageLoadFailed: false,
       isFavorite: app.globalData.favorites.some((item) => item.id === knowledge.id),
+    });
+
+    const imagePaths = [
+      knowledge.coverImage,
+      ...(knowledge.problems || []).map((problem) => problem.image),
+    ];
+    const fileMap = await getTempFileURLMap(imagePaths);
+
+    if (this.currentKnowledgeId !== knowledgeId) {
+      return;
+    }
+
+    const signedCoverImage = applyTempFileURL(knowledge.coverImage, fileMap);
+    const signedProblems = (knowledge.problems || []).map((problem) => ({
+      ...problem,
+      image: applyTempFileURL(problem.image, fileMap) || problem.image,
+      imageLoadFailed: false,
+    }));
+
+    this.setData({
+      coverImageLoadFailed: false,
+      'knowledge.coverImage': signedCoverImage || knowledge.coverImage,
+      'knowledge.problems': signedProblems,
     });
   },
 
@@ -106,7 +127,19 @@ Page({
     this.loadKnowledge(id);
   },
 
-  onImageError(event) {
-    console.warn('知识点图片加载失败', event.detail);
+  onCoverImageError(event) {
+    console.warn('知识点封面图加载失败', event.detail);
+    this.setData({
+      coverImageLoadFailed: true,
+    });
+  },
+
+  onProblemImageError(event) {
+    const { index } = event.currentTarget.dataset;
+
+    console.warn('例题图片加载失败', event.detail);
+    this.setData({
+      [`knowledge.problems[${index}].imageLoadFailed`]: true,
+    });
   },
 });

@@ -61,6 +61,21 @@
   display: block;
 }
 
+.chapter-figure__fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 240rpx;
+  border-radius: 18rpx;
+  background: #f4f7ff;
+  border: 1rpx dashed #cbd7ee;
+  color: #6c7690;
+  font-size: 24rpx;
+  line-height: 1.7;
+  text-align: center;
+}
+
 .chapter-figure__caption {
   margin-top: 12rpx;
   font-size: 22rpx;
