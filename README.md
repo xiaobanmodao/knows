@@ -35,6 +35,16 @@
 - 数学内容已按清晰层级组织，可继续扩充数据
 - 英语和物理入口已预留，后续可复用同一套架构扩展
 
+## 发布前校验
+
+上传体验版前建议依次执行：
+
+```bash
+node scripts/check-release-readiness.js
+node scripts/check-math-content.js
+node scripts/check-unique-figures.js
+```
+
 ## 下一步建议
 
 1. 在开发者工具里先跑通界面
