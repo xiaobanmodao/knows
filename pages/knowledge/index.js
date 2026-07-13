@@ -1,5 +1,5 @@
 const { getKnowledgeById, getChapterById } = require('../../utils/math');
-const { applyTempFileURL, getTempFileURLMap } = require('../../utils/cloud-assets');
+const { applyTempFileURL, getTempFileURLMap, isCloudFile } = require('../../utils/cloud-assets');
 
 Page({
   data: {
@@ -59,8 +59,10 @@ Page({
 
     const displayKnowledge = {
       ...knowledge,
+      coverImage: isCloudFile(knowledge.coverImage) ? '' : knowledge.coverImage,
       problems: (knowledge.problems || []).map((problem) => ({
         ...problem,
+        image: isCloudFile(problem.image) ? '' : problem.image,
         imageLoadFailed: false,
       })),
     };
@@ -86,13 +88,13 @@ Page({
     const signedCoverImage = applyTempFileURL(knowledge.coverImage, fileMap);
     const signedProblems = (knowledge.problems || []).map((problem) => ({
       ...problem,
-      image: applyTempFileURL(problem.image, fileMap) || problem.image,
+      image: applyTempFileURL(problem.image, fileMap) || (isCloudFile(problem.image) ? '' : problem.image),
       imageLoadFailed: false,
     }));
 
     this.setData({
       coverImageLoadFailed: false,
-      'knowledge.coverImage': signedCoverImage || knowledge.coverImage,
+      'knowledge.coverImage': signedCoverImage || (isCloudFile(knowledge.coverImage) ? '' : knowledge.coverImage),
       'knowledge.problems': signedProblems,
     });
   },

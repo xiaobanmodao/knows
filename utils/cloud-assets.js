@@ -102,7 +102,18 @@ function getClientTempFileURLBatch(fileIDs) {
 }
 
 function getTempFileURLBatch(fileIDs) {
-  return getServerTempFileURLBatch(fileIDs);
+  return getServerTempFileURLBatch(fileIDs).then((serverMap) => {
+    const missing = fileIDs.filter((fileID) => !serverMap[fileID]);
+
+    if (!missing.length) {
+      return serverMap;
+    }
+
+    return getClientTempFileURLBatch(missing).then((clientMap) => ({
+      ...serverMap,
+      ...clientMap,
+    }));
+  });
 }
 
 function getTempFileURLMap(fileIDs) {

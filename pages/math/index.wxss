@@ -35,6 +35,177 @@
   color: #6b7387;
 }
 
+.study-map,
+.topic-section {
+  margin-top: 30rpx;
+}
+
+.grade-list,
+.topic-grid {
+  display: grid;
+  gap: 20rpx;
+}
+
+.grade-pack {
+  padding: 28rpx;
+  overflow: hidden;
+}
+
+.grade-pack__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18rpx;
+}
+
+.grade-pack__title {
+  font-size: 24rpx;
+  font-weight: 700;
+  color: #2357d8;
+}
+
+.grade-pack__headline {
+  margin-top: 6rpx;
+  font-size: 30rpx;
+  font-weight: 800;
+  line-height: 1.35;
+  color: #17233f;
+}
+
+.grade-pack__count {
+  flex-shrink: 0;
+  padding: 8rpx 16rpx;
+  border-radius: 999rpx;
+  font-size: 22rpx;
+  color: #1f6f5c;
+  background: #e8f7f2;
+}
+
+.grade-pack__subtitle {
+  margin-top: 14rpx;
+  font-size: 24rpx;
+  line-height: 1.7;
+  color: #59657a;
+}
+
+.bucket-list {
+  margin-top: 16rpx;
+}
+
+.bucket-row {
+  padding: 22rpx 0 20rpx;
+  border-top: 1rpx solid #eef1f7;
+}
+
+.bucket-row:first-child {
+  border-top: 0;
+}
+
+.bucket-row__main {
+  min-width: 0;
+}
+
+.bucket-row__title {
+  font-size: 27rpx;
+  font-weight: 750;
+  line-height: 1.35;
+  color: #1e2943;
+}
+
+.bucket-row__desc {
+  margin-top: 8rpx;
+  font-size: 23rpx;
+  line-height: 1.65;
+  color: #667086;
+}
+
+.bucket-row__focus,
+.topic-card__focus {
+  margin-top: 12rpx;
+}
+
+.mini-tag {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 10rpx;
+  margin-bottom: 10rpx;
+  padding: 7rpx 14rpx;
+  border-radius: 999rpx;
+  font-size: 21rpx;
+  line-height: 1.35;
+  color: #36558f;
+  background: #f2f6ff;
+}
+
+.bucket-row__chapters {
+  margin-top: 8rpx;
+}
+
+.chapter-chip {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  margin-right: 10rpx;
+  margin-bottom: 10rpx;
+  padding: 8rpx 14rpx;
+  border-radius: 999rpx;
+  font-size: 22rpx;
+  line-height: 1.35;
+  color: #2357d8;
+  background: #edf3ff;
+}
+
+.topic-card {
+  padding: 24rpx;
+  overflow: hidden;
+}
+
+.topic-card__top {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.topic-card__image {
+  flex-shrink: 0;
+  width: 82rpx;
+  height: 82rpx;
+  margin-right: 16rpx;
+  border-radius: 20rpx;
+  background: #f4f7ff;
+}
+
+.topic-card__copy {
+  min-width: 0;
+}
+
+.topic-card__label {
+  font-size: 21rpx;
+  color: #1f6f5c;
+}
+
+.topic-card__title {
+  margin-top: 4rpx;
+  font-size: 30rpx;
+  font-weight: 800;
+  line-height: 1.3;
+  color: #17233f;
+  word-break: break-all;
+}
+
+.topic-card__stage {
+  margin-top: 4rpx;
+  font-size: 22rpx;
+  color: #7b8498;
+}
+
+.topic-card__summary {
+  margin-top: 14rpx;
+  font-size: 24rpx;
+  line-height: 1.7;
+  color: #59657a;
+}
+
 .group-block {
   margin-top: 22rpx;
 }

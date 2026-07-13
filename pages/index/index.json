@@ -1,3 +1,7 @@
 {
-  "navigationBarTitleText": "知识通"
+  "navigationBarTitleText": "知识通",
+  "usingComponents": {
+    "search-bar": "/components/search-bar/index",
+    "subject-card": "/components/subject-card/index"
+  }
 }

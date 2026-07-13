@@ -129,6 +129,311 @@ const chapterPackMap = {
   'ch29-projection': { concepts: ['平行投影与中心投影', '三视图', '展开图与立体模型'], mistakes: ['视角方向看反', '展开图对应面拼接错'], scenario: '工程图纸、包装盒、立体还原', advanced: '空间想象与动手制作结合' },
 };
 
+const gradeStudyMapConfig = [
+  {
+    id: 'grade7',
+    title: '七年级',
+    headline: '先把数学语言学清楚',
+    subtitle: '数轴、式子、方程、平行线和坐标是整个初中的底座。',
+    buckets: [
+      {
+        title: '数与式入门',
+        desc: '从正负数到整式、实数，先会看结构再会运算。',
+        chapterIds: ['ch01-rational', 'ch02-expression', 'ch06-real'],
+        focus: ['数轴理解', '代数表达', '开方与实数'],
+      },
+      {
+        title: '方程与范围',
+        desc: '把生活问题翻译成等量关系或范围条件。',
+        chapterIds: ['ch03-linear-equation', 'ch08-system', 'ch09-inequality'],
+        focus: ['设未知数', '消元思想', '数轴表示解集'],
+      },
+      {
+        title: '几何和坐标起步',
+        desc: '从点线角、平行线走到坐标法。',
+        chapterIds: ['ch04-basic-geometry', 'ch05-parallel', 'ch07-coordinate'],
+        focus: ['几何语言', '角关系证明', '坐标定位'],
+      },
+      {
+        title: '统计起步',
+        desc: '会整理数据、读统计图，并能说明结论。',
+        chapterIds: ['ch10-statistics'],
+        focus: ['调查方式', '直方图', '数据解释'],
+      },
+    ],
+  },
+  {
+    id: 'grade8',
+    title: '八年级',
+    headline: '按“专题-考点-考法”推进',
+    subtitle: '八年级开始从会算走向会证明、会建模、会综合。',
+    buckets: [
+      {
+        title: '几何证明主线',
+        desc: '三角形、全等、轴对称连起来，是证明题的核心训练区。',
+        chapterIds: ['ch11-triangle', 'ch12-congruent', 'ch13-symmetry'],
+        focus: ['边角关系', '全等判定', '对称与最短路径'],
+      },
+      {
+        title: '代数变形主线',
+        desc: '整式、分式、根式都服务于后面的方程和函数。',
+        chapterIds: ['ch14-polynomial', 'ch15-fraction', 'ch16-radical'],
+        focus: ['乘法公式', '因式分解', '分式方程验根', '根式化简'],
+      },
+      {
+        title: '图形数量关系',
+        desc: '勾股定理和平行四边形把图形性质转成可计算关系。',
+        chapterIds: ['ch17-pythagorean', 'ch18-parallelogram'],
+        focus: ['直角结构', '特殊四边形', '面积与最值'],
+      },
+      {
+        title: '函数与数据',
+        desc: '一次函数负责建模，数据分析负责解释。',
+        chapterIds: ['ch19-linear-function', 'ch20-data-analysis'],
+        focus: ['图像信息', '解析式', '方案选择', '统计量'],
+      },
+    ],
+  },
+  {
+    id: 'grade9',
+    title: '九年级',
+    headline: '把模型接到中考综合题',
+    subtitle: '方程、函数、圆、相似和三角函数开始频繁混合。',
+    buckets: [
+      {
+        title: '方程函数综合',
+        desc: '一元二次方程、二次函数、反比例函数共同构成压轴主线。',
+        chapterIds: ['ch21-quadratic-equation', 'ch22-quadratic-function', 'ch26-inverse-function'],
+        focus: ['判别式', '顶点最值', '函数交点', '面积关系'],
+      },
+      {
+        title: '几何变换与圆',
+        desc: '旋转和圆经常承担证明题的核心结构。',
+        chapterIds: ['ch23-rotation', 'ch24-circle'],
+        focus: ['旋转全等', '圆周角', '切线', '弧长面积'],
+      },
+      {
+        title: '相似与测量',
+        desc: '用比例语言处理图形放缩、测高测距和综合证明。',
+        chapterIds: ['ch27-similarity', 'ch28-trigonometry'],
+        focus: ['相似判定', '相似比', '锐角三角函数', '解直角三角形'],
+      },
+      {
+        title: '概率与空间',
+        desc: '用列举、频率和视图还原处理情境题。',
+        chapterIds: ['ch25-probability', 'ch29-projection'],
+        focus: ['样本空间', '频率估计', '三视图', '展开图'],
+      },
+    ],
+  },
+];
+
+const grade8TopicMapConfig = [
+  {
+    id: 'g8-topic-triangle',
+    label: '专题一',
+    title: '三角形',
+    chapterIds: ['ch11-triangle'],
+    summary: '先抓三边、三线、内外角和多边形角度关系。',
+    focus: ['三边关系与取值范围', '中线、高、角平分线', '面积关系', '多边形边角数量'],
+  },
+  {
+    id: 'g8-topic-congruent',
+    label: '专题二',
+    title: '全等三角形',
+    chapterIds: ['ch12-congruent'],
+    summary: '从判定条件入手，再训练常见辅助线和构造方法。',
+    focus: ['手拉手结构', '一线三等角', '倍长中线', '角平分线辅助线'],
+  },
+  {
+    id: 'g8-topic-symmetry',
+    label: '专题三',
+    title: '轴对称',
+    chapterIds: ['ch13-symmetry'],
+    summary: '把对称、等腰三角形、垂直平分线和路径问题放在一起学。',
+    focus: ['垂直平分线', '等腰三角形', '等面积转化', '最短路径'],
+  },
+  {
+    id: 'g8-topic-polynomial',
+    label: '专题四',
+    title: '整式乘法与因式分解',
+    chapterIds: ['ch14-polynomial'],
+    summary: '先练运算准确性，再练公式和分解的双向变形。',
+    focus: ['幂的运算', '乘法公式', '因式分解', '图形面积验证公式'],
+  },
+  {
+    id: 'g8-topic-fraction',
+    label: '专题五',
+    title: '分式',
+    chapterIds: ['ch15-fraction'],
+    summary: '分式运算要抓公分母，分式方程必须验根。',
+    focus: ['化简求值', '通分约分', '分式方程', '实际应用'],
+  },
+  {
+    id: 'g8-topic-radical',
+    label: '专题六',
+    title: '二次根式',
+    chapterIds: ['ch16-radical'],
+    summary: '根式先判断有意义，再化成最简形式后运算。',
+    focus: ['性质与化简', '双重非负性', '根式比较大小', '规律探究'],
+  },
+  {
+    id: 'g8-topic-pythagorean',
+    label: '专题七',
+    title: '勾股定理',
+    chapterIds: ['ch17-pythagorean'],
+    summary: '核心是识别或构造直角三角形，把长度关系写出来。',
+    focus: ['定理证明', '逆定理', '分类讨论', '最短路径'],
+  },
+  {
+    id: 'g8-topic-parallelogram',
+    label: '专题八',
+    title: '平行四边形',
+    chapterIds: ['ch18-parallelogram'],
+    summary: '从一般平行四边形推进到矩形、菱形、正方形。',
+    focus: ['性质与判定', '中位线', '特殊四边形模型', '折叠与最值'],
+  },
+  {
+    id: 'g8-topic-linear-function',
+    label: '专题九',
+    title: '一次函数',
+    chapterIds: ['ch19-linear-function'],
+    summary: '用图像、解析式和实际含义同时理解变化关系。',
+    focus: ['图像信息', '动点问题', '图形变换', '方案选择与面积'],
+  },
+  {
+    id: 'g8-topic-data-analysis',
+    label: '专题十',
+    title: '数据的分析',
+    chapterIds: ['ch20-data-analysis'],
+    summary: '不只会算统计量，还要会解释哪个指标更合适。',
+    focus: ['平均数', '中位数和众数', '方差', '统计图综合'],
+  },
+];
+
+const grade8TopicGuideMap = {
+  'g8-topic-triangle': {
+    objective: '能把边、角、三线和面积关系放进同一张图里，先写范围或等量关系，再完成计算与证明。',
+    signals: ['能否组成三角形', '第三边取值', '中点或角平分线', '面积比', '多边形内外角'],
+    checkpoints: [
+      { title: '三边关系与取值范围', method: '先写“两边之差 < 第三边 < 两边之和”，再与题目给出的整数、偶数或参数范围取交集。' },
+      { title: '中线、高、角平分线', method: '先认准端点和落点：中线连中点，高形成垂直，角平分线形成两角相等。' },
+      { title: '面积关系', method: '优先找同高、等底或中线；同高三角形的面积比等于对应底边比。' },
+      { title: '多边形边角数量', method: '把 n 边形分成 n-2 个三角形，内角和为 (n-2)×180°，外角和恒为 360°。' },
+    ],
+    practiceFlow: ['先在图上标边、角、中点和垂直关系。', '再判断是范围题、角度题还是面积题。', '列出最短的一条核心关系后计算。', '最后检查范围端点、单位和图形是否成立。'],
+    finishCriteria: ['会求第三边的整数取值个数。', '能区分并正确画出中线、高和角平分线。', '会用同高或等底关系转化面积。', '会处理多边形内角和、外角和与边数。'],
+  },
+  'g8-topic-congruent': {
+    objective: '能从题目条件中补齐全等所需的三组关系，并用对应边、对应角解决求证或求值。',
+    signals: ['等边或等腰结构', '公共边或对顶角', '中点与倍长', '角平分线', '旋转后重合'],
+    checkpoints: [
+      { title: '手拉手结构', method: '看到共顶点的两个等边或等腰图形，先找旋转角，再用边角边连接两组三角形。' },
+      { title: '一线三等角', method: '按直线上的顺序整理角的和差，先确定对应顶点，再选择角边角或角角边。' },
+      { title: '倍长中线', method: '延长中线到原来的两倍并连接端点，用对顶角和两组等边构造全等。' },
+      { title: '角平分线辅助线', method: '围绕“两角相等”作垂线、截等长或连接关键点，把距离问题转成全等问题。' },
+    ],
+    practiceFlow: ['圈出已有的等边、等角和公共条件。', '按目标量倒推需要证明哪两个三角形全等。', '选择 SSS、SAS、ASA、AAS 或 HL。', '写清对应顺序，再使用全等后的结论。'],
+    finishCriteria: ['能判断现有条件能否证明全等。', '能规范书写全等判定和对应顺序。', '会识别手拉手、一线三等角和倍长中线。', '能用全等解决角平分线距离问题。'],
+  },
+  'g8-topic-symmetry': {
+    objective: '能把轴对称转化为等距、垂直和平分关系，并用对称变换处理等腰、面积与最短路径。',
+    signals: ['到两点距离相等', '线段垂直平分线', '等腰三角形', '折叠重合', '两定点一动点'],
+    checkpoints: [
+      { title: '垂直平分线', method: '点在线段垂直平分线上等价于到两端点距离相等，证明时可正向或逆向使用。' },
+      { title: '等腰三角形', method: '围绕“等边对等角、等角对等边”双向推理，顶角平分线还可得到中线和高。' },
+      { title: '等面积转化', method: '先找同底、同高或对称后重合的图形，再把陌生区域换成可计算区域。' },
+      { title: '最短路径', method: '把一个定点关于直线作对称，利用“两点之间线段最短”把折线拉直。' },
+    ],
+    practiceFlow: ['先判断对称轴以及对应点。', '写出等距、垂直和平分三类性质。', '需要最短路径时先作对称点再连直线。', '检查交点是否落在题目规定的线段或射线上。'],
+    finishCriteria: ['会用垂直平分线性质与判定。', '能完成等腰三角形的边角互推。', '会利用对称或同高关系转化面积。', '会解决直线上的最短路径问题。'],
+  },
+  'g8-topic-polynomial': {
+    objective: '能看清整式结构，熟练完成乘法与因式分解的双向变形，并用面积图解释公式。',
+    signals: ['同底数幂', '完全平方', '平方差', '公因式', '整体代换'],
+    checkpoints: [
+      { title: '幂的运算', method: '先判断运算类型，再处理指数；同底数幂相乘指数相加，幂的乘方指数相乘。' },
+      { title: '乘法公式', method: '先对照结构而不是只看符号，确认两项是否互为相同项与相反项。' },
+      { title: '因式分解', method: '固定顺序为“先提公因式，再套公式，最后检查是否还能继续分解”。' },
+      { title: '图形面积验证公式', method: '分别用整体面积和分块面积表示同一图形，利用两种表达相等得到公式。' },
+    ],
+    practiceFlow: ['先标出项、系数、次数和共同因式。', '判断题目要展开、化简还是分解。', '选择乘法法则或公式并保持符号完整。', '代回展开检查分解结果。'],
+    finishCriteria: ['幂运算中能正确处理系数、符号和指数。', '能正用与逆用平方差、完全平方公式。', '能把多项式分解到不能再分。', '能用面积关系解释并验证公式。'],
+  },
+  'g8-topic-fraction': {
+    objective: '能先确定分式有意义的条件，再完成化简、运算和方程求解，并对实际结果作检验。',
+    signals: ['分母含字母', '最简分式', '通分', '分式方程', '工程或行程'],
+    checkpoints: [
+      { title: '化简求值', method: '先因式分解并约去公因式，保留分母不为 0 的限制，最后再代入数值。' },
+      { title: '通分约分', method: '先确定最简公分母，分子分母同乘缺少的因式，异分母相加减后再化简。' },
+      { title: '分式方程', method: '两边同乘最简公分母化为整式方程，求解后必须代回原分母验根。' },
+      { title: '实际应用', method: '按“工作量=效率×时间”或“路程=速度×时间”列等量关系，并检查答案是否符合情境。' },
+    ],
+    practiceFlow: ['先写所有分母不为 0 的条件。', '因式分解后确定约分或通分路径。', '方程题去分母并解整式方程。', '验根，同时检查单位和实际意义。'],
+    finishCriteria: ['会求分式有意义或值为 0 的条件。', '能准确完成分式混合运算。', '解分式方程后会验根。', '能用分式方程解决工程、行程类问题。'],
+  },
+  'g8-topic-radical': {
+    objective: '能判断二次根式有意义的范围，把根式化到最简后进行运算、比较和规律探究。',
+    signals: ['被开方数含字母', '最简二次根式', '根式比较', '非负性', '找规律'],
+    checkpoints: [
+      { title: '性质与化简', method: '先把被开方数分解出完全平方因数，再用 √(a²)=|a|，不要漏掉绝对值。' },
+      { title: '双重非负性', method: '二次根式要求被开方数不小于 0，根式值本身也不小于 0，可据此夹出参数。' },
+      { title: '根式比较大小', method: '正数可平方后比较，也可先估算区间或化成同类二次根式。' },
+      { title: '规律探究', method: '先计算前几项，观察被开方数、系数和结果的变化，再用代数式验证猜想。' },
+    ],
+    practiceFlow: ['先写被开方数的非负条件。', '化简为最简二次根式并合并同类项。', '比较或求值时选择平方、估算或整体代入。', '检查是否错误使用 √(a²)=a。'],
+    finishCriteria: ['会求二次根式中字母的取值范围。', '能化简并进行加减乘除。', '会用多种方法比较根式大小。', '能从数列式根式中发现并验证规律。'],
+  },
+  'g8-topic-pythagorean': {
+    objective: '能识别或构造直角三角形，正确选择勾股定理或逆定理，解决长度、分类和路径问题。',
+    signals: ['直角或垂直', '三边判定形状', '折叠展开', '网格距离', '最短路径'],
+    checkpoints: [
+      { title: '定理证明', method: '用拼图或面积法把同一图形写成两种面积表达，化简得到 a²+b²=c²。' },
+      { title: '逆定理', method: '先找最长边 c，再比较 a²+b² 与 c²；相等才是直角三角形。' },
+      { title: '分类讨论', method: '斜边或直角顶点不确定时分情况画图，分别列勾股关系并剔除不合题意的结果。' },
+      { title: '最短路径', method: '把立体表面展开或把点作对称，让曲面、折线上的路线转成平面直线段。' },
+    ],
+    practiceFlow: ['先标出直角并确认斜边。', '已知直角用定理，已知三边判形状用逆定理。', '路径题先展开或作对称再计算。', '检查根号、单位和分类是否完整。'],
+    finishCriteria: ['会用面积法说明勾股定理。', '会用三边平方关系判定直角三角形。', '能处理斜边不确定的分类题。', '会求平面或立体展开后的最短路径。'],
+  },
+  'g8-topic-parallelogram': {
+    objective: '能按条件选择平行四边形及特殊四边形的性质或判定，并处理构造、折叠、面积和最值。',
+    signals: ['两组对边', '对角线互相平分', '直角或等边', '中点与中位线', '折叠重合'],
+    checkpoints: [
+      { title: '性质与判定', method: '求结论时用性质，确认图形身份时用判定；避免把尚未证明的图形性质提前使用。' },
+      { title: '中位线', method: '看到两个中点先连接，三角形中位线平行第三边且等于第三边的一半。' },
+      { title: '特殊四边形模型', method: '在平行四边形基础上增加直角、邻边相等或对角线条件，逐级判定矩形、菱形、正方形。' },
+      { title: '折叠与最值', method: '折叠先写对应点等距、对应角相等；最值再用垂线段最短、三角形三边关系或对称。' },
+    ],
+    practiceFlow: ['列出题目已给的平行、相等、垂直和中点。', '判断当前任务是使用性质还是证明判定。', '需要辅助线时优先连接中点或对角线。', '最后反查每条性质使用前是否已证明图形身份。'],
+    finishCriteria: ['能区分四类四边形的性质与判定。', '会用三角形中位线解决长度和平行。', '能在十字架、对角互补、三垂直等结构中选方法。', '会处理简单折叠和最值问题。'],
+  },
+  'g8-topic-linear-function': {
+    objective: '能在图像、解析式、表格和实际情境之间转换，用一次函数描述变化并解决交点、方案和面积问题。',
+    signals: ['两点确定直线', '正比例或一次变化', '两方案比较', '动点', '面积随时间变化'],
+    checkpoints: [
+      { title: '图像信息', method: '先读横纵轴和单位，再从点、斜率、截距、交点判断数量关系和变化趋势。' },
+      { title: '动点问题', method: '先确定自变量范围，再分阶段写路程或坐标，必要时建立分段函数。' },
+      { title: '图形变换', method: '平移直线时跟踪斜率和截距，坐标变换时选关键点验证图像位置。' },
+      { title: '方案选择与面积', method: '分别建立函数解析式，交点给出临界值，再按自变量范围比较大小或求面积。' },
+    ],
+    practiceFlow: ['明确自变量、因变量、单位和取值范围。', '从两点或变化率求出解析式。', '画图或联立方程找交点和临界值。', '用题目情境解释函数值与最终方案。'],
+    finishCriteria: ['会从图像读取点、趋势、截距和交点。', '能用待定系数法求一次函数解析式。', '会处理简单动点和分段变化。', '能比较两种方案并解释临界点。'],
+  },
+  'g8-topic-data-analysis': {
+    objective: '能选择合适的统计量描述数据中心与波动，并结合统计图对样本和总体作有依据的解释。',
+    signals: ['平均水平', '典型水平', '极端值', '稳定程度', '统计图综合'],
+    checkpoints: [
+      { title: '平均数', method: '频数表中用“数据×频数”求总和再除以总频数，加权问题要先确认权重含义。' },
+      { title: '中位数和众数', method: '先排序再找中位数；众数是出现次数最多的数据，二者都可能不唯一或不在原数据中同时出现。' },
+      { title: '方差', method: '方差越小说明数据越集中、越稳定；比较时要保证数据单位和平均水平具有可比性。' },
+      { title: '统计图综合', method: '统一样本量、百分比和频数，交叉使用条形图、扇形图和表格补齐缺失信息。' },
+    ],
+    practiceFlow: ['先确认样本量、单位和数据是否已排序。', '按问题选择平均数、中位数、众数或方差。', '从图表补齐频数、频率和百分比。', '结论中同时说明数据依据和适用范围。'],
+    finishCriteria: ['能从频数表求平均数。', '能准确确定中位数和众数。', '会用方差比较稳定性。', '能综合多种统计图并作出合理说明。'],
+  },
+};
+
 const chapterTextOverrideMap = {
   'ch01-rational': {
     lead: '这一章像整册书的起点页。先学会用正负数描述现实中的相反意义，再借助数轴认识大小规律，最后把加减乘除与乘方的运算法则连成一条完整主线。',
@@ -2401,6 +2706,62 @@ function getDetailedKnowledgeForChapter(chapterId) {
     }));
 }
 
+function buildChapterReviewList(chapter, knowledgeItems, templateItems, textBlocks) {
+  const conceptItems = uniqueList([
+    ...(textBlocks.concepts || []),
+    ...knowledgeItems.flatMap((knowledge) => knowledge.knowledgePoints || []),
+  ]).slice(0, 5);
+  const solveItems = uniqueList([
+    ...(textBlocks.solveText || []),
+    ...knowledgeItems.flatMap((knowledge) => knowledge.template ? [knowledge.template.name] : []),
+  ]).slice(0, 4);
+  const cautionItems = uniqueList(textBlocks.cautionText || []).slice(0, 4);
+  const modelItems = templateItems.slice(0, 4).map((template) => ({
+    id: template.id,
+    name: template.name,
+    summary: template.summary,
+  }));
+
+  return [
+    {
+      title: '核心概念',
+      subtitle: `先把 ${chapter.title} 的定义、性质和图形语言说清楚。`,
+      items: conceptItems,
+    },
+    {
+      title: '常用方法',
+      subtitle: '复习时按方法入口回看例题，不只背结论。',
+      items: solveItems,
+    },
+    {
+      title: '易错提醒',
+      subtitle: '做完题后对照检查，优先修正反复出错的地方。',
+      items: cautionItems,
+    },
+    {
+      title: '题型模型',
+      subtitle: templateItems.length ? '本章模型要能从题干信号中快速识别。' : '本章以基础方法熟练度为主，先把教材小节吃透。',
+      items: modelItems.length ? modelItems.map((item) => item.name) : ['基础题型训练', '教材小节混合应用'],
+    },
+  ].filter((group) => group.items.length);
+}
+
+function getGrade8TopicGuideByChapter(chapterId) {
+  const topic = grade8TopicMapConfig.find((item) => item.chapterIds.includes(chapterId));
+
+  if (!topic) {
+    return null;
+  }
+
+  const guide = grade8TopicGuideMap[topic.id] || {};
+
+  return {
+    ...topic,
+    ...guide,
+    checkpointCount: (guide.checkpoints || []).length,
+  };
+}
+
 function getChapterById(chapterId) {
   const chapter = chapterCatalog.find((item) => item.id === chapterId);
 
@@ -2431,6 +2792,8 @@ function getChapterById(chapterId) {
     outlineItems: chapter.officialSections,
     templateItems,
     knowledgeItems: knowledgeItems.map(resolveKnowledgeAssets),
+    topicGuide: getGrade8TopicGuideByChapter(chapter.id),
+    reviewList: buildChapterReviewList(chapter, knowledgeItems, templateItems, textBlocks),
     learningPath: [
       {
         title: '1. 建立概念',
@@ -2475,6 +2838,70 @@ function getChapterGroups() {
   });
 
   return Object.keys(stageMap).map((stage) => stageMap[stage]);
+}
+
+function getStudyMapChapter(chapterId) {
+  const chapter = chapterCatalog.find((item) => item.id === chapterId);
+
+  if (!chapter) {
+    return null;
+  }
+
+  const figure = pickFigure(chapter);
+
+  return {
+    id: chapter.id,
+    stage: chapter.stage,
+    chapterNo: chapter.chapterNo,
+    title: chapter.title,
+    label: `${chapter.chapterNo} ${chapter.title}`,
+    summary: chapterSummaryMap[chapter.id] || chapter.highlight,
+    image: resolveAssetUrl(figure.image),
+    focus: (chapterPromptMap[chapter.id] || []).slice(0, 3),
+  };
+}
+
+function hydrateStudyBucket(bucket) {
+  const chapters = bucket.chapterIds.map(getStudyMapChapter).filter(Boolean);
+
+  return {
+    ...bucket,
+    chapters,
+    chapterCount: chapters.length,
+  };
+}
+
+function hydrateGradeTopic(topic) {
+  const chapters = topic.chapterIds.map(getStudyMapChapter).filter(Boolean);
+  const primaryChapter = chapters[0] || {};
+  const guide = grade8TopicGuideMap[topic.id] || {};
+
+  return {
+    ...topic,
+    ...guide,
+    chapters,
+    chapterId: primaryChapter.id || '',
+    chapterTitle: primaryChapter.title || '',
+    stage: primaryChapter.stage || '',
+    image: primaryChapter.image || '',
+    chapterCount: chapters.length,
+    checkpointCount: (guide.checkpoints || []).length,
+  };
+}
+
+function getMathStudyMap() {
+  const gradePackages = gradeStudyMapConfig.map((grade) => ({
+    ...grade,
+    buckets: grade.buckets.map(hydrateStudyBucket),
+  }));
+  const grade8Topics = grade8TopicMapConfig.map(hydrateGradeTopic);
+
+  return {
+    gradePackages,
+    grade8Topics,
+    gradeCount: gradePackages.length,
+    grade8TopicCount: grade8Topics.length,
+  };
 }
 
 function getFeaturedChapters() {
@@ -2666,6 +3093,7 @@ function searchMath(keyword) {
 module.exports = {
   getAllChapters,
   getChapterGroups,
+  getMathStudyMap,
   getFeaturedChapters,
   getChapterById,
   getKnowledgeById,

@@ -2,7 +2,7 @@
   <view class="overview card">
     <view class="overview__title">数学知识库</view>
     <view class="overview__desc">
-      当前已按人教版初中数学 7 上到 9 下完整目录铺开，覆盖 {{totalChapters}} 个章节。现在统一通过一个搜索入口检索知识点和题型模型，阅读顺序更接近课本与教辅。
+      覆盖初中数学 {{totalChapters}} 个章节。先按年级大包找方向，再进专题小包补知识，也可以直接搜索知识点和题型模型。
     </view>
     <view class="overview__tags">
       <text class="tag">游客模式</text>
@@ -15,6 +15,88 @@
   <view class="search-slot top-space">
     <search-bar bindtap="openSearch" />
     <view class="search-tip">搜索知识点、公式名称、章节名称或模型名，例如“相似”“勾股定理”“手拉手模型”。</view>
+  </view>
+
+  <view class="study-map top-space">
+    <view class="section-title">
+      <view class="section-title__main">先选大包</view>
+      <view class="section-title__sub">{{studyMap.gradeCount}} 个年级路径</view>
+    </view>
+
+    <view class="grade-list">
+      <view wx:for="{{studyMap.gradePackages}}" wx:key="id" wx:for-item="grade" class="grade-pack card">
+        <view class="grade-pack__top">
+          <view>
+            <view class="grade-pack__title">{{grade.title}}</view>
+            <view class="grade-pack__headline">{{grade.headline}}</view>
+          </view>
+          <view class="grade-pack__count">{{grade.buckets.length}} 包</view>
+        </view>
+        <view class="grade-pack__subtitle">{{grade.subtitle}}</view>
+
+        <view class="bucket-list">
+          <view wx:for="{{grade.buckets}}" wx:key="title" wx:for-item="bucket" class="bucket-row">
+            <view class="bucket-row__main">
+              <view class="bucket-row__title">{{bucket.title}}</view>
+              <view class="bucket-row__desc">{{bucket.desc}}</view>
+              <view class="bucket-row__focus">
+                <text wx:for="{{bucket.focus}}" wx:key="*this" wx:for-item="focus" class="mini-tag">{{focus}}</text>
+              </view>
+            </view>
+            <view class="bucket-row__chapters">
+              <view
+                wx:for="{{bucket.chapters}}"
+                wx:key="id"
+                wx:for-item="chapter"
+                class="chapter-chip"
+                data-id="{{chapter.id}}"
+                bindtap="openChapter"
+              >
+                {{chapter.title}}
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="topic-section top-space">
+    <view class="section-title">
+      <view class="section-title__main">八年级专题小包</view>
+      <view class="section-title__sub">{{studyMap.grade8TopicCount}} 个专题</view>
+    </view>
+
+    <view class="topic-grid">
+      <view
+        wx:for="{{studyMap.grade8Topics}}"
+        wx:key="id"
+        wx:for-item="topic"
+        class="topic-card card"
+        data-id="{{topic.chapterId}}"
+        bindtap="openChapter"
+      >
+        <view class="topic-card__top">
+          <image
+            wx:if="{{topic.image}}"
+            class="topic-card__image"
+            src="{{topic.image}}"
+            mode="aspectFit"
+            data-id="{{topic.id}}"
+            binderror="onTopicImageError"
+          />
+          <view class="topic-card__copy">
+            <view class="topic-card__label">{{topic.label}}</view>
+            <view class="topic-card__title">{{topic.title}}</view>
+            <view class="topic-card__stage">{{topic.stage}}</view>
+          </view>
+        </view>
+        <view class="topic-card__summary">{{topic.summary}}</view>
+        <view class="topic-card__focus">
+          <text wx:for="{{topic.focus}}" wx:key="*this" wx:for-item="focus" class="mini-tag">{{focus}}</text>
+        </view>
+      </view>
+    </view>
   </view>
 
   <view wx:for="{{chapterGroups}}" wx:key="stage" wx:for-item="group" class="group-block">

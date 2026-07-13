@@ -37,6 +37,54 @@
     </view>
   </view>
 
+  <view wx:if="{{chapter.topicGuide}}" class="topic-guide card top-gap">
+    <view class="topic-guide__head">
+      <view>
+        <view class="topic-guide__label">{{chapter.topicGuide.label}} · 八年级专题小包</view>
+        <view class="topic-guide__title">{{chapter.topicGuide.title}}</view>
+      </view>
+      <view class="topic-guide__count">{{chapter.topicGuide.checkpointCount}} 个考点</view>
+    </view>
+    <view class="topic-guide__summary">{{chapter.topicGuide.summary}}</view>
+    <view class="topic-guide__objective">
+      <view class="topic-guide__objective-label">本专题学到什么程度</view>
+      <view class="topic-guide__objective-text">{{chapter.topicGuide.objective}}</view>
+    </view>
+
+    <view class="topic-guide__section-title">考点与方法</view>
+    <view class="topic-checkpoints">
+      <view wx:for="{{chapter.topicGuide.checkpoints}}" wx:key="title" wx:for-item="checkpoint" class="topic-checkpoint">
+        <view class="topic-checkpoint__index">{{index + 1}}</view>
+        <view class="topic-checkpoint__body">
+          <view class="topic-checkpoint__title">{{checkpoint.title}}</view>
+          <view class="topic-checkpoint__method">{{checkpoint.method}}</view>
+        </view>
+      </view>
+    </view>
+
+    <view class="topic-guide__section-title">看到这些词要有反应</view>
+    <view class="topic-guide__signals">
+      <text wx:for="{{chapter.topicGuide.signals}}" wx:key="*this" class="topic-signal">{{item}}</text>
+    </view>
+
+    <view class="topic-guide__columns">
+      <view class="topic-guide__column">
+        <view class="topic-guide__column-title">训练顺序</view>
+        <view wx:for="{{chapter.topicGuide.practiceFlow}}" wx:key="*this" wx:for-item="flow" class="topic-guide__line">
+          <text class="topic-guide__line-index">{{index + 1}}</text>
+          <text class="topic-guide__line-text">{{flow}}</text>
+        </view>
+      </view>
+      <view class="topic-guide__column topic-guide__column--check">
+        <view class="topic-guide__column-title">学完自测</view>
+        <view wx:for="{{chapter.topicGuide.finishCriteria}}" wx:key="*this" wx:for-item="criterion" class="topic-guide__line">
+          <text class="topic-guide__check"></text>
+          <text class="topic-guide__line-text">{{criterion}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
   <view class="chapter-dashboard top-gap">
     <view class="chapter-panel card">
       <view class="chapter-panel__title">本章学习重点</view>
@@ -101,6 +149,25 @@
       <view class="learning-path__body">
         <view class="learning-path__name">{{step.title}}</view>
         <view class="learning-path__desc">{{step.desc}}</view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{chapter.reviewList.length}}" class="review-card card top-gap">
+    <view class="review-card__head">
+      <view>
+        <view class="review-card__title">本章复习清单</view>
+        <view class="review-card__subtitle">学完后按清单回看，先补短板再做综合题</view>
+      </view>
+      <view class="review-card__badge">速览</view>
+    </view>
+    <view class="review-card__grid">
+      <view wx:for="{{chapter.reviewList}}" wx:key="title" wx:for-item="group" class="review-group">
+        <view class="review-group__title">{{group.title}}</view>
+        <view class="review-group__subtitle">{{group.subtitle}}</view>
+        <view class="review-group__items">
+          <view wx:for="{{group.items}}" wx:key="*this" wx:for-item="item" class="review-group__item">{{item}}</view>
+        </view>
       </view>
     </view>
   </view>

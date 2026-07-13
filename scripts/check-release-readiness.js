@@ -217,11 +217,34 @@ function checkAssetConfig() {
   }
 }
 
+function checkReleaseInfo() {
+  const releaseInfoPath = 'utils/release-info.js';
+  assertFile(releaseInfoPath, '发布信息');
+
+  if (!fileExists(releaseInfoPath)) {
+    return;
+  }
+
+  const { RELEASE_INFO } = require(path.join(root, releaseInfoPath));
+  const beianNumber = RELEASE_INFO && RELEASE_INFO.icpBeianNumber;
+
+  if (!beianNumber) {
+    issues.push(`${releaseInfoPath}: 备案已通过，icpBeianNumber 不能为空`);
+  } else if (!/^[\u4e00-\u9fa5]ICP备\d+号-\d+[A-Z]?$/.test(beianNumber)) {
+    warnings.push(`${releaseInfoPath}: 请人工确认备案号格式 -> ${beianNumber}`);
+  }
+
+  if (!RELEASE_INFO || RELEASE_INFO.icpBeianUrl !== 'https://beian.miit.gov.cn') {
+    issues.push(`${releaseInfoPath}: icpBeianUrl 应指向工信部备案查询页`);
+  }
+}
+
 const appConfig = checkAppConfig();
 checkProjectConfig();
 checkSitemap(appConfig);
 checkCloudFunction();
 checkAssetConfig();
+checkReleaseInfo();
 
 if (warnings.length) {
   console.log('WARNINGS');

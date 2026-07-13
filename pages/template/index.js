@@ -1,5 +1,5 @@
 const { getTemplateById, getChapterById } = require('../../utils/math');
-const { applyTempFileURL, getTempFileURLMap } = require('../../utils/cloud-assets');
+const { applyTempFileURL, getTempFileURLMap, isCloudFile } = require('../../utils/cloud-assets');
 
 Page({
   data: {
@@ -27,6 +27,7 @@ Page({
       figureLoadFailed: false,
       template: {
         ...template,
+        figure: isCloudFile(template.figure) ? '' : template.figure,
       },
       relatedChapters: template.relatedChapters.map((chapterId) => getChapterById(chapterId)).filter(Boolean),
     });
