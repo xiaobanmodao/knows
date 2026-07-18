@@ -1,5 +1,6 @@
 const storage = require('./utils/storage');
 const { CLOUD_ENV_ID } = require('./utils/asset-config');
+const { resolveKnowledgeId } = require('./utils/content-ids');
 
 App({
   globalData: {
@@ -40,6 +41,7 @@ App({
       });
     }
 
+    storage.migrateContentStorage(resolveKnowledgeId);
     this.refreshSession();
   },
 
@@ -65,5 +67,13 @@ App({
     const nextHistory = storage.addSearchKeyword(keyword);
     this.globalData.searchHistory = nextHistory;
     return nextHistory;
+  },
+
+  getMathGrade() {
+    return storage.getMathGrade();
+  },
+
+  setMathGrade(gradeId) {
+    return storage.setMathGrade(gradeId);
   },
 });

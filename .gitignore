@@ -6,7 +6,8 @@ dist/
 
 project.private.config.json
 
-assets/figures/generated/
+assets/figures/generated/*
+!assets/figures/generated/topics/
 
 node_modules/
 cloudfunctions/**/node_modules/

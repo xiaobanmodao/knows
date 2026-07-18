@@ -34,6 +34,10 @@ math.getAllChapters().forEach((chapter) => {
   });
 });
 
+math.getMathStudyMap().topicGroups.forEach((group) => {
+  group.topics.forEach((topic) => addAsset(assets, topic.coverImage || topic.image));
+});
+
 math.getFeaturedTemplates().forEach((template) => addAsset(assets, template.figure));
 
 const items = [...assets].sort().map((source) => ({

@@ -2,6 +2,7 @@ const fs = require('fs');
 const math = require('../utils/math');
 
 const chapters = math.getAllChapters();
+const studyMap = math.getMathStudyMap();
 const issues = [];
 const ownerByImage = new Map();
 const EXPECTED_WIDTH = 1280;
@@ -65,6 +66,12 @@ chapters.forEach((chapter) => {
       assertImage(`题目 ${chapter.title}/${knowledge.title}/${problem.title}`, problem.image);
     });
   });
+});
+
+studyMap.topicGroups.forEach((group) => {
+  group.topics
+    .filter((topic) => topic.coverImage)
+    .forEach((topic) => assertImage(`专题封面 ${group.title}/${topic.title}`, topic.coverImage));
 });
 
 if (issues.length) {

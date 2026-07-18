@@ -40,7 +40,7 @@
   <view wx:if="{{chapter.topicGuide}}" class="topic-guide card top-gap">
     <view class="topic-guide__head">
       <view>
-        <view class="topic-guide__label">{{chapter.topicGuide.label}} · 八年级专题小包</view>
+        <view class="topic-guide__label">{{chapter.topicGuide.label}} · {{chapter.topicGuide.grade}}专题小包</view>
         <view class="topic-guide__title">{{chapter.topicGuide.title}}</view>
       </view>
       <view class="topic-guide__count">{{chapter.topicGuide.checkpointCount}} 个考点</view>

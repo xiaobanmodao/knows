@@ -10,6 +10,8 @@
 - 收藏
 - 最近浏览
 - 图示资源展示
+- 七、八年级共 20 个专题小包
+- 七、八、九年级快捷切换
 
 ## 当前结构
 
@@ -43,6 +45,7 @@
 node scripts/check-release-readiness.js
 node scripts/check-math-content.js
 node scripts/check-unique-figures.js
+node scripts/check-content-migration.js
 ```
 
 ## 下一步建议

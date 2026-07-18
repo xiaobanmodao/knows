@@ -72,6 +72,66 @@ if (!studyMap || studyMap.grade8TopicCount !== 10) {
   issues.push('八年级学习地图应包含 10 个专题小包');
 }
 
+if (!studyMap || studyMap.topicCount !== 20) {
+  issues.push('v1.1 数学学习地图应包含七、八年级共 20 个专题小包');
+}
+
+const expectedTopicCounts = {
+  grade7: 10,
+  grade8: 10,
+  grade9: 0,
+};
+
+(studyMap.topicGroups || []).forEach((group) => {
+  if (group.topicCount !== expectedTopicCounts[group.gradeId]) {
+    issues.push(`${group.title}: 专题数量应为 ${expectedTopicCounts[group.gradeId]}`);
+  }
+
+  group.topics.forEach((topic) => {
+    if (!topic.id || !topic.gradeId || !topic.title || !topic.chapterIds.length) {
+      issues.push(`${group.title}: 专题基础字段不完整 -> ${topic.title || topic.id || '未命名专题'}`);
+    }
+
+    if (!topic.objective || topic.objective.length < 20) {
+      issues.push(`${group.title}/${topic.title}: 学习目标过短或缺失`);
+    }
+
+    ['focus', 'signals', 'checkpoints', 'practiceFlow', 'finishCriteria'].forEach((field) => {
+      if (!Array.isArray(topic[field]) || topic[field].length < 4) {
+        issues.push(`${group.title}/${topic.title}: ${field} 至少需要 4 项`);
+      }
+    });
+
+    topic.chapterIds.forEach((chapterId) => {
+      if (!chapters.some((chapter) => chapter.id === chapterId)) {
+        issues.push(`${group.title}/${topic.title}: 章节映射不存在 -> ${chapterId}`);
+      }
+    });
+
+    if (topic.gradeId === 'grade7' && !topic.coverImage) {
+      issues.push(`${group.title}/${topic.title}: 缺少独立专题封面`);
+    }
+  });
+});
+
+const generatedKnowledgeIds = new Set();
+
+chapters.forEach((chapter) => {
+  chapter.knowledgeItems.forEach((knowledge) => {
+    if (generatedKnowledgeIds.has(knowledge.id)) {
+      issues.push(`知识点稳定 ID 重复 -> ${knowledge.id}`);
+    }
+
+    generatedKnowledgeIds.add(knowledge.id);
+    (knowledge.legacyIds || []).forEach((legacyId) => {
+      const resolved = math.resolveKnowledgeId(legacyId);
+      if (resolved !== knowledge.id) {
+        issues.push(`${chapter.title}/${knowledge.title}: 旧 ID 未解析到当前知识点 -> ${legacyId}`);
+      }
+    });
+  });
+});
+
 if (issues.length) {
   console.log('FOUND_ISSUES');
   issues.forEach((item) => console.log(item));

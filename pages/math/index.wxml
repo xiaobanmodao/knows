@@ -2,7 +2,7 @@
   <view class="overview card">
     <view class="overview__title">数学知识库</view>
     <view class="overview__desc">
-      覆盖初中数学 {{totalChapters}} 个章节。先按年级大包找方向，再进专题小包补知识，也可以直接搜索知识点和题型模型。
+      覆盖初中数学 {{totalChapters}} 个章节。选择年级后，只看当前年级的学习大包、专题和教材章节。
     </view>
     <view class="overview__tags">
       <text class="tag">游客模式</text>
@@ -17,43 +17,54 @@
     <view class="search-tip">搜索知识点、公式名称、章节名称或模型名，例如“相似”“勾股定理”“手拉手模型”。</view>
   </view>
 
-  <view class="study-map top-space">
+  <view class="grade-switch" aria-label="选择年级">
+    <view
+      wx:for="{{gradeOptions}}"
+      wx:key="id"
+      class="grade-switch__item {{item.active ? 'grade-switch__item--active' : ''}}"
+      data-id="{{item.id}}"
+      bindtap="selectGrade"
+    >
+      <view class="grade-switch__title">{{item.title}}</view>
+      <view class="grade-switch__meta">{{item.chapterCount}} 章<text wx:if="{{item.topicCount}}"> · {{item.topicCount}} 专题</text></view>
+    </view>
+  </view>
+
+  <view wx:if="{{activeGradePackage}}" class="study-map top-space">
     <view class="section-title">
-      <view class="section-title__main">先选大包</view>
-      <view class="section-title__sub">{{studyMap.gradeCount}} 个年级路径</view>
+      <view class="section-title__main">{{activeGradePackage.title}}学习大包</view>
+      <view class="section-title__sub">{{activeGradePackage.buckets.length}} 条学习主线</view>
     </view>
 
-    <view class="grade-list">
-      <view wx:for="{{studyMap.gradePackages}}" wx:key="id" wx:for-item="grade" class="grade-pack card">
-        <view class="grade-pack__top">
-          <view>
-            <view class="grade-pack__title">{{grade.title}}</view>
-            <view class="grade-pack__headline">{{grade.headline}}</view>
-          </view>
-          <view class="grade-pack__count">{{grade.buckets.length}} 包</view>
+    <view class="grade-pack card">
+      <view class="grade-pack__top">
+        <view>
+          <view class="grade-pack__title">{{activeGradePackage.title}}</view>
+          <view class="grade-pack__headline">{{activeGradePackage.headline}}</view>
         </view>
-        <view class="grade-pack__subtitle">{{grade.subtitle}}</view>
+        <view class="grade-pack__count">{{visibleChapterCount}} 章</view>
+      </view>
+      <view class="grade-pack__subtitle">{{activeGradePackage.subtitle}}</view>
 
-        <view class="bucket-list">
-          <view wx:for="{{grade.buckets}}" wx:key="title" wx:for-item="bucket" class="bucket-row">
-            <view class="bucket-row__main">
-              <view class="bucket-row__title">{{bucket.title}}</view>
-              <view class="bucket-row__desc">{{bucket.desc}}</view>
-              <view class="bucket-row__focus">
-                <text wx:for="{{bucket.focus}}" wx:key="*this" wx:for-item="focus" class="mini-tag">{{focus}}</text>
-              </view>
+      <view class="bucket-list">
+        <view wx:for="{{activeGradePackage.buckets}}" wx:key="title" wx:for-item="bucket" class="bucket-row">
+          <view class="bucket-row__main">
+            <view class="bucket-row__title">{{bucket.title}}</view>
+            <view class="bucket-row__desc">{{bucket.desc}}</view>
+            <view class="bucket-row__focus">
+              <text wx:for="{{bucket.focus}}" wx:key="*this" wx:for-item="focus" class="mini-tag">{{focus}}</text>
             </view>
-            <view class="bucket-row__chapters">
-              <view
-                wx:for="{{bucket.chapters}}"
-                wx:key="id"
-                wx:for-item="chapter"
-                class="chapter-chip"
-                data-id="{{chapter.id}}"
-                bindtap="openChapter"
-              >
-                {{chapter.title}}
-              </view>
+          </view>
+          <view class="bucket-row__chapters">
+            <view
+              wx:for="{{bucket.chapters}}"
+              wx:key="id"
+              wx:for-item="chapter"
+              class="chapter-chip"
+              data-id="{{chapter.id}}"
+              bindtap="openChapter"
+            >
+              {{chapter.title}}
             </view>
           </view>
         </view>
@@ -61,15 +72,15 @@
     </view>
   </view>
 
-  <view class="topic-section top-space">
+  <view wx:if="{{hasActiveTopics}}" class="topic-section top-space">
     <view class="section-title">
-      <view class="section-title__main">八年级专题小包</view>
-      <view class="section-title__sub">{{studyMap.grade8TopicCount}} 个专题</view>
+      <view class="section-title__main">{{activeTopicGroup.title}}专题小包</view>
+      <view class="section-title__sub">{{activeTopicGroup.topicCount}} 个专题</view>
     </view>
 
     <view class="topic-grid">
       <view
-        wx:for="{{studyMap.grade8Topics}}"
+        wx:for="{{activeTopicGroup.topics}}"
         wx:key="id"
         wx:for-item="topic"
         class="topic-card card"
@@ -82,6 +93,7 @@
             class="topic-card__image"
             src="{{topic.image}}"
             mode="aspectFit"
+            data-grade-id="{{activeTopicGroup.gradeId}}"
             data-id="{{topic.id}}"
             binderror="onTopicImageError"
           />
@@ -99,7 +111,7 @@
     </view>
   </view>
 
-  <view wx:for="{{chapterGroups}}" wx:key="stage" wx:for-item="group" class="group-block">
+  <view wx:for="{{visibleChapterGroups}}" wx:key="stage" wx:for-item="group" class="group-block">
     <view class="section-title">
       <view class="section-title__main">{{group.stage}}</view>
       <view class="section-title__sub">{{group.items.length}} 个章节</view>
