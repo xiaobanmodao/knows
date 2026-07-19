@@ -3,7 +3,7 @@
     <view class="profile-card__label">{{mode}}</view>
     <view class="profile-card__title">{{releaseInfo.serviceName}}</view>
     <view class="profile-card__desc">
-      当前版本不要求注册登录。收藏、最近浏览、搜索记录都保存在本机，适合快速查阅初中数学知识点和常见题型。
+      当前版本不要求注册登录。收藏、最近浏览、搜索记录都保存在本机，可快速查阅初中数学、英语和物理教材章节与专题知识。
     </view>
   </view>
 

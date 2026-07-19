@@ -1,0 +1,53 @@
+<view class="page-shell" wx:if="{{topic}}">
+  <view class="topic-hero card">
+    <image wx:if="{{topic.coverImage && !imageLoadFailed}}" class="topic-hero__image" src="{{topic.coverImage}}" mode="aspectFill" binderror="onImageError"></image>
+    <view class="topic-hero__label">{{subjectLabel}} · {{topic.label}}</view>
+    <view class="topic-hero__title">{{topic.title}}</view>
+    <view class="topic-hero__summary">{{topic.summary}}</view>
+    <view wx:if="{{topic.gradeText}}" class="topic-hero__grade">适用：{{topic.gradeText}}</view>
+  </view>
+
+  <view class="topic-section card top-gap">
+    <view class="topic-section__title">考点与方法</view>
+    <view wx:for="{{topic.checkpoints}}" wx:key="title" wx:for-item="point" class="checkpoint">
+      <view class="checkpoint__index">{{index + 1}}</view>
+      <view class="checkpoint__body">
+        <view class="checkpoint__title">{{point.title}}</view>
+        <view class="checkpoint__method">{{point.method}}</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="topic-section card top-gap">
+    <view class="topic-section__title">题干信号</view>
+    <view class="signal-row"><text wx:for="{{topic.signals}}" wx:key="*this" class="signal">{{item}}</text></view>
+  </view>
+
+  <view wx:if="{{topic.chapters && topic.chapters.length}}" class="section-title top-gap">
+    <view class="section-title__main">专题章节</view><view class="section-title__sub">{{topic.chapters.length}} 章</view>
+  </view>
+  <view wx:if="{{topic.chapters && topic.chapters.length}}" class="grid">
+    <view wx:for="{{topic.chapters}}" wx:key="id" wx:for-item="chapter" class="entry-card card" data-id="{{chapter.id}}" bindtap="openChapter">
+      <view class="entry-card__title">{{chapter.label}}</view><view class="entry-card__summary">{{chapter.summary}}</view>
+    </view>
+  </view>
+
+  <view wx:if="{{topic.knowledgeItems && topic.knowledgeItems.length}}" class="section-title top-gap">
+    <view class="section-title__main">专题知识点</view><view class="section-title__sub">{{topic.knowledgeItems.length}} 个</view>
+  </view>
+  <view wx:if="{{topic.knowledgeItems && topic.knowledgeItems.length}}" class="grid">
+    <view wx:for="{{topic.knowledgeItems}}" wx:key="id" wx:for-item="knowledge" class="entry-card card" data-id="{{knowledge.id}}" bindtap="openKnowledge">
+      <view class="entry-card__title">{{knowledge.title}}</view><view class="entry-card__summary">{{knowledge.summary}}</view>
+      <view class="entry-card__meta">{{knowledge.problems.length}} 道原创示例</view>
+    </view>
+  </view>
+
+  <view wx:if="{{topic.templates && topic.templates.length}}" class="section-title top-gap">
+    <view class="section-title__main">方法模板</view><view class="section-title__sub">{{topic.templates.length}} 个</view>
+  </view>
+  <view wx:if="{{topic.templates && topic.templates.length}}" class="grid">
+    <view wx:for="{{topic.templates}}" wx:key="id" wx:for-item="template" class="entry-card entry-card--template card" data-id="{{template.id}}" bindtap="openTemplate">
+      <view class="entry-card__title">{{template.name}}</view><view class="entry-card__summary">{{template.summary}}</view>
+    </view>
+  </view>
+</view>

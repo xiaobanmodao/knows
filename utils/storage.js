@@ -3,7 +3,7 @@ const RECENTS_KEY = 'knows_recents';
 const SEARCH_HISTORY_KEY = 'knows_search_history';
 const CONTENT_SCHEMA_VERSION_KEY = 'knows_content_schema_version';
 const MATH_GRADE_KEY = 'knows_math_grade';
-const CURRENT_CONTENT_SCHEMA_VERSION = 2;
+const CURRENT_CONTENT_SCHEMA_VERSION = 3;
 const MATH_GRADES = new Set(['grade7', 'grade8', 'grade9']);
 
 function read(key, fallback) {
@@ -26,11 +26,16 @@ function getFavorites() {
   return read(FAVORITES_KEY, []);
 }
 
+function itemKey(item) {
+  return `${item.subjectId || 'math'}:${item.type || 'knowledge'}:${item.id}`;
+}
+
 function toggleFavorite(item) {
   const favorites = getFavorites();
-  const exists = favorites.some((entry) => entry.id === item.id);
+  const key = itemKey(item);
+  const exists = favorites.some((entry) => itemKey(entry) === key);
   const nextFavorites = exists
-    ? favorites.filter((entry) => entry.id !== item.id)
+    ? favorites.filter((entry) => itemKey(entry) !== key)
     : [{ ...item, savedAt: Date.now() }, ...favorites].slice(0, 100);
 
   write(FAVORITES_KEY, nextFavorites);
@@ -42,7 +47,8 @@ function getRecents() {
 }
 
 function addRecent(item) {
-  const recents = getRecents().filter((entry) => entry.id !== item.id);
+  const key = itemKey(item);
+  const recents = getRecents().filter((entry) => itemKey(entry) !== key);
   const nextRecents = [{ ...item, viewedAt: Date.now() }, ...recents].slice(0, 30);
   write(RECENTS_KEY, nextRecents);
   return nextRecents;
@@ -80,14 +86,26 @@ function migrateStoredItems(key, resolveId, limit) {
       return;
     }
 
-    const id = resolveId(item.id) || item.id;
+    const subjectId = item.subjectId || 'math';
+    const type = item.type || 'knowledge';
+    const id = subjectId === 'math' && type === 'knowledge'
+      ? resolveId(item.id) || item.id
+      : item.id;
+    const migratedItem = {
+      ...item,
+      id,
+      subjectId,
+      type,
+      containerId: item.containerId || item.chapterId || '',
+    };
+    const key = itemKey(migratedItem);
 
-    if (seenIds.has(id)) {
+    if (seenIds.has(key)) {
       return;
     }
 
-    seenIds.add(id);
-    migrated.push({ ...item, id });
+    seenIds.add(key);
+    migrated.push(migratedItem);
   });
 
   const result = migrated.slice(0, limit);

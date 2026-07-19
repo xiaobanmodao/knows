@@ -1,0 +1,87 @@
+<view class="page-shell" wx:if="{{unit}}">
+  <view class="unit-hero">
+    <view class="unit-hero__eyebrow">{{unit.bookLabel}} · {{unit.unitLabel}}</view>
+    <view class="unit-hero__title">{{unit.title}}</view>
+    <view class="unit-hero__theme">{{unit.theme}}</view>
+    <view class="unit-hero__counts">
+      <text>{{unit.vocabularyCount}} 个核心词</text>
+      <text>{{unit.grammarCount}} 个语法点</text>
+    </view>
+  </view>
+
+  <view wx:if="{{unit.coverImage}}" class="unit-figure">
+    <image wx:if="{{!unitImageLoadFailed}}" class="unit-figure__image" src="{{unit.coverImage}}" mode="aspectFit" binderror="onUnitImageError"></image>
+    <view wx:else class="unit-figure__fallback">单元图解暂未加载，词汇、语法和例句仍可正常阅读</view>
+    <view class="unit-figure__caption">{{unit.figureCaption}}</view>
+  </view>
+
+  <view class="unit-block">
+    <view class="unit-block__title">先会说</view>
+    <view class="expression-list">
+      <view wx:for="{{unit.expressions}}" wx:key="*this" class="expression-row">
+        <view class="expression-row__index">{{index + 1}}</view>
+        <view class="expression-row__text">{{item}}</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="section-heading">
+    <view class="section-heading__title">核心词汇</view>
+    <view class="section-heading__sub">词性、词形、搭配、例句和易错点</view>
+  </view>
+
+  <view class="word-list">
+    <view wx:for="{{unit.vocabulary}}" wx:key="id" class="word-card">
+      <view class="word-card__head">
+        <view>
+          <view class="word-card__word">{{item.word}}</view>
+          <view class="word-card__pos">{{item.partOfSpeech}}</view>
+        </view>
+        <view class="word-card__meaning">{{item.meaning}}</view>
+      </view>
+      <view class="word-card__row">
+        <text class="word-card__label">怎么用</text>
+        <text>{{item.usage}}</text>
+      </view>
+      <view class="word-card__row">
+        <text class="word-card__label">词形</text>
+        <text>{{item.forms}}</text>
+      </view>
+      <view class="word-card__row word-card__row--tags">
+        <text class="word-card__label">搭配</text>
+        <view class="word-tags">
+          <text wx:for="{{item.collocations}}" wx:key="*this" class="word-tag" data-keyword="{{item}}" bindtap="openSearch">{{item}}</text>
+        </view>
+      </view>
+      <view class="example-box">
+        <view class="example-box__sentence">{{item.example}}</view>
+        <view class="example-box__translation">{{item.translation}}</view>
+      </view>
+      <view class="word-note"><text>注意：</text>{{item.note}}</view>
+    </view>
+  </view>
+
+  <view class="section-heading">
+    <view class="section-heading__title">单元语法</view>
+    <view class="section-heading__sub">结构、原创例句与常见错误</view>
+  </view>
+
+  <view class="grammar-list">
+    <view wx:for="{{unit.grammarPoints}}" wx:key="id" class="grammar-card">
+      <view class="grammar-card__index">语法 {{index + 1}}</view>
+      <view class="grammar-card__title">{{item.title}}</view>
+      <view class="grammar-card__summary">{{item.summary}}</view>
+      <view class="grammar-card__subhead">核心结构</view>
+      <view wx:for="{{item.structures}}" wx:key="*this" class="structure-row">{{item}}</view>
+      <view class="grammar-card__subhead">例句拆解</view>
+      <view wx:for="{{item.examples}}" wx:key="sentence" class="grammar-example">
+        <view class="grammar-example__sentence">{{item.sentence}}</view>
+        <view class="grammar-example__translation">{{item.translation}}</view>
+        <view class="grammar-example__why">{{item.explanation}}</view>
+      </view>
+      <view class="grammar-card__subhead">容易错</view>
+      <view wx:for="{{item.mistakes}}" wx:key="*this" class="mistake-row">{{index + 1}}. {{item}}</view>
+    </view>
+  </view>
+
+</view>

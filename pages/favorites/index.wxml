@@ -11,8 +11,11 @@
       wx:for-item="favorite"
       class="bookmark-card card"
       data-id="{{favorite.id}}"
-      bindtap="openKnowledge"
+      data-subject-id="{{favorite.subjectId}}"
+      data-type="{{favorite.type}}"
+      bindtap="openItem"
     >
+      <view class="bookmark-card__badge">{{favorite.subjectLabel}} · {{favorite.typeLabel}}</view>
       <view class="bookmark-card__title">{{favorite.title}}</view>
       <view class="bookmark-card__subtitle">{{favorite.subtitle}}</view>
     </view>
@@ -31,8 +34,11 @@
       wx:for-item="recent"
       class="bookmark-card card"
       data-id="{{recent.id}}"
-      bindtap="openKnowledge"
+      data-subject-id="{{recent.subjectId}}"
+      data-type="{{recent.type}}"
+      bindtap="openItem"
     >
+      <view class="bookmark-card__badge">{{recent.subjectLabel}} · {{recent.typeLabel}}</view>
       <view class="bookmark-card__title">{{recent.title}}</view>
       <view class="bookmark-card__subtitle">{{recent.subtitle}}</view>
     </view>

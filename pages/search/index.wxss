@@ -2,6 +2,31 @@
   margin-top: 26rpx;
 }
 
+.subject-filter {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  margin-top: 18rpx;
+  padding: 6rpx;
+  border-radius: 16rpx;
+  background: #e9edf5;
+}
+
+.subject-filter__item {
+  min-width: 0;
+  padding: 14rpx 4rpx;
+  border-radius: 12rpx;
+  color: #657086;
+  font-size: 23rpx;
+  text-align: center;
+}
+
+.subject-filter__item--active {
+  background: #ffffff;
+  color: #195dd6;
+  font-weight: 700;
+  box-shadow: 0 4rpx 12rpx rgba(30, 65, 135, 0.09);
+}
+
 .search-note {
   margin-top: 16rpx;
   padding: 0 4rpx;

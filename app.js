@@ -1,36 +1,12 @@
 const storage = require('./utils/storage');
 const { CLOUD_ENV_ID } = require('./utils/asset-config');
 const { resolveKnowledgeId } = require('./utils/content-ids');
+const { getSubjectRegistry } = require('./utils/subjects');
 
 App({
   globalData: {
     userMode: 'guest',
-    subjects: [
-      {
-        id: 'math',
-        name: '初中数学',
-        subtitle: '已开放',
-        description: '按人教版知识体系整理，覆盖基础、提升与压轴题型。',
-        status: 'active',
-        theme: 'math',
-      },
-      {
-        id: 'english',
-        name: '初中英语',
-        subtitle: '即将开放',
-        description: '语法、写作模板、阅读题型与重点短语。',
-        status: 'coming',
-        theme: 'english',
-      },
-      {
-        id: 'physics',
-        name: '初中物理',
-        subtitle: '即将开放',
-        description: '概念、公式、实验题与计算题模板。',
-        status: 'coming',
-        theme: 'physics',
-      },
-    ],
+    subjects: getSubjectRegistry(),
   },
 
   onLaunch() {
@@ -54,7 +30,11 @@ App({
   toggleFavorite(item) {
     const nextFavorites = storage.toggleFavorite(item);
     this.globalData.favorites = nextFavorites;
-    return nextFavorites.some((entry) => entry.id === item.id);
+    return nextFavorites.some((entry) => (
+      entry.id === item.id
+      && (entry.subjectId || 'math') === (item.subjectId || 'math')
+      && (entry.type || 'knowledge') === (item.type || 'knowledge')
+    ));
   },
 
   addRecent(item) {

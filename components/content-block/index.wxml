@@ -32,4 +32,23 @@
       <view wx:for="{{row}}" wx:for-item="cell" wx:for-index="cellIndex" wx:key="cellIndex" class="table-box__cell">{{cell}}</view>
     </view>
   </view>
+
+  <view wx:if="{{section.type === 'example'}}" class="example-box">
+    <view class="example-box__sentence">{{section.sentence}}</view>
+    <view class="example-box__translation">{{section.translation}}</view>
+    <view class="example-box__row"><text class="example-box__label">重点结构</text><text>{{section.focus}}</text></view>
+    <view class="example-box__row"><text class="example-box__label">使用提醒</text><text>{{section.note}}</text></view>
+  </view>
+
+  <view wx:if="{{section.type === 'experiment'}}" class="experiment-box">
+    <view class="experiment-box__row"><text class="experiment-box__label">目的</text><text>{{section.goal}}</text></view>
+    <view class="experiment-box__row"><text class="experiment-box__label">器材</text><text>{{section.apparatusText}}</text></view>
+    <view class="experiment-box__steps">
+      <view wx:for="{{section.steps}}" wx:key="index" class="experiment-step"><text class="experiment-step__index">{{index + 1}}</text><text>{{item}}</text></view>
+    </view>
+    <view class="experiment-box__row"><text class="experiment-box__label">现象</text><text>{{section.phenomenon}}</text></view>
+    <view class="experiment-box__row"><text class="experiment-box__label">结论</text><text>{{section.conclusion}}</text></view>
+    <view class="experiment-box__row"><text class="experiment-box__label">误差</text><text>{{section.errorsText}}</text></view>
+    <view class="experiment-box__row experiment-box__row--safe"><text class="experiment-box__label">安全</text><text>{{section.safety}}</text></view>
+  </view>
 </view>

@@ -138,3 +138,28 @@
   font-weight: 700;
   color: #18356c;
 }
+
+.example-box {
+  padding: 22rpx;
+  border-left: 6rpx solid #168454;
+  border-radius: 16rpx;
+  background: #f0faf5;
+}
+
+.example-box__sentence { font-size: 28rpx; line-height: 1.7; font-weight: 700; color: #183d2e; }
+.example-box__translation { margin-top: 8rpx; font-size: 24rpx; line-height: 1.7; color: #526b61; }
+.example-box__row, .experiment-box__row { display: flex; gap: 16rpx; margin-top: 14rpx; font-size: 24rpx; line-height: 1.75; color: #40536a; }
+.example-box__label, .experiment-box__label { flex-shrink: 0; color: #15704a; font-weight: 700; }
+
+.experiment-box {
+  padding: 22rpx;
+  border-left: 6rpx solid #d16a25;
+  border-radius: 16rpx;
+  background: #fff8f0;
+}
+
+.experiment-box__steps { margin-top: 16rpx; padding: 16rpx; border-radius: 12rpx; background: #ffffff; }
+.experiment-step { display: flex; gap: 12rpx; margin-top: 10rpx; font-size: 24rpx; line-height: 1.7; color: #425066; }
+.experiment-step:first-child { margin-top: 0; }
+.experiment-step__index { flex-shrink: 0; color: #bd5a1b; font-weight: 800; }
+.experiment-box__row--safe { padding-top: 12rpx; border-top: 1rpx solid #f1d8c4; color: #8b4d22; }

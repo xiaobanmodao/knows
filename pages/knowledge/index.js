@@ -1,16 +1,24 @@
-const { getKnowledgeById, getChapterById } = require('../../utils/math');
+const {
+  getKnowledgeById,
+  getKnowledgeContext,
+  getRelatedKnowledge,
+  normalizeSubjectId,
+  SUBJECT_LABELS,
+} = require('../../utils/subjects');
 const { applyTempFileURL, getTempFileURLMap, isCloudFile } = require('../../utils/cloud-assets');
 
 Page({
   data: {
     knowledge: null,
-    chapter: null,
+    context: null,
+    subjectLabel: '',
     isFavorite: false,
     relatedItems: [],
     coverImageLoadFailed: false,
   },
 
   onLoad(options) {
+    this.subjectId = normalizeSubjectId(options.subjectId);
     this.loadKnowledge(options.id);
   },
 
@@ -21,7 +29,7 @@ Page({
       const app = getApp();
       app.refreshSession();
       this.setData({
-        isFavorite: app.globalData.favorites.some((item) => item.id === knowledge.id),
+        isFavorite: app.globalData.favorites.some((item) => item.id === knowledge.id && (item.subjectId || 'math') === this.subjectId && (item.type || 'knowledge') === 'knowledge'),
       });
     }
   },
@@ -29,7 +37,7 @@ Page({
   async loadKnowledge(knowledgeId) {
     this.currentKnowledgeId = knowledgeId;
 
-    const knowledge = getKnowledgeById(knowledgeId);
+    const knowledge = getKnowledgeById(this.subjectId, knowledgeId);
 
     if (!knowledge) {
       wx.showToast({
@@ -39,18 +47,18 @@ Page({
       return;
     }
 
-    const chapter = getChapterById(knowledge.chapterId);
-    const relatedItems = chapter
-      ? chapter.knowledgeItems.filter((item) => item.id !== knowledge.id).slice(0, 4)
-      : [];
+    const context = getKnowledgeContext(this.subjectId, knowledge);
+    const relatedItems = getRelatedKnowledge(this.subjectId, knowledge, 4);
     const app = getApp();
 
     app.refreshSession();
     app.addRecent({
       id: knowledge.id,
       title: knowledge.title,
-      subtitle: chapter ? `${chapter.stage} · ${chapter.title}` : '数学知识点',
+      subtitle: context ? `${SUBJECT_LABELS[this.subjectId]} · ${context.title}` : `${SUBJECT_LABELS[this.subjectId]}知识点`,
+      subjectId: this.subjectId,
       type: 'knowledge',
+      containerId: knowledge.containerId || knowledge.chapterId || knowledge.topicId || '',
     });
 
     wx.setNavigationBarTitle({
@@ -69,10 +77,11 @@ Page({
 
     this.setData({
       knowledge: displayKnowledge,
-      chapter,
+      context,
+      subjectLabel: SUBJECT_LABELS[this.subjectId],
       relatedItems,
       coverImageLoadFailed: false,
-      isFavorite: app.globalData.favorites.some((item) => item.id === knowledge.id),
+      isFavorite: app.globalData.favorites.some((item) => item.id === knowledge.id && (item.subjectId || 'math') === this.subjectId && (item.type || 'knowledge') === 'knowledge'),
     });
 
     const imagePaths = [
@@ -100,7 +109,7 @@ Page({
   },
 
   toggleFavorite() {
-    const { knowledge, chapter } = this.data;
+    const { knowledge, context } = this.data;
 
     if (!knowledge) {
       return;
@@ -110,8 +119,10 @@ Page({
     const isFavorite = app.toggleFavorite({
       id: knowledge.id,
       title: knowledge.title,
-      subtitle: chapter ? `${chapter.stage} · ${chapter.title}` : '数学知识点',
+      subtitle: context ? `${this.data.subjectLabel} · ${context.title}` : `${this.data.subjectLabel}知识点`,
+      subjectId: this.subjectId,
       type: 'knowledge',
+      containerId: knowledge.containerId || knowledge.chapterId || knowledge.topicId || '',
     });
 
     this.setData({

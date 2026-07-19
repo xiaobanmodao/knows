@@ -2,12 +2,18 @@
 *.log
 
 .tmp-quicklook/
+.tmp-v12-audit/
+.codex-output/
+.codex-preview/
+scripts/__pycache__/
 dist/
 
 project.private.config.json
 
 assets/figures/generated/*
 !assets/figures/generated/topics/
+!assets/figures/generated/templates/
+!assets/figures/generated/subjects/
 
 node_modules/
 cloudfunctions/**/node_modules/

@@ -2289,11 +2289,6 @@ function buildLessonKnowledge(chapter, sectionTitle, index) {
     sourceImage: figurePath,
     figureCaption: getLessonCaption(profile.theme),
     knowledgePoints: knowledgeItems,
-    learningPath: [
-      `先读“通俗理解”，确认本节到底解决哪类问题。`,
-      `再掌握：${(knowledgeItems || []).slice(0, 3).join('；')}。`,
-      `做题时套用“${relatedTemplate ? relatedTemplate.name : lessonTemplate.name}”，并在每一步后核对依据。`,
-    ],
     mistakeChecklist: uniqueList(profile.pitfalls || pack.mistakes).slice(0, 3),
     sections: [
       {
@@ -2381,6 +2376,12 @@ function getChapterTextBlocks(chapter) {
 }
 
 function getTemplateFigurePath(templateId) {
+  const template = templateLibrary.find((item) => item.id === templateId);
+
+  if (template && template.figurePath) {
+    return template.figurePath;
+  }
+
   const generated = getGeneratedTemplateFigurePath(templateId);
   return generated || '/assets/figures/generated/line-angle-bisector.png';
 }
@@ -2416,6 +2417,10 @@ function getGeneratedTemplateFigurePath(templateId) {
 }
 
 function getTemplateExamples(template) {
+  if (Array.isArray(template.examples) && template.examples.length) {
+    return template.examples;
+  }
+
   const examples = {
     'model-hand-in-hand': [
       {
@@ -2575,11 +2580,6 @@ function getChapterById(chapterId) {
       ...figure,
       image: resolveAssetUrl(figure.image),
     },
-    studyGuide: [
-      `先通读本章目录，建立“${chapter.chapterNo}—小节—题型”的整体印象。`,
-      '先做基础题稳住概念，再做变式题提升迁移能力。',
-      templateItems.length ? `本章高频模型有：${templateItems.map((item) => item.name).join('、')}。` : '本章重点是把基础方法练熟，再逐步进入综合题。',
-    ],
     chapterLead: textBlocks.chapterLead,
     chapterConcepts: textBlocks.concepts,
     chapterSolveText: textBlocks.solveText,
@@ -2589,22 +2589,6 @@ function getChapterById(chapterId) {
     knowledgeItems: knowledgeItems.map(resolveKnowledgeAssets),
     topicGuide: getTopicGuideByChapter(chapter.id),
     reviewList: buildChapterReviewList(chapter, knowledgeItems, templateItems, textBlocks),
-    learningPath: [
-      {
-        title: '1. 建立概念',
-        desc: `先按教材目录学完 ${chapter.officialSections.slice(0, 2).join('、')}，把定义、公式和图形语言说清楚。`,
-      },
-      {
-        title: '2. 跟例题走步骤',
-        desc: '每个小节先看基础例题，再照着“题干-步骤-答案-解析”完整复述一遍。',
-      },
-      {
-        title: '3. 进入模型训练',
-        desc: templateItems.length
-          ? `最后集中练 ${templateItems.map((item) => item.name).slice(0, 3).join('、')}，把本章知识接到综合题。`
-          : '最后把本章基础方法混合使用，练会从条件中选择工具。',
-      },
-    ],
     knowledgeCount: knowledgeItems.length,
     totalProblems: knowledgeItems.reduce((sum, item) => sum + (item.problems ? item.problems.length : 0), 0),
   };
@@ -2751,6 +2735,10 @@ function getTemplateById(templateId) {
 
 function getFeaturedTemplates() {
   return templateLibrary.slice(0, 8).map((template) => enrichTemplate(template));
+}
+
+function getAllTemplates() {
+  return templateLibrary.map((template) => enrichTemplate(template));
 }
 
 function scoreMatch(keyword, title, bodyParts = []) {
@@ -2911,5 +2899,6 @@ module.exports = {
   getKnowledgeCards,
   getTemplateById,
   getFeaturedTemplates,
+  getAllTemplates,
   searchMath,
 };

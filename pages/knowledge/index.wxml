@@ -1,7 +1,7 @@
 <view class="page-shell" wx:if="{{knowledge}}">
   <view class="knowledge-hero card">
     <view class="knowledge-hero__meta">
-      <view class="pill">{{chapter.stage}} · {{chapter.title}}</view>
+      <view class="pill">{{subjectLabel}} · {{context.title}}</view>
       <view class="collect-btn {{isFavorite ? 'collect-btn--active' : ''}}" bindtap="toggleFavorite">
         {{isFavorite ? '已收藏' : '收藏'}}
       </view>
@@ -21,14 +21,6 @@
       <view wx:for="{{knowledge.knowledgePoints}}" wx:key="index" class="knowledge-hero__focus-item">
         {{item}}
       </view>
-    </view>
-  </view>
-
-  <view wx:if="{{knowledge.learningPath && knowledge.learningPath.length}}" class="study-card card top-gap">
-    <view class="study-card__title">学习路径</view>
-    <view wx:for="{{knowledge.learningPath}}" wx:key="index" class="study-card__item">
-      <view class="study-card__index">{{index + 1}}</view>
-      <view class="study-card__text">{{item}}</view>
     </view>
   </view>
 
@@ -55,7 +47,7 @@
   </view>
 
   <view class="section-title top-gap">
-    <view class="section-title__main">例题与层级训练</view>
+    <view class="section-title__main">例题解析</view>
     <view class="section-title__sub">{{knowledge.problems.length}} 道示例</view>
   </view>
 
@@ -87,8 +79,8 @@
   </view>
 
   <view wx:if="{{relatedItems.length}}" class="section-title top-gap">
-    <view class="section-title__main">本章关联知识点</view>
-    <view class="section-title__sub">继续串联学习</view>
+    <view class="section-title__main">{{context.type === 'chapter' ? '本章关联知识点' : '本专题关联知识点'}}</view>
+    <view class="section-title__sub">相关知识</view>
   </view>
 
   <view wx:if="{{relatedItems.length}}" class="grid">

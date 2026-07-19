@@ -84,8 +84,8 @@
         wx:key="id"
         wx:for-item="topic"
         class="topic-card card"
-        data-id="{{topic.chapterId}}"
-        bindtap="openChapter"
+        data-id="{{topic.id}}"
+        bindtap="openTopic"
       >
         <view class="topic-card__top">
           <image

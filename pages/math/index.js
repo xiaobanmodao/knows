@@ -118,6 +118,13 @@ Page({
     });
   },
 
+  openTopic(event) {
+    const { id } = event.currentTarget.dataset;
+    wx.navigateTo({
+      url: `/pages/topic/index?subjectId=math&id=${id}`,
+    });
+  },
+
   onTopicImageError(event) {
     const { gradeId, id } = event.currentTarget.dataset;
     const groupIndex = (this.data.studyMap.topicGroups || []).findIndex((group) => group.gradeId === gradeId);

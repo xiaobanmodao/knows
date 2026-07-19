@@ -3,13 +3,13 @@
     <view class="hero__label">知识库小程序</view>
     <view class="hero__title">知识通</view>
     <view class="hero__desc">
-      围绕初中数学整理目录、知识点、模板题和搜索入口。当前默认游客模式，打开即查、即看、即收藏。
+      初中数学、英语和物理知识库。英语可按人教版教材单元学习，无需登录即可搜索和阅读。
     </view>
 
     <view class="hero__stats">
       <view class="hero__stat">
-        <view class="hero__stat-num">{{totalChapters}}</view>
-        <view class="hero__stat-label">已录数学章节</view>
+        <view class="hero__stat-num">{{totalKnowledge}}</view>
+        <view class="hero__stat-label">三科内容条目</view>
       </view>
       <view class="hero__stat">
         <view class="hero__stat-num">{{favoritesCount}}</view>
@@ -28,7 +28,7 @@
 
   <view class="section-title">
     <view class="section-title__main">学科入口</view>
-    <view class="section-title__sub">先开放数学，英语和物理预留</view>
+    <view class="section-title__sub">数学 · 英语 · 物理</view>
   </view>
 
   <view class="grid">

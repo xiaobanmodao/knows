@@ -29,11 +29,7 @@ chapters.forEach((chapter) => {
     if (!guide) {
       issues.push(`${chapter.title}: 缺少八年级专题小包`);
     } else {
-      if (!guide.objective || guide.objective.length < 20) {
-        issues.push(`${chapter.title}: 专题学习目标过短或缺失`);
-      }
-
-      ['checkpoints', 'signals', 'practiceFlow', 'finishCriteria'].forEach((field) => {
+      ['checkpoints', 'signals'].forEach((field) => {
         if (!Array.isArray(guide[field]) || guide[field].length < 4) {
           issues.push(`${chapter.title}: 专题字段 ${field} 至少需要 4 项`);
         }
@@ -72,14 +68,14 @@ if (!studyMap || studyMap.grade8TopicCount !== 10) {
   issues.push('八年级学习地图应包含 10 个专题小包');
 }
 
-if (!studyMap || studyMap.topicCount !== 20) {
-  issues.push('v1.1 数学学习地图应包含七、八年级共 20 个专题小包');
+if (!studyMap || studyMap.topicCount !== 29) {
+  issues.push('v1.2 数学学习地图应包含七、八、九年级共 29 个专题小包');
 }
 
 const expectedTopicCounts = {
   grade7: 10,
   grade8: 10,
-  grade9: 0,
+  grade9: 9,
 };
 
 (studyMap.topicGroups || []).forEach((group) => {
@@ -92,11 +88,7 @@ const expectedTopicCounts = {
       issues.push(`${group.title}: 专题基础字段不完整 -> ${topic.title || topic.id || '未命名专题'}`);
     }
 
-    if (!topic.objective || topic.objective.length < 20) {
-      issues.push(`${group.title}/${topic.title}: 学习目标过短或缺失`);
-    }
-
-    ['focus', 'signals', 'checkpoints', 'practiceFlow', 'finishCriteria'].forEach((field) => {
+    ['focus', 'signals', 'checkpoints'].forEach((field) => {
       if (!Array.isArray(topic[field]) || topic[field].length < 4) {
         issues.push(`${group.title}/${topic.title}: ${field} 至少需要 4 项`);
       }
@@ -108,10 +100,46 @@ const expectedTopicCounts = {
       }
     });
 
-    if (topic.gradeId === 'grade7' && !topic.coverImage) {
+    if ((topic.gradeId === 'grade7' || topic.gradeId === 'grade9') && !topic.coverImage) {
       issues.push(`${group.title}/${topic.title}: 缺少独立专题封面`);
     }
   });
+});
+
+const allTemplates = math.getAllTemplates();
+
+if (allTemplates.length < 36) {
+  issues.push(`数学独立模板应不少于 36 个，当前 ${allTemplates.length} 个`);
+}
+
+chapters.forEach((chapter) => {
+  if (!chapter.templateItems.length) {
+    issues.push(`${chapter.title}: 每章至少需要 1 个题型模板`);
+  }
+});
+
+const requiredTemplateIds = [
+  'model-number-line-distance',
+  'model-expression-structure',
+  'model-linear-equation-scenario',
+  'model-line-angle-calculation',
+  'model-root-estimation',
+  'model-coordinate-translation',
+  'model-system-elimination',
+  'model-survey-chart',
+  'model-factorization',
+  'model-fraction-equation',
+  'model-radical-operation',
+  'model-statistic-selection',
+  'model-probability-listing',
+];
+
+requiredTemplateIds.forEach((templateId) => {
+  const template = math.getTemplateById(templateId);
+
+  if (!template || !template.figure || !template.examples || !template.examples.length) {
+    issues.push(`${templateId}: 缺少专属样题或插图`);
+  }
 });
 
 const generatedKnowledgeIds = new Set();

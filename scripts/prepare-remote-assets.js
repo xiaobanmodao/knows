@@ -2,6 +2,10 @@ const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
 const math = require('../utils/math');
+const english = require('../data/english-content');
+const englishUnits = require('../data/english-units');
+const physics = require('../data/physics-content');
+const physicsCurriculum = require('../data/physics-curriculum');
 
 const outRoot = process.argv[2] || 'dist/remote-assets';
 const python = process.env.PYTHON || '/Users/hht/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3';
@@ -38,7 +42,18 @@ math.getMathStudyMap().topicGroups.forEach((group) => {
   group.topics.forEach((topic) => addAsset(assets, topic.coverImage || topic.image));
 });
 
-math.getFeaturedTemplates().forEach((template) => addAsset(assets, template.figure));
+math.getAllTemplates().forEach((template) => addAsset(assets, template.figure));
+
+[english, physics].forEach((content) => {
+  content.topics.forEach((topic) => {
+    addAsset(assets, topic.coverImage);
+    addAsset(assets, topic.diagramImage);
+  });
+  content.templates.forEach((template) => addAsset(assets, template.figure));
+});
+
+physicsCurriculum.knowledgeItems.forEach((knowledge) => addAsset(assets, knowledge.coverImage));
+englishUnits.units.forEach((unit) => addAsset(assets, unit.coverImage));
 
 const items = [...assets].sort().map((source) => ({
   source,

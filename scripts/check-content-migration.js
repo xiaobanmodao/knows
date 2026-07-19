@@ -30,8 +30,20 @@ if (favorites.length !== 1 || favorites[0].id === 'ch01-rational-lesson-1') {
   issues.push('收藏迁移后应去重并使用稳定知识点 ID');
 }
 
+if (favorites[0].subjectId !== 'math' || favorites[0].type !== 'knowledge') {
+  issues.push('旧收藏迁移后应补充 subjectId=math 和 type=knowledge');
+}
+
+if (!Object.prototype.hasOwnProperty.call(favorites[0], 'containerId')) {
+  issues.push('旧收藏迁移后应补充 containerId');
+}
+
 if (!recents.length || recents[0].id === 'ch03-linear-equation-lesson-2') {
   issues.push('最近浏览迁移后应使用稳定知识点 ID');
+}
+
+if (memory.get('knows_content_schema_version') !== 3) {
+  issues.push('本地内容版本应升级到 3');
 }
 
 if (!math.getKnowledgeById('ch01-rational-lesson-1')) {

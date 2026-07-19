@@ -1,6 +1,9 @@
 <view class="page-shell">
   <search-bar value="{{query}}" autoFocus="{{true}}" bind:change="onChange" bind:submit="onSubmit" />
-  <view class="search-note">统一搜索章节、知识点和模型，例如“相似”“二次函数”“手拉手模型”“勾股定理”。</view>
+  <view class="subject-filter">
+    <view wx:for="{{subjectFilters}}" wx:key="id" wx:for-item="filter" class="subject-filter__item {{selectedSubjectId === filter.id ? 'subject-filter__item--active' : ''}}" data-id="{{filter.id}}" bindtap="selectSubject">{{filter.title}}</view>
+  </view>
+  <view class="search-note">搜索教材单元、英语单词与语法，以及三科学科知识和方法。</view>
 
   <view wx:if="{{!hasSearched}}" class="quick-panel">
     <view wx:if="{{searchHistory.length}}" class="section-title top-gap">
@@ -41,7 +44,7 @@
     </view>
 
     <view wx:if="{{groupedResults.length}}">
-      <view wx:for="{{groupedResults}}" wx:key="type" wx:for-item="group" class="result-group">
+      <view wx:for="{{groupedResults}}" wx:key="key" wx:for-item="group" class="result-group">
         <view class="result-group__header">
           <view class="result-group__title">{{group.title}}</view>
           <view class="result-group__count">{{group.count}} 条</view>
@@ -54,11 +57,12 @@
             class="result-card card"
             data-type="{{result.type}}"
             data-id="{{result.refId}}"
+            data-subject-id="{{result.subjectId}}"
             bindtap="openResult"
           >
             <view class="result-card__top">
               <view class="result-card__title">{{result.title}}</view>
-              <view class="pill">{{result.typeLabel}}</view>
+              <view class="pill">{{result.subjectLabel}} · {{result.typeLabel}}</view>
             </view>
             <view class="result-card__subtitle">{{result.subtitle}}</view>
             <view class="result-card__desc">{{result.description}}</view>
@@ -69,6 +73,6 @@
         </view>
       </view>
     </view>
-    <empty-state wx:else title="没有找到匹配内容" description="换个关键词试试，比如章节名、题型名或公式名称。" />
+    <empty-state wx:else title="没有找到匹配内容" description="换个关键词试试，比如单元名、单词、语法、题型或公式。" />
   </view>
 </view>

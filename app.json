@@ -2,6 +2,10 @@
   "pages": [
     "pages/index/index",
     "pages/math/index",
+    "pages/subject/index",
+    "pages/topic/index",
+    "pages/english-unit/index",
+    "pages/physics-chapter/index",
     "pages/chapter/index",
     "pages/knowledge/index",
     "pages/template/index",

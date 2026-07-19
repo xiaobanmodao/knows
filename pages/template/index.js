@@ -1,19 +1,30 @@
-const { getTemplateById, getChapterById } = require('../../utils/math');
+const { getChapterById } = require('../../utils/math');
+const {
+  getTemplateById,
+  getTopicById,
+  getPhysicsChapterById,
+  normalizeSubjectId,
+  SUBJECT_LABELS,
+} = require('../../utils/subjects');
 const { applyTempFileURL, getTempFileURLMap, isCloudFile } = require('../../utils/cloud-assets');
 
 Page({
   data: {
     template: null,
     relatedChapters: [],
+    relatedTopics: [],
+    subjectLabel: '',
+    isFavorite: false,
     figureLoadFailed: false,
   },
 
   async onLoad(options) {
-    const template = getTemplateById(options.id);
+    this.subjectId = normalizeSubjectId(options.subjectId);
+    const template = getTemplateById(this.subjectId, options.id);
 
     if (!template) {
       wx.showToast({
-        title: '模型不存在',
+        title: '方法模板不存在',
         icon: 'none',
       });
       return;
@@ -23,13 +34,35 @@ Page({
       title: template.name,
     });
 
+    const relatedChapters = this.subjectId === 'math'
+      ? (template.relatedChapters || []).map((chapterId) => getChapterById(chapterId)).filter(Boolean)
+      : this.subjectId === 'physics'
+        ? (template.chapterIds || []).map((chapterId) => getPhysicsChapterById(chapterId)).filter(Boolean)
+        : [];
+    const relatedTopics = this.subjectId === 'math'
+      ? []
+      : (template.topicIds || []).map((topicId) => getTopicById(this.subjectId, topicId)).filter(Boolean);
+    const app = getApp();
+    app.refreshSession();
+    app.addRecent({
+      id: template.id,
+      title: template.name,
+      subtitle: `${SUBJECT_LABELS[this.subjectId]} · ${template.category}`,
+      subjectId: this.subjectId,
+      type: 'template',
+      containerId: template.containerId || '',
+    });
+
     this.setData({
       figureLoadFailed: false,
+      subjectLabel: SUBJECT_LABELS[this.subjectId],
+      isFavorite: app.globalData.favorites.some((item) => item.id === template.id && (item.subjectId || 'math') === this.subjectId && item.type === 'template'),
       template: {
         ...template,
         figure: isCloudFile(template.figure) ? '' : template.figure,
       },
-      relatedChapters: template.relatedChapters.map((chapterId) => getChapterById(chapterId)).filter(Boolean),
+      relatedChapters,
+      relatedTopics,
     });
 
     const fileMap = await getTempFileURLMap([template.figure]);
@@ -43,10 +76,46 @@ Page({
     }
   },
 
+  onShow() {
+    if (!this.data.template) {
+      return;
+    }
+
+    const app = getApp();
+    app.refreshSession();
+    this.setData({
+      isFavorite: app.globalData.favorites.some((item) => item.id === this.data.template.id && (item.subjectId || 'math') === this.subjectId && item.type === 'template'),
+    });
+  },
+
+  toggleFavorite() {
+    const { template } = this.data;
+    const app = getApp();
+    const isFavorite = app.toggleFavorite({
+      id: template.id,
+      title: template.name,
+      subtitle: `${this.data.subjectLabel} · ${template.category}`,
+      subjectId: this.subjectId,
+      type: 'template',
+      containerId: template.containerId || '',
+    });
+    this.setData({ isFavorite });
+    wx.showToast({ title: isFavorite ? '已加入收藏' : '已取消收藏', icon: 'none' });
+  },
+
   openChapter(event) {
     const { id } = event.currentTarget.dataset;
     wx.navigateTo({
-      url: `/pages/chapter/index?id=${id}`,
+      url: this.subjectId === 'physics'
+        ? `/pages/physics-chapter/index?id=${id}`
+        : `/pages/chapter/index?id=${id}`,
+    });
+  },
+
+  openTopic(event) {
+    const { id } = event.currentTarget.dataset;
+    wx.navigateTo({
+      url: `/pages/topic/index?subjectId=${this.subjectId}&id=${id}`,
     });
   },
 

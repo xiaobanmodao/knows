@@ -2,6 +2,11 @@
   padding: 32rpx 30rpx;
 }
 
+.template-hero__head { display: flex; align-items: center; justify-content: space-between; gap: 16rpx; }
+.template-collect { padding: 10rpx 18rpx; border-radius: 999rpx; background: rgba(255,255,255,0.18); color: #ffffff; font-size: 22rpx; }
+.template-collect--active { background: #ffffff; color: #165dff; }
+.related-topic-grid { margin-top: 20rpx; }
+
 .template-hero__pill {
   background: rgba(255, 255, 255, 0.18);
   color: #ffffff;

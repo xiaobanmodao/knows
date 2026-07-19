@@ -1,0 +1,33 @@
+.physics-hero { padding: 30rpx; border-top: 8rpx solid #c85a2d; }
+.physics-hero__eyebrow { color: #9b4a28; font-size: 22rpx; font-weight: 700; }
+.physics-hero__title { margin-top: 10rpx; color: #1d2638; font-size: 42rpx; font-weight: 800; line-height: 1.3; }
+.physics-hero__summary { margin-top: 14rpx; color: #596477; font-size: 25rpx; line-height: 1.85; }
+.physics-figure { margin-top: 22rpx; padding: 18rpx; border: 1rpx solid #eee4de; border-radius: 16rpx; background: #fffaf7; }
+.physics-figure__image { display: block; width: 100%; height: 330rpx; }
+.physics-figure__fallback { display: flex; align-items: center; justify-content: center; min-height: 230rpx; color: #795f53; font-size: 23rpx; line-height: 1.7; text-align: center; }
+.physics-figure__caption { margin-top: 10rpx; color: #756a65; font-size: 21rpx; line-height: 1.7; }
+.physics-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12rpx; margin-top: 22rpx; }
+.physics-stat { padding: 16rpx 8rpx; border-radius: 12rpx; background: #fff1e9; color: #76442f; font-size: 20rpx; text-align: center; }
+.physics-stat__num { display: block; margin-bottom: 4rpx; color: #a63f17; font-size: 30rpx; font-weight: 800; }
+.top-gap { margin-top: 24rpx; }
+.physics-section { padding: 26rpx; }
+.physics-section__title { color: #202a3e; font-size: 28rpx; font-weight: 800; }
+.signal-list { margin-top: 14rpx; }
+.signal-item { display: inline-flex; margin: 0 10rpx 10rpx 0; padding: 9rpx 14rpx; border-radius: 8rpx; background: #f2f5f8; color: #4f5d70; font-size: 22rpx; }
+.formula-line { display: flex; align-items: flex-start; margin-top: 15rpx; color: #39465d; font-size: 24rpx; line-height: 1.7; }
+.formula-line__index { flex: 0 0 38rpx; width: 38rpx; height: 38rpx; margin-right: 12rpx; border-radius: 50%; background: #c85a2d; color: #fff; font-size: 20rpx; line-height: 38rpx; text-align: center; }
+.knowledge-list { display: grid; gap: 18rpx; }
+.knowledge-row { padding: 25rpx; }
+.knowledge-row__head { display: flex; align-items: center; }
+.knowledge-row__number { flex: 0 0 42rpx; width: 42rpx; height: 42rpx; margin-right: 14rpx; border-radius: 8rpx; background: #26344b; color: #fff; font-size: 21rpx; font-weight: 800; line-height: 42rpx; text-align: center; }
+.knowledge-row__title { flex: 1; min-width: 0; color: #1b273e; font-size: 29rpx; font-weight: 800; line-height: 1.4; }
+.knowledge-row__summary { margin-top: 13rpx; color: #5a6578; font-size: 23rpx; line-height: 1.75; }
+.knowledge-row__points { margin-top: 10rpx; }
+.knowledge-row__point { position: relative; margin-top: 6rpx; padding-left: 18rpx; color: #445168; font-size: 22rpx; line-height: 1.65; }
+.knowledge-row__point::before { position: absolute; top: 13rpx; left: 0; width: 7rpx; height: 7rpx; border-radius: 50%; background: #cf5d2d; content: ''; }
+.knowledge-row__meta { margin-top: 13rpx; color: #a04a27; font-size: 21rpx; }
+.method-card { padding: 28rpx; border-left: 7rpx solid #c85a2d; }
+.method-card__label { color: #9b4a28; font-size: 21rpx; font-weight: 700; }
+.method-card__title { margin-top: 7rpx; color: #1e2940; font-size: 31rpx; font-weight: 800; }
+.method-card__summary { margin-top: 10rpx; color: #596579; font-size: 23rpx; line-height: 1.75; }
+.method-card__action { margin-top: 15rpx; color: #b34a20; font-size: 22rpx; font-weight: 700; }

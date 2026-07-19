@@ -1,4 +1,5 @@
 const { getFeaturedChapters, getAllChapters } = require('../../utils/math');
+const { getSubjectRegistry } = require('../../utils/subjects');
 
 Page({
   data: {
@@ -7,14 +8,18 @@ Page({
     totalChapters: 0,
     favoritesCount: 0,
     recentsCount: 0,
+    totalKnowledge: 0,
   },
 
   onLoad() {
-    const app = getApp();
+    const subjects = getSubjectRegistry();
     this.setData({
-      subjects: app.globalData.subjects,
+      subjects,
       featuredChapters: getFeaturedChapters(),
       totalChapters: getAllChapters().length,
+      totalKnowledge: subjects.reduce((sum, subject) => (
+        sum + subject.knowledgeCount + (subject.vocabularyCount || 0) + (subject.grammarCount || 0)
+      ), 0),
     });
   },
 
@@ -43,9 +48,8 @@ Page({
       return;
     }
 
-    wx.showToast({
-      title: '该学科后续开放',
-      icon: 'none',
+    wx.navigateTo({
+      url: `/pages/subject/index?id=${subject.id}`,
     });
   },
 

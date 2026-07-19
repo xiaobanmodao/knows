@@ -1,5 +1,9 @@
 const fs = require('fs');
 const math = require('../utils/math');
+const english = require('../data/english-content');
+const englishUnits = require('../data/english-units');
+const physics = require('../data/physics-content');
+const physicsCurriculum = require('../data/physics-curriculum');
 
 const chapters = math.getAllChapters();
 const studyMap = math.getMathStudyMap();
@@ -72,6 +76,27 @@ studyMap.topicGroups.forEach((group) => {
   group.topics
     .filter((topic) => topic.coverImage)
     .forEach((topic) => assertImage(`专题封面 ${group.title}/${topic.title}`, topic.coverImage));
+});
+
+math.getAllTemplates()
+  .filter((template) => /\/generated\/templates\//.test(template.figure))
+  .forEach((template) => assertImage(`数学模板 ${template.name}`, template.figure));
+
+physicsCurriculum.chapters.forEach((chapter) => {
+  chapter.knowledgeItems.forEach((knowledge) => {
+    assertImage(`物理知识点 ${chapter.title}/${knowledge.title}`, knowledge.coverImage);
+  });
+});
+
+englishUnits.units.forEach((unit) => {
+  assertImage(`英语单元 ${unit.bookLabel}/${unit.unitLabel} ${unit.title}`, unit.coverImage);
+});
+
+[english, physics].forEach((content) => {
+  content.topics.forEach((topic) => {
+    assertImage(`${content.subject.name}专题封面 ${topic.title}`, topic.coverImage);
+    assertImage(`${content.subject.name}专题图示 ${topic.title}`, topic.diagramImage);
+  });
 });
 
 if (issues.length) {

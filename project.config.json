@@ -14,7 +14,7 @@
     "ignoreUploadUnusedFiles": true,
     "compileWorklet": false,
     "uglifyFileName": false,
-    "uploadWithSourceMap": true,
+    "uploadWithSourceMap": false,
     "packNpmManually": false,
     "packNpmRelationList": [],
     "minifyWXSS": true,
@@ -59,6 +59,18 @@
       {
         "type": "folder",
         "value": ".tmp-quicklook"
+      },
+      {
+        "type": "folder",
+        "value": ".tmp-v12-audit"
+      },
+      {
+        "type": "folder",
+        "value": ".codex-output"
+      },
+      {
+        "type": "folder",
+        "value": ".codex-preview"
       },
       {
         "type": "file",
