@@ -1,3 +1,5 @@
+const { getContentReviewMeta } = require('./content-review-meta');
+
 function slugify(value) {
   return String(value || '')
     .toLowerCase()
@@ -30,6 +32,7 @@ function buildWord(unitId, entry, index) {
     example,
     translation,
     note,
+    contentMeta: getContentReviewMeta('english'),
   };
 }
 
@@ -53,6 +56,7 @@ function createUnit(config) {
   const grammarPoints = config.grammar.map((item) => ({
     ...item,
     id: `${config.id}-grammar-${item.id}`,
+    contentMeta: getContentReviewMeta('english'),
   }));
 
   return {
@@ -61,7 +65,8 @@ function createUnit(config) {
     type: 'unit',
     unitLabel: config.isStarter ? `Starter Unit ${config.number}` : `Unit ${config.number}`,
     coverImage: config.coverImage || `/assets/figures/generated/subjects/english/units/${config.id}.png`,
-    figureCaption: config.figureCaption || `${config.title}：${config.theme}与单元核心语法图解。`,
+    figureCaption: config.figureCaption || `${config.title}：${config.theme}；核心语法包括${grammarPoints.map((item) => item.title).join('、')}。`,
+    contentMeta: getContentReviewMeta('english'),
     vocabulary,
     vocabularyCount: vocabulary.length,
     grammarPoints,

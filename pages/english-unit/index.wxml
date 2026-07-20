@@ -1,4 +1,6 @@
 <view class="page-shell" wx:if="{{unit}}">
+  <view class="context-path" bindtap="openSubjectHome">英语 / {{unit.bookLabel}} / {{unit.unitLabel}}</view>
+
   <view class="unit-hero">
     <view class="unit-hero__eyebrow">{{unit.bookLabel}} · {{unit.unitLabel}}</view>
     <view class="unit-hero__title">{{unit.title}}</view>
@@ -6,6 +8,9 @@
     <view class="unit-hero__counts">
       <text>{{unit.vocabularyCount}} 个核心词</text>
       <text>{{unit.grammarCount}} 个语法点</text>
+    </view>
+    <view wx:if="{{unit.contentMeta}}" class="content-review content-review--light">
+      {{unit.contentMeta.statusLabel}} · {{unit.contentMeta.reviewedAt}} · {{unit.contentMeta.sourceLabel}}
     </view>
   </view>
 
@@ -31,7 +36,7 @@
   </view>
 
   <view class="word-list">
-    <view wx:for="{{unit.vocabulary}}" wx:key="id" class="word-card">
+    <view wx:for="{{unit.vocabulary}}" wx:key="id" class="word-card" id="word-{{item.id}}">
       <view class="word-card__head">
         <view>
           <view class="word-card__word">{{item.word}}</view>
@@ -67,7 +72,7 @@
   </view>
 
   <view class="grammar-list">
-    <view wx:for="{{unit.grammarPoints}}" wx:key="id" class="grammar-card">
+    <view wx:for="{{unit.grammarPoints}}" wx:key="id" class="grammar-card" id="grammar-{{item.id}}">
       <view class="grammar-card__index">语法 {{index + 1}}</view>
       <view class="grammar-card__title">{{item.title}}</view>
       <view class="grammar-card__summary">{{item.summary}}</view>
@@ -81,6 +86,17 @@
       </view>
       <view class="grammar-card__subhead">容易错</view>
       <view wx:for="{{item.mistakes}}" wx:key="*this" class="mistake-row">{{index + 1}}. {{item}}</view>
+    </view>
+  </view>
+
+  <view wx:if="{{navigation}}" class="page-navigation">
+    <view class="page-navigation__item {{navigation.previous ? '' : 'page-navigation__item--disabled'}}" data-id="{{navigation.previous.id}}" bindtap="openAdjacentUnit">
+      <view class="page-navigation__direction">‹ 上一单元</view>
+      <view class="page-navigation__title">{{navigation.previous ? navigation.previous.title : '已经是本册第一单元'}}</view>
+    </view>
+    <view class="page-navigation__item page-navigation__item--next {{navigation.next ? '' : 'page-navigation__item--disabled'}}" data-id="{{navigation.next.id}}" bindtap="openAdjacentUnit">
+      <view class="page-navigation__direction">下一单元 ›</view>
+      <view class="page-navigation__title">{{navigation.next ? navigation.next.title : '已经是本册最后一单元'}}</view>
     </view>
   </view>
 

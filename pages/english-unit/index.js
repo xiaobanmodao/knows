@@ -1,10 +1,11 @@
-const { getEnglishUnitById } = require('../../utils/subjects');
+const { getEnglishUnitById, getEnglishUnitNavigation } = require('../../utils/subjects');
 const { applyTempFileURL, getTempFileURLMap, isCloudFile } = require('../../utils/cloud-assets');
 
 Page({
   data: {
     unit: null,
     unitImageLoadFailed: false,
+    navigation: null,
   },
 
   async onLoad(options) {
@@ -18,12 +19,18 @@ Page({
 
     wx.setNavigationBarTitle({ title: `${unit.unitLabel} ${unit.title}` });
     this.currentUnitId = unit.id;
+    this.pendingFocus = options.focusId && ['word', 'grammar'].includes(options.focusType)
+      ? { type: options.focusType, id: options.focusId }
+      : null;
     this.setData({
       unit: {
         ...unit,
         coverImage: isCloudFile(unit.coverImage) ? '' : unit.coverImage,
       },
       unitImageLoadFailed: false,
+      navigation: getEnglishUnitNavigation(unit.id),
+    }, () => {
+      this.scrollToPendingFocus();
     });
 
     const app = getApp();
@@ -52,10 +59,37 @@ Page({
     });
   },
 
+  scrollToPendingFocus() {
+    if (!this.pendingFocus) {
+      return;
+    }
+
+    const { type, id } = this.pendingFocus;
+    this.pendingFocus = null;
+    setTimeout(() => {
+      wx.pageScrollTo({
+        selector: `#${type}-${id}`,
+        duration: 240,
+      });
+    }, 120);
+  },
+
   openSearch(event) {
     wx.navigateTo({
       url: `/pages/search/index?subjectId=english&q=${encodeURIComponent(event.currentTarget.dataset.keyword)}`,
     });
+  },
+
+  openSubjectHome() {
+    wx.navigateTo({ url: '/pages/subject/index?id=english' });
+  },
+
+  openAdjacentUnit(event) {
+    const { id } = event.currentTarget.dataset;
+
+    if (id) {
+      wx.redirectTo({ url: `/pages/english-unit/index?id=${id}` });
+    }
   },
 
   onUnitImageError() {

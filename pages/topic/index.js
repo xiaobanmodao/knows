@@ -6,6 +6,7 @@ Page({
     topic: null,
     subjectLabel: '',
     imageLoadFailed: false,
+    diagramImageLoadFailed: false,
   },
 
   async onLoad(options) {
@@ -25,21 +26,33 @@ Page({
         ...topic,
         gradeText: Array.isArray(topic.gradeBands) ? topic.gradeBands.join(' · ') : (topic.grade || ''),
         coverImage: isCloudFile(topic.coverImage || topic.image) ? '' : (topic.coverImage || topic.image),
+        diagramImage: isCloudFile(topic.diagramImage) ? '' : topic.diagramImage,
       },
+      imageLoadFailed: false,
+      diagramImageLoadFailed: false,
     });
 
     const sourceImage = topic.coverImage || topic.image;
-    const fileMap = await getTempFileURLMap([sourceImage]);
+    const fileMap = await getTempFileURLMap([sourceImage, topic.diagramImage]);
     const signedImage = applyTempFileURL(sourceImage, fileMap);
+    const signedDiagram = applyTempFileURL(topic.diagramImage, fileMap);
 
-    if (signedImage) {
-      this.setData({ 'topic.coverImage': signedImage });
-    }
+    this.setData({
+      'topic.coverImage': signedImage || (isCloudFile(sourceImage) ? '' : sourceImage),
+      'topic.diagramImage': signedDiagram || (isCloudFile(topic.diagramImage) ? '' : topic.diagramImage),
+    });
   },
 
   openChapter(event) {
     const page = this.subjectId === 'physics' ? 'physics-chapter' : 'chapter';
     wx.navigateTo({ url: `/pages/${page}/index?id=${event.currentTarget.dataset.id}` });
+  },
+
+  openSubjectHome() {
+    const url = this.subjectId === 'math'
+      ? '/pages/math/index'
+      : `/pages/subject/index?id=${this.subjectId}`;
+    wx.navigateTo({ url });
   },
 
   openKnowledge(event) {
@@ -56,5 +69,9 @@ Page({
 
   onImageError() {
     this.setData({ imageLoadFailed: true });
+  },
+
+  onDiagramImageError() {
+    this.setData({ diagramImageLoadFailed: true });
   },
 });

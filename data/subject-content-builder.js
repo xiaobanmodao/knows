@@ -1,3 +1,5 @@
+const { getContentReviewMeta } = require('./content-review-meta');
+
 function buildProblem(example, index) {
   return {
     id: example.id,
@@ -89,6 +91,7 @@ function buildKnowledge(subject, topic, item, topicTemplate) {
     problems: examples,
     coverImage: topic.diagramImage,
     figureCaption: item.figureCaption || topic.diagramCaption,
+    contentMeta: getContentReviewMeta(subject.id),
   };
 }
 

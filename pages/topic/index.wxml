@@ -1,6 +1,8 @@
 <view class="page-shell" wx:if="{{topic}}">
+  <view class="context-path" bindtap="openSubjectHome">{{subjectLabel}} / 专题索引 / {{topic.title}}</view>
+
   <view class="topic-hero card">
-    <image wx:if="{{topic.coverImage && !imageLoadFailed}}" class="topic-hero__image" src="{{topic.coverImage}}" mode="aspectFill" binderror="onImageError"></image>
+    <image wx:if="{{topic.coverImage && !imageLoadFailed}}" class="topic-hero__image" src="{{topic.coverImage}}" mode="aspectFit" binderror="onImageError"></image>
     <view class="topic-hero__label">{{subjectLabel}} · {{topic.label}}</view>
     <view class="topic-hero__title">{{topic.title}}</view>
     <view class="topic-hero__summary">{{topic.summary}}</view>
@@ -21,6 +23,13 @@
   <view class="topic-section card top-gap">
     <view class="topic-section__title">题干信号</view>
     <view class="signal-row"><text wx:for="{{topic.signals}}" wx:key="*this" class="signal">{{item}}</text></view>
+  </view>
+
+  <view wx:if="{{topic.diagramImage}}" class="topic-diagram card top-gap">
+    <view class="topic-section__title">专题结构图</view>
+    <image wx:if="{{!diagramImageLoadFailed}}" class="topic-diagram__image" src="{{topic.diagramImage}}" mode="aspectFit" binderror="onDiagramImageError"></image>
+    <view wx:else class="topic-diagram__fallback">结构图暂未加载，下方知识内容仍可正常阅读</view>
+    <view class="topic-diagram__caption">{{topic.diagramCaption}}</view>
   </view>
 
   <view wx:if="{{topic.chapters && topic.chapters.length}}" class="section-title top-gap">

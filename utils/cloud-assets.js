@@ -102,16 +102,16 @@ function getClientTempFileURLBatch(fileIDs) {
 }
 
 function getTempFileURLBatch(fileIDs) {
-  return getServerTempFileURLBatch(fileIDs).then((serverMap) => {
-    const missing = fileIDs.filter((fileID) => !serverMap[fileID]);
+  return getClientTempFileURLBatch(fileIDs).then((clientMap) => {
+    const missing = fileIDs.filter((fileID) => !clientMap[fileID]);
 
     if (!missing.length) {
-      return serverMap;
+      return clientMap;
     }
 
-    return getClientTempFileURLBatch(missing).then((clientMap) => ({
-      ...serverMap,
+    return getServerTempFileURLBatch(missing).then((serverMap) => ({
       ...clientMap,
+      ...serverMap,
     }));
   });
 }
@@ -134,7 +134,14 @@ function getTempFileURLMap(fileIDs) {
   }
 
   return Promise.all(chunk(missing, 50).map(getTempFileURLBatch))
-    .then((results) => results.reduce((next, item) => Object.assign(next, item), map));
+    .then((results) => results.reduce((next, item) => Object.assign(next, item), map))
+    .catch((error) => {
+      console.warn('云图片临时链接获取异常，已回退为文字内容', {
+        count: missing.length,
+        errMsg: error && error.errMsg,
+      });
+      return map;
+    });
 }
 
 function applyTempFileURL(value, fileMap) {

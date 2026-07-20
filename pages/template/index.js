@@ -103,6 +103,14 @@ Page({
     wx.showToast({ title: isFavorite ? '已加入收藏' : '已取消收藏', icon: 'none' });
   },
 
+  openSubjectHome() {
+    wx.navigateTo({
+      url: this.subjectId === 'math'
+        ? '/pages/math/index'
+        : `/pages/subject/index?id=${this.subjectId}`,
+    });
+  },
+
   openChapter(event) {
     const { id } = event.currentTarget.dataset;
     wx.navigateTo({

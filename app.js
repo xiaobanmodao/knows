@@ -49,6 +49,30 @@ App({
     return nextHistory;
   },
 
+  getReadingPosition(subjectId, knowledgeId) {
+    return storage.getReadingPosition(subjectId, knowledgeId);
+  },
+
+  saveReadingPosition(item, scrollTop, viewState) {
+    return storage.saveReadingPosition(item, scrollTop, viewState);
+  },
+
+  getLastReading() {
+    return storage.getLastReading();
+  },
+
+  getNotes() {
+    return storage.getNotes();
+  },
+
+  getKnowledgeNote(subjectId, knowledgeId) {
+    return storage.getKnowledgeNote(subjectId, knowledgeId);
+  },
+
+  saveKnowledgeNote(item) {
+    return storage.saveKnowledgeNote(item);
+  },
+
   getMathGrade() {
     return storage.getMathGrade();
   },

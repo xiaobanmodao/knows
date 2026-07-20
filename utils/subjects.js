@@ -289,13 +289,88 @@ function getRelatedKnowledge(subjectId, knowledge, limit = 3) {
     .map(hydrateSubjectKnowledge) : [];
 }
 
+function getNeighborNavigation(items, currentId) {
+  const index = items.findIndex((item) => item.id === currentId);
+
+  if (index < 0) {
+    return { index: -1, count: items.length, previous: null, next: null };
+  }
+
+  const toEntry = (item) => item ? { id: item.id, title: item.title } : null;
+
+  return {
+    index,
+    count: items.length,
+    previous: toEntry(items[index - 1]),
+    next: toEntry(items[index + 1]),
+  };
+}
+
+function getEnglishUnitNavigation(unitId) {
+  const unit = englishUnits.getUnitById(unitId);
+  const book = unit ? englishUnits.books.find((item) => item.id === unit.bookId) : null;
+
+  return unit && book
+    ? getNeighborNavigation(book.units, unitId)
+    : { index: -1, count: 0, previous: null, next: null };
+}
+
+function getPhysicsChapterNavigation(chapterId) {
+  const chapter = physicsCurriculum.getChapterById(chapterId);
+  const book = chapter ? physicsCurriculum.books.find((item) => item.id === chapter.bookId) : null;
+
+  return chapter && book
+    ? getNeighborNavigation(book.chapters, chapterId)
+    : { index: -1, count: 0, previous: null, next: null };
+}
+
+function getKnowledgeNavigation(subjectId, knowledgeId) {
+  const id = normalizeSubjectId(subjectId);
+  const knowledge = getKnowledgeById(id, knowledgeId);
+
+  if (!knowledge) {
+    return { index: -1, count: 0, previous: null, next: null };
+  }
+
+  if (id === 'math') {
+    const chapter = math.getChapterById(knowledge.chapterId);
+    return getNeighborNavigation(chapter ? chapter.knowledgeItems : [], knowledge.id);
+  }
+
+  if (id === 'physics' && knowledge.chapterId) {
+    const chapter = physicsCurriculum.getChapterById(knowledge.chapterId);
+    return getNeighborNavigation(chapter ? chapter.knowledgeItems : [], knowledge.id);
+  }
+
+  const topic = contentBySubject[id].topics.find((item) => item.id === knowledge.topicId);
+  return getNeighborNavigation(topic ? topic.knowledgeItems : [], knowledge.id);
+}
+
 function includesKeyword(value, keyword) {
-  return String(value || '').toLowerCase().includes(keyword);
+  return normalizeSearchText(value).includes(keyword);
+}
+
+function normalizeSearchText(value) {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/[＝]/g, '=')
+    .replace(/[／]/g, '/')
+    .replace(/[－—–]/g, '-')
+    .replace(/[（]/g, '(')
+    .replace(/[）]/g, ')')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 function scoreContent(keyword, title, fields) {
-  const normalizedTitle = String(title || '').toLowerCase();
-  let score = normalizedTitle === keyword ? 120 : normalizedTitle.includes(keyword) ? 80 : 0;
+  const normalizedTitle = normalizeSearchText(title);
+  let score = normalizedTitle === keyword
+    ? 140
+    : normalizedTitle.startsWith(keyword)
+      ? 105
+      : normalizedTitle.includes(keyword)
+        ? 80
+        : 0;
 
   if (fields.some((field) => includesKeyword(field, keyword))) {
     score += 30;
@@ -375,6 +450,7 @@ function searchEnglishUnits(keyword) {
     score: scoreContent(keyword, word.word, [word.meaning, word.partOfSpeech, word.usage, word.forms, ...(word.collocations || []), word.example, word.translation, word.note]),
     id: `word-english-${word.id}`,
     refId: word.unitId,
+    focusId: word.id,
     subjectId: 'english',
     subjectLabel: SUBJECT_LABELS.english,
     type: 'word',
@@ -389,6 +465,7 @@ function searchEnglishUnits(keyword) {
     score: scoreContent(keyword, point.title, [point.summary, ...(point.structures || []), ...(point.mistakes || []), ...point.examples.flatMap((item) => [item.sentence, item.translation, item.explanation])]),
     id: `grammar-english-${point.id}`,
     refId: point.unitId,
+    focusId: point.id,
     subjectId: 'english',
     subjectLabel: SUBJECT_LABELS.english,
     type: 'grammar',
@@ -485,7 +562,7 @@ function searchMathWithTopics(keyword) {
     subjectId: 'math',
     subjectLabel: SUBJECT_LABELS.math,
     containerId: item.type === 'chapter' ? item.refId : '',
-    score: 100,
+    score: item.score,
   }));
   const topicResults = math.getMathStudyMap().topicGroups
     .flatMap((group) => group.topics)
@@ -509,7 +586,7 @@ function searchMathWithTopics(keyword) {
 }
 
 function searchAllSubjects(keyword, subjectId = 'all') {
-  const normalizedKeyword = String(keyword || '').trim().toLowerCase();
+  const normalizedKeyword = normalizeSearchText(keyword);
 
   if (!normalizedKeyword) {
     return [];
@@ -559,6 +636,9 @@ module.exports = {
   getTemplateById,
   getKnowledgeContext,
   getRelatedKnowledge,
+  getEnglishUnitNavigation,
+  getPhysicsChapterNavigation,
+  getKnowledgeNavigation,
   searchAllSubjects,
   normalizeSubjectId,
   SUBJECT_LABELS,

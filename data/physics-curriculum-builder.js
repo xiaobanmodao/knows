@@ -1,3 +1,5 @@
+const { getContentReviewMeta } = require('./content-review-meta');
+
 const ASSET_ROOT = '/assets/figures/generated/subjects/physics';
 
 function lab(title, goal, apparatus, steps, phenomenon, conclusion, errors, safety) {
@@ -74,6 +76,7 @@ function buildKnowledge(chapter, item) {
     problems: item.examples.map((example, index) => buildProblem(chapter.id, item.id, example, index)),
     coverImage: `${ASSET_ROOT}/knowledge/${item.id}.png`,
     figureCaption: `${item.title}：${chapter.figureCaption}`,
+    contentMeta: getContentReviewMeta('physics'),
   };
 }
 
@@ -107,6 +110,7 @@ function createChapter(config) {
 
   return {
     ...chapter,
+    contentMeta: getContentReviewMeta('physics'),
     knowledgeItems,
     knowledgeIds: knowledgeItems.map((item) => item.id),
     knowledgeCount: knowledgeItems.length,

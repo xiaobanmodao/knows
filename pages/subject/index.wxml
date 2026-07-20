@@ -24,7 +24,19 @@
 
   <view class="subject-search" bindtap="openSearch">搜索{{subject.shortName}}知识与方法</view>
 
-  <block wx:if="{{isEnglish}}">
+  <view class="content-switch" aria-label="选择内容入口">
+    <view class="content-switch__item {{activeView === 'catalog' ? 'content-switch__item--active' : ''}}" data-view="catalog" bindtap="selectView">
+      <view class="content-switch__title">教材目录</view>
+      <view class="content-switch__meta">{{isEnglish ? subject.unitCount : subject.chapterCount}} {{isEnglish ? '单元' : '章'}}</view>
+    </view>
+    <view class="content-switch__item {{activeView === 'topics' ? 'content-switch__item--active' : ''}}" data-view="topics" bindtap="selectView">
+      <view class="content-switch__title">专题索引</view>
+      <view class="content-switch__meta">{{topics.length}} 个专题</view>
+    </view>
+  </view>
+
+  <block wx:if="{{activeView === 'catalog'}}">
+    <block wx:if="{{isEnglish}}">
     <view class="section-title top-gap">
       <view class="section-title__main">按教材单元学习</view>
       <view class="section-title__sub">人教版新版教材</view>
@@ -56,9 +68,9 @@
         <view class="unit-row__arrow">›</view>
       </view>
     </view>
-  </block>
+    </block>
 
-  <block wx:if="{{isPhysics}}">
+    <block wx:if="{{isPhysics}}">
     <view class="section-title top-gap">
       <view class="section-title__main">按教材章节学习</view>
       <view class="section-title__sub">人教版 22 章</view>
@@ -88,23 +100,26 @@
         <view class="unit-row__arrow">›</view>
       </view>
     </view>
+    </block>
   </block>
 
-  <view class="section-title top-gap">
-    <view class="section-title__main">{{isEnglish ? '能力专题' : (isPhysics ? '综合复习专题' : '专题学习')}}</view>
-    <view class="section-title__sub">{{topics.length}} 个专题</view>
-  </view>
+  <block wx:if="{{activeView === 'topics'}}">
+    <view class="section-title top-gap">
+      <view class="section-title__main">{{isEnglish ? '英语知识专题' : '物理知识专题'}}</view>
+      <view class="section-title__sub">辅助跨单元查找</view>
+    </view>
 
-  <view class="topic-list">
-    <view wx:for="{{topics}}" wx:key="id" wx:for-item="topic" class="subject-topic card" data-id="{{topic.id}}" bindtap="openTopic">
-      <image wx:if="{{topic.coverImage && !topic.imageLoadFailed}}" class="subject-topic__image" src="{{topic.coverImage}}" mode="aspectFill" data-index="{{index}}" binderror="onImageError"></image>
-      <view wx:else class="subject-topic__image subject-topic__fallback">{{topic.label}}</view>
-      <view class="subject-topic__body">
-        <view class="subject-topic__label">{{topic.label}} · {{topic.gradeText}}</view>
-        <view class="subject-topic__title">{{topic.title}}</view>
-        <view class="subject-topic__summary">{{topic.summary}}</view>
-        <view class="subject-topic__meta">{{topic.knowledgeCount}} 个知识点 · {{topic.exampleCount}} 道示例</view>
+    <view class="topic-list">
+      <view wx:for="{{topics}}" wx:key="id" wx:for-item="topic" class="subject-topic card" data-id="{{topic.id}}" bindtap="openTopic">
+        <image wx:if="{{topic.coverImage && !topic.imageLoadFailed}}" class="subject-topic__image" src="{{topic.coverImage}}" mode="aspectFill" data-index="{{index}}" binderror="onImageError"></image>
+        <view wx:else class="subject-topic__image subject-topic__fallback">{{topic.label}}</view>
+        <view class="subject-topic__body">
+          <view class="subject-topic__label">{{topic.label}} · {{topic.gradeText}}</view>
+          <view class="subject-topic__title">{{topic.title}}</view>
+          <view class="subject-topic__summary">{{topic.summary}}</view>
+          <view class="subject-topic__meta">{{topic.knowledgeCount}} 个知识点 · {{topic.exampleCount}} 道示例</view>
+        </view>
       </view>
     </view>
-  </view>
+  </block>
 </view>

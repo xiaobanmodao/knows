@@ -62,6 +62,7 @@ Page({
     hasActiveTopics: false,
     totalChapters: 0,
     visibleChapterCount: 0,
+    activeView: 'catalog',
   },
 
   async onLoad() {
@@ -103,6 +104,14 @@ Page({
     const gradeId = app.setMathGrade(event.currentTarget.dataset.id);
 
     this.setData(buildGradeView(gradeId, this.data.studyMap, this.data.chapterGroups));
+  },
+
+  selectView(event) {
+    const { view } = event.currentTarget.dataset;
+
+    if (view === 'catalog' || view === 'topics') {
+      this.setData({ activeView: view });
+    }
   },
 
   openSearch() {

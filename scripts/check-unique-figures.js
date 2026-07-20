@@ -1,4 +1,5 @@
 const fs = require('fs');
+const crypto = require('crypto');
 const math = require('../utils/math');
 const english = require('../data/english-content');
 const englishUnits = require('../data/english-units');
@@ -9,6 +10,7 @@ const chapters = math.getAllChapters();
 const studyMap = math.getMathStudyMap();
 const issues = [];
 const ownerByImage = new Map();
+const ownerByHash = new Map();
 const EXPECTED_WIDTH = 1280;
 const EXPECTED_HEIGHT = 900;
 
@@ -46,12 +48,20 @@ function assertImage(owner, image) {
   if (!fs.existsSync(localPath)) {
     issues.push(`${owner}: 图片文件不存在 -> ${image}`);
   } else {
+    const buffer = fs.readFileSync(localPath);
     const size = readPngSize(localPath);
+    const hash = crypto.createHash('sha256').update(buffer).digest('hex');
 
     if (!size) {
       issues.push(`${owner}: PNG 文件头异常 -> ${image}`);
     } else if (size.width !== EXPECTED_WIDTH || size.height !== EXPECTED_HEIGHT) {
       issues.push(`${owner}: 图片尺寸应为 ${EXPECTED_WIDTH}x${EXPECTED_HEIGHT}，实际为 ${size.width}x${size.height} -> ${image}`);
+    }
+
+    if (ownerByHash.has(hash)) {
+      issues.push(`${owner}: 图片内容与 ${ownerByHash.get(hash)} 完全重复 -> ${image}`);
+    } else {
+      ownerByHash.set(hash, owner);
     }
   }
 

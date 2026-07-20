@@ -1,4 +1,10 @@
 <view class="page-shell" wx:if="{{template}}">
+  <view class="context-path" bindtap="openSubjectHome">
+    <text>{{subjectLabel}}</text>
+    <text class="context-path__separator">/</text>
+    <text>方法模板</text>
+  </view>
+
   <view class="template-hero hero-gradient card">
     <view class="template-hero__head">
       <view class="pill template-hero__pill">{{subjectLabel}} · {{template.category}}</view>

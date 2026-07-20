@@ -1,8 +1,13 @@
 <view class="page-shell" wx:if="{{chapter}}">
+  <view class="context-path context-path--physics" bindtap="openSubjectHome">物理 / {{chapter.bookLabel}} / {{chapter.chapterLabel}}</view>
+
   <view class="physics-hero card">
     <view class="physics-hero__eyebrow">{{chapter.bookLabel}} · {{chapter.chapterLabel}}</view>
     <view class="physics-hero__title">{{chapter.title}}</view>
     <view class="physics-hero__summary">{{chapter.summary}}</view>
+    <view wx:if="{{chapter.contentMeta}}" class="content-review">
+      {{chapter.contentMeta.statusLabel}} · {{chapter.contentMeta.reviewedAt}} · {{chapter.contentMeta.sourceLabel}}
+    </view>
 
     <view wx:if="{{chapter.diagramImage}}" class="physics-figure">
       <image wx:if="{{!diagramLoadFailed}}" class="physics-figure__image" src="{{chapter.diagramImage}}" mode="aspectFit" binderror="onImageError"></image>
@@ -50,5 +55,16 @@
     <view class="method-card__title">{{chapter.template.name}}</view>
     <view class="method-card__summary">{{chapter.template.summary}}</view>
     <view class="method-card__action">查看完整步骤与易错点 ›</view>
+  </view>
+
+  <view wx:if="{{navigation}}" class="page-navigation">
+    <view class="page-navigation__item {{navigation.previous ? '' : 'page-navigation__item--disabled'}}" data-id="{{navigation.previous.id}}" bindtap="openAdjacentChapter">
+      <view class="page-navigation__direction">‹ 上一章</view>
+      <view class="page-navigation__title">{{navigation.previous ? navigation.previous.title : '已经是本册第一章'}}</view>
+    </view>
+    <view class="page-navigation__item page-navigation__item--next {{navigation.next ? '' : 'page-navigation__item--disabled'}}" data-id="{{navigation.next.id}}" bindtap="openAdjacentChapter">
+      <view class="page-navigation__direction">下一章 ›</view>
+      <view class="page-navigation__title">{{navigation.next ? navigation.next.title : '已经是本册最后一章'}}</view>
+    </view>
   </view>
 </view>

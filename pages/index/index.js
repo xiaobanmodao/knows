@@ -1,5 +1,5 @@
 const { getFeaturedChapters, getAllChapters } = require('../../utils/math');
-const { getSubjectRegistry } = require('../../utils/subjects');
+const { getSubjectRegistry, SUBJECT_LABELS } = require('../../utils/subjects');
 
 Page({
   data: {
@@ -9,6 +9,7 @@ Page({
     favoritesCount: 0,
     recentsCount: 0,
     totalKnowledge: 0,
+    continueReading: null,
   },
 
   onLoad() {
@@ -29,7 +30,21 @@ Page({
     this.setData({
       favoritesCount: app.globalData.favorites.length,
       recentsCount: app.globalData.recents.length,
+      continueReading: (() => {
+        const item = app.getLastReading();
+        return item ? { ...item, subjectLabel: SUBJECT_LABELS[item.subjectId || 'math'] || '数学' } : null;
+      })(),
     });
+  },
+
+  openContinueReading() {
+    const item = this.data.continueReading;
+
+    if (item) {
+      wx.navigateTo({
+        url: `/pages/knowledge/index?subjectId=${item.subjectId || 'math'}&id=${item.id}&restore=1`,
+      });
+    }
   },
 
   openSearch() {

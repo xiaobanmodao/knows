@@ -1,4 +1,6 @@
 <view class="page-shell" wx:if="{{chapter}}">
+  <view class="context-path" bindtap="openMathHome">数学 / {{chapter.grade}} / {{chapter.volume}} / {{chapter.chapterNo}}</view>
+
   <view class="chapter-hero card">
     <view class="chapter-hero__head">
       <view>
@@ -70,12 +72,12 @@
       <view class="chapter-panel__intro">{{chapter.chapterLead}}</view>
       <view class="chapter-panel__chips">
         <view class="chapter-chip">
-          <text class="chapter-chip__label">先掌握</text>
+          <text class="chapter-chip__label">核心内容</text>
           <text class="chapter-chip__value">{{chapter.outlineItems.length ? chapter.outlineItems[0] : chapter.title}}</text>
         </view>
         <view class="chapter-chip">
           <text class="chapter-chip__label">题型入口</text>
-          <text class="chapter-chip__value">{{chapter.templateItems.length ? chapter.templateItems[0].name : '基础例题训练'}}</text>
+          <text class="chapter-chip__value">{{chapter.templateItems.length ? chapter.templateItems[0].name : '基础例题'}}</text>
         </view>
       </view>
     </view>
@@ -113,28 +115,9 @@
     </view>
   </view>
 
-  <view wx:if="{{chapter.reviewList.length}}" class="review-card card top-gap">
-    <view class="review-card__head">
-      <view>
-        <view class="review-card__title">本章复习清单</view>
-        <view class="review-card__subtitle">学完后按清单回看，先补短板再做综合题</view>
-      </view>
-      <view class="review-card__badge">速览</view>
-    </view>
-    <view class="review-card__grid">
-      <view wx:for="{{chapter.reviewList}}" wx:key="title" wx:for-item="group" class="review-group">
-        <view class="review-group__title">{{group.title}}</view>
-        <view class="review-group__subtitle">{{group.subtitle}}</view>
-        <view class="review-group__items">
-          <view wx:for="{{group.items}}" wx:key="*this" wx:for-item="item" class="review-group__item">{{item}}</view>
-        </view>
-      </view>
-    </view>
-  </view>
-
   <view class="section-title top-gap">
     <view class="section-title__main">本章知识点</view>
-    <view class="section-title__sub">先学知识，再做题</view>
+    <view class="section-title__sub">知识讲解与原创例题</view>
   </view>
 
   <view class="grid">
@@ -183,5 +166,16 @@
       </view>
       <view class="model-card__summary">{{template.summary}}</view>
     </navigator>
+  </view>
+
+  <view wx:if="{{navigation}}" class="page-navigation">
+    <view class="page-navigation__item {{navigation.previous ? '' : 'page-navigation__item--disabled'}}" data-id="{{navigation.previous.id}}" bindtap="openAdjacentChapter">
+      <view class="page-navigation__direction">‹ 上一章</view>
+      <view class="page-navigation__title">{{navigation.previous ? navigation.previous.title : '已经是本年级第一章'}}</view>
+    </view>
+    <view class="page-navigation__item page-navigation__item--next {{navigation.next ? '' : 'page-navigation__item--disabled'}}" data-id="{{navigation.next.id}}" bindtap="openAdjacentChapter">
+      <view class="page-navigation__direction">下一章 ›</view>
+      <view class="page-navigation__title">{{navigation.next ? navigation.next.title : '已经是本年级最后一章'}}</view>
+    </view>
   </view>
 </view>

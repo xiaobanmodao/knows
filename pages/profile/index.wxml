@@ -7,6 +7,22 @@
     </view>
   </view>
 
+  <view wx:if="{{notes.length}}" class="section-title top-gap">
+    <view class="section-title__main">我的笔记</view>
+    <view class="section-title__sub">{{notes.length}} 条</view>
+  </view>
+
+  <view wx:if="{{notes.length}}" class="note-list">
+    <view wx:for="{{notes}}" wx:key="id" wx:for-item="note" class="profile-note card" data-id="{{note.id}}" data-subject-id="{{note.subjectId}}" bindtap="openNote">
+      <view class="profile-note__meta">{{note.subjectLabel}} · 知识点</view>
+      <view class="profile-note__title">{{note.title}}</view>
+      <view wx:if="{{note.content}}" class="profile-note__content">{{note.content}}</view>
+      <view wx:if="{{note.tags.length}}" class="profile-note__tags">
+        <text wx:for="{{note.tags}}" wx:key="*this" class="profile-note__tag">{{item}}</text>
+      </view>
+    </view>
+  </view>
+
   <view class="section-title top-gap">
     <view class="section-title__main">服务说明</view>
     <view class="section-title__sub">{{releaseInfo.serviceScope}}</view>

@@ -26,6 +26,15 @@
     <search-bar disabled="{{true}}" bindtap="openSearch" />
   </view>
 
+  <view wx:if="{{continueReading}}" class="continue-reading card" bindtap="openContinueReading">
+    <view class="continue-reading__body">
+      <view class="continue-reading__label">继续阅读 · {{continueReading.subjectLabel}}</view>
+      <view class="continue-reading__title">{{continueReading.title}}</view>
+      <view class="continue-reading__subtitle">{{continueReading.subtitle}}</view>
+    </view>
+    <view class="continue-reading__action">›</view>
+  </view>
+
   <view class="section-title">
     <view class="section-title__main">学科入口</view>
     <view class="section-title__sub">数学 · 英语 · 物理</view>

@@ -51,6 +51,56 @@
   margin: 24rpx 0 30rpx;
 }
 
+.continue-reading {
+  display: flex;
+  align-items: center;
+  gap: 18rpx;
+  margin-bottom: 30rpx;
+  padding: 24rpx 26rpx;
+  border-left: 6rpx solid #1f68d5;
+}
+
+.continue-reading__body {
+  min-width: 0;
+  flex: 1;
+}
+
+.continue-reading__label {
+  color: #1f68d5;
+  font-size: 22rpx;
+  font-weight: 700;
+}
+
+.continue-reading__title {
+  margin-top: 8rpx;
+  overflow: hidden;
+  color: #17243f;
+  font-size: 28rpx;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.continue-reading__subtitle {
+  margin-top: 7rpx;
+  overflow: hidden;
+  color: #6a7488;
+  font-size: 23rpx;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.continue-reading__action {
+  width: 52rpx;
+  height: 52rpx;
+  border-radius: 50%;
+  background: #edf4ff;
+  color: #1f68d5;
+  font-size: 40rpx;
+  line-height: 46rpx;
+  text-align: center;
+}
+
 .shortcut-row {
   display: grid;
   grid-template-columns: 1fr 1fr;

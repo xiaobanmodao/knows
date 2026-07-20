@@ -17,6 +17,8 @@ const SUBJECT_FILTERS = [
   { id: 'physics', title: '物理' },
 ];
 
+const TYPE_LABELS = RESULT_GROUPS.reduce((map, item) => ({ ...map, [item.type]: item.title }), {});
+
 const RECOMMENDED_KEYWORDS = [
   '二次函数',
   '相似',
@@ -36,17 +38,51 @@ const RECOMMENDED_KEYWORDS = [
 ];
 
 function groupSearchResults(results) {
-  return ['math', 'english', 'physics'].flatMap((subjectId) => RESULT_GROUPS.map((group) => {
-    const items = results.filter((item) => item.subjectId === subjectId && item.type === group.type);
-    return {
-      ...group,
-      key: `${subjectId}-${group.type}`,
-      title: `${SUBJECT_LABELS[subjectId]} · ${group.title}`,
-      items,
-      count: items.length,
-    };
-  }))
-    .filter((group) => group.count);
+  const groupMap = new Map();
+
+  results.forEach((item) => {
+    const key = `${item.subjectId}-${item.type}`;
+
+    if (!groupMap.has(key)) {
+      groupMap.set(key, {
+        key,
+        type: item.type,
+        title: `${SUBJECT_LABELS[item.subjectId]} · ${TYPE_LABELS[item.type]}`,
+        items: [],
+        count: 0,
+      });
+    }
+
+    const group = groupMap.get(key);
+    group.items.push(item);
+    group.count += 1;
+  });
+
+  return [...groupMap.values()];
+}
+
+function buildTypeFilters(results) {
+  const counts = results.reduce((map, item) => ({
+    ...map,
+    [item.type]: (map[item.type] || 0) + 1,
+  }), {});
+
+  return [
+    { id: 'all', title: '全部类型', count: results.length },
+    ...RESULT_GROUPS
+      .filter((item) => counts[item.type])
+      .map((item) => ({ id: item.type, title: TYPE_LABELS[item.type], count: counts[item.type] })),
+  ];
+}
+
+function decodeQueryValue(value) {
+  const text = String(value || '');
+
+  try {
+    return decodeURIComponent(text);
+  } catch (error) {
+    return text;
+  }
 }
 
 Page({
@@ -59,12 +95,14 @@ Page({
     recommendedKeywords: RECOMMENDED_KEYWORDS,
     subjectFilters: SUBJECT_FILTERS,
     selectedSubjectId: 'all',
+    typeFilters: [],
+    selectedType: 'all',
   },
 
   onLoad(options) {
     const app = getApp();
     app.refreshSession();
-    const initialQuery = options.q || '';
+    const initialQuery = decodeQueryValue(options.q);
     const selectedSubjectId = SUBJECT_FILTERS.some((item) => item.id === options.subjectId) ? options.subjectId : 'all';
 
     this.setData({
@@ -89,7 +127,10 @@ Page({
   onChange(event) {
     const query = event.detail.value || '';
     this.setData({ query });
-    this.executeSearch(query, { silentEmpty: true, saveHistory: false });
+    clearTimeout(this.searchTimer);
+    this.searchTimer = setTimeout(() => {
+      this.executeSearch(query, { silentEmpty: true, saveHistory: false });
+    }, 180);
   },
 
   onSubmit(event) {
@@ -106,6 +147,8 @@ Page({
         results: [],
         groupedResults: [],
         hasSearched: false,
+        typeFilters: [],
+        selectedType: 'all',
       });
       if (!silentEmpty) {
         wx.showToast({
@@ -117,6 +160,12 @@ Page({
     }
 
     const results = searchAllSubjects(keyword, this.data.selectedSubjectId);
+    const selectedType = this.data.selectedType !== 'all' && results.some((item) => item.type === this.data.selectedType)
+      ? this.data.selectedType
+      : 'all';
+    const visibleResults = selectedType === 'all'
+      ? results
+      : results.filter((item) => item.type === selectedType);
     if (saveHistory) {
       const app = getApp();
       app.addSearchKeyword(keyword);
@@ -125,18 +174,32 @@ Page({
     this.setData({
       query: keyword,
       results,
-      groupedResults: groupSearchResults(results),
+      groupedResults: groupSearchResults(visibleResults),
+      typeFilters: buildTypeFilters(results),
+      selectedType,
       hasSearched: true,
     });
   },
 
   selectSubject(event) {
     const selectedSubjectId = event.currentTarget.dataset.id;
-    this.setData({ selectedSubjectId });
+    this.setData({ selectedSubjectId, selectedType: 'all' });
 
     if (this.data.query) {
       this.executeSearch(this.data.query, { silentEmpty: true, saveHistory: false });
     }
+  },
+
+  selectType(event) {
+    const selectedType = event.currentTarget.dataset.id;
+    const visibleResults = selectedType === 'all'
+      ? this.data.results
+      : this.data.results.filter((item) => item.type === selectedType);
+
+    this.setData({
+      selectedType,
+      groupedResults: groupSearchResults(visibleResults),
+    });
   },
 
   selectKeyword(event) {
@@ -145,9 +208,9 @@ Page({
   },
 
   openResult(event) {
-    const { type, id, subjectId } = event.currentTarget.dataset;
+    const { type, id, subjectId, focusId } = event.currentTarget.dataset;
     const url = ['unit', 'word', 'grammar'].includes(type)
-      ? `/pages/english-unit/index?id=${id}`
+      ? `/pages/english-unit/index?id=${id}${focusId ? `&focusType=${type}&focusId=${focusId}` : ''}`
       : type === 'chapter'
         ? (subjectId === 'physics'
           ? `/pages/physics-chapter/index?id=${id}`
@@ -159,5 +222,9 @@ Page({
         : `/pages/knowledge/index?subjectId=${subjectId}&id=${id}`;
 
     wx.navigateTo({ url });
+  },
+
+  onUnload() {
+    clearTimeout(this.searchTimer);
   },
 });

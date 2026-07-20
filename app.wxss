@@ -76,3 +76,47 @@ page {
 .empty-gap {
   height: 20rpx;
 }
+
+.context-path {
+  margin-bottom: 18rpx;
+  color: #49658f;
+  font-size: 22rpx;
+  line-height: 1.6;
+}
+
+.context-path--physics { color: #9a4a27; }
+
+.page-navigation {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14rpx;
+  margin-top: 28rpx;
+}
+
+.page-navigation__item {
+  min-width: 0;
+  min-height: 108rpx;
+  padding: 18rpx 20rpx;
+  border: 1rpx solid #dfe6f2;
+  border-radius: 16rpx;
+  background: #ffffff;
+}
+
+.page-navigation__item--next { text-align: right; }
+.page-navigation__item--disabled { opacity: 0.5; }
+.page-navigation__direction { color: #2357d8; font-size: 21rpx; font-weight: 700; }
+.page-navigation__title { margin-top: 7rpx; color: #27334b; font-size: 23rpx; line-height: 1.45; }
+
+.content-review {
+  margin-top: 16rpx;
+  padding-top: 14rpx;
+  border-top: 1rpx solid rgba(91, 111, 148, 0.16);
+  color: #68758b;
+  font-size: 20rpx;
+  line-height: 1.65;
+}
+
+.content-review--light {
+  border-top-color: rgba(255, 255, 255, 0.24);
+  color: rgba(255, 255, 255, 0.82);
+}

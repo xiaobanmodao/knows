@@ -1,10 +1,11 @@
-const { getChapterById } = require('../../utils/math');
+const { getChapterById, getAllChapters } = require('../../utils/math');
 const { applyTempFileURL, getTempFileURLMap, isCloudFile } = require('../../utils/cloud-assets');
 
 Page({
   data: {
     chapter: null,
     chapterFigureLoadFailed: false,
+    navigation: null,
   },
 
   async onLoad(options) {
@@ -31,6 +32,16 @@ Page({
           image: isCloudFile(chapter.chapterFigure.image) ? '' : chapter.chapterFigure.image,
         },
       },
+      navigation: (() => {
+        const chapters = getAllChapters().filter((item) => item.grade === chapter.grade);
+        const index = chapters.findIndex((item) => item.id === chapter.id);
+        const toEntry = (item) => item ? { id: item.id, title: item.title } : null;
+
+        return {
+          previous: toEntry(chapters[index - 1]),
+          next: toEntry(chapters[index + 1]),
+        };
+      })(),
     });
 
     const image = chapter.chapterFigure && chapter.chapterFigure.image;
@@ -50,6 +61,18 @@ Page({
     wx.navigateTo({
       url: `/pages/knowledge/index?id=${id}`,
     });
+  },
+
+  openMathHome() {
+    wx.navigateTo({ url: '/pages/math/index' });
+  },
+
+  openAdjacentChapter(event) {
+    const { id } = event.currentTarget.dataset;
+
+    if (id) {
+      wx.redirectTo({ url: `/pages/chapter/index?id=${id}` });
+    }
   },
 
   onImageError(event) {

@@ -63,6 +63,30 @@
   margin-bottom: 30rpx;
 }
 
+.type-filter {
+  width: 100%;
+  margin: 4rpx 0 24rpx;
+  white-space: nowrap;
+}
+
+.type-filter__item {
+  display: inline-block;
+  margin-right: 12rpx;
+  padding: 11rpx 18rpx;
+  border: 1rpx solid #dfe5ef;
+  border-radius: 8rpx;
+  background: #ffffff;
+  color: #566177;
+  font-size: 23rpx;
+}
+
+.type-filter__item--active {
+  border-color: #195dd6;
+  background: #eef4ff;
+  color: #195dd6;
+  font-weight: 700;
+}
+
 .result-group__header {
   display: flex;
   align-items: center;

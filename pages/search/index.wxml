@@ -43,6 +43,17 @@
       <view class="section-title__sub">{{results.length}} 条</view>
     </view>
 
+    <scroll-view wx:if="{{typeFilters.length > 1}}" class="type-filter" scroll-x enable-flex>
+      <view
+        wx:for="{{typeFilters}}"
+        wx:key="id"
+        wx:for-item="filter"
+        class="type-filter__item {{selectedType === filter.id ? 'type-filter__item--active' : ''}}"
+        data-id="{{filter.id}}"
+        bindtap="selectType"
+      >{{filter.title}} {{filter.count}}</view>
+    </scroll-view>
+
     <view wx:if="{{groupedResults.length}}">
       <view wx:for="{{groupedResults}}" wx:key="key" wx:for-item="group" class="result-group">
         <view class="result-group__header">
@@ -58,6 +69,7 @@
             data-type="{{result.type}}"
             data-id="{{result.refId}}"
             data-subject-id="{{result.subjectId}}"
+            data-focus-id="{{result.focusId}}"
             bindtap="openResult"
           >
             <view class="result-card__top">

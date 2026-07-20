@@ -15,6 +15,7 @@ Page({
     selectedPhysicsBookId: '',
     selectedPhysicsBook: null,
     physicsChapters: [],
+    activeView: 'catalog',
   },
 
   async onLoad(options) {
@@ -90,6 +91,14 @@ Page({
     wx.navigateTo({
       url: `/pages/topic/index?subjectId=${this.subjectId}&id=${id}`,
     });
+  },
+
+  selectView(event) {
+    const { view } = event.currentTarget.dataset;
+
+    if (view === 'catalog' || view === 'topics') {
+      this.setData({ activeView: view });
+    }
   },
 
   selectBook(event) {

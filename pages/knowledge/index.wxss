@@ -37,16 +37,22 @@
 }
 
 .knowledge-figure {
-  margin-top: 22rpx;
-  padding: 18rpx;
+  padding: 24rpx;
   border-radius: 22rpx;
   background: #f8fbff;
   border: 1rpx solid #e6edf8;
 }
 
+.knowledge-figure__title {
+  margin-bottom: 16rpx;
+  color: #1b2947;
+  font-size: 28rpx;
+  font-weight: 800;
+}
+
 .knowledge-figure__image {
   width: 100%;
-  height: 330rpx;
+  height: 420rpx;
   display: block;
 }
 
@@ -110,8 +116,93 @@
   background: #1d5de1;
 }
 
+.core-card {
+  padding: 28rpx;
+  background: #ffffff;
+  border: 1rpx solid #e4ebf7;
+}
+
+.core-card__head,
+.template-box__head,
+.fold-control {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18rpx;
+}
+
+.core-card__title {
+  color: #18356c;
+  font-size: 29rpx;
+  font-weight: 800;
+}
+
+.core-card__meta {
+  margin-top: 5rpx;
+  color: #748096;
+  font-size: 21rpx;
+}
+
+.text-command {
+  flex-shrink: 0;
+  color: #1d5de1;
+  font-size: 23rpx;
+  font-weight: 700;
+}
+
+.core-card__item {
+  display: flex;
+  align-items: flex-start;
+  margin-top: 18rpx;
+}
+
+.core-card__index {
+  flex-shrink: 0;
+  width: 40rpx;
+  height: 40rpx;
+  margin-right: 14rpx;
+  border-radius: 50%;
+  background: #edf3ff;
+  color: #165dff;
+  font-size: 20rpx;
+  font-weight: 800;
+  line-height: 40rpx;
+  text-align: center;
+}
+
+.core-card__text {
+  flex: 1;
+  color: #3d4b65;
+  font-size: 25rpx;
+  line-height: 1.8;
+}
+
+.fold-control {
+  margin-top: 10rpx;
+  padding: 22rpx 26rpx;
+  border: 1rpx solid #e1e7f1;
+}
+
+.fold-control__title {
+  color: #1a2742;
+  font-size: 27rpx;
+  font-weight: 800;
+}
+
+.fold-control__meta {
+  margin-top: 5rpx;
+  color: #748096;
+  font-size: 21rpx;
+}
+
+.fold-control__action {
+  flex-shrink: 0;
+  color: #2357d8;
+  font-size: 22rpx;
+  font-weight: 700;
+}
+
 .template-box {
-  margin-top: 8rpx;
   padding: 30rpx;
 }
 
@@ -209,6 +300,11 @@
   padding: 28rpx;
 }
 
+.problem-list {
+  display: grid;
+  gap: 18rpx;
+}
+
 .problem-card__top {
   display: flex;
   justify-content: space-between;
@@ -234,9 +330,125 @@
   font-weight: 700;
 }
 
+.problem-card__toggle {
+  margin-top: 16rpx;
+  padding-top: 14rpx;
+  border-top: 1rpx solid #edf1f7;
+  color: #1d5de1;
+  font-size: 23rpx;
+  font-weight: 700;
+}
+
+.note-card {
+  padding: 28rpx;
+}
+
+.note-card__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18rpx;
+}
+
+.note-card__title {
+  color: #1b2947;
+  font-size: 29rpx;
+  font-weight: 800;
+}
+
+.note-card__meta {
+  margin-top: 7rpx;
+  color: #7a8498;
+  font-size: 22rpx;
+}
+
+.note-card__save {
+  padding: 10rpx 18rpx;
+  border-radius: 8rpx;
+  background: #edf1f7;
+  color: #7a8498;
+  font-size: 23rpx;
+  font-weight: 700;
+}
+
+.note-card__save--active {
+  background: #175fd7;
+  color: #ffffff;
+}
+
+.note-card__input {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 150rpx;
+  margin-top: 20rpx;
+  padding: 20rpx;
+  border: 1rpx solid #dfe6f1;
+  border-radius: 8rpx;
+  background: #f8fafc;
+  color: #2e3b55;
+  font-size: 25rpx;
+  line-height: 1.75;
+}
+
+.note-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  margin-top: 16rpx;
+}
+
+.note-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 9rpx;
+  padding: 8rpx 10rpx 8rpx 14rpx;
+  border-radius: 999rpx;
+  background: #eef4ff;
+  color: #245bbf;
+  font-size: 22rpx;
+}
+
+.note-tag__remove {
+  width: 30rpx;
+  height: 30rpx;
+  color: #6d7d9a;
+  line-height: 28rpx;
+  text-align: center;
+}
+
+.note-card__tag-row {
+  display: grid;
+  grid-template-columns: 1fr 68rpx;
+  gap: 12rpx;
+  margin-top: 16rpx;
+}
+
+.note-card__tag-input {
+  box-sizing: border-box;
+  width: 100%;
+  height: 68rpx;
+  padding: 0 18rpx;
+  border: 1rpx solid #dfe6f1;
+  border-radius: 8rpx;
+  background: #ffffff;
+  color: #2e3b55;
+  font-size: 23rpx;
+}
+
+.note-card__tag-add {
+  width: 68rpx;
+  height: 68rpx;
+  border-radius: 8rpx;
+  background: #edf3ff;
+  color: #175fd7;
+  font-size: 38rpx;
+  line-height: 64rpx;
+  text-align: center;
+}
+
 .problem-card__image {
   width: 100%;
-  height: 300rpx;
+  height: 380rpx;
   display: block;
   margin-top: 16rpx;
   border-radius: 20rpx;

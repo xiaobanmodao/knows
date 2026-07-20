@@ -77,3 +77,50 @@
 .top-gap {
   margin-top: 32rpx;
 }
+
+.note-list {
+  display: grid;
+  gap: 16rpx;
+}
+
+.profile-note {
+  padding: 24rpx 26rpx;
+}
+
+.profile-note__meta {
+  color: #1d64cc;
+  font-size: 21rpx;
+  font-weight: 700;
+}
+
+.profile-note__title {
+  margin-top: 8rpx;
+  color: #182640;
+  font-size: 27rpx;
+  font-weight: 800;
+}
+
+.profile-note__content {
+  display: -webkit-box;
+  margin-top: 10rpx;
+  overflow: hidden;
+  color: #59657a;
+  font-size: 23rpx;
+  line-height: 1.7;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.profile-note__tags {
+  margin-top: 12rpx;
+}
+
+.profile-note__tag {
+  display: inline-flex;
+  margin: 0 10rpx 8rpx 0;
+  padding: 7rpx 12rpx;
+  border-radius: 999rpx;
+  background: #eef4ff;
+  color: #315fba;
+  font-size: 21rpx;
+}

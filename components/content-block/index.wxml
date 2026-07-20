@@ -1,5 +1,8 @@
 <view class="content-block">
-  <view class="content-block__title">{{section.title}}</view>
+  <view class="content-block__head">
+    <view class="content-block__title">{{section.title}}</view>
+    <view wx:if="{{section.type === 'formula' || section.type === 'example' || section.type === 'experiment'}}" class="content-block__copy" bindtap="copySection">复制</view>
+  </view>
 
   <view wx:if="{{section.type === 'text'}}" class="content-block__text">{{section.content}}</view>
 

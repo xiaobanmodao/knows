@@ -1,10 +1,11 @@
-const { getPhysicsChapterById } = require('../../utils/subjects');
+const { getPhysicsChapterById, getPhysicsChapterNavigation } = require('../../utils/subjects');
 const { applyTempFileURL, getTempFileURLMap, isCloudFile } = require('../../utils/cloud-assets');
 
 Page({
   data: {
     chapter: null,
     diagramLoadFailed: false,
+    navigation: null,
   },
 
   async onLoad(options) {
@@ -38,6 +39,7 @@ Page({
         experimentCount,
         diagramImage: isCloudFile(chapter.diagramImage) ? '' : chapter.diagramImage,
       },
+      navigation: getPhysicsChapterNavigation(chapter.id),
     });
 
     const fileMap = await getTempFileURLMap([chapter.diagramImage]);
@@ -65,6 +67,18 @@ Page({
     wx.navigateTo({
       url: `/pages/template/index?subjectId=physics&id=${this.data.chapter.template.id}`,
     });
+  },
+
+  openSubjectHome() {
+    wx.navigateTo({ url: '/pages/subject/index?id=physics' });
+  },
+
+  openAdjacentChapter(event) {
+    const { id } = event.currentTarget.dataset;
+
+    if (id) {
+      wx.redirectTo({ url: `/pages/physics-chapter/index?id=${id}` });
+    }
   },
 
   onImageError() {

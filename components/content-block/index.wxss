@@ -6,11 +6,25 @@
   box-shadow: 0 12rpx 36rpx rgba(45, 79, 168, 0.08);
 }
 
-.content-block__title {
+.content-block__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18rpx;
   margin-bottom: 18rpx;
+}
+
+.content-block__title {
   font-size: 28rpx;
   font-weight: 700;
   color: #1c2640;
+}
+
+.content-block__copy {
+  flex-shrink: 0;
+  color: #1d5de1;
+  font-size: 22rpx;
+  font-weight: 700;
 }
 
 .content-block__text {

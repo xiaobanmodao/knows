@@ -3,6 +3,7 @@ const { chapterCatalog, templateLibrary } = require('../data/math-curriculum');
 const { lessonFocusMap } = require('../data/math-lesson-focus');
 const { lessonFactsMap } = require('../data/math-lesson-facts');
 const { lessonFormulaMap } = require('../data/math-lesson-formulas');
+const { getContentReviewMeta } = require('../data/content-review-meta');
 const { topicPackages } = require('../data/math-topic-guides');
 const { resolveAssetUrl } = require('./asset-config');
 const { getStableLessonId, resolveKnowledgeId } = require('./content-ids');
@@ -843,15 +844,33 @@ function getThemeGroup(theme) {
   return themeGroupMap[theme] || 'geometry';
 }
 
-function getLessonCaption(theme) {
-  return lessonFigureCaptionMap[theme] || '先看图示结构，再把关键关系翻译成文字和式子。';
+function getLessonCaption(theme, sectionTitle) {
+  const fact = (lessonFactsMap[sectionTitle] || [])[0];
+  const formula = lessonFormulaMap[sectionTitle];
+
+  if (fact) {
+    return `${sectionTitle}：${fact}`;
+  }
+
+  if (formula) {
+    return `${sectionTitle}：图中关键关系可写为 ${formula.formula}。`;
+  }
+
+  return `${sectionTitle}：${lessonFigureCaptionMap[theme] || '图中对象、条件和结论需要逐一对应。'}`;
 }
 
 function getLessonPlainTalk(sectionTitle, profile, pack) {
-  const know = (profile.know || pack.concepts || []).slice(0, 2).join('、');
+  const facts = lessonFactsMap[sectionTitle] || [];
+  const primaryFacts = facts.slice(0, 2).join('；');
+  const formula = lessonFormulaMap[sectionTitle];
   const pitfall = (profile.pitfalls || pack.mistakes || [])[0] || '条件识别不完整';
 
-  return `可以把“${sectionTitle}”先理解成一个小工具：它主要帮你处理“${know}”这类问题。学习时不要先背整段结论，先问自己：题目给了什么、要我求什么、哪个定义或性质能把两者接起来。最容易出错的地方是“${pitfall}”，所以每做一步都要回到题目条件核对一次。`;
+  return [
+    profile.focus,
+    primaryFacts ? `理解时抓住这些关系：${primaryFacts}。` : `先分清本节对象、条件和结论，再判断它们之间的关系。`,
+    formula ? `关键关系是“${formula.formula}”；使用前要满足：${formula.description}` : '',
+    `边界提醒：${pitfall}。`,
+  ].filter(Boolean).join(' ');
 }
 
 function getLessonFacts(sectionTitle, profile, pack) {
@@ -881,20 +900,27 @@ function getLessonFormulaSection(sectionTitle) {
   };
 }
 
-function buildLessonRows(profile, sectionTitle, pack) {
-  const rows = (profile.know || []).slice(0, 3).map((item, index) => {
-    if (index === 0) {
-      return [item, `先围绕“${sectionTitle}”认准定义、图形或数量关系。`];
-    }
+function buildLessonRows(profile, sectionTitle, pack, knowledgeItems, formulaSection) {
+  const keyFacts = (knowledgeItems || []).slice(0, 2);
+  const pitfalls = (profile.pitfalls || pack.mistakes || []).slice(0, 2);
+  const rows = [];
 
-    if (index === 1) {
-      return [item, `再把本节和“${profile.scenario}”这类情境联系起来做基础训练。`];
-    }
+  if (keyFacts.length) {
+    rows.push(['概念与条件', keyFacts.join('；')]);
+  }
 
-    return [item, `最后把本节方法迁移到“${pack.advanced}”这类综合题中。`];
-  });
+  if (formulaSection) {
+    rows.push(['关键关系', `${formulaSection.formula}；${formulaSection.description}`]);
+  } else {
+    const relation = (profile.know || []).slice(0, 3).join('、');
+    rows.push(['关键关系', relation || `${sectionTitle}中的对象、条件与结论要一一对应。`]);
+  }
 
-  return rows.length ? rows : [[pack.concepts[0], `围绕“${sectionTitle}”完成基本理解与训练。`]];
+  if (pitfalls.length) {
+    rows.push(['易错边界', pitfalls.join('；')]);
+  }
+
+  return rows;
 }
 
 function buildWorkbookStyleReplacement(title, sectionTitle, profile, relatedTemplate, pack) {
@@ -2155,7 +2181,7 @@ function buildLessonKnowledge(chapter, sectionTitle, index) {
   const summaryText = override?.summary || `${profile.focus} 学习时要特别留意：${(profile.know || []).slice(0, 2).join('、')}。`;
   const introText = override?.intro || `${chapter.chapterNo}《${chapter.title}》中的“${sectionTitle}”聚焦的是：${profile.focus}${chapterSummaryMap[chapter.id]} 本节最常放在“${profile.scenario}”这类情境中考查。`;
   const knowledgeItems = override?.points || knowledgeFacts;
-  const mustItems = override?.must || (profile.know || []).map((item) => `${item}，并能围绕“${sectionTitle}”完成基础题和变式题。`);
+  const mustItems = override?.must || uniqueList(profile.know || []);
   const plainTalk = override?.plainTalk || getLessonPlainTalk(sectionTitle, profile, pack);
   const problems = (problemOverride || rewriteProblemsForWorkbookStyle(buildLessonProblems(chapter, sectionTitle, profile, relatedTemplate, pack, figurePath), sectionTitle, profile, relatedTemplate, pack, figurePath))
     .map((problem, problemIndex) => ({
@@ -2176,7 +2202,8 @@ function buildLessonKnowledge(chapter, sectionTitle, index) {
     summary: summaryText,
     coverImage: getUniqueKnowledgeFigurePath(legacyKnowledgeId),
     sourceImage: figurePath,
-    figureCaption: getLessonCaption(profile.theme),
+    figureCaption: getLessonCaption(profile.theme, sectionTitle),
+    contentMeta: getContentReviewMeta('math'),
     knowledgePoints: knowledgeItems,
     mistakeChecklist: uniqueList(profile.pitfalls || pack.mistakes).slice(0, 3),
     sections: [
@@ -2197,20 +2224,20 @@ function buildLessonKnowledge(chapter, sectionTitle, index) {
       },
       {
         type: 'list',
-        title: '本节必会',
+        title: '本节要点',
         items: mustItems,
       },
       ...(formulaSection ? [formulaSection] : []),
       {
         type: 'table',
-        title: '学习抓手',
-        headers: ['抓手', '怎么学'],
-        rows: buildLessonRows(profile, sectionTitle, pack),
+        title: '知识关系表',
+        headers: ['要点', '具体内容'],
+        rows: buildLessonRows(profile, sectionTitle, pack, knowledgeItems, formulaSection),
       },
       {
         type: 'steps',
-        title: '通用学习步骤',
-        steps: uniqueList([...(lessonTemplate.steps || []), '做完题后回看本节易错点']).slice(0, 5),
+        title: '判断与推理顺序',
+        steps: uniqueList(lessonTemplate.steps || []).slice(0, 4),
       },
       {
         type: 'tip',
@@ -2253,14 +2280,14 @@ function getChapterTextBlocks(chapter) {
   const pack = chapterPackMap[chapter.id] || { concepts: [], mistakes: [], advanced: '综合应用' };
   const prompts = chapterPromptMap[chapter.id] || [];
   const override = chapterTextOverrideMap[chapter.id] || null;
-  const conceptText = pack.concepts.map((item) => `理解并会用“${item}”处理本章基础题。`);
-  const solveText = prompts.slice(0, 3).map((item) => `常见求解入口：${item}。`);
+  const conceptText = pack.concepts.map((item) => `核心概念：${item}。`);
+  const solveText = prompts.slice(0, 3).map((item) => `方法入口：${item}。`);
   const cautionText = (pack.mistakes || []).slice(0, 3).map((item) => `常见失误：${item}。`);
   return {
     concepts: override?.concepts || conceptText,
     solveText: override?.solveText || solveText,
     cautionText,
-    chapterLead: override?.lead || `本章学习时，建议先吃透 ${pack.concepts.slice(0, 2).join('、')}，再过渡到 ${pack.advanced} 这一类综合题。`,
+    chapterLead: override?.lead || `本章以 ${pack.concepts.slice(0, 2).join('、')} 为基础，相关关系还会延伸到 ${pack.advanced}。`,
   };
 }
 
@@ -2398,46 +2425,6 @@ function getDetailedKnowledgeForChapter(chapterId) {
     }));
 }
 
-function buildChapterReviewList(chapter, knowledgeItems, templateItems, textBlocks) {
-  const conceptItems = uniqueList([
-    ...(textBlocks.concepts || []),
-    ...knowledgeItems.flatMap((knowledge) => knowledge.knowledgePoints || []),
-  ]).slice(0, 5);
-  const solveItems = uniqueList([
-    ...(textBlocks.solveText || []),
-    ...knowledgeItems.flatMap((knowledge) => knowledge.template ? [knowledge.template.name] : []),
-  ]).slice(0, 4);
-  const cautionItems = uniqueList(textBlocks.cautionText || []).slice(0, 4);
-  const modelItems = templateItems.slice(0, 4).map((template) => ({
-    id: template.id,
-    name: template.name,
-    summary: template.summary,
-  }));
-
-  return [
-    {
-      title: '核心概念',
-      subtitle: `先把 ${chapter.title} 的定义、性质和图形语言说清楚。`,
-      items: conceptItems,
-    },
-    {
-      title: '常用方法',
-      subtitle: '复习时按方法入口回看例题，不只背结论。',
-      items: solveItems,
-    },
-    {
-      title: '易错提醒',
-      subtitle: '做完题后对照检查，优先修正反复出错的地方。',
-      items: cautionItems,
-    },
-    {
-      title: '题型模型',
-      subtitle: templateItems.length ? '本章模型要能从题干信号中快速识别。' : '本章以基础方法熟练度为主，先把教材小节吃透。',
-      items: modelItems.length ? modelItems.map((item) => item.name) : ['基础题型训练', '教材小节混合应用'],
-    },
-  ].filter((group) => group.items.length);
-}
-
 function getTopicGuideByChapter(chapterId) {
   const topic = topicPackages.find((item) => item.chapterIds.includes(chapterId));
 
@@ -2477,7 +2464,6 @@ function getChapterById(chapterId) {
     templateItems,
     knowledgeItems: knowledgeItems.map(resolveKnowledgeAssets),
     topicGuide: getTopicGuideByChapter(chapter.id),
-    reviewList: buildChapterReviewList(chapter, knowledgeItems, templateItems, textBlocks),
     knowledgeCount: knowledgeItems.length,
     totalProblems: knowledgeItems.reduce((sum, item) => sum + (item.problems ? item.problems.length : 0), 0),
   };
@@ -2637,11 +2623,11 @@ function scoreMatch(keyword, title, bodyParts = []) {
   let score = 0;
 
   if (normalizedTitle === keyword) {
-    score += 120;
+    score += 180;
   } else if (normalizedTitle.startsWith(keyword)) {
-    score += 90;
+    score += 130;
   } else if (normalizedTitle.includes(keyword)) {
-    score += 70;
+    score += 90;
   }
 
   if (normalizedBody.includes(keyword)) {
@@ -2773,8 +2759,7 @@ function searchMath(keyword) {
     }));
 
   return [...chapterResults, ...knowledgeResults, ...templateResults]
-    .sort((a, b) => b.score - a.score || a.title.localeCompare(b.title, 'zh-Hans-CN'))
-    .map(({ score, ...item }) => item);
+    .sort((a, b) => b.score - a.score || a.title.localeCompare(b.title, 'zh-Hans-CN'));
 }
 
 module.exports = {
