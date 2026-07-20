@@ -8,13 +8,13 @@ function unit(config) {
 
 const grade9Upper = createBook({
   id: 'eng-book-g9a-2025', gradeId: 'g9', semester: 'upper', label: '九年级上册', shortLabel: '九上',
-  edition: '新版教材', status: 'verified', sourceNote: '目录已按当前公开的人教版九年级上册新版教材核对。',
+  edition: '新版教材', status: 'verified', sourceNote: '单元标题和顺序已按当前公开的人教版九年级上册新版教材核对；词汇用法、语法讲解和例句由本项目按单元主题原创整理，不作为教材逐页词表。',
   units: [
     unit({
       id: 'eng-unit-g9a-changing-world', number: 1, title: 'The Changing World', theme: '社会变化与适应',
       expressions: ['Life has changed greatly in recent years.', 'Technology has replaced some routine tasks.', 'We need to adapt while keeping what matters.'],
       vocabulary: [
-        ['change', '名词/动词', '变化；改变；零钱', '可及物或不及物，change into 表示变成。', 'changes；changed；changing。', ['social change', 'change into'], 'Online services have changed the way people shop.', '在线服务改变了人们购物的方式。', 'change 作可数名词时指具体变化，泛指变化可不可数。'],
+        ['change', '名词/动词', '变化；改变；零钱', '可及物或不及物，change into 表示变成。', 'changes；changed；changing。', ['social change', 'change into'], 'Online services have changed the way people shop.', '在线服务改变了人们购物的方式。', 'change 指具体变化时可数，泛指变化过程时可作不可数名词。'],
         ['develop', '动词', '发展；培养；开发', '既可描述事物发展，也可主动培养能力。', 'develops；developed；developing；名词 development。', ['develop skills', 'develop rapidly'], 'The town has developed rapidly since the new railway opened.', '新铁路开通后，这座城镇发展很快。', 'developing 可指发展中的，developed 可指发达的。'],
         ['technology', '名词', '科技；技术', '通常不可数，具体技术体系可数。', '复数 technologies；形容词 technological。', ['digital technology', 'technological change'], 'Technology should solve real problems rather than create new ones.', '科技应解决真实问题，而不是制造新问题。', 'technology 不是单个电子设备。'],
         ['replace', '动词', '取代；替换', 'replace A with B 表示用 B 替换 A。', 'replaces；replaced；replacing；名词 replacement。', ['replace ... with ...', 'be replaced by'], 'Reusable cups can replace some single-use ones.', '可重复使用的杯子能替代部分一次性杯子。', '主动结构介词用 with，被动结构用 by。'],
@@ -32,7 +32,7 @@ const grade9Upper = createBook({
       id: 'eng-unit-g9a-inspiring-people', number: 2, title: 'Inspiring People', theme: '榜样人物与社会贡献',
       expressions: ['Her work has inspired many young people.', 'It was courageous of him to keep trying.', 'What matters is how the person helped others.'],
       vocabulary: [
-        ['inspire', '动词', '激励；启发', 'inspire sb to do；inspire an idea。', 'inspires；inspired；inspiring；名词 inspiration。', ['inspire somebody to', 'draw inspiration from'], 'Her careful research inspired me to ask better questions.', '她严谨的研究激励我提出更好的问题。', '人感到鼓舞用 inspired，事物鼓舞人心用 inspiring。'],
+        ['inspire', '动词', '激励；启发', 'inspire sb to do 表示激励某人做某事；inspire confidence/an idea 表示激发信心或想法。', 'inspires；inspired；inspiring；名词 inspiration。', ['inspire somebody to do', 'draw inspiration from'], 'Her careful research inspired me to ask better questions.', '她严谨的研究激励我提出更好的问题。', '人感到鼓舞用 inspired，事物鼓舞人心用 inspiring。'],
         ['admire', '动词', '钦佩；欣赏', 'admire sb for sth/doing。', 'admires；admired；admiring；名词 admiration。', ['admire ... for ...', 'greatly admire'], 'I admire the doctor for serving remote communities.', '我钦佩这位医生服务偏远社区。', 'admire 后直接接人，不加 to。'],
         ['pioneer', '名词/动词', '先驱；开拓', '指率先进入某领域或发展新方法的人。', '复数 pioneers；pioneered；pioneering。', ['a pioneer in', 'pioneer a method'], 'She was a pioneer in environmental education.', '她是环境教育领域的先驱。', '领域前常用介词 in。'],
         ['discovery', '名词', '发现；被发现的事物', '动词 discover，指发现原本存在但未知的事物。', '复数 discoveries。', ['scientific discovery', 'make a discovery'], 'The discovery changed how scientists understood the disease.', '这一发现改变了科学家对疾病的认识。', 'invent 是创造新事物，discover 是发现已有事物。'],
@@ -107,7 +107,7 @@ const grade9Upper = createBook({
         ['universe', '名词', '宇宙；世界', '通常与定冠词 the 连用。', '复数 universes 多用于理论或虚构语境。', ['the universe', 'observable universe'], 'The universe contains billions of galaxies.', '宇宙包含数十亿个星系。', 'universe 范围大于 solar system 和 galaxy。'],
         ['planet', '名词', '行星', '围绕恒星运行且满足相关定义的天体。', '复数 planets；形容词 planetary。', ['distant planet', 'planet Earth'], 'Mars is a rocky planet with a thin atmosphere.', '火星是一颗大气稀薄的岩石行星。', 'Earth 作专名通常首字母大写。'],
         ['spacecraft', '名词', '航天器；宇宙飞船', '单复数同形，泛指用于太空任务的飞行器。', '单复数均为 spacecraft。', ['launch a spacecraft', 'uncrewed spacecraft'], 'The spacecraft sent images back to Earth.', '航天器把图像传回地球。', '不能写 spacecrafts。'],
-        ['orbit', '名词/动词', '轨道；绕轨道运行', 'in orbit；orbit the Earth。', '复数 orbits；orbited；orbiting。', ['enter orbit', 'orbit around'], 'The satellite entered orbit after launch.', '卫星发射后进入轨道。', '作动词时可直接接天体：orbit Earth。'],
+        ['orbit', '名词/动词', '轨道；绕轨道运行', 'in orbit；orbit the Earth。', '复数 orbits；orbited；orbiting。', ['enter orbit', 'orbit the Earth'], 'The satellite entered orbit after launch.', '卫星发射后进入轨道。', '作动词时可直接接天体：orbit the Earth；名词结构可说 an orbit around the Earth。'],
         ['astronaut', '名词', '宇航员；航天员', '接受训练并执行太空任务的人。', '复数 astronauts。', ['train as an astronaut', 'astronaut crew'], 'Astronauts exercise daily to protect their health in space.', '航天员每天锻炼以保护太空中的健康。', 'astronomer 是天文学家，不一定进入太空。'],
         ['explore', '动词', '探索；探究', '可接地点、问题或可能性。', 'explores；explored；exploring；名词 exploration/explorer。', ['explore space', 'space exploration'], 'Robotic missions explore places that are too dangerous for people.', '机器人任务探索对人类过于危险的地方。', 'explore 后直接接 space，不加 in。'],
         ['evidence', '名词', '证据；迹象', '不可数；一项证据可说 a piece of evidence。', '不可数；形容词 evident。', ['scientific evidence', 'evidence of'], 'Scientists need strong evidence before accepting a claim.', '科学家在接受一种说法前需要有力证据。', '不能说 evidences 或 an evidence。'],
@@ -123,7 +123,7 @@ const grade9Upper = createBook({
       expressions: ['The rhythm makes the piece energetic.', 'This instrument is used in traditional music.', 'The composer, who grew up by the sea, used natural sounds.'],
       vocabulary: [
         ['rhythm', '名词', '节奏；律动', '可指数声音或动作的规律强弱。', '复数 rhythms；形容词 rhythmic。', ['strong rhythm', 'sense of rhythm'], 'The drum creates a steady rhythm for the dancers.', '鼓为舞者打出稳定节奏。', '拼写中没有第二个元音字母，注意 rhythm。'],
-        ['melody', '名词', '旋律', '按顺序组织、可辨认的一系列音高。', '复数 melodies。', ['simple melody', 'play a melody'], 'The melody rises slowly and then becomes quiet.', '旋律缓慢上升，随后变得安静。', 'melody 不等同于 lyrics；lyrics 是歌词。'],
+        ['melody', '名词', '旋律', '按顺序组织、可辨认的一系列音高。', '复数 melodies。', ['simple melody', 'play a melody'], 'The melody rises slowly and then becomes softer.', '旋律缓慢上升，随后变得更轻柔。', 'melody 不等同于 lyrics；描述音量变小可用 softer/quieter。'],
         ['instrument', '名词', '乐器；仪器', '音乐语境中常用 play the + 乐器。', '复数 instruments。', ['musical instrument', 'string instrument'], 'The erhu is a traditional Chinese string instrument.', '二胡是中国传统弦乐器。', '演奏乐器前通常加 the。'],
         ['perform', '动词', '表演；执行', 'perform music/a task；名词 performance/performer。', 'performs；performed；performing。', ['perform on stage', 'live performance'], 'The group performed an original song at the festival.', '这个组合在节日上表演了一首原创歌曲。', 'performance 是表演，performer 是表演者。'],
         ['traditional', '形容词', '传统的', '描述长期传承的音乐、艺术或习俗。', '名词 tradition；副词 traditionally。', ['traditional music', 'traditional style'], 'Young musicians mixed traditional sounds with electronic music.', '年轻音乐人把传统声音与电子音乐融合。', 'traditional 不代表一成不变。'],
@@ -138,7 +138,7 @@ const grade9Upper = createBook({
     }),
     unit({
       id: 'eng-unit-g9a-more-than-game', number: 8, title: 'More than a Game', theme: '体育精神与团队价值',
-      expressions: ['The team kept working together under pressure.', 'Winning matters, but respect matters more.', 'If they had given up, they would not have finished.'],
+      expressions: ['The team kept working together under pressure.', 'Winning matters, but respect matters more.', 'If the team communicated more clearly, it would make fewer mistakes.'],
       vocabulary: [
         ['athlete', '名词', '运动员', '尤指经过训练参加体育项目的人。', '复数 athletes；形容词 athletic。', ['professional athlete', 'young athlete'], 'Every athlete followed the same safety rules.', '每位运动员都遵守同样的安全规则。', '注意发音和拼写，不漏掉第二个 t。'],
         ['competition', '名词', '比赛；竞争', '可指具体赛事或竞争状态。', '复数 competitions；动词 compete。', ['enter a competition', 'fierce competition'], 'The competition brought together teams from six schools.', '比赛汇集了六所学校的队伍。', 'compete with/against sb for a prize。'],

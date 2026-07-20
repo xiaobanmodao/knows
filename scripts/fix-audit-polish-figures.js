@@ -162,7 +162,7 @@ def inverse_figures():
         'assets/figures/generated/unique/ch26-inverse-function-lesson-2/problem-01.png',
         '题 1：工程总量 120',
         'xy = 120，所以 y = 120/x',
-        ['x 表示人数，y 表示天数。', '人数越多，天数越少。', '只画第一象限。'],
+        ['每名工人的日效率相同。', 'x 表示人数，y 表示天数。', 'x、y 都取正值。'],
         12,
         (3, 4, '对应点')
     )
@@ -199,8 +199,64 @@ def inverse_figures():
         (5, 2.4, '保留部分')
     )
 
+def projection_types():
+    img, d = base('平行投影与中心投影', '先看投射线之间的关系，再判断投影类型')
+
+    # Parallel projection: the rays keep the same direction.
+    d.rounded_rectangle([70, 140, 610, 660], radius=20, fill=(255, 255, 255), outline=(219, 226, 235), width=3)
+    text(d, (105, 175), '平行投影', BLUE, FT)
+    text(d, (105, 230), '投射线互相平行', GRAY, FS)
+    d.ellipse([115, 300, 195, 380], fill=(255, 219, 105), outline=ORANGE, width=3)
+    d.rectangle([360, 355, 395, 565], fill=BLUE)
+    d.line([100, 570, 570, 570], fill=INK, width=4)
+    for offset in (0, 55, 110):
+        arrow(d, (205, 290 + offset), (545, 480 + offset), ORANGE, 5)
+    text(d, (105, 605), '示例：太阳光下的影子', GREEN, FS)
+
+    # Central projection: all rays pass through one source point.
+    d.rounded_rectangle([670, 140, 1210, 660], radius=20, fill=(255, 255, 255), outline=(219, 226, 235), width=3)
+    text(d, (705, 175), '中心投影', RED, FT)
+    text(d, (705, 230), '投射线经过同一点', GRAY, FS)
+    source = (760, 330)
+    d.ellipse([source[0]-12, source[1]-12, source[0]+12, source[1]+12], fill=RED)
+    text(d, (735, 285), '点光源', RED, FS)
+    d.rectangle([950, 365, 985, 565], fill=BLUE)
+    d.line([705, 570, 1170, 570], fill=INK, width=4)
+    for target in ((1130, 455), (1130, 535), (1130, 595)):
+        arrow(d, source, target, ORANGE, 5)
+    text(d, (705, 605), '示例：路灯下的影子', GREEN, FS)
+
+    card(d, (170, 700, 940, 130), '判断入口', ['互相平行 -> 平行投影；经过同一点 -> 中心投影。'], GREEN)
+    save(img, 'assets/figures/generated/templates/model-projection-types.png')
+
+def data_quartiles():
+    img, d = base('四分位数', '先排序，再按约定从上下两半数据中分别找中位数')
+    values = [2, 4, 5, 7, 9, 10, 12, 15]
+    start_x, y, box_w, gap = 110, 300, 112, 20
+    centers = []
+    for index, value in enumerate(values):
+        x = start_x + index * (box_w + gap)
+        fill = (232, 240, 252) if index < 4 else (232, 248, 241)
+        outline = BLUE if index < 4 else GREEN
+        d.rounded_rectangle([x, y, x + box_w, y + 104], radius=14, fill=fill, outline=outline, width=3)
+        text(d, (x + box_w / 2, y + 52), str(value), INK, FT, 'mm')
+        centers.append(x + box_w / 2)
+
+    text(d, (365, 245), '下半组', BLUE, FM, 'mm')
+    text(d, (893, 245), '上半组', GREEN, FM, 'mm')
+    d.line([centers[1], 435, centers[2], 435], fill=BLUE, width=4)
+    d.line([centers[3], 490, centers[4], 490], fill=ORANGE, width=4)
+    d.line([centers[5], 435, centers[6], 435], fill=GREEN, width=4)
+    text(d, ((centers[1] + centers[2]) / 2, 470), 'Q1=(4+5)/2=4.5', BLUE, FS, 'mm')
+    text(d, ((centers[3] + centers[4]) / 2, 530), 'Q2=(7+9)/2=8', ORANGE, FS, 'mm')
+    text(d, ((centers[5] + centers[6]) / 2, 470), 'Q3=(10+12)/2=11', GREEN, FS, 'mm')
+    card(d, (150, 650, 980, 150), '本例约定', ['8 个数据分成数量相同的上下两半，再分别求两半的中位数。'], GREEN)
+    save(img, 'assets/figures/generated/templates/model-data-quartiles.png')
+
 polynomial_area()
 inverse_figures()
+projection_types()
+data_quartiles()
 print('fixed audit polish figures')
 `;
 

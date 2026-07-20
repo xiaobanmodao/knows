@@ -3,13 +3,22 @@ const math = require('../utils/math');
 
 const chapters = math.getAllChapters();
 const items = [];
+const lessonFilter = String(process.argv[2] || '').trim();
 
 function localPath(path) {
-  return path.replace(/^\//, '').split('?')[0];
+  return String(path || '')
+    .replace(/^https?:\/\/[^/]+/, '')
+    .replace(/^cloud:\/\/[^/]+/, '')
+    .replace(/^\//, '')
+    .split('?')[0];
 }
 
 chapters.forEach((chapter) => {
   chapter.knowledgeItems.forEach((knowledge) => {
+    if (lessonFilter && knowledge.title !== lessonFilter) {
+      return;
+    }
+
     items.push({
       kind: 'knowledge',
       chapter: chapter.title,

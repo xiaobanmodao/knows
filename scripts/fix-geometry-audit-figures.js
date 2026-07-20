@@ -109,7 +109,7 @@ def right_mark(d, p, size=28, orient='ul', color=RED):
         pts = [(x, y), (x+size, y), (x+size, y-size)]
     d.line(pts, fill=color, width=3)
 
-def parallel_diagram(path, title, subtitle, headline, bottom, mode):
+def parallel_diagram(path, title, subtitle, headline, bottom, mode, equation=None):
     im, d = card(title, subtitle)
     A, B = (280, 325), (940, 325)
     C, Dp = (280, 570), (940, 570)
@@ -125,13 +125,13 @@ def parallel_diagram(path, title, subtitle, headline, bottom, mode):
     angle_arc(d, (640, 325), 52, 178, 244, RED, 4)
     angle_arc(d, (600, 570), 52, 300, 358, BLUE, 4)
     if mode == 'same':
-        d.text((710, 402), '∠1 = ∠2 = 58°', fill=INK, font=F_MATH)
+        d.text((710, 402), equation or '∠1 = ∠2 = 58°', fill=INK, font=F_MATH)
     elif mode == 'supplement':
         d.text((700, 402), '125° + 55° = 180°', fill=INK, font=F_MATH)
         d.text((590, 345), '125°', fill=RED, font=F_BODY)
         d.text((500, 520), '55°', fill=BLUE, font=F_BODY)
     elif mode == 'property':
-        d.text((710, 402), 'AB∥CD  ⇒  ∠1=∠2', fill=INK, font=F_MATH)
+        d.text((710, 402), '已知 AB∥CD，可得 ∠1=∠2', fill=INK, font=F_MATH)
     else:
         d.text((710, 402), '先找角位关系', fill=INK, font=F_MATH)
     note(d, (760, 612), '结论', [headline, bottom], GREEN, 390, 150)
@@ -206,16 +206,25 @@ def ladder_problem(path):
     save(im, path)
 
 def main():
-    for lesson in ('ch05-parallel-lesson-2', 'ch05-parallel-lesson-3'):
-        title = '5.2 平行线及其判定' if lesson.endswith('lesson-2') else '5.3 平行线的性质'
-        subtitle = '同位角、内错角、同旁内角与两直线平行'
-        base = f'assets/figures/generated/unique/{lesson}'
-        parallel_diagram(f'{base}/cover.png', title, subtitle, '内错角相等', '两直线平行', 'same')
-        parallel_diagram(f'{base}/problem-01.png', title, subtitle, 'AB∥CD', '∠2=∠1=58°', 'property')
-        parallel_diagram(f'{base}/problem-02.png', title, subtitle, '∠1=∠2', '所以 AB∥CD', 'same')
-        parallel_diagram(f'{base}/problem-03.png', title, subtitle, '同旁内角互补', 'x=55°', 'supplement')
-        parallel_diagram(f'{base}/problem-04.png', title, subtitle, '先找角位关系', '再判断模型结构', 'hint')
-        parallel_diagram(f'{base}/problem-05.png', title, subtitle, '角关系成立', '再进入证明', 'hint')
+    title = '5.2 平行线及其判定'
+    subtitle = '由角的数量关系判定两直线平行'
+    base = 'assets/figures/generated/unique/ch05-parallel-lesson-2'
+    parallel_diagram(f'{base}/cover.png', title, subtitle, '同位角相等', '两直线平行', 'same', '∠1 = ∠2')
+    parallel_diagram(f'{base}/problem-01.png', title, subtitle, '∠1 = ∠2', '所以 AB∥CD', 'same', '∠1 = ∠2 = 58°')
+    parallel_diagram(f'{base}/problem-02.png', title, subtitle, '内错角相等', '所以两直线平行', 'same', '∠1 = ∠2 = 64°')
+    parallel_diagram(f'{base}/problem-03.png', title, subtitle, '同旁内角互补', '所以 a∥b', 'supplement')
+    parallel_diagram(f'{base}/problem-04.png', title, subtitle, '先找角位关系', '再选判定方法', 'hint')
+    parallel_diagram(f'{base}/problem-05.png', title, subtitle, '角关系成立', '得出平行结论', 'hint')
+
+    title = '5.3 平行线的性质'
+    subtitle = '由两直线平行得到角的数量关系'
+    base = 'assets/figures/generated/unique/ch05-parallel-lesson-3'
+    parallel_diagram(f'{base}/cover.png', title, subtitle, '两直线平行', '内错角相等', 'property')
+    parallel_diagram(f'{base}/problem-01.png', title, subtitle, '已知两直线平行', '∠2 = 58°', 'property')
+    parallel_diagram(f'{base}/problem-02.png', title, subtitle, '同旁内角互补', '所求角 = 55°', 'supplement')
+    parallel_diagram(f'{base}/problem-03.png', title, subtitle, '同位角 = 72°', '邻补角 = 108°', 'property')
+    parallel_diagram(f'{base}/problem-04.png', title, subtitle, '先用平行线性质', '再进行角的计算', 'hint')
+    parallel_diagram(f'{base}/problem-05.png', title, subtitle, '已知平行关系', '转化为角的关系', 'hint')
 
     triangle_bisector('assets/figures/generated/unique/ch11-triangle-lesson-1/problem-03.png')
     isosceles_top40('assets/figures/generated/unique/ch13-symmetry-lesson-3/problem-02.png')

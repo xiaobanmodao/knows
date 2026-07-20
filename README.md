@@ -45,9 +45,12 @@
 ```bash
 node scripts/check-release-readiness.js
 node scripts/check-english-units.js
+node scripts/check-english-accuracy.js
 node scripts/check-physics-curriculum.js
+node scripts/check-physics-accuracy.js
 node scripts/check-subject-content.js
 node scripts/check-math-content.js
+node scripts/check-math-accuracy.js
 node scripts/check-unique-figures.js
 node scripts/check-content-migration.js
 ```
@@ -63,4 +66,8 @@ node scripts/check-content-migration.js
 - 详细发布清单与长期路线见：`docs/后续开发与发布路线.md`
 - v1.2 数据、资源和验收记录见：`docs/v1.2多学科基础版实施记录.md`
 - 人教版英语目录基线与原创规范见：`docs/人教版英语内容来源与编写规范.md`
+- 英语词汇、语法和例句逐册复核见：`docs/英语内容准确性复核记录.md`
 - 人教版物理目录基线与原创规范见：`docs/人教版物理内容来源与编写规范.md`
+- 物理公式、实验和安全边界逐章复核见：`docs/物理内容准确性复核记录.md`
+- 数学官方目录口径与原创规范见：`docs/数学目录与模型来源说明.md`
+- 数学公式、条件、示例和模板逐章复核见：`docs/数学内容准确性复核记录.md`

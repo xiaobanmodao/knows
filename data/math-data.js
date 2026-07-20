@@ -1155,7 +1155,7 @@ const knowledgeList = [
     title: '一次函数应用',
     tags: ['函数', '应用题'],
     keywords: ['方案比较', '收费问题', '行程'],
-    summary: '一次函数特别适合表示“基础量 + 单位变化量×数量”的问题。',
+    summary: '一次函数适合表示“固定量 + 单位变化量×数量”这类在给定范围内保持恒定变化率的问题。',
     sections: [
       {
         type: 'steps',
@@ -1167,9 +1167,9 @@ const knowledgeList = [
       {
         title: '典型题',
         difficulty: '提升',
-        stem: '某出租车起步价 8 元，之后每千米 2 元。行驶 x 千米的费用 y 与 x 的关系式是什么？',
-        answer: 'y = 2x + 8',
-        analysis: '固定量是 8，单位变化量是 2。',
+        stem: '某项服务收取固定服务费 8 元，另按每千米 2 元计费。行驶 x 千米的总费用 y 与 x 的关系式是什么？',
+        answer: 'y = 2x + 8（x≥0）',
+        analysis: '固定服务费是 8 元，里程费用是 2x 元；实际里程满足 x≥0。',
       },
     ],
     template: {
@@ -1194,7 +1194,7 @@ const knowledgeList = [
       {
         type: 'formula',
         title: '求根公式',
-        formula: 'x = (-b ± √(b^2 - 4ac)) / (2a)',
+        formula: 'x = (-b ± √(b^2 - 4ac)) / (2a)，其中 a≠0、b^2-4ac≥0（实数范围）',
         description: '适用于标准形式 ax^2 + bx + c = 0，且 a ≠ 0。',
       },
     ],

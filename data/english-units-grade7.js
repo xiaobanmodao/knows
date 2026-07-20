@@ -17,7 +17,7 @@ const grade7Upper = createBook({
   shortLabel: '七上',
   edition: '2024 年修订版',
   status: 'verified',
-  sourceNote: '目录已按 2024 年秋启用的人教版新教材核对。',
+  sourceNote: '单元标题和顺序已按 2024 年秋启用的人教版新教材核对；词汇用法、语法讲解和例句由本项目按单元主题原创整理，不作为教材逐页词表。',
   units: [
     unit({
       id: 'eng-unit-g7a-starter-hello', number: 1, isStarter: true, title: 'Hello!', theme: '问候与开启对话',
@@ -96,7 +96,7 @@ const grade7Upper = createBook({
       expressions: ['This is my elder brother.', 'My father enjoys cooking.', "It's my grandparents' house."],
       vocabulary: [
         ['family', '名词', '家庭；家人', '指家庭整体时可看作单数，强调成员时可按复数理解。', '复数 families。', ['family member', 'a family of four'], 'My family has dinner together every Sunday.', '我家每周日一起吃晚饭。', '在美式英语中 family 作主语时常用单数谓语。'],
-        ['parent', '名词', '父亲或母亲；家长', '单数指父母中的一方，parents 指父母双方。', '复数 parents。', ['my parents', 'parent meeting'], 'One of my parents walks me to school.', '我的父母中有一位陪我走路上学。', 'one of 后接复数名词，谓语按 one 用单数。'],
+        ['parent', '名词', '父亲或母亲；家长', '单数指父母中的一方，parents 指父母双方。', '复数 parents。', ['my parents', 'parent-teacher meeting'], 'One of my parents walks me to school.', '我的父母中有一位陪我走路上学。', 'one of 后接复数名词，谓语按 one 用单数。'],
         ['cousin', '名词', '堂/表兄弟姐妹', '英语不区分堂亲和表亲，也不区分性别。', '复数 cousins。', ['older cousin', 'my cousin'], 'My cousin and I share the same interest in music.', '我和表姐都对音乐感兴趣。', '不要仅凭 cousin 判断性别或长幼。'],
         ['grandparent', '名词', '祖父母或外祖父母中的一位', 'grandparents 可泛指祖父母或外祖父母。', '复数 grandparents。', ['visit grandparents', 'grandparent and grandchild'], 'We visit our grandparents during the holiday.', '假期里我们去看望祖父母。', '中文关系更细，英语常靠上下文说明。'],
         ['child', '名词', '孩子；儿童', '不规则复数名词。', '复数 children。', ['only child', 'young children'], 'Every child in the family has a small job.', '家里的每个孩子都有一项小任务。', '复数是 children，不能写 childs。'],
@@ -210,7 +210,7 @@ const grade7Lower = createBook({
   shortLabel: '七下',
   edition: '2024 年修订版',
   status: 'verified',
-  sourceNote: '目录已按 2025 年春启用的人教版新教材核对。',
+  sourceNote: '单元标题和顺序已按 2025 年春启用的人教版新教材核对；词汇用法、语法讲解和例句由本项目按单元主题原创整理，不作为教材逐页词表。',
   units: [
     unit({
       id: 'eng-unit-g7b-animal-friends', number: 1, title: 'Animal Friends', theme: '动物特征与和谐共生',
@@ -223,7 +223,7 @@ const grade7Lower = createBook({
         ['protect', '动词', '保护', 'protect ... from/against ... 表示保护……免受……。', 'protects；protected；protecting；名词 protection。', ['protect wildlife', 'protect ... from ...'], 'Trees protect small animals from strong sunlight.', '树木保护小动物免受强烈阳光照射。', 'from 后接名词或 doing。'],
         ['danger', '名词', '危险', 'in danger 表示处于危险中，dangerous 是形容词。', '复数 dangers；形容词 dangerous。', ['in danger', 'out of danger'], 'Some sea animals are in danger because of plastic waste.', '一些海洋动物因塑料垃圾而处于危险中。', 'in danger 的主语处境危险；dangerous 描述会带来危险。'],
         ['habitat', '名词', '栖息地；生境', '指动植物自然生活和生长的环境。', '复数 habitats。', ['natural habitat', 'lose a habitat'], 'Wetlands provide a habitat for many birds.', '湿地为许多鸟类提供栖息地。', 'provide a habitat for 是常见搭配。'],
-        ['clever', '形容词', '聪明的；灵巧的', '可描述学习快、解决问题能力强。', '比较级 cleverer/more clever；最高级 cleverest。', ['clever animal', 'clever at'], 'Dolphins are clever enough to learn signals.', '海豚足够聪明，能够学习信号。', 'clever enough 中 enough 放在形容词后。'],
+        ['clever', '形容词', '聪明的；灵巧的', '可描述学习快、解决问题能力强。', '比较级 cleverer/more clever；最高级 cleverest。', ['clever animal', 'be clever at doing sth'], 'Dolphins are clever enough to learn signals.', '海豚足够聪明，能够学习信号。', 'clever enough 中 enough 放在形容词后；be clever at 后接名词或 doing。'],
       ],
       grammar: [
         g('wh-animals', 'What、Where 与 Why 特殊疑问句', 'what 询问对象或特征，where 询问地点，why 询问原因并常用 because 回答。', ['What animals ...?', 'Where do they live?', 'Why do you like them? — Because ...'], [['Where do polar bears live?', '北极熊生活在哪里？', '询问栖息地使用 where。'], ['Why are bees important? Because they help plants grow.', '蜜蜂为什么重要？因为它们帮助植物生长。', 'why 与 because 构成问答。']], ['Why 问句回答只重复 yes/no。', '特殊疑问词后漏掉助动词 do。']),
@@ -253,7 +253,7 @@ const grade7Lower = createBook({
       expressions: ['How often do you exercise?', 'You should get enough sleep.', 'Walking keeps us active.'],
       vocabulary: [
         ['fit', '形容词/动词', '健康的；合适；适合', 'keep fit 表示保持健康；fit 也可表示尺寸合适。', 'fitter；fittest；fits；fitted；fitting。', ['keep fit', 'fit well'], 'Regular exercise helps us keep fit.', '规律运动帮助我们保持健康。', 'healthy 强调整体健康，fit 常强调身体状态。'],
-        ['exercise', '名词/动词', '锻炼；练习', '表示体育锻炼通常不可数，表示一道练习题时可数。', '复数 exercises；exercised；exercising。', ['do exercise', 'exercise regularly'], 'My grandfather exercises in the park every morning.', '我爷爷每天早上在公园锻炼。', '具体练习题可说 grammar exercises。'],
+        ['exercise', '名词/动词', '锻炼；练习', '表示体育锻炼通常不可数，表示一道练习题时可数。', '复数 exercises；exercised；exercising。', ['get some exercise', 'exercise regularly'], 'My grandfather exercises in the park every morning.', '我爷爷每天早上在公园锻炼。', '表示锻炼量可说 get some exercise；具体练习题可说 grammar exercises。'],
         ['healthy', '形容词', '健康的；有益健康的', '可描述人、饮食、习惯；名词为 health。', '比较级 healthier；名词 health。', ['healthy lifestyle', 'stay healthy'], 'A healthy lunch gives us energy for the afternoon.', '健康的午餐为下午提供能量。', 'health 是名词，healthy 是形容词。'],
         ['habit', '名词', '习惯', '可数名词，develop/form a habit 表示养成习惯。', '复数 habits。', ['good habit', 'develop a habit of'], 'Reading before bed is a relaxing habit.', '睡前阅读是一个让人放松的习惯。', 'habit of 后接名词或 doing。'],
         ['sleep', '名词/动词', '睡眠；睡觉', 'get enough sleep 中为不可数名词。', 'sleeps；slept；sleeping；形容词 sleepy/asleep。', ['get enough sleep', 'fall asleep'], 'Teenagers need enough sleep to stay focused.', '青少年需要充足睡眠来保持专注。', 'sleepy 表示困倦，asleep 表示睡着。'],

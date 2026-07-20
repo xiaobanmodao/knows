@@ -8,7 +8,7 @@ function unit(config) {
 
 const grade8Upper = createBook({
   id: 'eng-book-g8a-2024', gradeId: 'g8', semester: 'upper', label: '八年级上册', shortLabel: '八上',
-  edition: '2024 年修订版', status: 'verified', sourceNote: '目录已按人教版八年级上册新版教材核对。',
+  edition: '2024 年修订版', status: 'verified', sourceNote: '单元标题和顺序已按人教版八年级上册新版教材核对；词汇用法、语法讲解和例句由本项目按单元主题原创整理，不作为教材逐页词表。',
   units: [
     unit({
       id: 'eng-unit-g8a-happy-holiday', number: 1, title: 'Happy Holiday', theme: '假期经历与旅行见闻',
@@ -37,9 +37,9 @@ const grade8Upper = createBook({
         ['share', '动词/名词', '分享；共同使用；分担', 'share sth with sb 表示与某人分享。', 'shares；shared；sharing。', ['share chores', 'share ... with ...'], 'We share the cooking and cleaning at weekends.', '周末我们分担做饭和清洁。', 'share 后不需要再加 together。'],
         ['household', '名词/形容词', '一家人；家庭的', '作形容词修饰家务、用品和开支。', '复数 households。', ['household tasks', 'household members'], 'Every household has its own daily routine.', '每个家庭都有自己的日常安排。', 'household 强调整个家庭单位，family 还强调亲属关系。'],
         ['independent', '形容词', '独立的；自主的', 'be independent of 表示不依赖。', '名词 independence；副词 independently。', ['become independent', 'independent learner'], 'Learning to cook helps teenagers become independent.', '学习做饭帮助青少年变得独立。', '反义词 dependent，介词搭配为 of。'],
-        ['relationship', '名词', '关系；联系', '谈人际关系常与 between/with 连用。', '复数 relationships。', ['build a relationship', 'relationship with'], 'Honest talks improve the relationship between parents and children.', '坦诚交流能改善亲子关系。', 'between 后要明确双方。'],
+        ['relationship', '名词', '关系；联系', '谈人际关系常与 between/with 连用。', '复数 relationships。', ['build a relationship', 'relationship with sb'], 'Honest talks improve the relationship between parents and children.', '坦诚交流能改善亲子关系。', 'between 后要明确双方；with 后接关系的另一方。'],
         ['comfortable', '形容词', '舒适的；自在的', '既可描述环境，也可描述人的感受。', '比较级 more comfortable；名词 comfort。', ['feel comfortable', 'comfortable room'], 'Soft light makes the living room comfortable.', '柔和的光线让客厅很舒适。', '拼写中包含 comfort，不要漏写第二个 o。'],
-        ['organize', '动词', '组织；整理；安排', '美式拼写 organize，英式也可用 organise。', 'organizes；organized；organizing；名词 organization。', ['organize a room', 'organize time'], 'Let us organize the kitchen shelves together.', '让我们一起整理厨房架子。', 'organize 强调有条理地安排，不只是清洁。'],
+        ['organize', '动词', '组织；整理；安排', '美式拼写 organize，英式也可用 organise；本词条保留教材常见的 organize。', 'organizes；organized；organizing；名词 organization。', ['organize your room', 'organize your time'], 'Let us organize the kitchen shelves together.', '让我们一起整理厨房架子。', 'organize 强调有条理地安排，不只是清洁。'],
       ],
       grammar: [
         g('polite-requests', 'Could you ...? 礼貌请求', 'Could you 后接动词原形，用于礼貌请求；肯定和否定回应都应说明态度。', ['Could you + 动词原形 ...?', 'Sure./No problem.', 'Sorry, I can’t because ...'], [['Could you fold the clothes, please?', '请你叠一下衣服好吗？', 'could 使请求更礼貌。'], ['Sorry, I can’t do it now, but I can help later.', '抱歉我现在做不了，但稍后可以帮忙。', '拒绝后给出理由和替代方案。']], ['Could you 后接 to do。', '用生硬的 No 单独拒绝。']),
@@ -159,7 +159,7 @@ const grade8Upper = createBook({
 
 const grade8Lower = createBook({
   id: 'eng-book-g8b-2024', gradeId: 'g8', semester: 'lower', label: '八年级下册', shortLabel: '八下',
-  edition: '2024 年修订版', status: 'verified', sourceNote: '目录已按人教版八年级下册新版教材核对。',
+  edition: '2024 年修订版', status: 'verified', sourceNote: '单元标题和顺序已按人教版八年级下册新版教材核对；词汇用法、语法讲解和例句由本项目按单元主题原创整理，不作为教材逐页词表。',
   units: [
     unit({
       id: 'eng-unit-g8b-time-to-relax', number: 1, title: 'Time to Relax', theme: '休闲活动与身心平衡',
@@ -238,9 +238,9 @@ const grade8Lower = createBook({
       expressions: ['The ground was shaking when the alarm sounded.', 'Move away from windows.', 'Follow official warnings and stay calm.'],
       vocabulary: [
         ['disaster', '名词', '灾难；灾害', '指造成严重损失的事件。', '复数 disasters。', ['natural disaster', 'disaster area'], 'Preparation can reduce the harm caused by a disaster.', '充分准备能减少灾害造成的伤害。', 'hazard 是潜在危险，disaster 是造成严重后果的事件。'],
-        ['earthquake', '名词', '地震', '可数名词，常与 strike、happen 搭配。', '复数 earthquakes。', ['strong earthquake', 'earthquake drill'], 'Our class practised an earthquake drill.', '我们班进行了地震演练。', '地震“发生”可说 an earthquake strikes/happens。'],
+        ['earthquake', '名词', '地震', '可数名词，常与 strike、happen 搭配。', '复数 earthquakes。', ['strong earthquake', 'earthquake drill'], 'Our class took part in an earthquake drill.', '我们班参加了一次地震演练。', '地震“发生”可说 an earthquake strikes/happens；“参加演练”可用 take part in a drill。'],
         ['flood', '名词/动词', '洪水；淹没', '作名词可数，作动词描述水淹。', '复数 floods；flooded；flooding。', ['flash flood', 'be flooded with'], 'Heavy rain flooded several low roads.', '暴雨淹没了几条低洼道路。', 'flooded 还可比喻大量涌入。'],
-        ['storm', '名词/动词', '暴风雨；猛烈攻击', '天气语境常与 warning、approach 搭配。', '复数 storms；stormed；storming。', ['storm warning', 'during a storm'], 'The storm warning arrived before the wind grew stronger.', '风力增强前发布了暴风雨预警。', 'thunderstorm 特指雷暴。'],
+        ['storm', '名词/动词', '暴风雨；猛烈攻击', '天气语境常与 warning、approach 搭配。', '复数 storms；stormed；storming。', ['storm warning', 'during a storm'], 'The storm warning was issued before the wind grew stronger.', '风力增强前发布了暴风雨预警。', 'issue a warning 表示“发布预警”；thunderstorm 特指雷暴。'],
         ['warning', '名词', '警告；预警', '可数名词；动词 warn。', '复数 warnings。', ['early warning', 'warning sign'], 'Never ignore an official flood warning.', '绝不要忽视官方洪水预警。', 'warn sb about/of sth 或 warn sb not to do。'],
         ['escape', '动词/名词', '逃离；逃脱', 'escape from 地点；escape doing 表示逃避某事。', 'escapes；escaped；escaping。', ['escape route', 'escape from'], 'Know the safest escape route from your building.', '要知道离开所在建筑的最安全逃生路线。', 'escape 作动词接地点时常加 from。'],
         ['emergency', '名词/形容词', '紧急情况；应急的', 'in an emergency 表示在紧急情况下。', '复数 emergencies。', ['emergency kit', 'emergency exit'], 'Keep water and a torch in your emergency kit.', '在应急包中放好水和手电筒。', '复数将 y 变为 ies。'],
