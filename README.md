@@ -70,12 +70,13 @@ node scripts/check-package-boundaries.js
 node scripts/check-content-schema.js
 node scripts/check-content-diff.js
 node scripts/check-package-sizes.js
+node scripts/check-cloud-assets-runtime.js
 ```
 
 ## 当前开发顺序
 
-1. 修复或确认云存储正式环境的图片签名权限，并复查 `getImageTempUrls` 超时
-2. 在 iPhone 与 Android 真机完成三科首次分包加载、搜索、收藏、笔记和弱网降级回归
+1. 正式云环境与 `getImageTempUrls` 已复核通过，运行时改为云函数签名优先、客户端兜底
+2. 在 iPhone 与 Android 实体手机完成三科首次分包加载、搜索、收藏、笔记和弱网降级回归
 3. 通过后更新为 `1.4.0-rc.1` 并生成体验版
 4. 分包稳定后，按英语、物理、数学顺序进入 `v1.5` 内容补深
 

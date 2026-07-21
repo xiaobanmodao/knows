@@ -212,6 +212,7 @@ function checkSitemap(appConfig) {
 function checkCloudFunction() {
   assertFile('cloudfunctions/getImageTempUrls/index.js', '云函数 getImageTempUrls');
   assertFile('cloudfunctions/getImageTempUrls/package.json', '云函数 getImageTempUrls');
+  assertFile('scripts/check-cloud-assets-runtime.js', '云图片运行时校验');
 
   const cloudPackage = fileExists('cloudfunctions/getImageTempUrls/package.json')
     ? readJson('cloudfunctions/getImageTempUrls/package.json')
