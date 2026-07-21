@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "知识点详情",
+  "usingComponents": {
+    "content-block": "/components/content-block/index"
+  }
+}

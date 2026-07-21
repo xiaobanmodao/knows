@@ -1,12 +1,12 @@
-const { knowledgeList } = require('../data/math-data');
-const { chapterCatalog, templateLibrary } = require('../data/math-curriculum');
-const { lessonFocusMap } = require('../data/math-lesson-focus');
-const { lessonFactsMap } = require('../data/math-lesson-facts');
-const { lessonFormulaMap } = require('../data/math-lesson-formulas');
-const { getContentReviewMeta } = require('../data/content-review-meta');
-const { topicPackages } = require('../data/math-topic-guides');
-const { resolveAssetUrl } = require('./asset-config');
-const { getStableLessonId, resolveKnowledgeId } = require('./content-ids');
+const { knowledgeList } = require('./data/math-data');
+const { chapterCatalog, templateLibrary } = require('./data/math-curriculum');
+const { lessonFocusMap } = require('./data/math-lesson-focus');
+const { lessonFactsMap } = require('./data/math-lesson-facts');
+const { lessonFormulaMap } = require('./data/math-lesson-formulas');
+const { getContentReviewMeta } = require('./data/content-review-meta');
+const { topicPackages } = require('./data/math-topic-guides');
+const { resolveAssetUrl } = require('../../utils/asset-config');
+const { getStableLessonId, resolveKnowledgeId } = require('../../utils/content-ids');
 
 const figureByTag = {
   几何: '/assets/figures/generated/right-triangle-345.png',
@@ -2573,8 +2573,9 @@ function getFeaturedChapters() {
   return chapterCatalog.slice(0, 8).map((chapter) => getChapterById(chapter.id));
 }
 
-function getKnowledgeById(knowledgeId) {
-  const detailed = knowledgeList.find((item) => item.id === knowledgeId);
+function getKnowledgeById(subjectIdOrKnowledgeId, knowledgeId) {
+  const requestedId = knowledgeId || subjectIdOrKnowledgeId;
+  const detailed = knowledgeList.find((item) => item.id === requestedId);
 
   if (detailed) {
     return resolveKnowledgeAssets({
@@ -2584,12 +2585,12 @@ function getKnowledgeById(knowledgeId) {
     });
   }
 
-  const resolvedKnowledgeId = resolveKnowledgeId(knowledgeId);
+  const resolvedKnowledgeId = resolveKnowledgeId(requestedId);
 
   for (const chapter of chapterCatalog) {
     const chapterDetail = getChapterById(chapter.id);
     const matched = chapterDetail.knowledgeItems.find((item) => (
-      item.id === resolvedKnowledgeId || (item.legacyIds || []).includes(knowledgeId)
+      item.id === resolvedKnowledgeId || (item.legacyIds || []).includes(requestedId)
     ));
     if (matched) {
       return matched;
@@ -2603,8 +2604,9 @@ function getKnowledgeCards(ids) {
   return ids.map((id) => getKnowledgeById(id)).filter(Boolean);
 }
 
-function getTemplateById(templateId) {
-  const template = templateLibrary.find((item) => item.id === templateId) || null;
+function getTemplateById(subjectIdOrTemplateId, templateId) {
+  const requestedId = templateId || subjectIdOrTemplateId;
+  const template = templateLibrary.find((item) => item.id === requestedId) || null;
   return template ? enrichTemplate(template) : null;
 }
 
@@ -2762,7 +2764,63 @@ function searchMath(keyword) {
     .sort((a, b) => b.score - a.score || a.title.localeCompare(b.title, 'zh-Hans-CN'));
 }
 
+function getTopicById(subjectId, topicId) {
+  const topic = getMathStudyMap().topicGroups
+    .flatMap((group) => group.topics)
+    .find((item) => item.id === topicId);
+  return topic ? { ...topic, subjectId: 'math' } : null;
+}
+
+function getKnowledgeContext(subjectId, knowledge) {
+  const chapter = knowledge && getChapterById(knowledge.chapterId);
+  return chapter ? {
+    id: chapter.id,
+    title: chapter.title,
+    subtitle: `${chapter.stage} · ${chapter.chapterNo}`,
+    type: 'chapter',
+  } : null;
+}
+
+function getRelatedKnowledge(subjectId, knowledge, limit = 3) {
+  const chapter = knowledge && getChapterById(knowledge.chapterId);
+  return chapter ? chapter.knowledgeItems
+    .filter((item) => item.id !== knowledge.id)
+    .slice(0, limit) : [];
+}
+
+function getKnowledgeNavigation(subjectId, knowledgeId) {
+  const knowledge = getKnowledgeById(knowledgeId);
+  const chapter = knowledge && getChapterById(knowledge.chapterId);
+  const items = chapter ? chapter.knowledgeItems : [];
+  const index = items.findIndex((item) => knowledge && item.id === knowledge.id);
+  const toEntry = (item) => item ? { id: item.id, title: item.title } : null;
+
+  return index < 0 ? { index: -1, count: items.length, previous: null, next: null } : {
+    index,
+    count: items.length,
+    previous: toEntry(items[index - 1]),
+    next: toEntry(items[index + 1]),
+  };
+}
+
+function getSubjectHome() {
+  const studyMap = getMathStudyMap();
+  return {
+    subject: {
+      id: 'math',
+      name: '初中数学',
+      shortName: '数学',
+      gradeBands: ['七年级', '八年级', '九年级'],
+    },
+    topics: studyMap.topicGroups.flatMap((group) => group.topics),
+    gradePackages: studyMap.gradePackages,
+  };
+}
+
 module.exports = {
+  SUBJECT_LABELS: { math: '数学', english: '英语', physics: '物理' },
+  normalizeSubjectId: () => 'math',
+  getSubjectHome,
   getAllChapters,
   getChapterGroups,
   getMathStudyMap,
@@ -2771,8 +2829,13 @@ module.exports = {
   getKnowledgeById,
   resolveKnowledgeId,
   getKnowledgeCards,
+  getKnowledgeContext,
+  getRelatedKnowledge,
+  getKnowledgeNavigation,
+  getTopicById,
   getTemplateById,
   getFeaturedTemplates,
   getAllTemplates,
   searchMath,
+  getPhysicsChapterById: () => null,
 };

@@ -20,7 +20,7 @@ global.wx = {
   },
 };
 
-const math = require('../utils/math');
+const math = require('../packages/math/repository');
 const storage = require('../utils/storage');
 const issues = [];
 
@@ -56,6 +56,10 @@ if (memory.get('knows_content_schema_version') !== 4) {
 
 if (!math.getKnowledgeById('ch01-rational-lesson-1')) {
   issues.push('旧知识点链接应继续可访问');
+}
+
+if (math.getKnowledgeNavigation('math', 'ch01-rational-lesson-1').index !== 0) {
+  issues.push('旧知识点链接迁移后应保留相邻知识导航');
 }
 
 if (storage.getMathGrade() !== 'grade8') {

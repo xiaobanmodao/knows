@@ -5,9 +5,9 @@ const rankingChecks = [
   ['stomachache', 'english', 'word'],
   ['被动语态', 'english', 'knowledge'],
   ['定语从句', 'english', 'knowledge'],
-  ['欧姆定律', 'physics', 'chapter'],
-  ['浮力', 'physics', 'chapter'],
-  ['v＝s／t', 'physics', 'chapter'],
+  ['欧姆定律', 'physics', 'knowledge'],
+  ['浮力', 'physics', 'knowledge'],
+  ['v＝s／t', 'physics', 'knowledge'],
 ];
 
 rankingChecks.forEach(([keyword, expectedSubjectId, expectedType]) => {

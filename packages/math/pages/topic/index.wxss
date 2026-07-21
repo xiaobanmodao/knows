@@ -1,0 +1,25 @@
+.topic-hero { position: relative; padding: 30rpx; overflow: hidden; }
+.topic-hero__image { width: 100%; height: 410rpx; margin-bottom: 22rpx; border-radius: 8rpx; background: #edf2f8; }
+.topic-hero__label { font-size: 22rpx; color: #26725b; }
+.topic-hero__title { margin-top: 8rpx; font-size: 40rpx; font-weight: 800; color: #17233f; }
+.topic-hero__summary, .topic-section__text { margin-top: 12rpx; font-size: 25rpx; line-height: 1.85; color: #566178; }
+.topic-hero__grade { margin-top: 14rpx; font-size: 22rpx; color: #7a8498; }
+.top-gap { margin-top: 24rpx; }
+.topic-section { padding: 28rpx; }
+.topic-section__title { font-size: 29rpx; font-weight: 800; color: #1b2947; }
+.topic-diagram { padding: 28rpx; }
+.topic-diagram__image { display: block; width: 100%; height: 420rpx; margin-top: 18rpx; border-radius: 8rpx; background: #f4f7fb; }
+.topic-diagram__caption { margin-top: 14rpx; font-size: 23rpx; line-height: 1.75; color: #5d687d; }
+.topic-diagram__fallback { display: flex; align-items: center; justify-content: center; min-height: 240rpx; margin-top: 18rpx; padding: 24rpx; border: 1rpx dashed #cad5e8; border-radius: 8rpx; background: #f7f9fc; color: #6b7589; font-size: 23rpx; line-height: 1.7; text-align: center; }
+.checkpoint { display: flex; margin-top: 20rpx; }
+.checkpoint__index { flex-shrink: 0; width: 42rpx; height: 42rpx; margin-right: 14rpx; border-radius: 50%; background: #eaf1ff; color: #1b5fe0; line-height: 42rpx; text-align: center; font-size: 21rpx; font-weight: 800; }
+.checkpoint__body { flex: 1; }
+.checkpoint__title { font-size: 26rpx; font-weight: 700; color: #23304b; }
+.checkpoint__method { margin-top: 6rpx; font-size: 24rpx; line-height: 1.75; color: #59657a; }
+.signal-row { margin-top: 16rpx; }
+.signal { display: inline-flex; margin: 0 10rpx 10rpx 0; padding: 9rpx 15rpx; border-radius: 999rpx; background: #edf6f1; color: #28715a; font-size: 22rpx; }
+.entry-card { padding: 26rpx; }
+.entry-card--template { border-left: 6rpx solid #e58a2a; }
+.entry-card__title { font-size: 29rpx; font-weight: 800; color: #192540; }
+.entry-card__summary { margin-top: 10rpx; font-size: 24rpx; line-height: 1.75; color: #616d83; }
+.entry-card__meta { margin-top: 12rpx; font-size: 22rpx; color: #2d745f; }

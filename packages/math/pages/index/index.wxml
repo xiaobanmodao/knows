@@ -1,0 +1,111 @@
+<view class="page-shell">
+  <view class="overview card">
+    <view class="overview__title">数学知识库</view>
+    <view class="overview__desc">
+      覆盖初中数学 {{totalChapters}} 个章节。选择年级后直接查看教材章节，也可切换到专题索引。
+    </view>
+    <view class="overview__tags">
+      <text class="tag">游客模式</text>
+      <text class="tag">统一搜索</text>
+      <text class="tag">知识点优先</text>
+      <text class="tag">题型模型</text>
+    </view>
+  </view>
+
+  <view class="search-slot top-space">
+    <search-bar bindtap="openSearch" />
+    <view class="search-tip">搜索知识点、公式名称、章节名称或模型名，例如“相似”“勾股定理”“手拉手模型”。</view>
+  </view>
+
+  <view class="grade-switch" aria-label="选择年级">
+    <view
+      wx:for="{{gradeOptions}}"
+      wx:key="id"
+      class="grade-switch__item {{item.active ? 'grade-switch__item--active' : ''}}"
+      data-id="{{item.id}}"
+      bindtap="selectGrade"
+    >
+      <view class="grade-switch__title">{{item.title}}</view>
+      <view class="grade-switch__meta">{{item.chapterCount}} 章<text wx:if="{{item.topicCount}}"> · {{item.topicCount}} 专题</text></view>
+    </view>
+  </view>
+
+  <view class="content-switch" aria-label="选择数学入口">
+    <view class="content-switch__item {{activeView === 'catalog' ? 'content-switch__item--active' : ''}}" data-view="catalog" bindtap="selectView">
+      <view class="content-switch__title">教材章节</view>
+      <view class="content-switch__meta">{{visibleChapterCount}} 章</view>
+    </view>
+    <view class="content-switch__item {{activeView === 'topics' ? 'content-switch__item--active' : ''}}" data-view="topics" bindtap="selectView">
+      <view class="content-switch__title">专题索引</view>
+      <view class="content-switch__meta">{{activeTopicGroup.topicCount}} 个专题</view>
+    </view>
+  </view>
+
+  <view wx:if="{{activeView === 'topics' && hasActiveTopics}}" class="topic-section top-space">
+    <view class="section-title">
+      <view class="section-title__main">{{activeTopicGroup.title}}专题小包</view>
+      <view class="section-title__sub">{{activeTopicGroup.topicCount}} 个专题</view>
+    </view>
+
+    <view class="topic-grid">
+      <view
+        wx:for="{{activeTopicGroup.topics}}"
+        wx:key="id"
+        wx:for-item="topic"
+        class="topic-card card"
+        data-id="{{topic.id}}"
+        bindtap="openTopic"
+      >
+        <view class="topic-card__top">
+          <image
+            wx:if="{{topic.image}}"
+            class="topic-card__image"
+            src="{{topic.image}}"
+            mode="aspectFit"
+            data-grade-id="{{activeTopicGroup.gradeId}}"
+            data-id="{{topic.id}}"
+            binderror="onTopicImageError"
+          />
+          <view class="topic-card__copy">
+            <view class="topic-card__label">{{topic.label}}</view>
+            <view class="topic-card__title">{{topic.title}}</view>
+            <view class="topic-card__stage">{{topic.stage}}</view>
+          </view>
+        </view>
+        <view class="topic-card__summary">{{topic.summary}}</view>
+        <view class="topic-card__focus">
+          <text wx:for="{{topic.focus}}" wx:key="*this" wx:for-item="focus" class="mini-tag">{{focus}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <block wx:if="{{activeView === 'catalog'}}">
+    <view wx:for="{{visibleChapterGroups}}" wx:key="stage" wx:for-item="group" class="group-block">
+      <view class="section-title">
+        <view class="section-title__main">{{group.stage}}</view>
+        <view class="section-title__sub">{{group.items.length}} 个章节</view>
+      </view>
+
+      <view class="grid">
+        <view
+          wx:for="{{group.items}}"
+          wx:key="id"
+          wx:for-item="chapter"
+          class="chapter-card card"
+          data-id="{{chapter.id}}"
+          bindtap="openChapter"
+        >
+          <view class="chapter-card__chapter-no">{{chapter.chapterNo}}</view>
+          <view class="chapter-card__title">{{chapter.title}}</view>
+          <view class="chapter-card__subtitle">{{chapter.subtitle}}</view>
+          <view class="chapter-card__highlight">{{chapter.highlight}}</view>
+          <view class="chapter-card__meta">{{chapter.outlineItems.length}} 个小节 · {{chapter.templateItems.length}} 个高频模型</view>
+          <view class="chapter-card__tags">
+            <text wx:for="{{chapter.tags}}" wx:key="*this" wx:for-item="tag" class="tag">{{tag}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </block>
+</view>

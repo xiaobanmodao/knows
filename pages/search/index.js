@@ -1,4 +1,6 @@
-const { searchAllSubjects, SUBJECT_LABELS } = require('../../utils/subjects');
+const { SUBJECT_LABELS } = require('../../data/subject-manifest');
+const { searchAllSubjects } = require('../../utils/search-index');
+const { openContent } = require('../../utils/content-routes');
 
 const RESULT_GROUPS = [
   { type: 'unit', title: '教材单元' },
@@ -209,19 +211,7 @@ Page({
 
   openResult(event) {
     const { type, id, subjectId, focusId } = event.currentTarget.dataset;
-    const url = ['unit', 'word', 'grammar'].includes(type)
-      ? `/pages/english-unit/index?id=${id}${focusId ? `&focusType=${type}&focusId=${focusId}` : ''}`
-      : type === 'chapter'
-        ? (subjectId === 'physics'
-          ? `/pages/physics-chapter/index?id=${id}`
-          : `/pages/chapter/index?id=${id}`)
-      : type === 'topic'
-        ? `/pages/topic/index?subjectId=${subjectId}&id=${id}`
-      : type === 'template'
-        ? `/pages/template/index?subjectId=${subjectId}&id=${id}`
-        : `/pages/knowledge/index?subjectId=${subjectId}&id=${id}`;
-
-    wx.navigateTo({ url });
+    openContent({ type, id, subjectId, focusId });
   },
 
   onUnload() {

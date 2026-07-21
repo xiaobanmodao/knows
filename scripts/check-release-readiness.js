@@ -88,6 +88,26 @@ function checkAppConfig() {
     appConfig.pages.forEach(checkPage);
   }
 
+  const packageRoots = new Set();
+  (appConfig.subPackages || []).forEach((packageConfig) => {
+    if (!packageConfig.root || packageRoots.has(packageConfig.root)) {
+      issues.push(`app.json subPackages: root 缺失或重复 -> ${packageConfig.root || '(空)'}`);
+      return;
+    }
+
+    packageRoots.add(packageConfig.root);
+    if (!Array.isArray(packageConfig.pages) || !packageConfig.pages.length) {
+      issues.push(`app.json subPackages: ${packageConfig.root} pages 不能为空`);
+      return;
+    }
+
+    packageConfig.pages.forEach((pagePath) => checkPage(`${packageConfig.root}/${pagePath}`));
+  });
+
+  if (appConfig.preloadRule) {
+    warnings.push('app.json: 当前配置了 preloadRule，请确认仍符合按需加载要求');
+  }
+
   if (appConfig.cloud !== true) {
     issues.push('app.json: 云开发项目应保持 "cloud": true');
   }
@@ -100,7 +120,12 @@ function checkAppConfig() {
 
   assertUsingComponents(appConfig.usingComponents, 'app.json');
 
-  const pageSet = new Set(appConfig.pages || []);
+  const pageSet = new Set([
+    ...(appConfig.pages || []),
+    ...(appConfig.subPackages || []).flatMap((packageConfig) => (
+      (packageConfig.pages || []).map((pagePath) => `${packageConfig.root}/${pagePath}`)
+    )),
+  ]);
   const tabItems = appConfig.tabBar && Array.isArray(appConfig.tabBar.list)
     ? appConfig.tabBar.list
     : [];
@@ -166,7 +191,12 @@ function checkSitemap(appConfig) {
     return;
   }
 
-  const pageSet = new Set((appConfig && appConfig.pages) || []);
+  const pageSet = new Set([
+    ...((appConfig && appConfig.pages) || []),
+    ...((appConfig && appConfig.subPackages) || []).flatMap((packageConfig) => (
+      (packageConfig.pages || []).map((pagePath) => `${packageConfig.root}/${pagePath}`)
+    )),
+  ]);
 
   sitemap.rules.forEach((rule, index) => {
     if (!['allow', 'disallow'].includes(rule.action)) {

@@ -1,4 +1,5 @@
-const { SUBJECT_LABELS } = require('../../utils/subjects');
+const { SUBJECT_LABELS } = require('../../data/subject-manifest');
+const { openContent } = require('../../utils/content-routes');
 
 function hydrateItem(item) {
   const subjectId = item.subjectId || 'math';
@@ -30,22 +31,6 @@ Page({
 
   openItem(event) {
     const { id, subjectId, type } = event.currentTarget.dataset;
-    let url = `/pages/knowledge/index?subjectId=${subjectId}&id=${id}`;
-
-    if (type === 'unit') {
-      url = `/pages/english-unit/index?id=${id}`;
-    } else if (type === 'template') {
-      url = `/pages/template/index?subjectId=${subjectId}&id=${id}`;
-    } else if (type === 'topic') {
-      url = `/pages/topic/index?subjectId=${subjectId}&id=${id}`;
-    } else if (type === 'chapter') {
-      url = subjectId === 'physics'
-        ? `/pages/physics-chapter/index?id=${id}`
-        : `/pages/chapter/index?id=${id}`;
-    }
-
-    wx.navigateTo({
-      url,
-    });
+    openContent({ id, subjectId, type });
   },
 });

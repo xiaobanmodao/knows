@@ -1,5 +1,5 @@
 const fs = require('fs');
-const physics = require('../data/physics-curriculum');
+const physics = require('../packages/physics/data/physics-curriculum');
 const subjects = require('../utils/subjects');
 
 const issues = [];

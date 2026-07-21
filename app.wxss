@@ -5,6 +5,54 @@ page {
   font-family: "PingFang SC", "Helvetica Neue", Arial, sans-serif;
 }
 
+.legacy-route {
+  min-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48rpx;
+  color: #252a34;
+  text-align: center;
+}
+
+.legacy-route__indicator {
+  width: 48rpx;
+  height: 48rpx;
+  margin-bottom: 28rpx;
+  border: 6rpx solid #d8dde8;
+  border-top-color: #165dff;
+  border-radius: 50%;
+  animation: legacy-route-spin 0.8s linear infinite;
+}
+
+.legacy-route__title {
+  font-size: 34rpx;
+  font-weight: 700;
+}
+
+.legacy-route__message {
+  max-width: 520rpx;
+  margin-top: 16rpx;
+  color: #707789;
+  font-size: 26rpx;
+  line-height: 1.6;
+}
+
+.legacy-route__retry {
+  margin-top: 32rpx;
+  padding: 18rpx 40rpx;
+  border-radius: 8rpx;
+  background: #165dff;
+  color: #fff;
+  font-size: 28rpx;
+  font-weight: 600;
+}
+
+@keyframes legacy-route-spin {
+  to { transform: rotate(360deg); }
+}
+
 .page-shell {
   padding: 28rpx 24rpx 40rpx;
 }

@@ -1,6 +1,6 @@
 # 知识通小程序
 
-微信原生小程序版初中知识库项目。当前 `v1.3.0-rc.1` 基于已冻结的 `v1.2.0-rc.1` 三科内容继续优化知识阅读体验，默认游客模式，支持：
+微信原生小程序版初中知识库项目。当前 `v1.4.0-dev.1` 从已冻结的 `v1.3.0-rc.1` 继续建设三科分包与轻量检索底座，默认游客模式，支持：
 
 - 数学 29 章、29 个专题和 36 个题型模板
 - 英语 42 个可学习教材单元、42 张独立单元知识图、336 个逐词讲解、84 个单元语法点和 504 个单元例句，另有 6 个能力专题
@@ -17,11 +17,15 @@
 ## 当前结构
 
 - `app.js` / `app.json` / `app.wxss`：全局入口
-- `pages/`：首页、学科、英语单元、物理章节、专题、数学目录、章节、知识点、模板、搜索、收藏、我的
+- `pages/`：首页、搜索、收藏、我的，以及旧内容路径的轻量兼容跳转页
+- `packages/math/`：数学目录、章节、专题、知识点、模板页面与数学数据仓库
+- `packages/english/`：英语教材目录、单元、专题、知识点、模板页面与英语数据仓库
+- `packages/physics/`：物理教材目录、章节、专题、知识点、模板页面与物理数据仓库
 - `components/`：学科卡片、搜索栏、内容块、空状态
-- `data/`：数学、英语和物理内容数据；英语教材单元和物理教材章节按年级拆分为独立模块
-- `utils/subjects.js`：通用学科注册、查询和跨学科搜索
-- `utils/math.js`：数学兼容查询层
+- `data/subject-manifest.js`：不含正文的轻量学科清单与首页推荐项
+- `data/search-index.js`：由构建脚本生成的主包轻量搜索索引
+- `utils/content-routes.js`：根据学科、类型和稳定 ID 生成分包路径
+- `utils/subjects.js`：保留轻量学科信息与索引搜索的主包兼容门面
 - `utils/storage.js`：游客模式本地存储与版本迁移
 - `assets/figures/generated/`：原创图示源文件，运行时使用云存储
 
@@ -60,20 +64,27 @@ node scripts/check-remote-assets.js
 node scripts/check-content-migration.js
 node scripts/check-content-review-meta.js
 node scripts/check-search-experience.js
+node scripts/check-search-index.js
+node scripts/check-content-routes.js
+node scripts/check-package-boundaries.js
+node scripts/check-content-schema.js
+node scripts/check-content-diff.js
+node scripts/check-package-sizes.js
 ```
 
 ## 当前开发顺序
 
-1. 在 iPhone 与 Android 真机完成 `v1.3.0` 最后显示和弱网回归
-2. 冻结 `v1.3.0` 体验版并整理上传说明
-3. 从 `codex/content-packages-v1.4` 开始学科分包、轻量搜索索引和统一内容 schema
-4. 分包稳定后，再补深数学定理关系、英语逐词/语法和物理公式/实验
+1. 修复或确认云存储正式环境的图片签名权限，并复查 `getImageTempUrls` 超时
+2. 在 iPhone 与 Android 真机完成三科首次分包加载、搜索、收藏、笔记和弱网降级回归
+3. 通过后更新为 `1.4.0-rc.1` 并生成体验版
+4. 分包稳定后，按英语、物理、数学顺序进入 `v1.5` 内容补深
 
 ## 后续开发
 
 - 详细发布清单与长期路线见：`docs/后续开发与发布路线.md`
 - v1.2 数据、资源和验收记录见：`docs/v1.2多学科基础版实施记录.md`
 - v1.3 阅读体验实施记录见：`docs/v1.3知识阅读体验实施记录.md`
+- v1.4 分包底座实施记录见：`docs/v1.4分包底座实施记录.md`
 - 人教版英语目录基线与原创规范见：`docs/人教版英语内容来源与编写规范.md`
 - 英语词汇、语法和例句逐册复核见：`docs/英语内容准确性复核记录.md`
 - 人教版物理目录基线与原创规范见：`docs/人教版物理内容来源与编写规范.md`

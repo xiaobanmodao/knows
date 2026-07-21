@@ -1,5 +1,9 @@
-const { getFeaturedChapters, getAllChapters } = require('../../utils/math');
-const { getSubjectRegistry, SUBJECT_LABELS } = require('../../utils/subjects');
+const {
+  FEATURED_MATH_CHAPTERS,
+  getSubjectRegistry,
+  SUBJECT_LABELS,
+} = require('../../data/subject-manifest');
+const { openContent } = require('../../utils/content-routes');
 
 Page({
   data: {
@@ -16,8 +20,8 @@ Page({
     const subjects = getSubjectRegistry();
     this.setData({
       subjects,
-      featuredChapters: getFeaturedChapters(),
-      totalChapters: getAllChapters().length,
+      featuredChapters: FEATURED_MATH_CHAPTERS,
+      totalChapters: subjects[0].chapterCount,
       totalKnowledge: subjects.reduce((sum, subject) => (
         sum + subject.knowledgeCount + (subject.vocabularyCount || 0) + (subject.grammarCount || 0)
       ), 0),
@@ -41,9 +45,7 @@ Page({
     const item = this.data.continueReading;
 
     if (item) {
-      wx.navigateTo({
-        url: `/pages/knowledge/index?subjectId=${item.subjectId || 'math'}&id=${item.id}&restore=1`,
-      });
+      openContent({ ...item, type: 'knowledge', restore: true });
     }
   },
 
@@ -56,23 +58,12 @@ Page({
   openSubject(event) {
     const subject = event.detail;
 
-    if (subject.id === 'math') {
-      wx.navigateTo({
-        url: '/pages/math/index',
-      });
-      return;
-    }
-
-    wx.navigateTo({
-      url: `/pages/subject/index?id=${subject.id}`,
-    });
+    openContent({ subjectId: subject.id, type: 'subject' });
   },
 
   openChapter(event) {
     const { id } = event.currentTarget.dataset;
-    wx.navigateTo({
-      url: `/pages/chapter/index?id=${id}`,
-    });
+    openContent({ subjectId: 'math', type: 'chapter', id });
   },
 
   openFavorites() {

@@ -1,7 +1,8 @@
 const storage = require('./utils/storage');
 const { CLOUD_ENV_ID } = require('./utils/asset-config');
 const { resolveKnowledgeId } = require('./utils/content-ids');
-const { getSubjectRegistry } = require('./utils/subjects');
+const { getSubjectRegistry } = require('./data/subject-manifest');
+const { clearTempFileURLCache } = require('./utils/cloud-assets');
 
 App({
   globalData: {
@@ -10,6 +11,8 @@ App({
   },
 
   onLaunch() {
+    clearTempFileURLCache();
+
     if (CLOUD_ENV_ID && wx.cloud) {
       wx.cloud.init({
         env: CLOUD_ENV_ID,

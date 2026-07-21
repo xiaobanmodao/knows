@@ -1,0 +1,525 @@
+.knowledge-hero {
+  padding: 30rpx;
+}
+
+.knowledge-hero__meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 16rpx;
+  align-items: center;
+}
+
+.collect-btn {
+  padding: 12rpx 22rpx;
+  border-radius: 999rpx;
+  background: #edf2ff;
+  color: #235ee7;
+  font-size: 22rpx;
+}
+
+.collect-btn--active {
+  background: #165dff;
+  color: #ffffff;
+}
+
+.knowledge-hero__title {
+  margin-top: 20rpx;
+  font-size: 40rpx;
+  font-weight: 800;
+  color: #18233d;
+}
+
+.knowledge-hero__summary {
+  margin-top: 16rpx;
+  font-size: 25rpx;
+  line-height: 1.9;
+  color: #556178;
+}
+
+.knowledge-figure {
+  padding: 24rpx;
+  border-radius: 22rpx;
+  background: #f8fbff;
+  border: 1rpx solid #e6edf8;
+}
+
+.knowledge-figure__title {
+  margin-bottom: 16rpx;
+  color: #1b2947;
+  font-size: 28rpx;
+  font-weight: 800;
+}
+
+.knowledge-figure__image {
+  width: 100%;
+  height: 420rpx;
+  display: block;
+}
+
+.knowledge-figure__fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 230rpx;
+  border-radius: 18rpx;
+  background: #f4f7ff;
+  border: 1rpx dashed #cbd7ee;
+  color: #6c7690;
+  font-size: 24rpx;
+  line-height: 1.7;
+  text-align: center;
+}
+
+.knowledge-figure__caption {
+  margin-top: 12rpx;
+  font-size: 22rpx;
+  line-height: 1.7;
+  color: #647089;
+}
+
+.knowledge-hero__tags {
+  margin-top: 18rpx;
+}
+
+.knowledge-hero__focus {
+  margin-top: 22rpx;
+  padding: 22rpx;
+  border-radius: 24rpx;
+  background: linear-gradient(135deg, #f8fbff 0%, #eff5ff 100%);
+  border: 1rpx solid #e9f0fb;
+}
+
+.knowledge-hero__focus-title {
+  font-size: 26rpx;
+  font-weight: 700;
+  color: #18356c;
+}
+
+.knowledge-hero__focus-item {
+  position: relative;
+  padding-left: 18rpx;
+  margin-top: 14rpx;
+  font-size: 24rpx;
+  line-height: 1.85;
+  color: #46536d;
+}
+
+.knowledge-hero__focus-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 16rpx;
+  width: 8rpx;
+  height: 8rpx;
+  border-radius: 50%;
+  background: #1d5de1;
+}
+
+.core-card {
+  padding: 28rpx;
+  background: #ffffff;
+  border: 1rpx solid #e4ebf7;
+}
+
+.core-card__head,
+.template-box__head,
+.fold-control {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18rpx;
+}
+
+.core-card__title {
+  color: #18356c;
+  font-size: 29rpx;
+  font-weight: 800;
+}
+
+.core-card__meta {
+  margin-top: 5rpx;
+  color: #748096;
+  font-size: 21rpx;
+}
+
+.text-command {
+  flex-shrink: 0;
+  color: #1d5de1;
+  font-size: 23rpx;
+  font-weight: 700;
+}
+
+.core-card__item {
+  display: flex;
+  align-items: flex-start;
+  margin-top: 18rpx;
+}
+
+.core-card__index {
+  flex-shrink: 0;
+  width: 40rpx;
+  height: 40rpx;
+  margin-right: 14rpx;
+  border-radius: 50%;
+  background: #edf3ff;
+  color: #165dff;
+  font-size: 20rpx;
+  font-weight: 800;
+  line-height: 40rpx;
+  text-align: center;
+}
+
+.core-card__text {
+  flex: 1;
+  color: #3d4b65;
+  font-size: 25rpx;
+  line-height: 1.8;
+}
+
+.fold-control {
+  margin-top: 10rpx;
+  padding: 22rpx 26rpx;
+  border: 1rpx solid #e1e7f1;
+}
+
+.fold-control__title {
+  color: #1a2742;
+  font-size: 27rpx;
+  font-weight: 800;
+}
+
+.fold-control__meta {
+  margin-top: 5rpx;
+  color: #748096;
+  font-size: 21rpx;
+}
+
+.fold-control__action {
+  flex-shrink: 0;
+  color: #2357d8;
+  font-size: 22rpx;
+  font-weight: 700;
+}
+
+.template-box {
+  padding: 30rpx;
+}
+
+.study-card {
+  padding: 28rpx;
+}
+
+.study-card--warn {
+  background: #fffdf8;
+}
+
+.study-card__title {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #1b2947;
+}
+
+.study-card__item {
+  display: flex;
+  align-items: flex-start;
+  margin-top: 16rpx;
+}
+
+.study-card__index {
+  width: 40rpx;
+  height: 40rpx;
+  margin-right: 14rpx;
+  border-radius: 50%;
+  background: #edf3ff;
+  color: #165dff;
+  text-align: center;
+  line-height: 40rpx;
+  font-size: 20rpx;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.study-card--warn .study-card__index {
+  background: #fff1d9;
+  color: #c77500;
+}
+
+.study-card__text {
+  flex: 1;
+  font-size: 24rpx;
+  line-height: 1.85;
+  color: #43506a;
+}
+
+.template-box__title {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #1b2947;
+}
+
+.template-box__name {
+  margin-top: 14rpx;
+  font-size: 34rpx;
+  font-weight: 700;
+  color: #165dff;
+}
+
+.template-box__when {
+  margin-top: 10rpx;
+  font-size: 24rpx;
+  color: #667089;
+  line-height: 1.8;
+}
+
+.template-box__step {
+  display: flex;
+  margin-top: 18rpx;
+}
+
+.template-box__index {
+  width: 42rpx;
+  height: 42rpx;
+  margin-right: 16rpx;
+  border-radius: 50%;
+  text-align: center;
+  line-height: 42rpx;
+  background: #165dff;
+  color: #ffffff;
+  font-size: 21rpx;
+}
+
+.template-box__text {
+  flex: 1;
+  font-size: 25rpx;
+  line-height: 1.8;
+  color: #30405d;
+}
+
+.problem-card {
+  padding: 28rpx;
+}
+
+.problem-list {
+  display: grid;
+  gap: 18rpx;
+}
+
+.problem-card__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.problem-card__title {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #1a2540;
+}
+
+.problem-card__section {
+  margin-top: 14rpx;
+  font-size: 24rpx;
+  line-height: 1.9;
+  color: #4e5970;
+}
+
+.problem-card__label {
+  color: #165dff;
+  font-weight: 700;
+}
+
+.problem-card__toggle {
+  margin-top: 16rpx;
+  padding-top: 14rpx;
+  border-top: 1rpx solid #edf1f7;
+  color: #1d5de1;
+  font-size: 23rpx;
+  font-weight: 700;
+}
+
+.note-card {
+  padding: 28rpx;
+}
+
+.note-card__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18rpx;
+}
+
+.note-card__title {
+  color: #1b2947;
+  font-size: 29rpx;
+  font-weight: 800;
+}
+
+.note-card__meta {
+  margin-top: 7rpx;
+  color: #7a8498;
+  font-size: 22rpx;
+}
+
+.note-card__save {
+  padding: 10rpx 18rpx;
+  border-radius: 8rpx;
+  background: #edf1f7;
+  color: #7a8498;
+  font-size: 23rpx;
+  font-weight: 700;
+}
+
+.note-card__save--active {
+  background: #175fd7;
+  color: #ffffff;
+}
+
+.note-card__input {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 150rpx;
+  margin-top: 20rpx;
+  padding: 20rpx;
+  border: 1rpx solid #dfe6f1;
+  border-radius: 8rpx;
+  background: #f8fafc;
+  color: #2e3b55;
+  font-size: 25rpx;
+  line-height: 1.75;
+}
+
+.note-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  margin-top: 16rpx;
+}
+
+.note-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 9rpx;
+  padding: 8rpx 10rpx 8rpx 14rpx;
+  border-radius: 999rpx;
+  background: #eef4ff;
+  color: #245bbf;
+  font-size: 22rpx;
+}
+
+.note-tag__remove {
+  width: 30rpx;
+  height: 30rpx;
+  color: #6d7d9a;
+  line-height: 28rpx;
+  text-align: center;
+}
+
+.note-card__tag-row {
+  display: grid;
+  grid-template-columns: 1fr 68rpx;
+  gap: 12rpx;
+  margin-top: 16rpx;
+}
+
+.note-card__tag-input {
+  box-sizing: border-box;
+  width: 100%;
+  height: 68rpx;
+  padding: 0 18rpx;
+  border: 1rpx solid #dfe6f1;
+  border-radius: 8rpx;
+  background: #ffffff;
+  color: #2e3b55;
+  font-size: 23rpx;
+}
+
+.note-card__tag-add {
+  width: 68rpx;
+  height: 68rpx;
+  border-radius: 8rpx;
+  background: #edf3ff;
+  color: #175fd7;
+  font-size: 38rpx;
+  line-height: 64rpx;
+  text-align: center;
+}
+
+.problem-card__image {
+  width: 100%;
+  height: 380rpx;
+  display: block;
+  margin-top: 16rpx;
+  border-radius: 20rpx;
+  background: #f8fbff;
+  border: 1rpx solid #e8eef8;
+}
+
+.problem-card__image-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 190rpx;
+  margin-top: 16rpx;
+  padding: 24rpx;
+  border-radius: 20rpx;
+  background: #f8fbff;
+  border: 1rpx dashed #cbd7ee;
+  color: #6c7690;
+  font-size: 24rpx;
+  line-height: 1.7;
+  text-align: center;
+}
+
+.problem-card__steps {
+  margin-top: 16rpx;
+}
+
+.problem-step {
+  display: flex;
+  align-items: flex-start;
+  margin-top: 12rpx;
+}
+
+.problem-step__index {
+  width: 38rpx;
+  height: 38rpx;
+  margin-right: 14rpx;
+  border-radius: 50%;
+  background: #edf3ff;
+  color: #165dff;
+  text-align: center;
+  line-height: 38rpx;
+  font-size: 20rpx;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.problem-step__text {
+  flex: 1;
+  font-size: 24rpx;
+  line-height: 1.85;
+  color: #43506a;
+}
+
+.related-card {
+  padding: 26rpx;
+}
+
+.related-card__title {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #192540;
+}
+
+.related-card__summary {
+  margin-top: 10rpx;
+  font-size: 24rpx;
+  line-height: 1.8;
+  color: #657087;
+}
+
+.top-gap {
+  margin-top: 26rpx;
+}

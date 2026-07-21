@@ -1,0 +1,70 @@
+<view class="page-shell" wx:if="{{chapter}}">
+  <view class="context-path context-path--physics" bindtap="openSubjectHome">物理 / {{chapter.bookLabel}} / {{chapter.chapterLabel}}</view>
+
+  <view class="physics-hero card">
+    <view class="physics-hero__eyebrow">{{chapter.bookLabel}} · {{chapter.chapterLabel}}</view>
+    <view class="physics-hero__title">{{chapter.title}}</view>
+    <view class="physics-hero__summary">{{chapter.summary}}</view>
+    <view wx:if="{{chapter.contentMeta}}" class="content-review">
+      {{chapter.contentMeta.statusLabel}} · {{chapter.contentMeta.reviewedAt}} · {{chapter.contentMeta.sourceLabel}}
+    </view>
+
+    <view wx:if="{{chapter.diagramImage}}" class="physics-figure">
+      <image wx:if="{{!diagramLoadFailed}}" class="physics-figure__image" src="{{chapter.diagramImage}}" mode="aspectFit" binderror="onImageError"></image>
+      <view wx:else class="physics-figure__fallback">图示暂未加载，全部文字内容仍可正常学习</view>
+      <view class="physics-figure__caption">{{chapter.figureCaption}}</view>
+    </view>
+
+    <view class="physics-stats">
+      <view class="physics-stat"><text class="physics-stat__num">{{chapter.knowledgeCount}}</text><text>知识点</text></view>
+      <view class="physics-stat"><text class="physics-stat__num">{{chapter.exampleCount}}</text><text>原创示例</text></view>
+      <view class="physics-stat"><text class="physics-stat__num">{{chapter.experimentCount}}</text><text>重点实验</text></view>
+    </view>
+  </view>
+
+  <view class="physics-section card top-gap">
+    <view class="physics-section__title">看到这些词要有反应</view>
+    <view class="signal-list"><text wx:for="{{chapter.signals}}" wx:key="*this" class="signal-item">{{item}}</text></view>
+  </view>
+
+  <view class="physics-section card top-gap">
+    <view class="physics-section__title">公式、单位与规律</view>
+    <view wx:for="{{chapter.formulas}}" wx:key="*this" class="formula-line"><text class="formula-line__index">{{index + 1}}</text><text>{{item}}</text></view>
+  </view>
+
+  <view class="section-title top-gap">
+    <view class="section-title__main">本章知识点</view>
+    <view class="section-title__sub">{{chapter.knowledgeCount}} 节</view>
+  </view>
+  <view class="knowledge-list">
+    <view wx:for="{{chapter.knowledgeItems}}" wx:key="id" wx:for-item="knowledge" class="knowledge-row card" data-id="{{knowledge.id}}" bindtap="openKnowledge">
+      <view class="knowledge-row__head">
+        <view class="knowledge-row__number">{{index + 1}}</view>
+        <view class="knowledge-row__title">{{knowledge.title}}</view>
+      </view>
+      <view class="knowledge-row__summary">{{knowledge.summary}}</view>
+      <view class="knowledge-row__points">
+        <view wx:for="{{knowledge.knowledgePoints}}" wx:key="*this" wx:for-item="point" wx:for-index="pointIndex" wx:if="{{pointIndex < 2}}" class="knowledge-row__point">{{point}}</view>
+      </view>
+      <view class="knowledge-row__meta">{{knowledge.problems.length}} 道示例 · {{knowledge.sections.length}} 个讲解模块</view>
+    </view>
+  </view>
+
+  <view class="method-card card top-gap" bindtap="openTemplate">
+    <view class="method-card__label">本章方法模板</view>
+    <view class="method-card__title">{{chapter.template.name}}</view>
+    <view class="method-card__summary">{{chapter.template.summary}}</view>
+    <view class="method-card__action">查看完整步骤与易错点 ›</view>
+  </view>
+
+  <view wx:if="{{navigation}}" class="page-navigation">
+    <view class="page-navigation__item {{navigation.previous ? '' : 'page-navigation__item--disabled'}}" data-id="{{navigation.previous.id}}" bindtap="openAdjacentChapter">
+      <view class="page-navigation__direction">‹ 上一章</view>
+      <view class="page-navigation__title">{{navigation.previous ? navigation.previous.title : '已经是本册第一章'}}</view>
+    </view>
+    <view class="page-navigation__item page-navigation__item--next {{navigation.next ? '' : 'page-navigation__item--disabled'}}" data-id="{{navigation.next.id}}" bindtap="openAdjacentChapter">
+      <view class="page-navigation__direction">下一章 ›</view>
+      <view class="page-navigation__title">{{navigation.next ? navigation.next.title : '已经是本册最后一章'}}</view>
+    </view>
+  </view>
+</view>

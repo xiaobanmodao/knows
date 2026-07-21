@@ -13,6 +13,41 @@
     "pages/favorites/index",
     "pages/profile/index"
   ],
+  "subPackages": [
+    {
+      "root": "packages/english",
+      "name": "english",
+      "pages": [
+        "pages/index/index",
+        "pages/unit/index",
+        "pages/topic/index",
+        "pages/knowledge/index",
+        "pages/template/index"
+      ]
+    },
+    {
+      "root": "packages/physics",
+      "name": "physics",
+      "pages": [
+        "pages/index/index",
+        "pages/chapter/index",
+        "pages/topic/index",
+        "pages/knowledge/index",
+        "pages/template/index"
+      ]
+    },
+    {
+      "root": "packages/math",
+      "name": "math",
+      "pages": [
+        "pages/index/index",
+        "pages/chapter/index",
+        "pages/topic/index",
+        "pages/knowledge/index",
+        "pages/template/index"
+      ]
+    }
+  ],
   "cloud": true,
   "window": {
     "navigationBarTitleText": "知识通",

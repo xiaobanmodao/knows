@@ -1,5 +1,5 @@
 const { spawnSync } = require('child_process');
-const math = require('../utils/math');
+const math = require('../packages/math/repository');
 
 const chapters = math.getAllChapters();
 const items = [];

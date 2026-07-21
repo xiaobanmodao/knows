@@ -1,5 +1,11 @@
 const tempUrlCache = {};
 
+function clearTempFileURLCache() {
+  Object.keys(tempUrlCache).forEach((fileID) => {
+    delete tempUrlCache[fileID];
+  });
+}
+
 function isCloudFile(value) {
   return typeof value === 'string' && value.startsWith('cloud://');
 }
@@ -158,6 +164,7 @@ function applyTempFileURL(value, fileMap) {
 
 module.exports = {
   applyTempFileURL,
+  clearTempFileURLCache,
   getTempFileURLMap,
   isCloudFile,
 };

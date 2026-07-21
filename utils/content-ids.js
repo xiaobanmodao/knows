@@ -1,4 +1,4 @@
-const { chapterCatalog } = require('../data/math-curriculum');
+const { LEGACY_KNOWLEDGE_ALIASES } = require('../data/content-id-aliases');
 
 function getStableLessonId(chapterId, sectionTitle) {
   const normalizedTitle = String(sectionTitle || '')
@@ -19,17 +19,7 @@ function resolveKnowledgeId(knowledgeId) {
     return knowledgeId;
   }
 
-  const legacyMatch = /^(.*)-lesson-(\d+)$/.exec(knowledgeId);
-
-  if (!legacyMatch) {
-    return knowledgeId;
-  }
-
-  const chapter = chapterCatalog.find((item) => item.id === legacyMatch[1]);
-  const sectionIndex = Number(legacyMatch[2]) - 1;
-  const sectionTitle = chapter && chapter.officialSections[sectionIndex];
-
-  return sectionTitle ? getStableLessonId(chapter.id, sectionTitle) : knowledgeId;
+  return LEGACY_KNOWLEDGE_ALIASES[knowledgeId] || knowledgeId;
 }
 
 module.exports = {

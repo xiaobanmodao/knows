@@ -324,7 +324,7 @@ def draw_motif(draw, chapter_number, panel, accent, ink, variant):
 
 def load_manifest():
     code = """
-const p=require('./data/physics-curriculum');
+const p=require('./packages/physics/data/physics-curriculum');
 console.log(JSON.stringify(p.chapters.flatMap(chapter => chapter.knowledgeItems.map((knowledge, index) => ({
   id: knowledge.id,
   title: knowledge.title,

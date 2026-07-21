@@ -1,4 +1,4 @@
-const englishUnits = require('../data/english-units');
+const englishUnits = require('../packages/english/data/english-units');
 
 const issues = [];
 

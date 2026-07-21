@@ -1,4 +1,4 @@
-const math = require('../utils/math');
+const math = require('../packages/math/repository');
 
 const chapters = math.getAllChapters();
 const studyMap = math.getMathStudyMap();

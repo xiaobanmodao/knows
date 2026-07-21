@@ -389,7 +389,7 @@ def draw_motif(draw, motif, box, accent, secondary, ink):
 
 def load_manifest():
     code = """
-const english = require('./data/english-units');
+const english = require('./packages/english/data/english-units');
 console.log(JSON.stringify(english.units.map(unit => ({
   id: unit.id,
   title: unit.title,

@@ -1,10 +1,10 @@
 const fs = require('fs');
 const crypto = require('crypto');
-const math = require('../utils/math');
-const english = require('../data/english-content');
-const englishUnits = require('../data/english-units');
-const physics = require('../data/physics-content');
-const physicsCurriculum = require('../data/physics-curriculum');
+const math = require('../packages/math/repository');
+const english = require('../packages/english/data/english-content');
+const englishUnits = require('../packages/english/data/english-units');
+const physics = require('../packages/physics/data/physics-content');
+const physicsCurriculum = require('../packages/physics/data/physics-curriculum');
 
 const chapters = math.getAllChapters();
 const studyMap = math.getMathStudyMap();

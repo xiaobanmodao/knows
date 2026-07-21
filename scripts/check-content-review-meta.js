@@ -1,8 +1,8 @@
-const math = require('../utils/math');
-const englishUnits = require('../data/english-units');
-const englishContent = require('../data/english-content');
-const physicsCurriculum = require('../data/physics-curriculum');
-const physicsContent = require('../data/physics-content');
+const math = require('../packages/math/repository');
+const englishUnits = require('../packages/english/data/english-units');
+const englishContent = require('../packages/english/data/english-content');
+const physicsCurriculum = require('../packages/physics/data/physics-curriculum');
+const physicsContent = require('../packages/physics/data/physics-content');
 
 const issues = [];
 

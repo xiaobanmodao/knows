@@ -1,5 +1,6 @@
 const { RELEASE_INFO } = require('../../utils/release-info');
-const { getSubjectRegistry, SUBJECT_LABELS } = require('../../utils/subjects');
+const { getSubjectRegistry, SUBJECT_LABELS } = require('../../data/subject-manifest');
+const { openContent } = require('../../utils/content-routes');
 
 const subjects = getSubjectRegistry();
 
@@ -33,9 +34,7 @@ Page({
 
   openNote(event) {
     const { id, subjectId } = event.currentTarget.dataset;
-    wx.navigateTo({
-      url: `/pages/knowledge/index?subjectId=${subjectId || 'math'}&id=${id}&restore=1`,
-    });
+    openContent({ subjectId: subjectId || 'math', type: 'knowledge', id, restore: true });
   },
 
   copyBeianUrl() {

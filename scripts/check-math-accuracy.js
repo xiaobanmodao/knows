@@ -1,8 +1,8 @@
-const math = require('../utils/math');
-const { knowledgeList: legacyKnowledgeList } = require('../data/math-data');
-const { chapterCatalog, templateLibrary } = require('../data/math-curriculum');
-const { lessonFactsMap } = require('../data/math-lesson-facts');
-const { lessonFormulaMap } = require('../data/math-lesson-formulas');
+const math = require('../packages/math/repository');
+const { knowledgeList: legacyKnowledgeList } = require('../packages/math/data/math-data');
+const { chapterCatalog, templateLibrary } = require('../packages/math/data/math-curriculum');
+const { lessonFactsMap } = require('../packages/math/data/math-lesson-facts');
+const { lessonFormulaMap } = require('../packages/math/data/math-lesson-formulas');
 
 const issues = [];
 const chapters = math.getAllChapters();

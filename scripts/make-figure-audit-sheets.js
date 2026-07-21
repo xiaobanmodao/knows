@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
-const math = require('../utils/math');
+const math = require('../packages/math/repository');
 
 const outDir = process.argv[2] || '.tmp-quicklook/all-figure-sheets';
 const python = process.env.PYTHON || '/Users/hht/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3';
