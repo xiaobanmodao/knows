@@ -9,10 +9,14 @@ const {
 const issues = [];
 const ids = new Set();
 const examples = new Map();
-const grade7UpperBookId = 'eng-book-g7a-2024';
-const grade7UpperUnits = english.units.filter((unit) => unit.bookId === grade7UpperBookId);
-const grade7UpperWords = grade7UpperUnits.flatMap((unit) => unit.vocabulary);
-const grade7UpperGrammar = grade7UpperUnits.flatMap((unit) => unit.grammarPoints);
+const depthBookSpecs = [
+  { id: 'eng-book-g7a-2024', label: '七年级上册', unitCount: 10, wordCount: 80, grammarCount: 20 },
+  { id: 'eng-book-g7b-2024', label: '七年级下册', unitCount: 8, wordCount: 64, grammarCount: 16 },
+];
+const depthBookIds = new Set(depthBookSpecs.map((item) => item.id));
+const depthUnits = english.units.filter((unit) => depthBookIds.has(unit.bookId));
+const depthWords = depthUnits.flatMap((unit) => unit.vocabulary);
+const depthGrammar = depthUnits.flatMap((unit) => unit.grammarPoints);
 
 function issue(owner, message) {
   issues.push(`${owner}: ${message}`);
@@ -55,20 +59,26 @@ function checkReview(review, owner) {
   });
 }
 
-if (grade7UpperUnits.length !== 10 || grade7UpperWords.length !== 80 || grade7UpperGrammar.length !== 20) {
-  issue('七年级上册', `规模应为 10 单元/80 词/20 语法，当前 ${grade7UpperUnits.length}/${grade7UpperWords.length}/${grade7UpperGrammar.length}`);
+depthBookSpecs.forEach((spec) => {
+  const units = english.units.filter((unit) => unit.bookId === spec.id);
+  const words = units.flatMap((unit) => unit.vocabulary);
+  const grammarPoints = units.flatMap((unit) => unit.grammarPoints);
+
+  if (units.length !== spec.unitCount || words.length !== spec.wordCount || grammarPoints.length !== spec.grammarCount) {
+    issue(spec.label, `规模应为 ${spec.unitCount} 单元/${spec.wordCount} 词/${spec.grammarCount} 语法，当前 ${units.length}/${words.length}/${grammarPoints.length}`);
+  }
+
+  const status = BOOK_DEPTH_STATUS[spec.id];
+  if (!status || status.status !== 'complete' || status.wordCount !== spec.wordCount || status.grammarCount !== spec.grammarCount) {
+    issue(spec.label, '册次补深状态与内容规模不一致');
+  }
+});
+
+if (wordDepth.length !== 144 || grammarDepth.length !== 36) {
+  issue('补深数据', `应为 144 词/36 语法，当前 ${wordDepth.length}/${grammarDepth.length}`);
 }
 
-if (wordDepth.length !== 80 || grammarDepth.length !== 20) {
-  issue('补深数据', `应为 80 词/20 语法，当前 ${wordDepth.length}/${grammarDepth.length}`);
-}
-
-const status = BOOK_DEPTH_STATUS[grade7UpperBookId];
-if (!status || status.status !== 'complete' || status.wordCount !== 80 || status.grammarCount !== 20) {
-  issue('七年级上册', '册次补深状态与内容规模不一致');
-}
-
-grade7UpperWords.forEach((word) => {
+depthWords.forEach((word) => {
   const owner = `${word.id}/${word.word}`;
   registerId(word.id, owner);
   if (word.detailVersion !== 2 || !word.hasDepth) issue(owner, '未启用补深版本 2');
@@ -98,7 +108,7 @@ grade7UpperWords.forEach((word) => {
   checkReview(word.review, owner);
 });
 
-grade7UpperGrammar.forEach((point) => {
+depthGrammar.forEach((point) => {
   const owner = `${point.id}/${point.title}`;
   registerId(point.id, owner);
   if (point.detailVersion !== 2 || !point.hasDepth) issue(owner, '未启用补深版本 2');
@@ -125,16 +135,24 @@ grade7UpperGrammar.forEach((point) => {
 
 const wordExampleCount = english.vocabulary.reduce((sum, word) => sum + (word.examples ? word.examples.length : 1), 0);
 const grammarExampleCount = english.grammarPoints.reduce((sum, point) => sum + point.examples.length, 0);
-if (wordExampleCount + grammarExampleCount !== 604) {
-  issue('英语例句', `首批补深后应为 604，当前 ${wordExampleCount + grammarExampleCount}`);
+if (wordExampleCount + grammarExampleCount !== 684) {
+  issue('英语例句', `七年级上下册补深后应为 684，当前 ${wordExampleCount + grammarExampleCount}`);
+}
+
+function findWord(unitId, headword) {
+  return english.vocabulary.find((item) => item.unitId === unitId && item.word === headword);
 }
 
 const factChecks = [
-  ['colour 美式拼写', english.vocabulary.find((item) => item.word === 'colour').spellingVariants.some((item) => item.value === 'color')],
-  ['favourite 美式拼写', english.vocabulary.find((item) => item.word === 'favourite').spellingVariants.some((item) => item.value === 'favorite')],
-  ['information 不可数', /不可数/.test(english.vocabulary.find((item) => item.word === 'information').senses[0].countability)],
-  ['arrive 不及物', /不及物/.test(english.vocabulary.find((item) => item.word === 'arrive').senses[0].transitivity)],
-  ['goose 包含 geese', english.vocabulary.find((item) => item.word === 'goose').searchTerms.includes('geese')],
+  ['colour 美式拼写', findWord('eng-unit-g7a-starter-keep-tidy', 'colour').spellingVariants.some((item) => item.value === 'color')],
+  ['favourite 美式拼写', findWord('eng-unit-g7a-favourite-subject', 'favourite').spellingVariants.some((item) => item.value === 'favorite')],
+  ['information 不可数', /不可数/.test(findWord('eng-unit-g7a-you-and-me', 'information').senses[0].countability)],
+  ['arrive 不及物', /不及物/.test(findWord('eng-unit-g7a-day-in-life', 'arrive').senses[0].transitivity)],
+  ['goose 包含 geese', findWord('eng-unit-g7a-starter-welcome', 'goose').searchTerms.includes('geese')],
+  ['practise 美式拼写', findWord('eng-unit-g7b-here-and-now', 'practise').spellingVariants.some((item) => item.value === 'practice')],
+  ['weather 不可数', /不可数/.test(findWord('eng-unit-g7b-rain-or-shine', 'weather').senses[0].countability)],
+  ['happen 不及物', /不及物/.test(findWord('eng-unit-g7b-day-to-remember', 'happen').senses[0].transitivity)],
+  ['experience 双重可数性', /可数/.test(findWord('eng-unit-g7b-day-to-remember', 'experience').senses[0].countability)],
 ];
 factChecks.forEach(([label, passed]) => {
   if (!passed) issue('重点事实', label);
@@ -146,4 +164,4 @@ if (issues.length) {
   process.exit(1);
 }
 
-console.log(`OK ${grade7UpperUnits.length} units, ${grade7UpperWords.length} detailed words, ${grade7UpperGrammar.length} detailed grammar points and 604 examples checked`);
+console.log(`OK ${depthUnits.length} units, ${depthWords.length} detailed words, ${depthGrammar.length} detailed grammar points and 684 examples checked`);

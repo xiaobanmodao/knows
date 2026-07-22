@@ -168,6 +168,10 @@ const depthFacts = [
   ['eng-unit-g7a-you-and-me', 'information', (word) => /不可数/.test(word.senses[0].countability), 'information 应标记为不可数'],
   ['eng-unit-g7a-day-in-life', 'arrive', (word) => /不及物/.test(word.senses[0].transitivity), 'arrive 应标记为不及物'],
   ['eng-unit-g7a-starter-welcome', 'goose', (word) => word.searchTerms.includes('geese'), 'goose 应能通过 geese 检索'],
+  ['eng-unit-g7b-here-and-now', 'practise', (word) => word.spellingVariants.some((item) => item.value === 'practice'), 'practise 应记录美式拼写 practice'],
+  ['eng-unit-g7b-rain-or-shine', 'weather', (word) => /不可数/.test(word.senses[0].countability), 'weather 应标记为不可数'],
+  ['eng-unit-g7b-day-to-remember', 'happen', (word) => /不及物/.test(word.senses[0].transitivity), 'happen 应标记为不及物'],
+  ['eng-unit-g7b-day-to-remember', 'experience', (word) => /经验.*不可数/.test(word.senses[0].countability), 'experience 应区分经历与经验的可数性'],
 ];
 
 depthFacts.forEach(([unitId, headword, predicate, message]) => {

@@ -14,6 +14,9 @@ const rankingChecks = [
   ['geese', 'english', 'word'],
   ['名词性物主代词', 'english', 'grammar'],
   ['There be', 'english', 'grammar'],
+  ['practice', 'english', 'word'],
+  ['temperatures', 'english', 'word'],
+  ['一般过去时', 'english', 'grammar'],
 ];
 
 rankingChecks.forEach(([keyword, expectedSubjectId, expectedType]) => {
@@ -30,7 +33,13 @@ rankingChecks.forEach(([keyword, expectedSubjectId, expectedType]) => {
   }
 });
 
-['stomachache', 'used to', 'spelt', 'color', 'geese', '名词性物主代词', 'There be'].forEach((keyword) => {
+const practiceResult = searchAllSubjects('practice', 'english')
+  .find((item) => item.type === 'word');
+if (!practiceResult || practiceResult.title !== 'practise') {
+  issues.push(`practice: 首个单词结果应为 practise，当前为 ${practiceResult ? practiceResult.title : '无结果'}`);
+}
+
+['stomachache', 'used to', 'spelt', 'color', 'geese', '名词性物主代词', 'There be', 'practice', 'temperatures', '一般过去时'].forEach((keyword) => {
   const directResult = searchAllSubjects(keyword, 'english')
     .find((item) => ['word', 'grammar'].includes(item.type));
 

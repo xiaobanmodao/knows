@@ -26,6 +26,7 @@ const SEARCH_ALIASES = {
   spelled: ['spell'],
   color: ['colour'],
   favorite: ['favourite'],
+  practice: ['practise'],
   geese: ['goose'],
 };
 

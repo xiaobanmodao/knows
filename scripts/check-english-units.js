@@ -36,8 +36,8 @@ if (englishUnits.books.length !== 6 || englishUnits.bookCount !== 5) {
   issues.push('英语教材应包含 5 册已核对内容和 1 册待发布目录');
 }
 
-if (englishUnits.unitCount !== 42 || englishUnits.vocabularyCount !== 336 || englishUnits.grammarCount !== 84 || englishUnits.exampleCount !== 604) {
-  issues.push(`规模错误：当前 ${englishUnits.unitCount} 单元、${englishUnits.vocabularyCount} 词、${englishUnits.grammarCount} 语法、${englishUnits.exampleCount} 例句，应为 42/336/84/604`);
+if (englishUnits.unitCount !== 42 || englishUnits.vocabularyCount !== 336 || englishUnits.grammarCount !== 84 || englishUnits.exampleCount !== 684) {
+  issues.push(`规模错误：当前 ${englishUnits.unitCount} 单元、${englishUnits.vocabularyCount} 词、${englishUnits.grammarCount} 语法、${englishUnits.exampleCount} 例句，应为 42/336/84/684`);
 }
 
 const expectedBooks = {
@@ -99,8 +99,8 @@ englishUnits.units.forEach((unit) => {
   });
 });
 
-if (exampleOwners.size !== 604) {
-  issues.push(`英语例句应有 604 条，当前 ${exampleOwners.size} 条`);
+if (exampleOwners.size !== 684) {
+  issues.push(`英语例句应有 684 条，当前 ${exampleOwners.size} 条`);
 }
 
 [
