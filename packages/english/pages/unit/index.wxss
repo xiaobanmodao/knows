@@ -13,6 +13,10 @@
 .unit-figure__caption { margin-top: 14rpx; color: #5f6d65; font-size: 21rpx; line-height: 1.55; }
 .unit-figure__fallback { display: flex; align-items: center; justify-content: center; min-height: 220rpx; padding: 24rpx; background: #f2f6f4; color: #6d7771; font-size: 22rpx; line-height: 1.6; text-align: center; }
 
+.section-switch { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6rpx; margin-top: 22rpx; padding: 6rpx; border: 1rpx solid #dce5e0; background: #ffffff; }
+.section-switch__item { display: flex; align-items: center; justify-content: center; min-height: 66rpx; color: #657168; font-size: 22rpx; font-weight: 700; }
+.section-switch__item--active { background: #126b4c; color: #ffffff; }
+
 .unit-block { margin-top: 24rpx; padding: 28rpx; background: #ffffff; border: 1rpx solid #e1e8e4; }
 .unit-block__title { color: #17233f; font-size: 29rpx; font-weight: 800; }
 
@@ -28,18 +32,35 @@
 
 .word-list, .grammar-list { display: grid; gap: 20rpx; }
 .word-card, .grammar-card { padding: 27rpx; border: 1rpx solid #dde5e1; background: #ffffff; }
-.word-card__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 22rpx; padding-bottom: 18rpx; border-bottom: 1rpx solid #e7ece9; }
+.word-card__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 22rpx; min-height: 92rpx; padding-bottom: 18rpx; border-bottom: 1rpx solid #e7ece9; }
+.word-card__identity { min-width: 0; flex: 1 1 52%; }
 .word-card__word { color: #087a4b; font-size: 35rpx; font-weight: 800; line-height: 1.2; }
+.word-card__phonetics { display: flex; flex-wrap: wrap; gap: 5rpx 14rpx; margin-top: 8rpx; color: #315d4b; font-size: 20rpx; line-height: 1.5; overflow-wrap: anywhere; }
+.word-card__phonetics text { white-space: normal; }
 .word-card__pos { margin-top: 5rpx; color: #778078; font-size: 20rpx; }
-.word-card__meaning { flex: 1; color: #1f2e27; font-size: 25rpx; font-weight: 700; line-height: 1.5; text-align: right; }
+.word-card__summary { display: flex; flex: 1 1 42%; align-items: flex-start; justify-content: flex-end; gap: 12rpx; min-width: 0; }
+.word-card__meaning { min-width: 0; color: #1f2e27; font-size: 25rpx; font-weight: 700; line-height: 1.5; text-align: right; overflow-wrap: anywhere; }
+.word-card__toggle { flex: 0 0 28rpx; color: #087a4b; font-size: 29rpx; font-weight: 800; line-height: 1.2; text-align: center; }
+.word-card__detail { padding-top: 2rpx; }
 .word-card__row { display: flex; align-items: flex-start; margin-top: 17rpx; color: #4f5b55; font-size: 23rpx; line-height: 1.65; }
 .word-card__label { flex: 0 0 78rpx; color: #263c32; font-weight: 800; }
 .word-card__row--tags { align-items: center; }
-.word-tags { display: flex; flex: 1; flex-wrap: wrap; gap: 9rpx; }
+.word-inline-list { display: grid; flex: 1; gap: 7rpx; }
+.word-senses { margin-top: 18rpx; }
+.word-sense { padding: 17rpx 0; border-bottom: 1rpx solid #e8ecea; }
+.word-sense__head { color: #24372e; font-size: 23rpx; font-weight: 800; line-height: 1.55; }
+.word-sense__usage { margin-top: 7rpx; color: #5b6760; font-size: 22rpx; line-height: 1.65; }
+.word-sense__grammar { display: flex; flex-wrap: wrap; gap: 6rpx 20rpx; margin-top: 9rpx; color: #7b4f2c; font-size: 20rpx; line-height: 1.55; }
+.word-tags { display: grid; flex: 1; gap: 12rpx; }
 .word-tag { padding: 7rpx 12rpx; border-radius: 6rpx; background: #edf7f2; color: #087a4b; font-size: 20rpx; }
+.collocation-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8rpx 12rpx; }
+.collocation-row__meaning { color: #66726b; font-size: 21rpx; line-height: 1.5; }
 .example-box { margin-top: 19rpx; padding: 19rpx 21rpx; border-left: 5rpx solid #30a172; background: #f3f9f6; }
 .example-box__sentence { color: #183b2c; font-size: 25rpx; font-weight: 700; line-height: 1.6; }
 .example-box__translation { margin-top: 7rpx; color: #657269; font-size: 22rpx; line-height: 1.55; }
+.example-box__explanation { margin-top: 8rpx; color: #277258; font-size: 20rpx; line-height: 1.55; }
+.word-distinction { margin-top: 17rpx; padding: 16rpx 18rpx; border-left: 5rpx solid #c58a32; background: #fff8ed; color: #5f5547; font-size: 21rpx; line-height: 1.65; }
+.word-distinction__target { display: block; margin-bottom: 5rpx; color: #86591d; font-weight: 800; }
 .word-note { margin-top: 16rpx; color: #9b4c27; font-size: 21rpx; line-height: 1.6; }
 .word-note text { font-weight: 800; }
 
@@ -49,8 +70,28 @@
 .grammar-card__summary { margin-top: 11rpx; color: #56615c; font-size: 23rpx; line-height: 1.75; }
 .grammar-card__subhead { margin-top: 25rpx; color: #263b32; font-size: 23rpx; font-weight: 800; }
 .structure-row { margin-top: 10rpx; padding: 14rpx 17rpx; background: #eef6f2; color: #155f44; font-size: 22rpx; line-height: 1.55; }
+.condition-row { margin-top: 10rpx; color: #4f5d56; font-size: 22rpx; line-height: 1.65; }
+.variant-row { margin-top: 12rpx; padding: 16rpx 18rpx; border-left: 5rpx solid #24705a; background: #f2f7f5; }
+.variant-row__label { color: #24705a; font-size: 20rpx; font-weight: 800; }
+.variant-row__structure { margin-top: 7rpx; color: #1f342a; font-size: 23rpx; font-weight: 800; line-height: 1.55; overflow-wrap: anywhere; }
+.variant-row__usage { margin-top: 6rpx; color: #68746e; font-size: 20rpx; line-height: 1.55; }
+.grammar-visual { margin-top: 22rpx; padding: 19rpx; border-top: 1rpx solid #d8e2dd; border-bottom: 1rpx solid #d8e2dd; background: #f7f9f8; }
+.grammar-visual__title { color: #263a31; font-size: 21rpx; font-weight: 800; }
+.grammar-visual__items { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10rpx; margin-top: 14rpx; }
+.grammar-visual__item { display: flex; align-items: center; justify-content: center; min-height: 96rpx; padding: 12rpx; border: 1rpx solid #cfdad5; background: #ffffff; color: #285441; font-size: 19rpx; line-height: 1.45; text-align: center; overflow-wrap: anywhere; }
 .grammar-example { margin-top: 13rpx; padding: 18rpx 0; border-bottom: 1rpx solid #e8ecea; }
 .grammar-example__sentence { color: #1d3027; font-size: 25rpx; font-weight: 700; line-height: 1.6; }
 .grammar-example__translation { margin-top: 5rpx; color: #68736d; font-size: 22rpx; line-height: 1.55; }
 .grammar-example__why { margin-top: 8rpx; color: #277258; font-size: 21rpx; line-height: 1.55; }
+.contrast-row { margin-top: 12rpx; padding: 17rpx 19rpx; border-left: 5rpx solid #b77632; background: #fff8ee; }
+.contrast-row__target { color: #8a521e; font-size: 22rpx; font-weight: 800; }
+.contrast-row__difference { margin-top: 7rpx; color: #5e554a; font-size: 21rpx; line-height: 1.6; }
+.contrast-row__example { margin-top: 7rpx; color: #6f5d48; font-size: 20rpx; line-height: 1.5; }
 .mistake-row { margin-top: 9rpx; color: #a24d2a; font-size: 22rpx; line-height: 1.6; }
+
+@media (max-width: 360px) {
+  .word-card__head { display: block; }
+  .word-card__summary { justify-content: space-between; margin-top: 12rpx; }
+  .word-card__meaning { text-align: left; }
+  .grammar-visual__items { grid-template-columns: 1fr; }
+}

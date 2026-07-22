@@ -7,6 +7,13 @@ Page({
     unit: null,
     unitImageLoadFailed: false,
     navigation: null,
+    activeSection: 'all',
+    sectionOptions: [
+      { id: 'all', label: '全部' },
+      { id: 'expressions', label: '表达' },
+      { id: 'words', label: '单词' },
+      { id: 'grammar', label: '语法' },
+    ],
   },
 
   async onLoad(options) {
@@ -23,13 +30,29 @@ Page({
     this.pendingFocus = options.focusId && ['word', 'grammar'].includes(options.focusType)
       ? { type: options.focusType, id: options.focusId }
       : null;
+    const activeSection = this.pendingFocus
+      ? (this.pendingFocus.type === 'word' ? 'words' : 'grammar')
+      : 'all';
     this.setData({
       unit: {
         ...unit,
         coverImage: isCloudFile(unit.coverImage) ? '' : unit.coverImage,
+        vocabulary: unit.vocabulary.map((word) => ({
+          ...word,
+          spellingVariants: word.spellingVariants || [],
+          examples: word.examples || [{
+            sentence: word.example,
+            translation: word.translation,
+            explanation: word.usage,
+          }],
+          expanded: Boolean(this.pendingFocus && this.pendingFocus.type === 'word' && this.pendingFocus.id === word.id),
+          phoneticUkText: word.phonetics ? word.phonetics.uk.join(' / ') : '',
+          phoneticUsText: word.phonetics ? word.phonetics.us.join(' / ') : '',
+        })),
       },
       unitImageLoadFailed: false,
       navigation: getEnglishUnitNavigation(unit.id),
+      activeSection,
     }, () => {
       this.scrollToPendingFocus();
     });
@@ -78,6 +101,26 @@ Page({
   openSearch(event) {
     wx.navigateTo({
       url: `/pages/search/index?subjectId=english&q=${encodeURIComponent(event.currentTarget.dataset.keyword)}`,
+    });
+  },
+
+  setActiveSection(event) {
+    const { section } = event.currentTarget.dataset;
+    if (['all', 'expressions', 'words', 'grammar'].includes(section)) {
+      this.setData({ activeSection: section });
+    }
+  },
+
+  toggleWord(event) {
+    const { id } = event.currentTarget.dataset;
+    const index = this.data.unit.vocabulary.findIndex((word) => word.id === id);
+
+    if (index < 0) {
+      return;
+    }
+
+    this.setData({
+      [`unit.vocabulary[${index}].expanded`]: !this.data.unit.vocabulary[index].expanded,
     });
   },
 

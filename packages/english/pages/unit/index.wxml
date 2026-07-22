@@ -20,7 +20,19 @@
     <view class="unit-figure__caption">{{unit.figureCaption}}</view>
   </view>
 
-  <view class="unit-block">
+  <view class="section-switch" role="tablist" aria-label="单元内容筛选">
+    <view
+      wx:for="{{sectionOptions}}"
+      wx:key="id"
+      class="section-switch__item {{activeSection === item.id ? 'section-switch__item--active' : ''}}"
+      data-section="{{item.id}}"
+      bindtap="setActiveSection"
+      role="tab"
+      aria-selected="{{activeSection === item.id}}"
+    >{{item.label}}</view>
+  </view>
+
+  <view wx:if="{{activeSection === 'all' || activeSection === 'expressions'}}" class="unit-block">
     <view class="unit-block__title">先会说</view>
     <view class="expression-list">
       <view wx:for="{{unit.expressions}}" wx:key="*this" class="expression-row">
@@ -30,64 +42,147 @@
     </view>
   </view>
 
-  <view class="section-heading">
-    <view class="section-heading__title">核心词汇</view>
-    <view class="section-heading__sub">词性、词形、搭配、例句和易错点</view>
-  </view>
-
-  <view class="word-list">
-    <view wx:for="{{unit.vocabulary}}" wx:key="id" class="word-card" id="word-{{item.id}}">
-      <view class="word-card__head">
-        <view>
-          <view class="word-card__word">{{item.word}}</view>
-          <view class="word-card__pos">{{item.partOfSpeech}}</view>
-        </view>
-        <view class="word-card__meaning">{{item.meaning}}</view>
-      </view>
-      <view class="word-card__row">
-        <text class="word-card__label">怎么用</text>
-        <text>{{item.usage}}</text>
-      </view>
-      <view class="word-card__row">
-        <text class="word-card__label">词形</text>
-        <text>{{item.forms}}</text>
-      </view>
-      <view class="word-card__row word-card__row--tags">
-        <text class="word-card__label">搭配</text>
-        <view class="word-tags">
-          <text wx:for="{{item.collocations}}" wx:key="*this" class="word-tag" data-keyword="{{item}}" bindtap="openSearch">{{item}}</text>
-        </view>
-      </view>
-      <view class="example-box">
-        <view class="example-box__sentence">{{item.example}}</view>
-        <view class="example-box__translation">{{item.translation}}</view>
-      </view>
-      <view class="word-note"><text>注意：</text>{{item.note}}</view>
+  <block wx:if="{{activeSection === 'all' || activeSection === 'words'}}">
+    <view class="section-heading">
+      <view class="section-heading__title">核心词汇</view>
+      <view class="section-heading__sub">音标、词法、搭配、例句与辨析</view>
     </view>
-  </view>
 
-  <view class="section-heading">
-    <view class="section-heading__title">单元语法</view>
-    <view class="section-heading__sub">结构、原创例句与常见错误</view>
-  </view>
+    <view class="word-list">
+      <view wx:for="{{unit.vocabulary}}" wx:key="id" class="word-card" id="word-{{item.id}}">
+        <view class="word-card__head" data-id="{{item.id}}" bindtap="toggleWord" role="button" aria-expanded="{{item.expanded}}" aria-label="{{item.word}}详情">
+          <view class="word-card__identity">
+            <view class="word-card__word">{{item.word}}</view>
+            <view wx:if="{{item.hasDepth}}" class="word-card__phonetics">
+              <text>UK {{item.phoneticUkText}}</text>
+              <text>US {{item.phoneticUsText}}</text>
+            </view>
+            <view class="word-card__pos">{{item.partOfSpeech}}</view>
+          </view>
+          <view class="word-card__summary">
+            <view class="word-card__meaning">{{item.meaning}}</view>
+            <view class="word-card__toggle">{{item.expanded ? '⌃' : '⌄'}}</view>
+          </view>
+        </view>
 
-  <view class="grammar-list">
-    <view wx:for="{{unit.grammarPoints}}" wx:key="id" class="grammar-card" id="grammar-{{item.id}}">
-      <view class="grammar-card__index">语法 {{index + 1}}</view>
-      <view class="grammar-card__title">{{item.title}}</view>
-      <view class="grammar-card__summary">{{item.summary}}</view>
-      <view class="grammar-card__subhead">核心结构</view>
-      <view wx:for="{{item.structures}}" wx:key="*this" class="structure-row">{{item}}</view>
-      <view class="grammar-card__subhead">例句拆解</view>
-      <view wx:for="{{item.examples}}" wx:key="sentence" class="grammar-example">
-        <view class="grammar-example__sentence">{{item.sentence}}</view>
-        <view class="grammar-example__translation">{{item.translation}}</view>
-        <view class="grammar-example__why">{{item.explanation}}</view>
+        <view wx:if="{{item.expanded}}" class="word-card__detail">
+          <view wx:if="{{item.spellingVariants.length}}" class="word-card__row">
+            <text class="word-card__label">拼写</text>
+            <view class="word-inline-list">
+              <text wx:for="{{item.spellingVariants}}" wx:key="value">{{item.label}} {{item.value}}</text>
+            </view>
+          </view>
+
+          <view wx:if="{{item.hasDepth}}" class="word-senses">
+            <view wx:for="{{item.senses}}" wx:key="partOfSpeech" class="word-sense">
+              <view class="word-sense__head">{{item.partOfSpeech}} · {{item.meaning}}</view>
+              <view class="word-sense__usage">{{item.usage}}</view>
+              <view wx:if="{{item.countability || item.transitivity}}" class="word-sense__grammar">
+                <text wx:if="{{item.countability}}">可数性：{{item.countability}}</text>
+                <text wx:if="{{item.transitivity}}">及物性：{{item.transitivity}}</text>
+              </view>
+            </view>
+          </view>
+          <view wx:else class="word-card__row">
+            <text class="word-card__label">怎么用</text>
+            <text>{{item.usage}}</text>
+          </view>
+
+          <view class="word-card__row">
+            <text class="word-card__label">词形</text>
+            <view wx:if="{{item.formItems}}" class="word-inline-list">
+              <text wx:for="{{item.formItems}}" wx:key="label">{{item.value}}</text>
+            </view>
+            <text wx:else>{{item.forms}}</text>
+          </view>
+
+          <view class="word-card__row word-card__row--tags">
+            <text class="word-card__label">搭配</text>
+            <view class="word-tags">
+              <block wx:if="{{item.collocationDetails}}">
+                <view wx:for="{{item.collocationDetails}}" wx:key="phrase" class="collocation-row">
+                  <text class="word-tag" data-keyword="{{item.phrase}}" catchtap="openSearch">{{item.phrase}}</text>
+                  <text class="collocation-row__meaning">{{item.meaning}}</text>
+                </view>
+              </block>
+              <block wx:else>
+                <text wx:for="{{item.collocations}}" wx:key="*this" class="word-tag" data-keyword="{{item}}" catchtap="openSearch">{{item}}</text>
+              </block>
+            </view>
+          </view>
+
+          <view wx:for="{{item.examples}}" wx:key="sentence" class="example-box">
+            <view class="example-box__sentence">{{item.sentence}}</view>
+            <view class="example-box__translation">{{item.translation}}</view>
+            <view wx:if="{{item.explanation}}" class="example-box__explanation">{{item.explanation}}</view>
+          </view>
+
+          <view wx:if="{{item.distinctions}}" class="word-distinction">
+            <view wx:for="{{item.distinctions}}" wx:key="target">
+              <text class="word-distinction__target">辨析 {{item.target}}</text>
+              <text>{{item.guidance}}</text>
+            </view>
+          </view>
+          <view class="word-note"><text>注意：</text>{{item.note}}</view>
+        </view>
       </view>
-      <view class="grammar-card__subhead">容易错</view>
-      <view wx:for="{{item.mistakes}}" wx:key="*this" class="mistake-row">{{index + 1}}. {{item}}</view>
     </view>
-  </view>
+  </block>
+
+  <block wx:if="{{activeSection === 'all' || activeSection === 'grammar'}}">
+    <view class="section-heading">
+      <view class="section-heading__title">单元语法</view>
+      <view class="section-heading__sub">结构、使用条件、变式、对比和原创例句</view>
+    </view>
+
+    <view class="grammar-list">
+      <view wx:for="{{unit.grammarPoints}}" wx:key="id" class="grammar-card" id="grammar-{{item.id}}">
+        <view class="grammar-card__index">语法 {{index + 1}}</view>
+        <view class="grammar-card__title">{{item.title}}</view>
+        <view class="grammar-card__summary">{{item.summary}}</view>
+
+        <block wx:if="{{item.hasDepth}}">
+          <view class="grammar-card__subhead">什么时候用</view>
+          <view wx:for="{{item.conditions}}" wx:key="*this" class="condition-row">{{index + 1}}. {{item}}</view>
+
+          <view class="grammar-card__subhead">结构变式</view>
+          <view wx:for="{{item.variants}}" wx:key="label" class="variant-row">
+            <view class="variant-row__label">{{item.label}}</view>
+            <view class="variant-row__structure">{{item.structure}}</view>
+            <view class="variant-row__usage">{{item.usage}}</view>
+          </view>
+
+          <view class="grammar-visual grammar-visual--{{item.visual.type}}">
+            <view class="grammar-visual__title">{{item.visual.title}}</view>
+            <view class="grammar-visual__items">
+              <view wx:for="{{item.visual.items}}" wx:key="id" class="grammar-visual__item">{{item.text}}</view>
+            </view>
+          </view>
+        </block>
+        <block wx:else>
+          <view class="grammar-card__subhead">核心结构</view>
+          <view wx:for="{{item.structures}}" wx:key="*this" class="structure-row">{{item}}</view>
+        </block>
+
+        <view class="grammar-card__subhead">例句拆解</view>
+        <view wx:for="{{item.examples}}" wx:key="sentence" class="grammar-example">
+          <view class="grammar-example__sentence">{{item.sentence}}</view>
+          <view class="grammar-example__translation">{{item.translation}}</view>
+          <view class="grammar-example__why">{{item.explanation}}</view>
+        </view>
+
+        <view wx:if="{{item.contrasts}}" class="grammar-card__subhead">易混对比</view>
+        <view wx:for="{{item.contrasts}}" wx:key="target" class="contrast-row">
+          <view class="contrast-row__target">{{item.target}}</view>
+          <view class="contrast-row__difference">{{item.difference}}</view>
+          <view wx:for="{{item.examples}}" wx:key="*this" class="contrast-row__example">{{item}}</view>
+        </view>
+
+        <view class="grammar-card__subhead">容易错</view>
+        <view wx:for="{{item.mistakes}}" wx:key="*this" class="mistake-row">{{index + 1}}. {{item}}</view>
+      </view>
+    </view>
+  </block>
 
   <view wx:if="{{navigation}}" class="page-navigation">
     <view class="page-navigation__item {{navigation.previous ? '' : 'page-navigation__item--disabled'}}" data-id="{{navigation.previous.id}}" bindtap="openAdjacentUnit">
