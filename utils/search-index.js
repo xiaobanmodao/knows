@@ -22,6 +22,11 @@ const SEARCH_ALIASES = {
   '语境猜词': ['猜词', '上下文'],
   '受力分析': ['受力', '平衡'],
   '欧姆定律': ['欧姆', '电阻与电流'],
+  spelt: ['spell'],
+  spelled: ['spell'],
+  color: ['colour'],
+  favorite: ['favourite'],
+  geese: ['goose'],
 };
 
 const SEARCH_INDEX = SEARCH_INDEX_ROWS.map((row) => {

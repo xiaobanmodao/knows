@@ -83,11 +83,17 @@ englishUnits.vocabulary.forEach((word) => {
   register(word, 'word', 'english');
   requireFields(word, ['unitId', 'word', 'partOfSpeech', 'meaning', 'usage', 'example', 'translation', 'contentMeta'], `英语单词 ${word.id}`);
   if (!englishUnitIds.has(word.unitId)) issues.push(`英语单词父级无效: ${word.id}`);
+  if (word.detailVersion === 2) {
+    requireFields(word, ['phonetics', 'senses', 'formItems', 'collocationDetails', 'examples', 'distinctions', 'review'], `英语补深单词 ${word.id}`);
+  }
 });
 englishUnits.grammarPoints.forEach((grammar) => {
   register(grammar, 'grammar', 'english');
   requireFields(grammar, ['unitId', 'title', 'summary', 'structures', 'examples', 'contentMeta'], `英语语法 ${grammar.id}`);
   if (!englishUnitIds.has(grammar.unitId)) issues.push(`英语语法父级无效: ${grammar.id}`);
+  if (grammar.detailVersion === 2) {
+    requireFields(grammar, ['conditions', 'variants', 'contrasts', 'visual', 'review'], `英语补深语法 ${grammar.id}`);
+  }
 });
 
 const physicsChapterIds = new Set(physicsCurriculum.chapters.map((item) => item.id));

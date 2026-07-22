@@ -132,7 +132,18 @@ function buildEnglishEntries() {
     subtitle: `英语 · ${word.bookLabel} · ${word.unitTitle}`,
     description: `${word.partOfSpeech} · ${word.meaning}。${word.usage}`,
     tags: word.collocations,
-    tokens: [word.meaning, word.partOfSpeech, word.forms, word.collocations, word.note],
+    tokens: [
+      word.meaning,
+      word.partOfSpeech,
+      word.forms,
+      word.collocations,
+      word.note,
+      word.searchTerms,
+      word.spellingVariants && word.spellingVariants.map((item) => item.value),
+      word.senses && word.senses.flatMap((item) => [item.meaning, item.countability, item.transitivity]),
+      word.collocationDetails && word.collocationDetails.flatMap((item) => [item.phrase, item.meaning]),
+      word.distinctions && word.distinctions.map((item) => item.target),
+    ],
   }));
   const grammarEntries = englishUnits.grammarPoints.map((point) => makeEntry({
     refId: point.unitId,
@@ -144,7 +155,13 @@ function buildEnglishEntries() {
     subtitle: `英语 · ${point.bookLabel} · ${point.unitTitle}`,
     description: point.summary,
     tags: point.structures,
-    tokens: [point.structures, point.mistakes],
+    tokens: [
+      point.structures,
+      point.mistakes,
+      point.conditions,
+      point.variants && point.variants.flatMap((item) => [item.label, item.structure]),
+      point.contrasts && point.contrasts.map((item) => item.target),
+    ],
   }));
   const topicEntries = englishContent.topics.map((topic) => makeEntry({
     refId: topic.id,

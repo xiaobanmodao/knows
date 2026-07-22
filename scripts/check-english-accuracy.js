@@ -69,8 +69,11 @@ englishUnits.units.forEach((unit) => {
 
   unit.vocabulary.forEach((word) => {
     const wordOwner = `${owner}/${word.word}`;
-    requireMatch(word.example, /[.!?]$/, wordOwner, '词汇例句应有结束标点');
-    rejectMatch(word.example, /\b(?:can|could|may|might|must|should|will|would)\s+to\s+[a-z]+/i, wordOwner, '情态动词后不应直接使用 to do');
+    (word.examples || [{ sentence: word.example }]).forEach((example, index) => {
+      const exampleOwner = `${wordOwner}/例句${index + 1}`;
+      requireMatch(example.sentence, /[.!?]$/, exampleOwner, '词汇例句应有结束标点');
+      rejectMatch(example.sentence, /\b(?:can|could|may|might|must|should|will|would)\s+to\s+[a-z]+/i, exampleOwner, '情态动词后不应直接使用 to do');
+    });
   });
 
   unit.grammarPoints.forEach((point) => {
@@ -157,6 +160,19 @@ const correctedExamples = [
 correctedExamples.forEach(([unitId, headword, pattern]) => {
   const word = getWord(unitId, headword);
   if (word) requireMatch(word.example, pattern, `${unitId}/${headword}`, '例句与已复核的自然表达不一致');
+});
+
+const depthFacts = [
+  ['eng-unit-g7a-starter-keep-tidy', 'colour', (word) => word.spellingVariants.some((item) => item.value === 'color'), '应记录美式拼写 color'],
+  ['eng-unit-g7a-favourite-subject', 'favourite', (word) => word.spellingVariants.some((item) => item.value === 'favorite'), '应记录美式拼写 favorite'],
+  ['eng-unit-g7a-you-and-me', 'information', (word) => /不可数/.test(word.senses[0].countability), 'information 应标记为不可数'],
+  ['eng-unit-g7a-day-in-life', 'arrive', (word) => /不及物/.test(word.senses[0].transitivity), 'arrive 应标记为不及物'],
+  ['eng-unit-g7a-starter-welcome', 'goose', (word) => word.searchTerms.includes('geese'), 'goose 应能通过 geese 检索'],
+];
+
+depthFacts.forEach(([unitId, headword, predicate, message]) => {
+  const word = getWord(unitId, headword);
+  if (word && !predicate(word)) issue(`${unitId}/${headword}`, message);
 });
 
 if (issues.length) {

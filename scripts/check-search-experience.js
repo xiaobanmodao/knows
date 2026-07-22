@@ -8,6 +8,12 @@ const rankingChecks = [
   ['欧姆定律', 'physics', 'knowledge'],
   ['浮力', 'physics', 'knowledge'],
   ['v＝s／t', 'physics', 'knowledge'],
+  ['spelt', 'english', 'word'],
+  ['spelled', 'english', 'word'],
+  ['color', 'english', 'word'],
+  ['geese', 'english', 'word'],
+  ['名词性物主代词', 'english', 'grammar'],
+  ['There be', 'english', 'grammar'],
 ];
 
 rankingChecks.forEach(([keyword, expectedSubjectId, expectedType]) => {
@@ -24,7 +30,7 @@ rankingChecks.forEach(([keyword, expectedSubjectId, expectedType]) => {
   }
 });
 
-['stomachache', 'used to'].forEach((keyword) => {
+['stomachache', 'used to', 'spelt', 'color', 'geese', '名词性物主代词', 'There be'].forEach((keyword) => {
   const directResult = searchAllSubjects(keyword, 'english')
     .find((item) => ['word', 'grammar'].includes(item.type));
 

@@ -3,7 +3,7 @@ const {
   BOOK_DEPTH_STATUS,
   mergeWordDepth,
   mergeGrammarDepth,
-} = require('./details');
+} = require('./details/index');
 
 function slugify(value) {
   return String(value || '')

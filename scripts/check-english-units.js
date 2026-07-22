@@ -36,8 +36,8 @@ if (englishUnits.books.length !== 6 || englishUnits.bookCount !== 5) {
   issues.push('英语教材应包含 5 册已核对内容和 1 册待发布目录');
 }
 
-if (englishUnits.unitCount !== 42 || englishUnits.vocabularyCount !== 336 || englishUnits.grammarCount !== 84) {
-  issues.push(`规模错误：当前 ${englishUnits.unitCount} 单元、${englishUnits.vocabularyCount} 词、${englishUnits.grammarCount} 语法，应为 42/336/84`);
+if (englishUnits.unitCount !== 42 || englishUnits.vocabularyCount !== 336 || englishUnits.grammarCount !== 84 || englishUnits.exampleCount !== 604) {
+  issues.push(`规模错误：当前 ${englishUnits.unitCount} 单元、${englishUnits.vocabularyCount} 词、${englishUnits.grammarCount} 语法、${englishUnits.exampleCount} 例句，应为 42/336/84/604`);
 }
 
 const expectedBooks = {
@@ -79,7 +79,10 @@ englishUnits.units.forEach((unit) => {
     if (!Array.isArray(word.collocations) || word.collocations.length < 2) {
       issues.push(`${wordOwner}: 固定搭配至少 2 条`);
     }
-    registerExample(word.example, word.translation, wordOwner);
+    (word.examples || [{ sentence: word.example, translation: word.translation, explanation: word.usage }]).forEach((example, index) => {
+      ['sentence', 'translation', 'explanation'].forEach((field) => requireText(example[field], `${wordOwner}/例句${index + 1}`, field));
+      registerExample(example.sentence, example.translation, `${wordOwner}/例句${index + 1}`);
+    });
   });
 
   unit.grammarPoints.forEach((point) => {
@@ -95,6 +98,10 @@ englishUnits.units.forEach((unit) => {
     });
   });
 });
+
+if (exampleOwners.size !== 604) {
+  issues.push(`英语例句应有 604 条，当前 ${exampleOwners.size} 条`);
+}
 
 [
   ['stomachache', 'word'],
