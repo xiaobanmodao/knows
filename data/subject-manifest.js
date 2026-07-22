@@ -40,7 +40,7 @@ const SUBJECT_MANIFEST = [
     vocabularyCount: 336,
     grammarCount: 84,
     templateCount: 6,
-    exampleCount: 504,
+    exampleCount: 604,
     packageLabel: '42 单元',
   },
   {

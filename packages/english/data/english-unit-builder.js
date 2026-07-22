@@ -1,4 +1,9 @@
 const { getContentReviewMeta } = require('./content-review-meta');
+const {
+  BOOK_DEPTH_STATUS,
+  mergeWordDepth,
+  mergeGrammarDepth,
+} = require('./details');
 
 function slugify(value) {
   return String(value || '')
@@ -21,7 +26,7 @@ function buildWord(unitId, entry, index) {
     note,
   ] = entry;
 
-  return {
+  return mergeWordDepth({
     id: `${unitId}-word-${slugify(word) || index + 1}`,
     word,
     partOfSpeech,
@@ -33,7 +38,7 @@ function buildWord(unitId, entry, index) {
     translation,
     note,
     contentMeta: getContentReviewMeta('english'),
-  };
+  });
 }
 
 function grammar(id, title, summary, structures, examples, mistakes) {
@@ -53,7 +58,7 @@ function grammar(id, title, summary, structures, examples, mistakes) {
 
 function createUnit(config) {
   const vocabulary = config.vocabulary.map((entry, index) => buildWord(config.id, entry, index));
-  const grammarPoints = config.grammar.map((item) => ({
+  const grammarPoints = config.grammar.map((item) => mergeGrammarDepth({
     ...item,
     id: `${config.id}-grammar-${item.id}`,
     contentMeta: getContentReviewMeta('english'),
@@ -93,10 +98,16 @@ function createBook(config) {
 
   return {
     ...config,
+    depthStatus: BOOK_DEPTH_STATUS[config.id] || null,
     units,
     unitCount: units.length,
     vocabularyCount: units.reduce((sum, unit) => sum + unit.vocabularyCount, 0),
     grammarCount: units.reduce((sum, unit) => sum + unit.grammarCount, 0),
+    exampleCount: units.reduce((sum, unit) => (
+      sum
+      + unit.vocabulary.reduce((wordSum, item) => wordSum + (item.examples ? item.examples.length : 1), 0)
+      + unit.grammarPoints.reduce((grammarSum, item) => grammarSum + item.examples.length, 0)
+    ), 0),
   };
 }
 

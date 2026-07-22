@@ -19,6 +19,8 @@ const grammarPoints = units.flatMap((unit) => unit.grammarPoints.map((point) => 
   unitTitle: unit.title,
   bookLabel: unit.bookLabel,
 })));
+const exampleCount = vocabulary.reduce((sum, word) => sum + (word.examples ? word.examples.length : 1), 0)
+  + grammarPoints.reduce((sum, point) => sum + point.examples.length, 0);
 
 function getBookById(bookId) {
   return books.find((book) => book.id === bookId) || null;
@@ -40,4 +42,5 @@ module.exports = {
   unitCount: units.length,
   vocabularyCount: vocabulary.length,
   grammarCount: grammarPoints.length,
+  exampleCount,
 };
