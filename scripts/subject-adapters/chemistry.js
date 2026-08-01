@@ -37,19 +37,61 @@ function unique(values, maxItems = 18) {
     .slice(0, maxItems);
 }
 
-function sectionTokens(section) {
-  if (!section) return [];
+function shortSearchToken(value, maxLength = 36) {
+  return compact(value, maxLength);
+}
+
+function shortSearchList(values, maxItems = 4, maxLength = 28) {
+  return (Array.isArray(values) ? values : [])
+    .map((value) => shortSearchToken(value, maxLength))
+    .filter(Boolean)
+    .slice(0, maxItems);
+}
+
+function shortPhenomenonTokens(value) {
+  return String(value || '')
+    .split(/[。；;]/)
+    .map((item) => shortSearchToken(item, 30))
+    .filter(Boolean)
+    .slice(0, 2);
+}
+
+function shortConditionTokens(sections) {
+  return sections
+    .map((section) => String(section.condition || '').replace(/\s+/g, ' ').trim())
+    .filter((condition) => condition && !/(教师|学校|指导|受控|批准|防护|安全|规范|装置|注意)/.test(condition))
+    .map((condition) => shortSearchToken(condition, 24))
+    .slice(0, 1);
+}
+
+function fitSearchTokenBudget(values, maxChars = 170) {
+  const seen = new Set();
+  const selected = [];
+  let totalChars = 0;
+  values.flat(Infinity).forEach((value) => {
+    const token = shortSearchToken(value, 50);
+    const key = token.toLowerCase();
+    if (!token || seen.has(key) || totalChars + token.length > maxChars) return;
+    seen.add(key);
+    selected.push(token);
+    totalChars += token.length;
+  });
+  return selected;
+}
+
+function sectionSearchTokens(sections) {
+  const contentSections = Array.isArray(sections) ? sections : [];
+  const equationSections = contentSections.filter((section) => section.type === 'equation');
+  const experimentSections = contentSections.filter((section) => section.type === 'experiment');
   return [
-    section.title,
-    section.equation,
-    section.condition,
-    section.phenomenon,
-    section.interpretation,
-    section.purpose,
-    section.apparatus,
-    section.conclusion,
-    section.risks,
-    section.rules,
+    experimentSections.map((section) => section.title),
+    equationSections.flatMap((section) => [section.title, section.equation]),
+    shortSearchList(experimentSections.flatMap((section) => section.apparatus || []), 3, 20),
+    shortConditionTokens(equationSections),
+    shortPhenomenonTokens([
+      ...equationSections,
+      ...experimentSections,
+    ].map((section) => section.phenomenon).filter(Boolean).join('；')).slice(0, 1),
   ];
 }
 
@@ -73,7 +115,6 @@ function buildSearchEntries(makeEntry) {
     description: topic.summary,
     tags: topic.keywords,
     tokens: [
-      topic.objective,
       topic.knowledgeIds.map((id) => knowledgeItems.find((item) => item.id === id)).filter(Boolean).map((item) => item.title),
       topic.templateIds.map((id) => templates.find((item) => item.id === id)).filter(Boolean).map((item) => item.name),
     ],
@@ -87,12 +128,11 @@ function buildSearchEntries(makeEntry) {
     subtitle: '化学 · 九年级',
     description: knowledge.summary,
     tags: knowledge.tags,
-    tokens: [
+    tokens: fitSearchTokenBudget([
       SEARCH_ALIASES[knowledge.id],
       knowledge.keywords,
-      knowledge.knowledgePoints,
-      (knowledge.sections || []).flatMap(sectionTokens),
-    ],
+      sectionSearchTokens(knowledge.sections),
+    ]),
   }));
   const templateEntries = templates.map((template) => makeEntry({
     refId: template.id,
@@ -105,9 +145,7 @@ function buildSearchEntries(makeEntry) {
     tags: template.keywords,
     tokens: [
       SEARCH_ALIASES[template.id],
-      template.cues,
-      (template.steps || []).map((item) => item.action),
-      (template.examples || []).flatMap((item) => [item.scenario, item.conclusion]),
+      shortSearchList(template.cues, 3, 36),
     ],
   }));
 

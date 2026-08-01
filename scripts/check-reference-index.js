@@ -15,6 +15,7 @@ const {
   getReferenceEntries,
 } = require('../utils/reference-index');
 const { buildContentRoute } = require('../utils/content-routes');
+const { getSubjectRegistry } = require('../data/subject-manifest');
 
 const root = path.resolve(__dirname, '..');
 const outputPath = path.join(root, 'data/reference-index.js');
@@ -156,14 +157,43 @@ delete global.wx;
 let profilePage;
 global.Page = (config) => { profilePage = config; };
 delete require.cache[require.resolve('../pages/profile/index')];
-require('../pages/profile/index');
+const profileModule = require('../pages/profile/index');
 const profileReferenceIds = profilePage.data.referenceItems.map((item) => item.id);
 if (profileReferenceIds.join(',') !== 'formula,word,grammar,experiment,equation') {
   issue('我的页参考入口', `未使用五类生成元数据：${profileReferenceIds.join(',')}`);
 }
 if (!profilePage.data.versionItems.some((item) => item.includes('化学：'))
-  || !profilePage.data.versionItems.some((item) => item.includes('四科'))) {
+  || !profilePage.data.versionItems.some((item) => item.includes('4 科'))) {
   issue('我的页学科规模', '激活化学后仍显示三科学科说明');
+}
+if (typeof profileModule.buildSubjectVersionItems !== 'function') {
+  issue('我的页学科摘要', '缺少按 subject.id 生成摘要的可验证 helper');
+} else {
+  const activeSubjects = getSubjectRegistry();
+  const reordered = [activeSubjects[3], activeSubjects[0], activeSubjects[2], activeSubjects[1]];
+  const reorderedItems = profileModule.buildSubjectVersionItems(reordered);
+  const expectedPrefixes = ['化学：', '数学：', '物理：', '英语：'];
+  expectedPrefixes.forEach((prefix, index) => {
+    if (!reorderedItems[index].startsWith(prefix)) {
+      issue('我的页学科摘要', `重排后第 ${index + 1} 项应以 ${prefix} 开头，实际 ${reorderedItems[index]}`);
+    }
+  });
+  const syntheticSubject = {
+    id: 'biology',
+    name: '初中生物',
+    shortName: '生物',
+    counts: { topic: 8, knowledge: 32 },
+    topicCount: 8,
+    knowledgeCount: 32,
+  };
+  const fiveSubjectItems = profileModule.buildSubjectVersionItems([...reordered, syntheticSubject]);
+  if (!fiveSubjectItems.some((item) => item === '生物：8 专题 · 32 知识点')) {
+    issue('我的页学科摘要', `第五科通用摘要缺失：${fiveSubjectItems.join(' | ')}`);
+  }
+  if (!fiveSubjectItems.some((item) => item.includes('5 科目录'))
+    || fiveSubjectItems.some((item) => item.includes('undefined'))) {
+    issue('我的页学科摘要', '第五科数量文案或安全回退不正确');
+  }
 }
 delete global.Page;
 

@@ -42,6 +42,72 @@ const NOTE_SUBJECT_FILTERS = [
   { id: ALL_FILTER_ID, title: '全部' },
   ...NOTE_SUBJECT_IDS.map((id) => ({ id, title: SUBJECT_LABELS[id] })),
 ];
+const COUNT_ALIASES = {
+  book: 'bookCount',
+  chapter: 'chapterCount',
+  unit: 'unitCount',
+  topic: 'topicCount',
+  knowledge: 'knowledgeCount',
+  template: 'templateCount',
+  vocabulary: 'vocabularyCount',
+  grammar: 'grammarCount',
+  example: 'exampleCount',
+  experiment: 'experimentCount',
+};
+const GENERIC_COUNT_LABELS = [
+  ['book', '册'],
+  ['chapter', '章'],
+  ['unit', '单元'],
+  ['theme', '主题'],
+  ['topic', '专题'],
+  ['knowledge', '知识点'],
+  ['vocabulary', '词条'],
+  ['grammar', '语法点'],
+  ['template', '方法'],
+  ['example', '示例'],
+  ['experiment', '实验'],
+  ['equation', '方程式'],
+];
+
+function getSubjectCount(subject, key) {
+  const alias = COUNT_ALIASES[key];
+  const directValue = alias && Number(subject && subject[alias]);
+  if (Number.isFinite(directValue)) return directValue;
+  const countValue = Number(subject && subject.counts && subject.counts[key]);
+  return Number.isFinite(countValue) ? countValue : 0;
+}
+
+function getSubjectLabel(subject) {
+  return (subject && (subject.shortName || SUBJECT_LABELS[subject.id] || subject.name || subject.id)) || '学科';
+}
+
+const SUBJECT_VERSION_FORMATTERS = {
+  math: (subject) => `${getSubjectLabel(subject)}：${getSubjectCount(subject, 'chapter')} 章 · ${getSubjectCount(subject, 'topic')} 专题 · ${getSubjectCount(subject, 'template')} 模板`,
+  english: (subject) => `${getSubjectLabel(subject)}：${getSubjectCount(subject, 'unit')} 教材单元 · ${getSubjectCount(subject, 'vocabulary')} 逐词讲解 · ${getSubjectCount(subject, 'grammar')} 语法点`,
+  physics: (subject) => `${getSubjectLabel(subject)}：${getSubjectCount(subject, 'chapter')} 教材章 · ${getSubjectCount(subject, 'knowledge')} 知识点 · ${getSubjectCount(subject, 'example')} 示例`,
+  chemistry: (subject) => `${getSubjectLabel(subject)}：${getSubjectCount(subject, 'topic')} 专题 · ${getSubjectCount(subject, 'knowledge')} 知识点 · ${getSubjectCount(subject, 'experiment')} 实验`,
+};
+
+function formatGenericSubjectVersion(subject) {
+  const countItems = GENERIC_COUNT_LABELS
+    .map(([key, label]) => ({ count: getSubjectCount(subject, key), label }))
+    .filter((item) => item.count > 0)
+    .slice(0, 3)
+    .map((item) => `${item.count} ${item.label}`);
+  return `${getSubjectLabel(subject)}：${countItems.length ? countItems.join(' · ') : '内容已接入'}`;
+}
+
+function buildSubjectVersionItems(subjectItems = []) {
+  const activeSubjects = Array.isArray(subjectItems) ? subjectItems.filter(Boolean) : [];
+  const summaries = activeSubjects.map((subject) => {
+    const formatter = SUBJECT_VERSION_FORMATTERS[subject.id] || formatGenericSubjectVersion;
+    return formatter(subject);
+  });
+  return [
+    ...summaries,
+    `已支持：${activeSubjects.length} 科目录、知识阅读、方法模板、搜索、收藏、继续阅读与本地笔记`,
+  ];
+}
 
 function formatBackupDate(value) {
   const date = new Date(value);
@@ -97,13 +163,7 @@ Page({
       '能力范围：搜索、收藏、继续阅读、本地笔记与图示展示',
       '使用方式：无需注册登录，学习记录保存在本机',
     ],
-    versionItems: [
-      `数学：${subjects[0].chapterCount} 章 · ${subjects[0].topicCount} 专题 · ${subjects[0].templateCount} 模板`,
-      `英语：${subjects[1].unitCount} 教材单元 · ${subjects[1].vocabularyCount} 逐词讲解 · ${subjects[1].grammarCount} 语法点`,
-      `物理：${subjects[2].chapterCount} 教材章 · ${subjects[2].knowledgeCount} 知识点 · ${subjects[2].exampleCount} 示例`,
-      `化学：${subjects[3].topicCount} 专题 · ${subjects[3].knowledgeCount} 知识点 · ${subjects[3].experimentCount} 实验`,
-      '已支持：四科目录、知识阅读、方法模板、搜索、收藏、继续阅读与本地笔记',
-    ],
+    versionItems: buildSubjectVersionItems(subjects),
   },
 
   onShow() {
@@ -380,3 +440,7 @@ Page({
     this.pendingBackup = null;
   },
 });
+
+module.exports = {
+  buildSubjectVersionItems,
+};

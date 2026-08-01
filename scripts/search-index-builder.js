@@ -55,6 +55,43 @@ function makeEntry({
   };
 }
 
+function validateSubjectTokenBudget(entries, subjectId, {
+  maxTokenChars,
+  maxEntryTokenChars,
+  maxSubjectTokenChars,
+}) {
+  const subjectEntries = entries.filter((entry) => entry.subjectId === subjectId);
+  let totalTokenChars = 0;
+  let maxEntryTokenCharsSeen = 0;
+  let maxTokenCharsSeen = 0;
+
+  subjectEntries.forEach((entry) => {
+    const tokenLengths = (entry.tokens || []).map((token) => String(token).length);
+    const entryTokenChars = tokenLengths.reduce((total, length) => total + length, 0);
+    const entryMaxTokenChars = tokenLengths.length ? Math.max(...tokenLengths) : 0;
+    if (entryMaxTokenChars > maxTokenChars) {
+      throw new Error(`${entry.key} 单个 token 为 ${entryMaxTokenChars} 字，超过 ${maxTokenChars}`);
+    }
+    if (entryTokenChars > maxEntryTokenChars) {
+      throw new Error(`${entry.key} 单条 token 共 ${entryTokenChars} 字，超过 ${maxEntryTokenChars}`);
+    }
+    totalTokenChars += entryTokenChars;
+    maxEntryTokenCharsSeen = Math.max(maxEntryTokenCharsSeen, entryTokenChars);
+    maxTokenCharsSeen = Math.max(maxTokenCharsSeen, entryMaxTokenChars);
+  });
+
+  if (totalTokenChars > maxSubjectTokenChars) {
+    throw new Error(`${subjectId} 全科 token 共 ${totalTokenChars} 字，超过 ${maxSubjectTokenChars}`);
+  }
+
+  return {
+    entryCount: subjectEntries.length,
+    totalTokenChars,
+    maxEntryTokenChars: maxEntryTokenCharsSeen,
+    maxTokenChars: maxTokenCharsSeen,
+  };
+}
+
 function buildSearchIndex() {
   const entries = adapters.flatMap((adapter) => adapter.buildSearchEntries(makeEntry));
   const keySet = new Set();
@@ -105,4 +142,5 @@ function renderSearchIndexModule(index) {
 module.exports = {
   buildSearchIndex,
   renderSearchIndexModule,
+  validateSubjectTokenBudget,
 };

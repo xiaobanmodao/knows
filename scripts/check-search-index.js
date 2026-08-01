@@ -2,7 +2,11 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 
-const { buildSearchIndex, renderSearchIndexModule } = require('./search-index-builder');
+const {
+  buildSearchIndex,
+  renderSearchIndexModule,
+  validateSubjectTokenBudget,
+} = require('./search-index-builder');
 const { SEARCH_INDEX_META, SEARCH_INDEX_ROWS } = require('../data/search-index');
 const { searchAllSubjects } = require('../utils/search-index');
 
@@ -31,8 +35,58 @@ const priorHash = crypto.createHash('sha256').update(JSON.stringify(priorEntries
 if (priorEntries.length !== 833 || priorHash !== 'e42dc687f1236b1e71fc3ff4ad3c052df4f3deb1fb812a99e2b59b1cf0a5e27a') {
   issues.push(`旧三科搜索语义或顺序发生变化：${priorEntries.length}/${priorHash}`);
 }
-if (built.entries.filter((entry) => entry.subjectId === 'chemistry').length !== 62) {
+const chemistryEntries = built.entries.filter((entry) => entry.subjectId === 'chemistry');
+if (chemistryEntries.length !== 62) {
   issues.push('化学搜索实体应为 10 专题 + 40 知识点 + 12 方法，共 62 条');
+}
+
+const chemistryTokenLimits = {
+  maxTokenChars: 60,
+  maxEntryTokenChars: 240,
+  maxSubjectTokenChars: 9000,
+};
+if (typeof validateSubjectTokenBudget !== 'function') {
+  issues.push('搜索构建器缺少可复用的学科 token 预算验证器');
+} else {
+  try {
+    validateSubjectTokenBudget(chemistryEntries, 'chemistry', chemistryTokenLimits);
+  } catch (error) {
+    issues.push(`化学搜索 token 超出轻量预算：${error.message}`);
+  }
+
+  [
+    {
+      label: '单 token 长正文',
+      entries: [{ key: 'chemistry:knowledge:long-token', subjectId: 'chemistry', tokens: ['长'.repeat(61)] }],
+      expectedMessage: '单个 token',
+    },
+    {
+      label: '单条正文聚合',
+      entries: [{
+        key: 'chemistry:knowledge:long-entry',
+        subjectId: 'chemistry',
+        tokens: ['甲'.repeat(50), '乙'.repeat(50), '丙'.repeat(50), '丁'.repeat(50), '戊'.repeat(50)],
+      }],
+      expectedMessage: '单条 token',
+    },
+    {
+      label: '全科正文聚合',
+      entries: Array.from({ length: 38 }, (_, index) => ({
+        key: `chemistry:knowledge:long-subject-${index}`,
+        subjectId: 'chemistry',
+        tokens: ['甲'.repeat(60), '乙'.repeat(60), '丙'.repeat(60), '丁'.repeat(60)],
+      })),
+      expectedMessage: '全科 token',
+    },
+  ].forEach((fixture) => {
+    let rejected = false;
+    try {
+      validateSubjectTokenBudget(fixture.entries, 'chemistry', chemistryTokenLimits);
+    } catch (error) {
+      rejected = error.message.includes(fixture.expectedMessage);
+    }
+    if (!rejected) issues.push(`${fixture.label}夹具没有被预算验证器拒绝`);
+  });
 }
 
 built.entries.forEach((entry) => {
