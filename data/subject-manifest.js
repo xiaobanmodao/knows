@@ -2,6 +2,7 @@ const SUBJECT_LABELS = {
   math: '数学',
   english: '英语',
   physics: '物理',
+  chemistry: '化学',
 };
 
 const SUBJECT_MANIFEST = [
@@ -118,6 +119,41 @@ const SUBJECT_MANIFEST = [
       experiment: 29,
     },
     packageLabel: '22 章',
+  },
+  {
+    id: 'chemistry',
+    name: '初中化学',
+    shortName: '化学',
+    subtitle: '九年级化学知识专题',
+    description: '按课标主题和知识专题梳理概念、实验、方程式与方法。',
+    gradeBands: ['九年级'],
+    theme: 'chemistry',
+    status: 'active',
+    packageRoot: 'packages/chemistry',
+    entryRoute: '/packages/chemistry/pages/index/index',
+    packagePages: [
+      'pages/index/index',
+      'pages/topic/index',
+      'pages/knowledge/index',
+      'pages/template/index',
+    ],
+    routes: {
+      subject: '/packages/chemistry/pages/index/index',
+      topic: '/packages/chemistry/pages/topic/index',
+      knowledge: '/packages/chemistry/pages/knowledge/index',
+      template: '/packages/chemistry/pages/template/index',
+    },
+    contentTypes: ['subject', 'topic', 'knowledge', 'template'],
+    referenceKinds: ['experiment', 'equation'],
+    counts: {
+      theme: 5,
+      topic: 10,
+      knowledge: 40,
+      template: 12,
+      experiment: 8,
+      equation: 28,
+    },
+    packageLabel: '10 专题',
   },
 ];
 

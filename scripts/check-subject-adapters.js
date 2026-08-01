@@ -45,6 +45,19 @@ function makeEntry(entry) {
 const searchEntries = adapters.flatMap((adapter) => adapter.buildSearchEntries(makeEntry));
 const searchKeys = searchEntries.map((entry) => entry.key);
 assert.strictEqual(new Set(searchKeys).size, searchKeys.length, '搜索索引 key 必须唯一');
+assert.strictEqual(
+  searchEntries.filter((entry) => entry.subjectId === 'chemistry').length,
+  62,
+  '化学适配器必须生成 10 专题、40 知识点和 12 方法搜索记录',
+);
+
+const chemistryAdapter = adapters.find((adapter) => adapter.subjectId === 'chemistry');
+assert.ok(chemistryAdapter, '缺少化学构建适配器');
+assert.deepStrictEqual(
+  chemistryAdapter.getManifestEntities().map((group) => group.type),
+  ['theme', 'topic', 'knowledge', 'template'],
+  '化学清单实体顺序或类型不正确',
+);
 
 adapters.forEach((adapter) => {
   adapter.getManifestEntities().forEach(({ type, entities }) => {
@@ -55,11 +68,20 @@ adapters.forEach((adapter) => {
   });
 });
 
-adapters.flatMap((adapter) => adapter.buildReferenceEntries()).forEach((entry) => {
+const referenceEntries = adapters.flatMap((adapter) => adapter.buildReferenceEntries());
+referenceEntries.forEach((entry) => {
   assert.ok(
     declaredKindsBySubject.get(entry.subjectId).has(entry.kind),
     `${entry.key} 使用了未在学科清单声明的参考类型 ${entry.kind}`,
   );
+});
+
+const chemistryReferences = referenceEntries.filter((entry) => entry.subjectId === 'chemistry');
+assert.strictEqual(chemistryReferences.filter((entry) => entry.kind === 'experiment').length, 8);
+assert.strictEqual(chemistryReferences.filter((entry) => entry.kind === 'equation').length, 28);
+assert.strictEqual(new Set(chemistryReferences.map((entry) => entry.key)).size, 36);
+chemistryReferences.forEach((entry) => {
+  assert.ok(entry.refId && entry.containerId && entry.focusId, `${entry.key} 缺少归属知识或定位 ID`);
 });
 
 console.log(`OK ${adapters.length} subject adapters checked`);

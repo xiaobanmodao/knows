@@ -70,6 +70,16 @@ SEARCH_ALIAS_GROUPS.forEach((group) => {
   }
 });
 
+[
+  '质量守恒定律',
+  '粗盐提纯',
+].forEach((query) => {
+  const [result] = searchAllSubjects(query);
+  if (!result || result.subjectId !== 'chemistry') {
+    throw new Error(`化学查询“${query}”没有命中 chemistry 内容`);
+  }
+});
+
 const aliasResult = searchAllSubjects('spelled', 'english')[0];
 if (!aliasResult || aliasResult.title !== 'spell' || !aliasResult.matchLabel) {
   throw new Error('英语词形别名没有保留关联匹配说明');

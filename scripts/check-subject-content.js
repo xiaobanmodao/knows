@@ -4,6 +4,14 @@ const english = require('../packages/english/data/english-content');
 const englishUnits = require('../packages/english/data/english-units');
 const physics = require('../packages/physics/data/physics-content');
 const physicsCurriculum = require('../packages/physics/data/physics-curriculum');
+const { themes: chemistryThemes } = require('../packages/chemistry/data/chemistry-themes');
+const { topics: chemistryTopics } = require('../packages/chemistry/data/chemistry-topics');
+const { templates: chemistryTemplates } = require('../packages/chemistry/data/chemistry-templates');
+const {
+  getChemistryEquations,
+  getChemistryExperiments,
+  knowledgeItems: chemistryKnowledge,
+} = require('../packages/chemistry/data/chemistry-knowledge');
 const subjects = require('../utils/subjects');
 
 const issues = [];
@@ -123,6 +131,26 @@ englishUnits.units.forEach((unit) => {
   unit.grammarPoints.forEach((point) => registerId(point.id, `英语语法/${unit.title}/${point.title}`));
 });
 
+if (chemistryThemes.length !== 5 || chemistryTopics.length !== 10
+  || chemistryKnowledge.length !== 40 || chemistryTemplates.length !== 12
+  || getChemistryExperiments().length !== 8 || getChemistryEquations().length !== 28) {
+  issues.push('chemistry: 应达到 5 主题、10 专题、40 知识点、12 方法、8 实验和 28 方程式');
+}
+chemistryThemes.forEach((theme) => registerId(theme.id, `化学主题/${theme.title}`));
+chemistryTopics.forEach((topic) => {
+  registerId(topic.id, `化学专题/${topic.title}`);
+  rejectRemovedFields(topic, ['practiceFlow', 'finishCriteria', 'outputTask', 'selfCheck'], `化学专题/${topic.title}`);
+});
+chemistryKnowledge.forEach((knowledge) => {
+  registerId(knowledge.id, `化学知识/${knowledge.title}`);
+  rejectRemovedFields(knowledge, ['problems', 'learningPath', 'selfCheck'], `化学知识/${knowledge.title}`);
+  (knowledge.sections || []).forEach((section) => {
+    if (section.type === 'experiment') registerId(section.experimentId, `化学实验/${section.title}`);
+    if (section.type === 'equation') registerId(section.equationId, `化学方程式/${section.title}`);
+  });
+});
+chemistryTemplates.forEach((template) => registerId(template.id, `化学方法/${template.name}`));
+
 [
   ['被动语态', 'english'],
   ['定语从句', 'english'],
@@ -130,6 +158,16 @@ englishUnits.units.forEach((unit) => {
   ['受力分析', 'physics'],
   ['浮力', 'physics'],
   ['欧姆定律', 'physics'],
+  ['质量守恒定律', 'chemistry'],
+  ['化学方程式配平', 'chemistry'],
+  ['氧气制取', 'chemistry'],
+  ['二氧化碳检验', 'chemistry'],
+  ['溶质质量分数', 'chemistry'],
+  ['金属活动性顺序', 'chemistry'],
+  ['pH', 'chemistry'],
+  ['中和反应', 'chemistry'],
+  ['粗盐提纯', 'chemistry'],
+  ['燃烧条件', 'chemistry'],
 ].forEach(([keyword, subjectId]) => {
   const results = subjects.searchAllSubjects(keyword);
   if (!results.some((result) => result.subjectId === subjectId)) {
@@ -148,4 +186,4 @@ if (issues.length) {
   process.exit(1);
 }
 
-console.log(`OK 3 subjects, ${globalIds.size} globally unique content IDs checked`);
+console.log(`OK 4 subjects, ${globalIds.size} globally unique content IDs checked`);

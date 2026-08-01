@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 
 const { buildSearchIndex, renderSearchIndexModule } = require('./search-index-builder');
 const { SEARCH_INDEX_META, SEARCH_INDEX_ROWS } = require('../data/search-index');
@@ -25,6 +26,15 @@ if (new Set(keys).size !== keys.length) {
   issues.push('搜索索引 key 不唯一');
 }
 
+const priorEntries = built.entries.filter((entry) => entry.subjectId !== 'chemistry');
+const priorHash = crypto.createHash('sha256').update(JSON.stringify(priorEntries)).digest('hex');
+if (priorEntries.length !== 833 || priorHash !== 'e42dc687f1236b1e71fc3ff4ad3c052df4f3deb1fb812a99e2b59b1cf0a5e27a') {
+  issues.push(`旧三科搜索语义或顺序发生变化：${priorEntries.length}/${priorHash}`);
+}
+if (built.entries.filter((entry) => entry.subjectId === 'chemistry').length !== 62) {
+  issues.push('化学搜索实体应为 10 专题 + 40 知识点 + 12 方法，共 62 条');
+}
+
 built.entries.forEach((entry) => {
   if (!entry.refId || !entry.subjectId || !entry.type || !entry.title || !entry.tokens.length) {
     issues.push(`搜索索引字段不完整: ${entry.key}`);
@@ -43,6 +53,16 @@ const canonicalChecks = [
   ['受力分析', 'physics'],
   ['浮力', 'physics'],
   ['欧姆定律', 'physics'],
+  ['质量守恒定律', 'chemistry'],
+  ['化学方程式配平', 'chemistry'],
+  ['氧气制取', 'chemistry'],
+  ['二氧化碳检验', 'chemistry'],
+  ['溶质质量分数', 'chemistry'],
+  ['金属活动性顺序', 'chemistry'],
+  ['pH', 'chemistry'],
+  ['中和反应', 'chemistry'],
+  ['粗盐提纯', 'chemistry'],
+  ['燃烧条件', 'chemistry'],
 ];
 
 canonicalChecks.forEach(([keyword, subjectId]) => {
@@ -51,6 +71,16 @@ canonicalChecks.forEach(([keyword, subjectId]) => {
     issues.push(`搜索“${keyword}”未命中预期学科 ${subjectId}`);
   }
 });
+
+let searchPage;
+global.Page = (config) => { searchPage = config; };
+delete require.cache[require.resolve('../pages/search/index')];
+require('../pages/search/index');
+const searchFilterIds = searchPage.data.subjectFilters.map((item) => item.id);
+if (searchFilterIds.join(',') !== 'all,math,english,physics,chemistry') {
+  issues.push(`搜索页学科筛选未从四科清单生成：${searchFilterIds.join(',')}`);
+}
+delete global.Page;
 
 if (issues.length) {
   console.log('FOUND_SEARCH_INDEX_ISSUES');

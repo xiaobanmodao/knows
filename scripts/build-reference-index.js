@@ -7,4 +7,4 @@ const outputPath = path.join(root, 'data/reference-index.js');
 const index = buildReferenceIndex();
 
 fs.writeFileSync(outputPath, renderReferenceIndexModule(index));
-console.log(`OK generated ${index.meta.entryCount} formula/experiment entries -> data/reference-index.js`);
+console.log(`OK generated ${index.meta.entryCount} reference entries -> data/reference-index.js`);

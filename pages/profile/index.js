@@ -1,7 +1,7 @@
 const { RELEASE_INFO } = require('../../utils/release-info');
 const { getSubjectRegistry, SUBJECT_LABELS } = require('../../data/subject-manifest');
 const { openContent } = require('../../utils/content-routes');
-const { REFERENCE_INDEX_META } = require('../../data/reference-index');
+const { REFERENCE_KIND_META } = require('../../data/reference-index');
 const {
   ALL_FILTER_ID,
   NOTE_SUBJECT_IDS,
@@ -30,7 +30,14 @@ const {
 } = require('../../utils/reading-preferences');
 
 const subjects = getSubjectRegistry();
-const referenceTotal = Object.values(REFERENCE_INDEX_META.counts).reduce((total, count) => total + count, 0);
+const referenceTotal = REFERENCE_KIND_META.reduce((total, item) => total + item.count, 0);
+const referenceDescriptions = {
+  formula: '数学与物理公式、条件和单位',
+  word: '英美音标、词义、搭配和辨析',
+  grammar: '结构变式、条件和易混对比',
+  experiment: '方法、步骤、结论和误差',
+  equation: '反应物、生成物、条件和现象',
+};
 const NOTE_SUBJECT_FILTERS = [
   { id: ALL_FILTER_ID, title: '全部' },
   ...NOTE_SUBJECT_IDS.map((id) => ({ id, title: SUBJECT_LABELS[id] })),
@@ -78,12 +85,12 @@ Page({
     readingPreferences: { ...DEFAULT_READING_PREFERENCES },
     readingPreferenceSummary: formatReadingPreferenceSummary(DEFAULT_READING_PREFERENCES),
     readingSettingsVisible: false,
-    referenceItems: [
-      { id: 'formula', title: '公式索引', count: REFERENCE_INDEX_META.counts.formula, description: '数学与物理公式、条件和单位' },
-      { id: 'word', title: '单词索引', count: REFERENCE_INDEX_META.counts.word, description: '英美音标、词义、搭配和辨析' },
-      { id: 'grammar', title: '语法索引', count: REFERENCE_INDEX_META.counts.grammar, description: '结构变式、条件和易混对比' },
-      { id: 'experiment', title: '实验索引', count: REFERENCE_INDEX_META.counts.experiment, description: '方法、步骤、结论和误差' },
-    ],
+    referenceItems: REFERENCE_KIND_META.map((item) => ({
+      id: item.id,
+      title: `${item.title}索引`,
+      count: item.count,
+      description: referenceDescriptions[item.id],
+    })),
     referenceTotal,
     serviceItems: [
       '内容结构：学科大包 / 教材单元或专题 / 知识点与方法',
@@ -94,7 +101,8 @@ Page({
       `数学：${subjects[0].chapterCount} 章 · ${subjects[0].topicCount} 专题 · ${subjects[0].templateCount} 模板`,
       `英语：${subjects[1].unitCount} 教材单元 · ${subjects[1].vocabularyCount} 逐词讲解 · ${subjects[1].grammarCount} 语法点`,
       `物理：${subjects[2].chapterCount} 教材章 · ${subjects[2].knowledgeCount} 知识点 · ${subjects[2].exampleCount} 示例`,
-      '已支持：三科目录、知识阅读、方法模板、搜索、收藏、继续阅读与本地笔记',
+      `化学：${subjects[3].topicCount} 专题 · ${subjects[3].knowledgeCount} 知识点 · ${subjects[3].experimentCount} 实验`,
+      '已支持：四科目录、知识阅读、方法模板、搜索、收藏、继续阅读与本地笔记',
     ],
   },
 

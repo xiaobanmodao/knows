@@ -1,4 +1,4 @@
-const { SUBJECT_LABELS } = require('../../data/subject-manifest');
+const { getSubjectRegistry, SUBJECT_LABELS } = require('../../data/subject-manifest');
 const { searchAllSubjects } = require('../../utils/search-index');
 const { openContent } = require('../../utils/content-routes');
 
@@ -14,9 +14,7 @@ const RESULT_GROUPS = [
 
 const SUBJECT_FILTERS = [
   { id: 'all', title: '全部' },
-  { id: 'math', title: '数学' },
-  { id: 'english', title: '英语' },
-  { id: 'physics', title: '物理' },
+  ...getSubjectRegistry().map((subject) => ({ id: subject.id, title: subject.shortName })),
 ];
 
 const TYPE_LABELS = RESULT_GROUPS.reduce((map, item) => ({ ...map, [item.type]: item.title }), {});

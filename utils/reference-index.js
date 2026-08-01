@@ -2,16 +2,15 @@ const {
   REFERENCE_INDEX_META,
   REFERENCE_SUBJECT_CODES,
   REFERENCE_KIND_CODES,
+  REFERENCE_KIND_META,
   REFERENCE_INDEX_ROWS,
 } = require('../data/reference-index');
 const { expandSearchTerms, getSearchIndexEntries, normalizeSearchText } = require('./search-index');
 
-const REFERENCE_KINDS = [
-  { id: 'formula', title: '公式', count: REFERENCE_INDEX_META.counts.formula, subjectIds: ['math', 'physics'] },
-  { id: 'word', title: '单词', count: REFERENCE_INDEX_META.counts.word, subjectIds: ['english'] },
-  { id: 'grammar', title: '语法', count: REFERENCE_INDEX_META.counts.grammar, subjectIds: ['english'] },
-  { id: 'experiment', title: '实验', count: REFERENCE_INDEX_META.counts.experiment, subjectIds: ['physics'] },
-];
+const REFERENCE_KINDS = REFERENCE_KIND_META.map((item) => ({
+  ...item,
+  subjectIds: [...item.subjectIds],
+}));
 
 const GENERATED_ENTRIES = REFERENCE_INDEX_ROWS.map((row) => {
   const [subjectCode, kindCode, refId, containerId, focusId, title, subtitle, primary, secondary, tags, tokens] = row;

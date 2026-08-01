@@ -127,12 +127,13 @@ Page({
       openContent({ subjectId: 'english', type: kind, id: refId, focusId });
       return;
     }
+    const hasFocus = kind === 'experiment' || kind === 'equation';
     openContent({
       subjectId,
       type: 'knowledge',
       id: refId,
-      focusType: kind === 'experiment' ? 'experiment' : '',
-      focusId: kind === 'experiment' ? focusId : '',
+      focusType: hasFocus ? kind : '',
+      focusId: hasFocus ? focusId : '',
     });
   },
 

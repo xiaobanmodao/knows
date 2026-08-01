@@ -1,11 +1,16 @@
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const {
   buildReferenceIndex,
   renderReferenceIndexModule,
 } = require('./reference-index-builder');
 const {
+  REFERENCE_KIND_META,
   REFERENCE_INDEX_META,
+} = require('../data/reference-index');
+const {
+  REFERENCE_KINDS,
   filterReferenceEntries,
   getReferenceEntries,
 } = require('../utils/reference-index');
@@ -26,7 +31,28 @@ if (actualSource !== expectedSource) issue('生成文件', 'data/reference-index
 if (Buffer.byteLength(actualSource, 'utf8') > 150 * 1024) issue('生成文件', '索引源文件超过 150 KiB 主包预算');
 if (REFERENCE_INDEX_META.sourceHash !== expectedIndex.meta.sourceHash) issue('源哈希', '运行时哈希与构建结果不一致');
 
-const expectedCounts = { formula: 173, word: 336, grammar: 84, experiment: 29 };
+const priorEntries = expectedIndex.entries.filter((entry) => entry.subjectId !== 'chemistry');
+const priorHash = crypto.createHash('sha256').update(JSON.stringify(priorEntries)).digest('hex');
+if (priorEntries.length !== 202 || priorHash !== '4c4410c37e2940b3142c2ffde8ec433957afaad4e0a4be0830b4578241d130b5') {
+  issue('旧三科参考语义', `发生变化：${priorEntries.length}/${priorHash}`);
+}
+if (expectedIndex.meta.entryCount !== 238) issue('物化参考规模', `物化记录应为 238，当前 ${expectedIndex.meta.entryCount}`);
+
+const expectedKindMeta = [
+  { id: 'formula', title: '公式', count: 173, subjectIds: ['math', 'physics'] },
+  { id: 'word', title: '单词', count: 336, subjectIds: ['english'] },
+  { id: 'grammar', title: '语法', count: 84, subjectIds: ['english'] },
+  { id: 'experiment', title: '实验', count: 37, subjectIds: ['physics', 'chemistry'] },
+  { id: 'equation', title: '方程式', count: 28, subjectIds: ['chemistry'] },
+];
+if (JSON.stringify(REFERENCE_KIND_META) !== JSON.stringify(expectedKindMeta)) {
+  issue('生成参考类型元数据', `不匹配：${JSON.stringify(REFERENCE_KIND_META)}`);
+}
+if (JSON.stringify(REFERENCE_KINDS) !== JSON.stringify(expectedKindMeta)) {
+  issue('运行时参考类型元数据', '未直接使用生成的类型、标题、数量与学科能力');
+}
+
+const expectedCounts = { formula: 173, word: 336, grammar: 84, experiment: 37, equation: 28 };
 const allKeys = new Set();
 Object.entries(expectedCounts).forEach(([kind, expectedCount]) => {
   const entries = getReferenceEntries(kind);
@@ -48,7 +74,9 @@ if (mathFormulaCount !== 89 || physicsFormulaCount !== 84) {
 }
 
 getReferenceEntries('experiment').forEach((entry) => {
-  if (!entry.focusId || !entry.focusId.endsWith('-experiment')) issue(entry.key, '缺少稳定实验定位 ID');
+  if (!entry.focusId) issue(entry.key, '缺少稳定实验定位 ID');
+  if (entry.subjectId === 'physics' && !entry.focusId.endsWith('-experiment')) issue(entry.key, '物理实验定位 ID 格式回归');
+  if (entry.subjectId === 'chemistry' && !entry.focusId.startsWith('chem-exp-')) issue(entry.key, '化学实验定位 ID 格式错误');
   const route = buildContentRoute({
     subjectId: entry.subjectId,
     type: 'knowledge',
@@ -57,6 +85,20 @@ getReferenceEntries('experiment').forEach((entry) => {
     focusId: entry.focusId,
   });
   if (!route.includes(`focusId=${encodeURIComponent(entry.focusId)}`)) issue(entry.key, '实验定位参数没有进入分包路由');
+});
+
+getReferenceEntries('equation').forEach((entry) => {
+  if (entry.subjectId !== 'chemistry' || !entry.focusId.startsWith('chem-eq-')) issue(entry.key, '化学方程式归属或定位 ID 错误');
+  const route = buildContentRoute({
+    subjectId: entry.subjectId,
+    type: 'knowledge',
+    id: entry.refId,
+    focusType: 'equation',
+    focusId: entry.focusId,
+  });
+  if (!route.includes('focusType=equation') || !route.includes(`focusId=${encodeURIComponent(entry.focusId)}`)) {
+    issue(entry.key, '方程式定位参数没有进入化学知识页路由');
+  }
 });
 
 [
@@ -68,12 +110,62 @@ getReferenceEntries('experiment').forEach((entry) => {
   ['grammar', '名词性物主代词', '形容词性与名词性物主代词'],
   ['experiment', '晶体熔化', '探究晶体熔化时温度变化'],
   ['experiment', '伏安法', '伏安法测定值电阻'],
+  ['experiment', '粗盐提纯', '粗盐中难溶性杂质的去除'],
+  ['experiment', '燃烧条件', '燃烧条件的探究'],
+  ['equation', '石灰水', '二氧化碳与石灰水反应'],
+  ['equation', '中和反应', '盐酸与氢氧化钠反应'],
 ].forEach(([kind, keyword, expectedTitle]) => {
   const results = filterReferenceEntries({ kind, keyword });
   if (!results.some((entry) => entry.title === expectedTitle)) {
     issue(`${kind}/${keyword}`, `没有命中 ${expectedTitle}`);
   }
 });
+
+let referencePage;
+const openedRoutes = [];
+global.Page = (config) => { referencePage = config; };
+global.wx = {
+  showLoading() {},
+  hideLoading() {},
+  showModal() {},
+  navigateTo({ url, success, complete }) {
+    openedRoutes.push(url);
+    if (success) success({});
+    if (complete) complete({});
+  },
+};
+delete require.cache[require.resolve('../pages/reference-index/index')];
+require('../pages/reference-index/index');
+[
+  ['experiment', 'chem-k-oxygen-preparation', 'chem-exp-oxygen'],
+  ['equation', 'chem-k-neutralization', 'chem-eq-neutralization'],
+].forEach(([kind, refId, focusId]) => {
+  referencePage.openEntry({
+    currentTarget: { dataset: { kind, refId, subjectId: 'chemistry', focusId } },
+  });
+});
+if (!openedRoutes[0].includes('focusType=experiment') || !openedRoutes[0].includes('focusId=chem-exp-oxygen')) {
+  issue('参考页实验打开', `路由错误：${openedRoutes[0]}`);
+}
+if (!openedRoutes[1].includes('focusType=equation') || !openedRoutes[1].includes('focusId=chem-eq-neutralization')) {
+  issue('参考页方程式打开', `路由错误：${openedRoutes[1]}`);
+}
+delete global.Page;
+delete global.wx;
+
+let profilePage;
+global.Page = (config) => { profilePage = config; };
+delete require.cache[require.resolve('../pages/profile/index')];
+require('../pages/profile/index');
+const profileReferenceIds = profilePage.data.referenceItems.map((item) => item.id);
+if (profileReferenceIds.join(',') !== 'formula,word,grammar,experiment,equation') {
+  issue('我的页参考入口', `未使用五类生成元数据：${profileReferenceIds.join(',')}`);
+}
+if (!profilePage.data.versionItems.some((item) => item.includes('化学：'))
+  || !profilePage.data.versionItems.some((item) => item.includes('四科'))) {
+  issue('我的页学科规模', '激活化学后仍显示三科学科说明');
+}
+delete global.Page;
 
 const appConfig = JSON.parse(fs.readFileSync(path.join(root, 'app.json'), 'utf8'));
 if (!appConfig.pages.includes('pages/reference-index/index')) issue('页面配置', 'app.json 未注册知识索引页');
@@ -84,4 +176,4 @@ if (issues.length) {
   process.exit(1);
 }
 
-console.log(`OK ${allKeys.size} reference entries: ${mathFormulaCount} math formulas, ${physicsFormulaCount} physics formulas, 336 words, 84 grammar points and 29 experiments checked`);
+console.log(`OK ${allKeys.size} reference entries: ${mathFormulaCount} math formulas, ${physicsFormulaCount} physics formulas, 336 words, 84 grammar points, 37 experiments and 28 equations checked`);

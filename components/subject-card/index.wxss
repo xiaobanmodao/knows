@@ -48,6 +48,10 @@
   background: linear-gradient(135deg, #ef6b2f 0%, #f5a63a 100%);
 }
 
+.chemistry {
+  background: linear-gradient(135deg, #b7335a 0%, #e15f6f 100%);
+}
+
 .subject-card--coming {
   opacity: 0.86;
 }

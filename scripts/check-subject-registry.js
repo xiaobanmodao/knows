@@ -1,6 +1,9 @@
 const assert = require('assert');
+const fs = require('fs');
+const path = require('path');
 
 const {
+  SUBJECT_LABELS,
   SUBJECT_MANIFEST,
   getSubjectIds,
   getSubjectMeta,
@@ -46,9 +49,36 @@ function assertValidSubjects(subjects) {
 
 assert.deepStrictEqual(
   getSubjectRegistry().map((item) => item.id),
-  ['math', 'english', 'physics'],
+  ['math', 'english', 'physics', 'chemistry'],
 );
 assertValidSubjects(getSubjectRegistry());
+
+const chemistry = getSubjectMeta('chemistry');
+assert.strictEqual(SUBJECT_LABELS.chemistry, '化学');
+assert.strictEqual(chemistry.shortName, '化学');
+assert.deepStrictEqual(chemistry.gradeBands, ['九年级']);
+assert.strictEqual(chemistry.packageRoot, 'packages/chemistry');
+assert.deepStrictEqual(chemistry.packagePages, [
+  'pages/index/index',
+  'pages/topic/index',
+  'pages/knowledge/index',
+  'pages/template/index',
+]);
+assert.deepStrictEqual(chemistry.contentTypes, ['subject', 'topic', 'knowledge', 'template']);
+assert.deepStrictEqual(chemistry.referenceKinds, ['experiment', 'equation']);
+assert.deepStrictEqual(chemistry.counts, {
+  theme: 5,
+  topic: 10,
+  knowledge: 40,
+  template: 12,
+  experiment: 8,
+  equation: 28,
+});
+const subjectCardStyles = fs.readFileSync(
+  path.resolve(__dirname, '../components/subject-card/index.wxss'),
+  'utf8',
+);
+assert.ok(/\.chemistry\s*\{/.test(subjectCardStyles), '化学首页卡片必须有可见的学科主题样式');
 
 const buildingSubject = {
   id: 'synthetic-building',
@@ -67,15 +97,15 @@ SUBJECT_MANIFEST.push(buildingSubject);
 try {
   assert.deepStrictEqual(
     getSubjectRegistry().map((item) => item.id),
-    ['math', 'english', 'physics'],
+    ['math', 'english', 'physics', 'chemistry'],
   );
   const allSubjects = getSubjectRegistry({ includeBuilding: true });
-  assert.strictEqual(allSubjects.length, 4);
-  assert.strictEqual(allSubjects[3].id, buildingSubject.id);
+  assert.strictEqual(allSubjects.length, 5);
+  assert.strictEqual(allSubjects[4].id, buildingSubject.id);
   assertValidSubjects(allSubjects);
-  assert.deepStrictEqual(getSubjectIds(), ['math', 'english', 'physics']);
+  assert.deepStrictEqual(getSubjectIds(), ['math', 'english', 'physics', 'chemistry']);
   assert.deepStrictEqual(getSubjectIds({ includeBuilding: true }), [
-    'math', 'english', 'physics', 'synthetic-building',
+    'math', 'english', 'physics', 'chemistry', 'synthetic-building',
   ]);
   assert.strictEqual(getSubjectMeta(buildingSubject.id).id, 'math');
   assert.strictEqual(getSubjectMeta(buildingSubject.id, { includeBuilding: true }).id, buildingSubject.id);

@@ -37,6 +37,22 @@ SUBJECT_MANIFEST.pop();
 const backupFile = require('../utils/local-backup-file');
 const storage = require('../utils/storage');
 
+const normalizedSubjects = backup.normalizeSnapshot({
+  favorites: [
+    { id: 'chem-k-oxygen-preparation', subjectId: 'chemistry', type: 'knowledge' },
+    { id: 'unknown-subject-item', subjectId: 'unknown', type: 'knowledge' },
+  ],
+}).favorites;
+if (normalizedSubjects[0].subjectId !== 'chemistry') {
+  throw new Error('备份应接受清单中的化学学科');
+}
+if (normalizedSubjects[1].subjectId !== 'math') {
+  throw new Error('未知学科仍应兼容回退到数学');
+}
+if (backup.CURRENT_CONTENT_SCHEMA_VERSION !== 4 || backup.BACKUP_VERSION !== 1) {
+  throw new Error('激活化学不应升级本地内容 schema 或备份格式');
+}
+
 function expectError(fn, messagePart) {
   try {
     fn();

@@ -36,6 +36,14 @@ const sourceNotes = [
     updatedAt: 400,
   },
   {
+    id: 'chemistry-01',
+    subjectId: 'chemistry',
+    title: '质量守恒定律',
+    content: '化学反应前后原子种类和数目不变。',
+    tags: ['方程式'],
+    updatedAt: 450,
+  },
+  {
     id: 'legacy-math',
     title: '旧数学笔记',
     tags: ['基础', 'all'],
@@ -51,8 +59,8 @@ if (!NOTE_SUBJECT_IDS.includes(noteSubjectFixture.id)) {
 if (prepareNotes([{ id: 'synthetic-01', subjectId: noteSubjectFixture.id }])[0].subjectId !== noteSubjectFixture.id) {
   throw new Error('笔记应保留清单中的活跃学科');
 }
-if (notes.length !== 4) throw new Error(`有效笔记应为 4 条，实际 ${notes.length}`);
-if (notes[0].id !== 'physics-01' || notes[1].id !== 'english-01') {
+if (notes.length !== 5) throw new Error(`有效笔记应为 5 条，实际 ${notes.length}`);
+if (notes[0].id !== 'physics-01' || notes[1].id !== 'chemistry-01' || notes[2].id !== 'english-01') {
   throw new Error('笔记没有按更新时间倒序排列');
 }
 if (notes.find((note) => note.id === 'legacy-math').subjectId !== 'math') {
@@ -64,7 +72,8 @@ if (notes.find((note) => note.id === 'math-01').tags.length !== 2) {
 if (sourceNotes[0].tags.length !== 3) throw new Error('查询准备过程不应修改原笔记');
 
 const facets = buildNoteFacets(notes);
-if (facets.subjectCounts.math !== 2 || facets.subjectCounts.english !== 1 || facets.subjectCounts.physics !== 1) {
+if (facets.subjectCounts.math !== 2 || facets.subjectCounts.english !== 1
+  || facets.subjectCounts.physics !== 1 || facets.subjectCounts.chemistry !== 1) {
   throw new Error('学科笔记数量聚合错误');
 }
 if (!facets.tags.length || facets.tags[0].id !== '易错' || facets.tags[0].count !== 2) {
@@ -81,6 +90,7 @@ const checks = [
   [{ keyword: 'v ＝ s ／ t' }, ['physics-01']],
   [{ subjectId: 'math', tag: '几何', keyword: '直角三角形' }, ['math-01']],
   [{ subjectId: 'english', tag: '公式' }, []],
+  [{ subjectId: 'chemistry' }, ['chemistry-01']],
   [{ tag: 'all' }, ['legacy-math']],
 ];
 
@@ -91,4 +101,4 @@ checks.forEach(([filters, expectedIds]) => {
   }
 });
 
-console.log(`OK ${notes.length} note records, 3 subject facets, ${facets.tags.length} tag facets and ${checks.length} filter combinations checked`);
+console.log(`OK ${notes.length} note records, 4 subject facets, ${facets.tags.length} tag facets and ${checks.length} filter combinations checked`);

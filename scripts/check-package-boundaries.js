@@ -3,6 +3,7 @@ const path = require('path');
 
 const root = path.resolve(__dirname, '..');
 const appConfig = JSON.parse(fs.readFileSync(path.join(root, 'app.json'), 'utf8'));
+const { getSubjectRegistry } = require('../data/subject-manifest');
 const issues = [];
 
 function walk(directory) {
@@ -40,7 +41,8 @@ mainRoots.forEach((file) => {
   });
 });
 
-const packageRoots = ['english', 'physics', 'math'];
+const packageSubjects = getSubjectRegistry();
+const packageRoots = packageSubjects.map((subject) => subject.id);
 packageRoots.forEach((subjectId) => {
   const packageRoot = path.join(root, 'packages', subjectId);
   walk(packageRoot).filter((file) => file.endsWith('.js')).forEach((file) => {
@@ -58,9 +60,10 @@ if (appConfig.preloadRule) {
   issues.push('v1.4 不应配置自动预下载 preloadRule');
 }
 
-packageRoots.forEach((subjectId) => {
+packageSubjects.forEach((subject) => {
+  const subjectId = subject.id;
   const config = configuredPackages.find((item) => item.root === `packages/${subjectId}` && item.name === subjectId);
-  if (!config || config.pages.length !== 5) {
+  if (!config || JSON.stringify(config.pages) !== JSON.stringify(subject.packagePages)) {
     issues.push(`app.json 缺少完整 ${subjectId} 普通分包配置`);
   }
 });
@@ -71,4 +74,4 @@ if (issues.length) {
   process.exit(1);
 }
 
-console.log('OK main package isolation, 3 package boundaries and no preload rule checked');
+console.log(`OK main package isolation, ${packageRoots.length} package boundaries and no preload rule checked`);

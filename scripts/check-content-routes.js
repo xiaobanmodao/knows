@@ -44,6 +44,12 @@ const expectedPackageRoutes = {
     knowledge: '/packages/physics/pages/knowledge/index',
     template: '/packages/physics/pages/template/index',
   },
+  chemistry: {
+    subject: '/packages/chemistry/pages/index/index',
+    topic: '/packages/chemistry/pages/topic/index',
+    knowledge: '/packages/chemistry/pages/knowledge/index',
+    template: '/packages/chemistry/pages/template/index',
+  },
 };
 Object.entries(expectedPackageRoutes).forEach(([subjectId, routes]) => {
   if (JSON.stringify(PACKAGE_ROUTES[subjectId]) !== JSON.stringify(routes)) {
@@ -58,6 +64,10 @@ const routeChecks = [
   [{ subjectId: 'english', type: 'grammar', id: 'eng-unit-g9a-u1', focusId: 'eng-grammar-sample' }, '/packages/english/pages/unit/index?id=eng-unit-g9a-u1&subjectId=english&focusType=grammar&focusId=eng-grammar-sample'],
   [{ subjectId: 'physics', type: 'chapter', id: 'phy-ch17-ohm-law' }, '/packages/physics/pages/chapter/index?id=phy-ch17-ohm-law&subjectId=physics'],
   [{ subjectId: 'physics', type: 'knowledge', id: 'phy-ch03-melting-freezing', focusType: 'experiment', focusId: 'phy-ch03-melting-freezing-experiment' }, '/packages/physics/pages/knowledge/index?id=phy-ch03-melting-freezing&subjectId=physics&focusType=experiment&focusId=phy-ch03-melting-freezing-experiment'],
+  [{ subjectId: 'chemistry', type: 'subject' }, '/packages/chemistry/pages/index/index'],
+  [{ subjectId: 'chemistry', type: 'topic', id: 'chem-topic-lab' }, '/packages/chemistry/pages/topic/index?id=chem-topic-lab&subjectId=chemistry'],
+  [{ subjectId: 'chemistry', type: 'knowledge', id: 'chem-k-oxygen-preparation', focusType: 'experiment', focusId: 'chem-exp-oxygen' }, '/packages/chemistry/pages/knowledge/index?id=chem-k-oxygen-preparation&subjectId=chemistry&focusType=experiment&focusId=chem-exp-oxygen'],
+  [{ subjectId: 'chemistry', type: 'template', id: 'chem-tpl-equation-balancing' }, '/packages/chemistry/pages/template/index?id=chem-tpl-equation-balancing&subjectId=chemistry'],
   [{ type: 'knowledge', id: 'legacy-math-id', restore: true }, '/packages/math/pages/knowledge/index?id=legacy-math-id&subjectId=math&restore=1'],
 ];
 
