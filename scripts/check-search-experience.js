@@ -17,6 +17,10 @@ const rankingChecks = [
   ['practice', 'english', 'word'],
   ['temperatures', 'english', 'word'],
   ['一般过去时', 'english', 'grammar'],
+  ['organise', 'english', 'word'],
+  ['flavor', 'english', 'word'],
+  ['species', 'english', 'word'],
+  ['复合不定代词', 'english', 'grammar'],
 ];
 
 rankingChecks.forEach(([keyword, expectedSubjectId, expectedType]) => {
@@ -36,10 +40,10 @@ rankingChecks.forEach(([keyword, expectedSubjectId, expectedType]) => {
 const practiceResult = searchAllSubjects('practice', 'english')
   .find((item) => item.type === 'word');
 if (!practiceResult || practiceResult.title !== 'practise') {
-  issues.push(`practice: 首个单词结果应为 practise，当前为 ${practiceResult ? practiceResult.title : '无结果'}`);
+  throw new Error(`practice: 首个单词结果应为 practise，当前为 ${practiceResult ? practiceResult.title : '无结果'}`);
 }
 
-['stomachache', 'used to', 'spelt', 'color', 'geese', '名词性物主代词', 'There be', 'practice', 'temperatures', '一般过去时'].forEach((keyword) => {
+['stomachache', 'used to', 'spelt', 'color', 'geese', '名词性物主代词', 'There be', 'practice', 'temperatures', '一般过去时', 'organise', 'flavor', 'species', '复合不定代词'].forEach((keyword) => {
   const directResult = searchAllSubjects(keyword, 'english')
     .find((item) => ['word', 'grammar'].includes(item.type));
 

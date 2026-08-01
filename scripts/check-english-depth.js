@@ -12,6 +12,7 @@ const examples = new Map();
 const depthBookSpecs = [
   { id: 'eng-book-g7a-2024', label: '七年级上册', unitCount: 10, wordCount: 80, grammarCount: 20 },
   { id: 'eng-book-g7b-2024', label: '七年级下册', unitCount: 8, wordCount: 64, grammarCount: 16 },
+  { id: 'eng-book-g8a-2024', label: '八年级上册', unitCount: 8, wordCount: 64, grammarCount: 16 },
 ];
 const depthBookIds = new Set(depthBookSpecs.map((item) => item.id));
 const depthUnits = english.units.filter((unit) => depthBookIds.has(unit.bookId));
@@ -74,8 +75,8 @@ depthBookSpecs.forEach((spec) => {
   }
 });
 
-if (wordDepth.length !== 144 || grammarDepth.length !== 36) {
-  issue('补深数据', `应为 144 词/36 语法，当前 ${wordDepth.length}/${grammarDepth.length}`);
+if (wordDepth.length !== 208 || grammarDepth.length !== 52) {
+  issue('补深数据', `应为 208 词/52 语法，当前 ${wordDepth.length}/${grammarDepth.length}`);
 }
 
 depthWords.forEach((word) => {
@@ -135,8 +136,8 @@ depthGrammar.forEach((point) => {
 
 const wordExampleCount = english.vocabulary.reduce((sum, word) => sum + (word.examples ? word.examples.length : 1), 0);
 const grammarExampleCount = english.grammarPoints.reduce((sum, point) => sum + point.examples.length, 0);
-if (wordExampleCount + grammarExampleCount !== 684) {
-  issue('英语例句', `七年级上下册补深后应为 684，当前 ${wordExampleCount + grammarExampleCount}`);
+if (wordExampleCount + grammarExampleCount !== 764) {
+  issue('英语例句', `八年级上册补深后应为 764，当前 ${wordExampleCount + grammarExampleCount}`);
 }
 
 function findWord(unitId, headword) {
@@ -153,6 +154,12 @@ const factChecks = [
   ['weather 不可数', /不可数/.test(findWord('eng-unit-g7b-rain-or-shine', 'weather').senses[0].countability)],
   ['happen 不及物', /不及物/.test(findWord('eng-unit-g7b-day-to-remember', 'happen').senses[0].transitivity)],
   ['experience 双重可数性', /可数/.test(findWord('eng-unit-g7b-day-to-remember', 'experience').senses[0].countability)],
+  ['travel 作名词通常不可数', /不可数/.test(findWord('eng-unit-g8a-happy-holiday', 'travel').senses[0].countability)],
+  ['species 单复数同形', findWord('eng-unit-g8a-amazing-plants-animals', 'species').searchTerms.includes('species')],
+  ['flavour 包含美式拼写', findWord('eng-unit-g8a-delicious-meal', 'flavour').spellingVariants.some((item) => item.value === 'flavor')],
+  ['schedule 英式音标', findWord('eng-unit-g8a-plan-yourself', 'schedule').phonetics.uk.includes('/ˈʃedʒuːl/')],
+  ['schedule 美式音标', findWord('eng-unit-g8a-plan-yourself', 'schedule').phonetics.us.includes('/ˈskedʒuːl/')],
+  ['organize 包含英式变体', findWord('eng-unit-g8a-home-sweet-home', 'organize').spellingVariants.some((item) => item.value === 'organise')],
 ];
 factChecks.forEach(([label, passed]) => {
   if (!passed) issue('重点事实', label);
@@ -164,4 +171,4 @@ if (issues.length) {
   process.exit(1);
 }
 
-console.log(`OK ${depthUnits.length} units, ${depthWords.length} detailed words, ${depthGrammar.length} detailed grammar points and 684 examples checked`);
+console.log(`OK ${depthUnits.length} units, ${depthWords.length} detailed words, ${depthGrammar.length} detailed grammar points and 764 examples checked`);
