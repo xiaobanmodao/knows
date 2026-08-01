@@ -1,0 +1,32 @@
+.reading-font--small .reading-copy--23 { font-size: 21rpx; }
+.reading-font--large .reading-copy--23 { font-size: 27rpx; }
+.reading-font--small .reading-copy--24 { font-size: 22rpx; }
+.reading-font--large .reading-copy--24 { font-size: 28rpx; }
+.reading-font--small .reading-copy--25 { font-size: 23rpx; }
+.reading-font--large .reading-copy--25 { font-size: 29rpx; }
+.reading-font--small .reading-copy--26 { font-size: 24rpx; }
+.reading-font--large .reading-copy--26 { font-size: 30rpx; }
+.reading-font--small .reading-copy--27 { font-size: 25rpx; }
+.reading-font--large .reading-copy--27 { font-size: 31rpx; }
+.reading-font--small .reading-copy--28 { font-size: 26rpx; }
+.reading-font--large .reading-copy--28 { font-size: 32rpx; }
+
+.reading-line--compact .reading-leading--155 { line-height: 1.45; }
+.reading-line--relaxed .reading-leading--155 { line-height: 1.75; }
+.reading-line--compact .reading-leading--160 { line-height: 1.45; }
+.reading-line--relaxed .reading-leading--160 { line-height: 1.8; }
+.reading-line--compact .reading-leading--170 { line-height: 1.5; }
+.reading-line--relaxed .reading-leading--170 { line-height: 1.9; }
+.reading-line--compact .reading-leading--175 { line-height: 1.55; }
+.reading-line--relaxed .reading-leading--175 { line-height: 1.95; }
+.reading-line--compact .reading-leading--180 { line-height: 1.6; }
+.reading-line--relaxed .reading-leading--180 { line-height: 2; }
+.reading-line--compact .reading-leading--185 { line-height: 1.65; }
+.reading-line--relaxed .reading-leading--185 { line-height: 2.05; }
+.reading-line--compact .reading-leading--190 { line-height: 1.7; }
+.reading-line--relaxed .reading-leading--190 { line-height: 2.1; }
+
+.reading-image--narrow .reading-image { width: 72%; }
+.reading-image--medium .reading-image { width: 86%; }
+.reading-image--full .reading-image { width: 100%; }
+.reading-image { display: block; max-width: 100%; margin-right: auto; margin-left: auto; }

@@ -1,0 +1,25 @@
+<view wx:if="{{visible}}" class="reading-settings-mask" bindtap="close">
+  <view class="reading-settings" catchtap="stopPropagation">
+    <view class="reading-settings__header">
+      <view class="reading-settings__title">阅读显示</view>
+      <view class="reading-settings__close" bindtap="close" aria-label="关闭">&#215;</view>
+    </view>
+
+    <view wx:for="{{groups}}" wx:key="id" wx:for-item="group" class="reading-settings__group">
+      <view class="reading-settings__group-title">{{group.title}}</view>
+      <view class="reading-settings__options">
+        <view
+          wx:for="{{group.items}}"
+          wx:key="id"
+          wx:for-item="option"
+          class="reading-settings__option {{option.selected ? 'reading-settings__option--selected' : ''}}"
+          data-field="{{group.id}}"
+          data-value="{{option.id}}"
+          bindtap="selectOption"
+        >{{option.label}}</view>
+      </view>
+    </view>
+
+    <view class="reading-settings__reset" bindtap="resetPreferences">恢复默认</view>
+  </view>
+</view>
