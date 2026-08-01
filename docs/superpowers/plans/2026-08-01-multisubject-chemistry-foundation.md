@@ -660,6 +660,7 @@ git commit -m "feat(subjects): activate chemistry across the app"
 ### Task 7: Chemistry Covers, Diagrams, And Cloud Resource Inventory
 
 **Files:**
+- Modify: `.gitignore`
 - Create: `assets/figures/generated/chemistry/prompts.json`
 - Create: `assets/figures/generated/chemistry/topics/<topicId>/cover.png` for all 10 topics
 - Create: `assets/figures/generated/chemistry/diagrams/*.png` for at least 10 diagrams
@@ -678,7 +679,7 @@ git commit -m "feat(subjects): activate chemistry across the app"
 
 - [ ] **Step 1: Write failing chemistry asset checks**
 
-Assert ten unique cover files at exactly `1280 x 900`, at least ten nonduplicate diagrams, twelve template figures, valid PNG headers, no duplicate SHA-256 values within chemistry, complete asset inventory coverage, and every cloud output at or below `200KB`.
+Add `!assets/figures/generated/chemistry/` and `!assets/figures/generated/chemistry/**` below the generated-assets ignore rule. Assert ten unique cover files at exactly `1280 x 900`, at least ten nonduplicate diagrams, twelve template figures, valid PNG headers, no duplicate SHA-256 values within chemistry, complete asset inventory coverage, and every cloud output at or below `200KB`.
 
 - [ ] **Step 2: Run the asset check and verify failure**
 
@@ -719,7 +720,7 @@ In the signed-in WeChat Developer Tools cloud storage panel, upload the chemistr
 - [ ] **Step 8: Commit assets and inventory changes**
 
 ```bash
-git add assets/figures/generated/chemistry packages/chemistry/data scripts/asset-inventory.js scripts/prepare-remote-assets.js scripts/check-remote-assets.js scripts/check-unique-figures.js scripts/check-chemistry-assets.js
+git add .gitignore assets/figures/generated/chemistry packages/chemistry/data scripts/asset-inventory.js scripts/prepare-remote-assets.js scripts/check-remote-assets.js scripts/check-unique-figures.js scripts/check-chemistry-assets.js
 git commit -m "feat(chemistry): add original visual resources"
 ```
 
