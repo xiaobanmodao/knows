@@ -11,7 +11,11 @@ function buildEntity(kind, entity, parentField) {
   requireText(entity, 'title', kind);
 
   if (parentField === 'topicIds') {
-    if (!Array.isArray(entity.topicIds) || entity.topicIds.length === 0) {
+    if (
+      !Array.isArray(entity.topicIds)
+      || entity.topicIds.length === 0
+      || entity.topicIds.some((topicId) => typeof topicId !== 'string' || !topicId.trim())
+    ) {
       throw new Error(`${kind} requires at least one topicIds parent ID`);
     }
   } else if (parentField) {
@@ -21,7 +25,7 @@ function buildEntity(kind, entity, parentField) {
   return {
     ...entity,
     subjectId: 'chemistry',
-    contentMeta: getChemistryContentMeta(entity.contentMeta),
+    contentMeta: getChemistryContentMeta(),
   };
 }
 

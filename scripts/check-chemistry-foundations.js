@@ -424,7 +424,15 @@ for (let index = 1; index < allEntities.length; index += 1) {
 assert.throws(() => buildTheme({ id: 'chem-theme-test' }), /title/);
 assert.throws(() => buildTopic({ id: 'chem-topic-test', title: '测试专题' }), /themeId/);
 assert.throws(() => buildTemplate({ id: 'chem-tpl-test', title: '测试方法' }), /topicIds/);
+assert.throws(() => buildTemplate({ id: 'chem-tpl-test', title: '测试方法', topicIds: [''] }), /topicIds/);
 assert.throws(() => buildKnowledge({ id: 'chem-k-test', title: '测试知识' }), /topicId/);
+const forcedReview = buildTheme({
+  id: 'chem-theme-review-test',
+  title: '复核状态测试',
+  contentMeta: { status: 'draft', reviewedAt: '1900-01-01' },
+});
+assert.strictEqual(forcedReview.contentMeta.status, 'verified', 'builders must force verified review metadata');
+assert.strictEqual(forcedReview.contentMeta.reviewedAt, '2026-08-01', 'builders must force canonical review date');
 
 rejectForbiddenFields({ themes, topics, templates, foundationKnowledge });
 
