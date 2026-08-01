@@ -75,6 +75,15 @@
   </view>
   <empty-state wx:else title="{{noteEmptyTitle}}" description="{{noteEmptyDescription}}" />
 
+  <view class="profile-reading-entry" bindtap="openReadingSettings">
+    <view class="profile-reading-entry__marker">Aa</view>
+    <view class="profile-reading-entry__content">
+      <view class="profile-reading-entry__title">阅读显示</view>
+      <view class="profile-reading-entry__summary">{{readingPreferenceSummary}}</view>
+    </view>
+    <view class="profile-reading-entry__arrow">›</view>
+  </view>
+
   <view class="section-title top-gap">
     <view class="section-title__main">本地数据</view>
     <view class="section-title__sub">仅保存在本机</view>
@@ -140,3 +149,11 @@
     <view class="info-card__hint">点击复制工信部备案查询地址</view>
   </view>
 </view>
+
+<reading-settings
+  visible="{{readingSettingsVisible}}"
+  preferences="{{readingPreferences}}"
+  bindchange="changeReadingPreferences"
+  bindreset="resetReadingPreferences"
+  bindclose="closeReadingSettings"
+/>

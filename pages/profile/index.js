@@ -24,6 +24,10 @@ const {
   shareBackupFile,
   writeBackupFile,
 } = require('../../utils/local-backup-file');
+const {
+  DEFAULT_READING_PREFERENCES,
+  formatReadingPreferenceSummary,
+} = require('../../utils/reading-preferences');
 
 const subjects = getSubjectRegistry();
 const referenceTotal = Object.values(REFERENCE_INDEX_META.counts).reduce((total, count) => total + count, 0);
@@ -71,6 +75,9 @@ Page({
     localDataCountItems: buildCountItems({ favorites: 0, recents: 0, notes: 0, readingPositions: 0, searchHistory: 0 }),
     pendingBackupPreview: null,
     backupBusy: false,
+    readingPreferences: { ...DEFAULT_READING_PREFERENCES },
+    readingPreferenceSummary: formatReadingPreferenceSummary(DEFAULT_READING_PREFERENCES),
+    readingSettingsVisible: false,
     referenceItems: [
       { id: 'formula', title: '公式索引', count: REFERENCE_INDEX_META.counts.formula, description: '数学与物理公式、条件和单位' },
       { id: 'word', title: '单词索引', count: REFERENCE_INDEX_META.counts.word, description: '英美音标、词义、搭配和辨析' },
@@ -92,6 +99,11 @@ Page({
   },
 
   onShow() {
+    const readingPreferences = getApp().getReadingPreferences();
+    this.setData({
+      readingPreferences,
+      readingPreferenceSummary: formatReadingPreferenceSummary(readingPreferences),
+    });
     const app = getApp();
     const notes = prepareNotes(app.getNotes()).map((note) => ({
       ...note,
@@ -103,6 +115,32 @@ Page({
     this.setData({
       localDataCountItems: buildCountItems(getSnapshotCounts(app.getLocalDataSnapshot())),
     });
+  },
+
+  openReadingSettings() {
+    this.setData({ readingSettingsVisible: true });
+  },
+
+  closeReadingSettings() {
+    this.setData({ readingSettingsVisible: false });
+  },
+
+  changeReadingPreferences(event) {
+    const result = getApp().setReadingPreferences(event.detail.preferences);
+    this.setData({
+      readingPreferences: result.preferences,
+      readingPreferenceSummary: formatReadingPreferenceSummary(result.preferences),
+    });
+    if (!result.saved) wx.showToast({ title: '设置未保存', icon: 'none' });
+  },
+
+  resetReadingPreferences() {
+    const result = getApp().resetReadingPreferences();
+    this.setData({
+      readingPreferences: result.preferences,
+      readingPreferenceSummary: formatReadingPreferenceSummary(result.preferences),
+    });
+    if (!result.saved) wx.showToast({ title: '设置未保存', icon: 'none' });
   },
 
   applyNoteFilters(overrides = {}) {

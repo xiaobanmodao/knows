@@ -282,6 +282,45 @@ assert(physicsJs.includes("options.focusType === 'experiment'"), 'physics 丢失
 assert(physicsJs.includes('scrollToPendingFocus()'), 'physics 丢失实验锚点滚动');
 assert(physicsWxml.includes('id="{{item.anchorId}}"'), 'physics 丢失实验内容锚点');
 
+const profileJson = JSON.parse(read('pages/profile/index.json'));
+const profileJs = read('pages/profile/index.js');
+const profileWxml = read('pages/profile/index.wxml');
+const profileWxss = read('pages/profile/index.wxss');
+assert(profileJson.usingComponents['reading-settings'] === '/components/reading-settings/index', 'profile 未注册阅读设置组件');
+assert(profileWxml.includes('Aa') && profileWxml.includes('阅读显示'), 'profile 缺少阅读显示入口');
+assert(profileWxml.includes('{{readingPreferenceSummary}}'), 'profile 未显示当前阅读偏好摘要');
+assert((profileWxml.match(/<reading-settings/g) || []).length === 1, 'profile 应只包含一个阅读设置组件');
+assert(profileWxml.includes('visible="{{readingSettingsVisible}}"'), 'profile 设置面板可见状态未受控');
+assert(profileWxml.includes('preferences="{{readingPreferences}}"'), 'profile 设置面板未接收当前偏好');
+assert(profileWxml.includes('bindchange="changeReadingPreferences"'), 'profile 设置面板缺少 change 处理器');
+assert(profileWxml.includes('bindreset="resetReadingPreferences"'), 'profile 设置面板缺少 reset 处理器');
+assert(profileWxml.includes('bindclose="closeReadingSettings"'), 'profile 设置面板缺少 close 处理器');
+assert(profileWxml.indexOf('阅读显示') < profileWxml.indexOf('本地数据'), 'profile 阅读显示入口必须位于本地数据前');
+assert(profileJs.includes('DEFAULT_READING_PREFERENCES'), 'profile 缺少默认阅读偏好');
+assert(profileJs.includes('formatReadingPreferenceSummary'), 'profile 未复用阅读偏好摘要格式化方法');
+assert(!profileJs.includes('OPTION_GROUPS'), 'profile 不应复制设置选项数组');
+assert(!/function\s+normalizeReadingPreferences\s*\(/.test(profileJs), 'profile 不应定义本地偏好归一化');
+[
+  'openReadingSettings',
+  'closeReadingSettings',
+  'changeReadingPreferences',
+  'resetReadingPreferences',
+].forEach((methodName) => {
+  assert(new RegExp(`${methodName}\\s*\\(`).test(profileJs), `profile 缺少 ${methodName} 处理器`);
+});
+assert(profileJs.indexOf('const readingPreferences = getApp().getReadingPreferences();') < profileJs.indexOf('const notes = prepareNotes'), 'profile onShow 必须先同步阅读偏好');
+assert(profileJs.includes('readingPreferenceSummary: formatReadingPreferenceSummary(readingPreferences)'), 'profile onShow 未格式化阅读偏好摘要');
+assert(/\.profile-reading-entry\s*\{[^}]*border-radius:\s*(?:[0-9]|1[0-6])rpx/.test(profileWxss), 'profile 阅读显示行圆角不得超过 16rpx');
+assert(/\.profile-reading-entry[^}]*min-width:\s*0/.test(profileWxss), 'profile 阅读显示行缺少窄屏收缩约束');
+
+let profileConfig;
+global.Page = (config) => {
+  profileConfig = config;
+};
+require('../pages/profile/index');
+assert(profileConfig.data.readingPreferences !== DEFAULT_READING_PREFERENCES, 'profile 不应共享可变默认阅读偏好对象');
+assert(profileConfig.data.readingSettingsVisible === false, 'profile 缺少设置面板初始状态');
+
 const pageConfigs = {};
 global.Page = (config) => {
   pageConfigs[global.currentReadingSubject] = config;
