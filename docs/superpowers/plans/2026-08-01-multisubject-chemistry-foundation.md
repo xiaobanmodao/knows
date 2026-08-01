@@ -20,6 +20,9 @@
 - Chemistry totals at activation are exactly 5 curriculum themes, 10 topics, 40 knowledge items, 12 method templates, and at least 8 unique experiments and 24 unique equations.
 - Every chemistry knowledge item contains at least three knowledge points, one original worked example, one boundary/condition statement, two valid related IDs, and verified review metadata.
 - Every chemistry experiment uses purpose, apparatus, steps, phenomenon, conclusion, errors, and safety; every equation contains equation, condition, phenomenon or interpretation, and a unique `equationId`.
+- `chem-k-lab-object-change` owns chemistry's research object, experimental/model methods, development, and chemistry-technology-society-environment connections; `chem-k-lab-inquiry` owns the inquiry cycle, evidence, reflection, scientific attitude, and responsibility.
+- `chem-k-substance-classification` explicitly covers synthesis, decomposition, displacement, and double-displacement reaction types; `chem-k-resources-environment` explicitly covers need-design-evaluate-improve engineering flow, scientific ethics, legal norms, and chemical/food/medicine safety awareness.
+- Keep hydrogen, carbon monoxide, atomic structure, periodic-table, carbon-material, metal-extraction, pH, ion-reaction, and organic-content explanations at the junior-high “initial, simple, common” boundary; exclude mole concentration, ionic equations/equilibria, logarithmic pH/titration, electron configurations, electrochemistry, thermochemistry/kinetics, organic mechanisms, and complex metallurgy.
 - Topic cover sources are exactly `1280 x 900`; compressed cloud files are no larger than `200KB`; text remains complete when every image fails.
 - Main package compressed target remains below `700KiB`; chemistry package target is below `1MB`.
 - Do not claim an unverified 2026 PEP chemistry chapter order; future textbook alignment is additive `textbookMappings` only.
@@ -144,7 +147,7 @@ chem-exp-oxygen                  氧气的实验室制取与性质
 chem-exp-carbon-dioxide           二氧化碳的实验室制取与性质
 chem-exp-metals                   常见金属的物理性质和化学性质
 chem-exp-acids-bases              常见酸、碱的化学性质
-chem-exp-sodium-chloride-solution 一定溶质质量分数氯化钠溶液的配制
+chem-exp-sodium-chloride-solution 一定溶质质量分数的氯化钠溶液的配制
 chem-exp-water-composition        水的组成及变化探究
 chem-exp-combustion-conditions    燃烧条件的探究
 ```
@@ -381,6 +384,8 @@ chem-exp-combustion-conditions
 
 Include at least ten unique equation blocks. Equations use plain searchable formula text such as `2H2O2 -> 2H2O + O2↑`; Unicode decoration may be added only as a separate display field.
 
+Apply the curriculum responsibility and junior-high boundary rules from Global Constraints verbatim. In particular, do not let the first five topics drift into hydrogen-energy engineering, electron configurations, periodic-law derivation, ionic equations, mole concentration, limiting reagents, or yield calculations.
+
 - [ ] **Step 7: Run the foundation check**
 
 Run: `node scripts/check-chemistry-foundations.js`
@@ -452,6 +457,8 @@ chem-exp-coarse-salt
 ```
 
 Add enough unique balanced equation blocks to reach at least 24 total. Cover combustion, oxygen preparation, water electrolysis, carbon oxides, carbon dioxide and limewater, carbonate and acid, metal and oxygen, metal and acid, metal displacement, metal oxide and acid, neutralization, basic oxide and water, carbonate and acid, hydroxide precipitation, and chloride precipitation.
+
+Apply the curriculum responsibility and junior-high boundary rules from Global Constraints verbatim. Carbon monoxide stays within incomplete combustion, toxicity, and a limited common-property comparison; pH remains qualitative; ion reactions remain phenomenon-led common tests without ionic equations; organic content excludes functional groups, isomerism, naming, and polymerization mechanisms; metallurgy excludes electrochemical and industrial-process calculations.
 
 - [ ] **Step 5: Add schema and review-meta coverage**
 
