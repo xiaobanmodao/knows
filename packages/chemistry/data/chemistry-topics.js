@@ -1,5 +1,50 @@
 const { buildTopic } = require('./chemistry-builders');
 
+function diagramImage(id, title, caption) {
+  return {
+    id: `chem-diagram-${id}`,
+    image: `/assets/figures/generated/chemistry/diagrams/${id}.png`,
+    title,
+    caption,
+  };
+}
+
+const topicDiagrams = {
+  'chem-topic-lab': [
+    diagramImage('laboratory-observation-cycle', '实验观察与证据链', '按准备、观察、记录、解释的顺序开展实验；始终先识别风险并遵守教师指导。'),
+  ],
+  'chem-topic-air-oxygen': [
+    diagramImage('oxygen-preparation', '氧气的实验室制取', '常温下用过氧化氢溶液和二氧化锰制取氧气，装药品前检查气密性，并用排水法收集。'),
+  ],
+  'chem-topic-water-solution': [
+    diagramImage('water-electrolysis', '水的电解与气体体积关系', '直流电解水时，负极产生氢气、正极产生氧气，两者体积比约为 2:1。'),
+    diagramImage('solubility-curve', '溶解度曲线的读取', '横轴表示温度，纵轴表示每 100 g 水中达到饱和时可溶解的溶质质量；曲线上的点表示饱和状态。'),
+  ],
+  'chem-topic-particles-elements': [
+    diagramImage('particle-model', '固体、液体与气体的微粒模型', '三态物质的微粒都在运动；固体排列紧密且位置较固定，液体紧密但可移动，气体间隔较大。'),
+  ],
+  'chem-topic-language-conservation': [
+    diagramImage('particle-conservation', '化学反应中的原子守恒', '氢气与氧气反应生成水时，反应前后氢、氧原子的种类和数目不变，只是重新组合。'),
+  ],
+  'chem-topic-carbon-fuels': [
+    diagramImage('carbon-dioxide-preparation', '二氧化碳的实验室制取', '大理石与稀盐酸在常温下反应制取二氧化碳；长颈漏斗下端应浸入液面形成液封，并先检查气密性。'),
+  ],
+  'chem-topic-metals': [
+    diagramImage('metal-activity', '常见金属活动性顺序', '金属活动性由左向右逐渐减弱；氢前金属通常可与稀盐酸或稀硫酸反应放出氢气，具体还要结合反应条件。'),
+    diagramImage('corrosion-conditions', '铁锈蚀条件的对照', '铁同时接触水和氧气时容易锈蚀；干燥空气或隔绝氧气的对照组可用于判断必要条件。'),
+  ],
+  'chem-topic-acids-bases': [
+    diagramImage('ph-scale', 'pH 与溶液酸碱性', '常温水溶液中，pH 小于 7 表示酸性、等于 7 表示中性、大于 7 表示碱性；测量时用洁净玻璃棒蘸取待测液。'),
+    diagramImage('acid-base-neutralization', '盐酸与氢氧化钠的中和', '盐酸和氢氧化钠恰好反应生成氯化钠和水；指示剂颜色和 pH 变化可帮助判断反应进程。'),
+  ],
+  'chem-topic-salts-fertilizers': [
+    diagramImage('ion-test-evidence', '常见离子检验的证据链', '待测液应分样并排除干扰；选择可溶试剂，依据特征沉淀或气体的进一步检验形成证据。'),
+  ],
+  'chem-topic-materials-environment': [
+    diagramImage('material-lifecycle', '材料全生命周期', '从原料、制造、使用到分类回收和安全处置都要比较资源消耗、环境影响与实际需求，并持续改进方案。'),
+  ],
+};
+
 const topicDefinitions = [
   {
     id: 'chem-topic-lab',
@@ -177,6 +222,7 @@ const topics = topicDefinitions.map((topic) => buildTopic({
   ...topic,
   gradeBands: ['九年级'],
   coverImage: `/assets/figures/generated/chemistry/topics/${topic.id}/cover.png`,
+  diagramImages: topicDiagrams[topic.id] || [],
   textbookMappings: [],
 }));
 

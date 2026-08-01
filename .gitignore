@@ -15,6 +15,8 @@ assets/figures/generated/*
 !assets/figures/generated/topics/
 !assets/figures/generated/templates/
 !assets/figures/generated/subjects/
+!assets/figures/generated/chemistry/
+!assets/figures/generated/chemistry/**
 
 node_modules/
 cloudfunctions/**/node_modules/

@@ -83,6 +83,11 @@ topics.forEach((topic) => {
   assert.strictEqual(resolved.knowledgeItems.length, topic.knowledgeIds.length, `topic knowledge resolution ${topic.id}`);
   assert.strictEqual(resolved.templates.length, topic.templateIds.length, `topic template resolution ${topic.id}`);
   assert.strictEqual(resolved.knowledgeCount, 4, `topic knowledge count ${topic.id}`);
+  assert(Array.isArray(resolved.diagramImages) && resolved.diagramImages.length > 0, `topic diagrams resolve ${topic.id}`);
+  resolved.diagramImages.forEach((diagram) => {
+    assert(diagram.image.startsWith('cloud://'), `topic diagram uses cloud resolver ${topic.id}/${diagram.id}`);
+    assert(diagram.title && diagram.caption, `topic diagram preserves text fallback ${topic.id}/${diagram.id}`);
+  });
 });
 
 knowledgeItems.forEach((knowledge) => {
@@ -159,6 +164,13 @@ const templateWxml = read('packages/chemistry/pages/template/index.wxml');
 assert(templateWxml.includes('example.scenario'), 'template page renders worked scenario');
 assert(templateWxml.includes('example.steps'), 'template page renders worked steps');
 assert(templateWxml.includes('example.conclusion'), 'template page renders worked conclusion');
+
+const topicWxml = read('packages/chemistry/pages/topic/index.wxml');
+const topicWxss = read('packages/chemistry/pages/topic/index.wxss');
+assert(topicWxml.includes('topic.diagramImages'), 'topic page renders diagram collection');
+assert(topicWxml.includes('{{diagram.caption}}'), 'topic page keeps diagram meaning in readable text');
+assert(topicWxml.includes('binderror="onDiagramError"'), 'topic page handles individual diagram failures');
+assert(/\.topic-diagram__media\s*\{[^}]*aspect-ratio:\s*1200\s*\/\s*760/s.test(topicWxss), 'topic diagrams use stable responsive dimensions');
 
 const contentBlockJs = read('components/content-block/index.js');
 const contentBlockWxml = read('components/content-block/index.wxml');
@@ -411,7 +423,9 @@ function createAppMock(options = {}) {
 function loadPageConfig(pageName, assetPromise = Promise.resolve({})) {
   const originalGetTempFileURLMap = cloudAssets.getTempFileURLMap;
   let config;
-  cloudAssets.getTempFileURLMap = () => assetPromise;
+  cloudAssets.getTempFileURLMap = (paths) => (
+    typeof assetPromise === 'function' ? assetPromise(paths) : assetPromise
+  );
   global.Page = (value) => {
     config = value;
   };
@@ -574,6 +588,52 @@ async function runFocusChecks() {
   assert(!wxMock.calls.scrolls.some((item) => item.selector), 'restore-only load does not invent a focus selector');
 }
 
+async function runTopicDiagramChecks() {
+  const diagramTopic = topics.find((item) => item.diagramImages.length >= 2) || topics[0];
+  const topic = repository.getTopicById(diagramTopic.id);
+  const signed = {};
+  topic.diagramImages.forEach((diagram, index) => {
+    signed[diagram.image] = `https://signed.example/diagram-${index}.png`;
+  });
+  signed[topic.coverImage] = 'https://signed.example/cover.png';
+
+  let requestedPaths = [];
+  const wxMock = createWxMock();
+  global.wx = wxMock.api;
+  const config = loadPageConfig('topic', (paths) => {
+    requestedPaths = paths;
+    return Promise.resolve(signed);
+  });
+  const page = createPageInstance(config, wxMock.calls.events);
+  await page.onLoad({ id: topic.id });
+
+  assert.deepStrictEqual(
+    requestedPaths,
+    [topic.coverImage, ...topic.diagramImages.map((diagram) => diagram.image)],
+    'topic requests cover and every diagram in one cloud batch',
+  );
+  assert.strictEqual(page.data.topic.coverImage, signed[topic.coverImage], 'topic cover receives signed URL');
+  page.data.topic.diagramImages.forEach((diagram, index) => {
+    assert.strictEqual(diagram.image, signed[topic.diagramImages[index].image], `diagram receives signed URL ${diagram.id}`);
+    assert.strictEqual(diagram.imageLoadFailed, false, `diagram starts in readable image state ${diagram.id}`);
+    assert.strictEqual(diagram.caption, topic.diagramImages[index].caption, `diagram keeps caption ${diagram.id}`);
+  });
+
+  page.onDiagramError({ currentTarget: { dataset: { index: 0 } } });
+  assert.strictEqual(page.data.topic.diagramImages[0].imageLoadFailed, true, 'one diagram failure is isolated');
+  assert.strictEqual(page.data.topic.diagramImages[1] && page.data.topic.diagramImages[1].imageLoadFailed, false, 'other diagrams remain visible');
+
+  const fallbackWx = createWxMock();
+  global.wx = fallbackWx.api;
+  const fallbackConfig = loadPageConfig('topic', Promise.resolve({}));
+  const fallbackPage = createPageInstance(fallbackConfig, fallbackWx.calls.events);
+  await fallbackPage.onLoad({ id: topic.id });
+  fallbackPage.data.topic.diagramImages.forEach((diagram) => {
+    assert.strictEqual(diagram.image, '', `cloud failure leaves text-only diagram fallback ${diagram.id}`);
+    assert(diagram.title && diagram.caption, `cloud failure preserves readable explanation ${diagram.id}`);
+  });
+}
+
 async function runIdentityAndMissingChecks() {
   const knowledge = relatedSource;
   let appMock = createAppMock();
@@ -669,6 +729,7 @@ async function runUnloadGuardChecks() {
 async function main() {
   await runNavigationChecks();
   await runFocusChecks();
+  await runTopicDiagramChecks();
   await runIdentityAndMissingChecks();
   await runUnloadGuardChecks();
   console.log(`OK chemistry pages: ${home.themes.length} themes, ${home.topics.length} topics, ${knowledgeItems.length} knowledge items, ${templates.length} templates, runtime routes/lifecycles and focus/copy contracts checked`);

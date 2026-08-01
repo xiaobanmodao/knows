@@ -36,9 +36,14 @@ expected.forEach((source) => {
   const width = buffer.readUInt32BE(16);
   const height = buffer.readUInt32BE(20);
   const hash = crypto.createHash('sha256').update(buffer).digest('hex');
+  const isChemistryCover = source.includes('/chemistry/topics/') && source.endsWith('/cover.png');
 
   if (buffer.length > sizeLimit) issues.push(`${source}: ${buffer.length} bytes 超过 200KB`);
-  if (!width || !height || width > 960 || height > 675) issues.push(`${source}: 压缩尺寸异常 ${width}x${height}`);
+  if (isChemistryCover) {
+    if (width !== 1280 || height !== 900) issues.push(`${source}: 化学封面压缩后必须保持 1280x900，实际 ${width}x${height}`);
+  } else if (!width || !height || width > 960 || height > 675) {
+    issues.push(`${source}: 压缩尺寸异常 ${width}x${height}`);
+  }
   if (record.bytes !== buffer.length) issues.push(`${source}: 清单体积与文件不一致`);
   if (record.width !== width || record.height !== height) issues.push(`${source}: 清单尺寸与文件不一致`);
   if (record.sha256 !== hash) issues.push(`${source}: 清单哈希与文件不一致`);

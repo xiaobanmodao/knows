@@ -16,6 +16,21 @@
     <view class="objective-band__text">{{topic.objective}}</view>
   </view>
 
+  <view wx:if="{{topic.diagramImages.length}}" class="section-title section-gap">
+    <view class="section-title__main">核心图示</view>
+    <view class="section-title__sub">{{topic.diagramImages.length}} 张</view>
+  </view>
+  <view wx:if="{{topic.diagramImages.length}}" class="topic-diagrams">
+    <view wx:for="{{topic.diagramImages}}" wx:key="id" wx:for-item="diagram" class="topic-diagram">
+      <view class="topic-diagram__media">
+        <image wx:if="{{diagram.image && !diagram.imageLoadFailed}}" class="topic-diagram__image" src="{{diagram.image}}" mode="widthFix" data-index="{{index}}" binderror="onDiagramError"></image>
+        <view wx:else class="topic-diagram__fallback">{{diagram.title}}</view>
+      </view>
+      <view class="topic-diagram__title">{{diagram.title}}</view>
+      <view class="topic-diagram__caption">{{diagram.caption}}</view>
+    </view>
+  </view>
+
   <view wx:if="{{topic.knowledgeItems.length}}" class="section-title section-gap">
     <view class="section-title__main">知识点</view>
     <view class="section-title__sub">{{topic.knowledgeCount}} 个</view>

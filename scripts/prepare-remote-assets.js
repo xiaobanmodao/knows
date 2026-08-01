@@ -22,6 +22,20 @@ limit = 200 * 1024
 def save_under_limit(src, out):
     os.makedirs(os.path.dirname(out), exist_ok=True)
     image = Image.open(src).convert('RGB')
+    normalized = src.replace(os.sep, '/')
+    is_chemistry_cover = '/chemistry/topics/' in '/' + normalized and normalized.endswith('/cover.png')
+    if is_chemistry_cover:
+        if image.size != (1280, 900):
+            raise ValueError(f'chemistry cover must be 1280x900: {src} is {image.size[0]}x{image.size[1]}')
+        last = None
+        for color_count in [256, 192, 160, 128, 96, 64, 48, 32, 24, 16, 12, 8]:
+            quantized = image.quantize(colors=color_count, method=Image.Quantize.MEDIANCUT)
+            quantized.save(out, 'PNG', optimize=True)
+            last = os.path.getsize(out)
+            if last <= limit:
+                return last
+        return last
+
     sizes = [(960, 675), (840, 591), (720, 506), (640, 450)]
     colors = [160, 128, 96, 64, 48, 32]
 
@@ -45,15 +59,18 @@ def save_under_limit(src, out):
 
 oversize = []
 for item in items:
-    size = save_under_limit(item['source'], item['out'])
-    if size > limit:
-        oversize.append((item['out'], size))
+    try:
+        size = save_under_limit(item['source'], item['out'])
+        if size > limit:
+            oversize.append((item['out'], size))
+    except Exception as error:
+        oversize.append((item['out'], str(error)))
 
 print(f'prepared {len(items)} remote assets')
 if oversize:
     print('oversize:')
-    for out, size in oversize:
-        print(size, out)
+    for out, detail in oversize:
+        print(detail, out)
     sys.exit(2)
 `;
 

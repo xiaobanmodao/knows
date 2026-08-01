@@ -1,0 +1,116 @@
+{
+  "version": 1,
+  "tool": "OpenAI built-in imagegen",
+  "covers": [
+    {
+      "topicId": "chem-topic-lab",
+      "prompt": "Use case: scientific-educational\nAsset type: WeChat mini-program chemistry topic cover, landscape 1280x900\nPrimary request: Create an original, text-free cover illustration for the junior-high chemistry topic \"Introduction to Chemistry and Laboratory Safety\".\nScene/backdrop: a bright modern school chemistry laboratory, clean white workbench, approved glassware on stable supports, safety goggles, digital balance, dropper, blank observation notebook, organized labeled-color reagent bottles with absolutely no readable writing.\nSubject: two middle-school students wearing splash goggles and lab coats observe a safe color-change demonstration while a teacher supervises from beside them; hands remain away from chemicals.\nStyle/medium: polished semi-realistic editorial educational illustration, tactile glass and metal, accurate plausible apparatus, not a stock photo.\nComposition/framing: wide 1280x900 landscape, strong central workbench, full objects visible with generous edge padding, layered depth, no split layout, no empty card frame.\nLighting/mood: clear daylight, curious, calm, responsible.\nColor palette: balanced white, teal, sunflower yellow, coral red and charcoal accents; avoid a one-hue blue palette.\nConstraints: no text, no letters, no numbers, no logos, no watermark; no open flame, no unsafe handling, no tasting or smelling, no improvised apparatus; no distorted hands or glassware; do not depict a home experiment.",
+      "outputName": "exec-f2c4231a-2f50-435c-a5d8-b0b48c347be4.png",
+      "sourcePath": "assets/figures/generated/chemistry/topics/chem-topic-lab/cover.png",
+      "generatedAt": "2026-08-01",
+      "manualReview": {
+        "status": "approved",
+        "notes": "Safety goggles, teacher supervision and stable school-laboratory apparatus are visible; no readable text or unsafe action."
+      }
+    },
+    {
+      "topicId": "chem-topic-air-oxygen",
+      "prompt": "Use case: scientific-educational\nAsset type: WeChat mini-program chemistry topic cover, landscape 1280x900\nPrimary request: Create an original, text-free cover illustration for the junior-high chemistry topic \"Air, Oxygen and Combustion\".\nScene/backdrop: a bright supervised school laboratory merging subtly into a clear outdoor sky; a plausible oxygen gas collection setup with stable glassware, water trough and upright collection bottle, plus abstract floating oxygen molecular models as simple paired spheres.\nSubject: oxygen as part of air, safe gas collection, and the idea of combustion conditions, shown conceptually rather than as procedural instructions.\nStyle/medium: polished semi-realistic editorial educational illustration with accurate glass and water, crisp tactile details.\nComposition/framing: wide landscape, apparatus centered and fully visible, sky and clean-air context on the left, a teacher-controlled small glowing splint demonstration behind a safety screen on the right; generous padding.\nLighting/mood: fresh daylight, energetic and precise.\nColor palette: sky cyan, clean white, leaf green, warm red and graphite accents; balanced multicolor, not blue monochrome.\nConstraints: no text, letters, numbers, labels, logos or watermark; no home setting, no improvised or sealed apparatus, no large open flame, no student ignition, no distorted glass connections; no smoke-filled room.",
+      "outputName": "exec-5160617e-ed17-47c3-82c5-26146b868925.png",
+      "sourcePath": "assets/figures/generated/chemistry/topics/chem-topic-air-oxygen/cover.png",
+      "generatedAt": "2026-08-01",
+      "manualReview": {
+        "status": "approved",
+        "notes": "The cover is thematic rather than procedural; the separate programmatic oxygen diagram provides the canonical apparatus."
+      }
+    },
+    {
+      "topicId": "chem-topic-water-solution",
+      "prompt": "Use case: scientific-educational\nAsset type: WeChat mini-program chemistry topic cover, landscape 1280x900\nPrimary request: Create an original, text-free cover illustration for the junior-high chemistry topic \"Water and Solutions\".\nScene/backdrop: a luminous school science workspace with a large clear water droplet motif, transparent beakers, clean filtration glassware, crystalline solute visibly dispersing into water, and a neat row of solutions at different safe concentrations.\nSubject: water composition, purification, dissolving, saturation and solution concentration presented as visual concepts.\nStyle/medium: polished semi-realistic editorial educational illustration, highly legible glass, liquid and crystal textures, not a stock photo.\nComposition/framing: wide landscape; large water droplet and beaker in foreground, filtration path in middle distance, orderly concentration comparison at side; all apparatus complete and stable with generous edge padding.\nLighting/mood: bright, refreshing, methodical.\nColor palette: clear aqua, white, emerald, violet and warm amber accents; avoid monochrome blue.\nConstraints: no text, letters, numbers, measurement labels, logos or watermark; no drinking laboratory liquid, no kitchen recipe, no unsafe heating, no tiny unreadable markings, no impossible pouring or floating glassware.",
+      "outputName": "exec-64707a3a-418c-4b32-90b4-2f8029adbebe.png",
+      "sourcePath": "assets/figures/generated/chemistry/topics/chem-topic-water-solution/cover.png",
+      "generatedAt": "2026-08-01",
+      "manualReview": {
+        "status": "approved",
+        "notes": "Water, filtration, dissolution and concentration are communicated visually without readable labels."
+      }
+    },
+    {
+      "topicId": "chem-topic-particles-elements",
+      "prompt": "Use case: scientific-educational\nAsset type: WeChat mini-program chemistry topic cover, landscape 1280x900\nPrimary request: Create an original, text-free cover illustration for the junior-high chemistry topic \"Molecules, Atoms, Ions and Elements\".\nScene/backdrop: a clean contemporary science museum-style visualization space, with large tactile ball-and-stick particle models, a simple neutral atom model, an ion shown by a subtle surrounding glow, and a wall of blank periodic-table-like tiles with no symbols.\nSubject: the idea that matter is made of particles and that elements classify atoms, staying at introductory junior-high level.\nStyle/medium: polished 3D editorial educational illustration, clear geometry and materials, scientifically respectful rather than fantasy.\nComposition/framing: wide landscape; three particle model groups at different scales, blank periodic grid receding into background, strong depth and generous margins, no UI frame.\nLighting/mood: crisp studio lighting, thoughtful and exploratory.\nColor palette: cobalt, mint green, coral, white, graphite and small yellow accents; balanced and not purple-dominant.\nConstraints: absolutely no text, letters, numbers, element symbols, formulas, logos or watermark; no electron orbit labels, no detailed electron configurations, no quantum imagery, no impossible fused spheres or distorted lattice.",
+      "outputName": "exec-f86e6a30-622c-48ef-84c5-127ab5bf56e2.png",
+      "sourcePath": "assets/figures/generated/chemistry/topics/chem-topic-particles-elements/cover.png",
+      "generatedAt": "2026-08-01",
+      "manualReview": {
+        "status": "approved",
+        "notes": "The periodic-table wall is deliberately blank and the atomic imagery stays introductory."
+      }
+    },
+    {
+      "topicId": "chem-topic-language-conservation",
+      "prompt": "Use case: scientific-educational\nAsset type: WeChat mini-program chemistry topic cover, landscape 1280x900\nPrimary request: Create an original, text-free cover illustration for the junior-high chemistry topic \"Chemical Language and Conservation of Mass\".\nScene/backdrop: a precise visual science studio with a transparent closed reaction vessel on a laboratory balance, colored particle models shown before and after rearrangement, and two balanced pans containing the same count of colored spheres.\nSubject: chemical symbols as visual representation, atom rearrangement, equation balancing and mass conservation, without displaying written formulas.\nStyle/medium: polished semi-realistic 3D editorial illustration, accurate balance and glass vessel, clean educational clarity.\nComposition/framing: wide landscape; balance and sealed vessel central, before/after particle clusters arranged left and right with a clear visual flow made from shapes only, ample edge padding.\nLighting/mood: focused, orderly, satisfying.\nColor palette: white, forest green, vermilion, cobalt, brass and charcoal; diverse restrained accents.\nConstraints: no text, letters, numbers, chemical formulas, labels, logos or watermark; no open vessel implying mass loss, no impossible scale geometry, no flames, no tiny unreadable markings.",
+      "outputName": "exec-9d8b2bcf-7079-4b80-965f-1d18da530b7e.png",
+      "sourcePath": "assets/figures/generated/chemistry/topics/chem-topic-language-conservation/cover.png",
+      "generatedAt": "2026-08-01",
+      "manualReview": {
+        "status": "approved",
+        "notes": "The image is a thematic cover; exact particle conservation is supplied by the reviewed deterministic diagram."
+      }
+    },
+    {
+      "topicId": "chem-topic-carbon-fuels",
+      "prompt": "Use case: scientific-educational\nAsset type: WeChat mini-program chemistry topic cover, landscape 1280x900\nPrimary request: Create an original, text-free cover illustration for the junior-high chemistry topic \"Carbon, Carbon Compounds and Fuels\".\nScene/backdrop: a museum-quality chemistry display transitioning into a clean low-carbon city backdrop; a diamond crystal, layered graphite structure, carbon dioxide molecular models, a plausible supervised gas collection vignette, and clean energy/utilization context.\nSubject: different carbon forms, carbon oxides, fuels, safe combustion awareness and low-carbon living.\nStyle/medium: polished semi-realistic editorial educational illustration with tactile crystal, graphite, glass and urban materials.\nComposition/framing: wide landscape; diamond and graphite in close foreground, CO2 models and laboratory glassware mid-frame, daylight city and greenery in background; coherent single scene, generous margins.\nLighting/mood: sophisticated, clear, forward-looking.\nColor palette: graphite black, crystalline white, emerald green, sky blue, copper and red accents; not dark-dominated.\nConstraints: no text, letters, numbers, formulas, labels, logos or watermark; no smoky disaster scene, no indoor exhaust, no student flame experiment, no coal glamour, no impossible molecular bonds or unsafe sealed gas vessel.",
+      "outputName": "exec-816f3fc2-5c64-472d-ae1b-e0a6dc46063d.png",
+      "sourcePath": "assets/figures/generated/chemistry/topics/chem-topic-carbon-fuels/cover.png",
+      "generatedAt": "2026-08-01",
+      "manualReview": {
+        "status": "approved",
+        "notes": "Carbon forms, carbon dioxide and low-carbon context are distinct; detailed gas apparatus is delegated to the deterministic diagram."
+      }
+    },
+    {
+      "topicId": "chem-topic-metals",
+      "prompt": "Use case: scientific-educational\nAsset type: WeChat mini-program chemistry topic cover, landscape 1280x900\nPrimary request: Create an original, text-free cover illustration for the junior-high chemistry topic \"Metals and Metallic Materials\".\nScene/backdrop: a bright materials science workshop display with clearly different metal samples, a steel bridge model, lightweight alloy bicycle component, a protected metal panel beside a gently rusted comparison panel, and a recycling loop suggested by arranged shapes.\nSubject: metal properties, alloys, activity, extraction as a resource concept, corrosion prevention and recycling.\nStyle/medium: polished semi-realistic editorial educational illustration, accurate metallic textures and corrosion, clean school-science presentation.\nComposition/framing: wide landscape; metal specimens and corrosion comparison foreground, engineering uses middle, recycling/resource context background; stable uncluttered composition.\nLighting/mood: crisp industrial daylight, practical and optimistic.\nColor palette: silver, zinc gray, rust red, safety yellow, teal and green accents; balanced, not brown/orange dominated.\nConstraints: no text, letters, numbers, activity-series labels, logos or watermark; no molten-metal student work, no acid splash, no sparks near students, no unsafe sharp handling, no fantasy alloys or impossible structures.",
+      "outputName": "exec-d1ad872b-3837-4b67-a45f-275c3b760d9e.png",
+      "sourcePath": "assets/figures/generated/chemistry/topics/chem-topic-metals/cover.png",
+      "generatedAt": "2026-08-01",
+      "manualReview": {
+        "status": "approved",
+        "notes": "Metal uses, corrosion comparison and recycling are clear without depicting hazardous metal processing."
+      }
+    },
+    {
+      "topicId": "chem-topic-acids-bases",
+      "prompt": "Use case: scientific-educational\nAsset type: WeChat mini-program chemistry topic cover, landscape 1280x900\nPrimary request: Regenerate an original, completely text-free cover illustration for the junior-high chemistry topic \"Common Acids and Bases\".\nScene/backdrop: a bright supervised school laboratory with a plain softly lit wall, indicator color changes across clear test tubes, blank color-only indicator paper strips, separate dilute acid and base glassware, and a central neutralization beaker changing to a calm green color.\nSubject: qualitative acidity and alkalinity, indicators and neutralization communicated only through colors and arrangement.\nStyle/medium: polished semi-realistic editorial educational illustration with crisp liquid and glass textures.\nComposition/framing: wide landscape; symmetrical pink/red solution group on left, blue/violet solution group on right, green neutral result centered, a color spectrum of test tubes in foreground, goggles and protective tray visible.\nLighting/mood: clean, precise, approachable.\nColor palette: magenta, red, orange, yellow, green, cyan, blue, violet, white and charcoal.\nConstraints: absolutely no text, no letters, no numbers, no plus or minus signs, no formulas, no symbols on walls or objects, no labels, no logos, no watermark; plain background with no board; no concentrated acid, no cleaner mixing, no tasting or touching, no spills, no skin exposure, no unsafe procedure.",
+      "outputName": "exec-930cee4e-96d5-4b20-a3a9-f977d5ef9b79.png",
+      "sourcePath": "assets/figures/generated/chemistry/topics/chem-topic-acids-bases/cover.png",
+      "generatedAt": "2026-08-01",
+      "manualReview": {
+        "status": "approved",
+        "notes": "A first draft was rejected for unwanted charge lettering; this regenerated cover contains color-only evidence and protective equipment."
+      }
+    },
+    {
+      "topicId": "chem-topic-salts-fertilizers",
+      "prompt": "Use case: scientific-educational\nAsset type: WeChat mini-program chemistry topic cover, landscape 1280x900\nPrimary request: Create an original, text-free cover illustration for the junior-high chemistry topic \"Salts, Fertilizers and Common Ion Reactions\".\nScene/backdrop: a clean school laboratory connected visually to a healthy field; distinct crystal samples, a supervised coarse-salt filtration setup, two clear solutions forming a visible precipitate in a test tube, and measured fertilizer granules beside thriving plants.\nSubject: common salts, filtration evidence, precipitation evidence, fertilizer types and responsible use, plus material classification.\nStyle/medium: polished semi-realistic editorial educational illustration, detailed crystals, glass and plant textures.\nComposition/framing: wide landscape; crystals and filtration foreground, precipitation evidence in the middle, field and responsible nutrient use in background; organized single composition with generous padding.\nLighting/mood: bright, practical, evidence-focused.\nColor palette: mineral white, turquoise, leaf green, violet, sunflower yellow and red accents; avoid beige/brown dominance.\nConstraints: no text, letters, numbers, formula labels, logos or watermark; no tasting salt, no food container, no excessive fertilizer pile, no pesticide spraying, no claim that one white precipitate proves every ion, no unsafe home experiment.",
+      "outputName": "exec-137ec451-f354-4962-8be8-0de04504c6e7.png",
+      "sourcePath": "assets/figures/generated/chemistry/topics/chem-topic-salts-fertilizers/cover.png",
+      "generatedAt": "2026-08-01",
+      "manualReview": {
+        "status": "approved",
+        "notes": "The lab portion shows supervision and eye protection; the image treats precipitation as evidence rather than a universal test."
+      }
+    },
+    {
+      "topicId": "chem-topic-materials-environment",
+      "prompt": "Use case: scientific-educational\nAsset type: WeChat mini-program chemistry topic cover, landscape 1280x900\nPrimary request: Create an original, text-free cover illustration for the junior-high chemistry topic \"Chemical Materials, Resources and Environment\".\nScene/backdrop: a bright circular materials studio opening onto a clean river and green city; displays of natural fiber, glass, ceramic, metal, responsibly used polymer, composite panel and recycled material samples, with clean water and healthy plants.\nSubject: material selection, organic polymers at introductory level, human health context, resource efficiency, pollution prevention and green chemistry lifecycle thinking.\nStyle/medium: polished semi-realistic editorial educational illustration with tactile material samples and clean environmental detail.\nComposition/framing: wide landscape; diverse material samples arranged in a gentle circular flow foreground, clean manufacturing and recycling middle, river/green city background; full objects and generous edge padding.\nLighting/mood: hopeful, balanced, responsible, modern.\nColor palette: leaf green, turquoise, white, silver, coral, violet and warm yellow accents; avoid beige/brown or blue-only dominance.\nConstraints: no text, letters, numbers, material labels, formulas, logos or watermark; no garbage heap, no greenwashing slogans, no unsafe chemical handling, no burning plastic, no tiny infographic text, no impossible material textures.",
+      "outputName": "exec-f9b4f8af-a662-4082-b207-1b22846d5de4.png",
+      "sourcePath": "assets/figures/generated/chemistry/topics/chem-topic-materials-environment/cover.png",
+      "generatedAt": "2026-08-01",
+      "manualReview": {
+        "status": "approved",
+        "notes": "Natural, synthetic, ceramic, glass, metal and composite materials are visually distinct in a lifecycle-oriented setting."
+      }
+    }
+  ]
+}

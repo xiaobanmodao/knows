@@ -13,6 +13,7 @@ global.wx = {
 };
 
 const cloudAssets = require('../utils/cloud-assets');
+const chemistry = require('../packages/chemistry/repository');
 
 function fileID(name) {
   return `cloud://test-env.test-bucket/assets/${name}.png`;
@@ -109,7 +110,27 @@ async function run() {
   assert.strictEqual(serverCalls, 2);
   assert.strictEqual(clientCalls, 0);
 
-  console.log('OK cloud assets use server signing first, client fallback, 50-item batches and text-safe failure');
+  reset();
+  setServerSuccess();
+  setClientFailure();
+  const chemistryTopic = chemistry.getSubjectHome().topics.find((topic) => topic.diagramImages.length >= 2);
+  const chemistryIDs = [chemistryTopic.coverImage, ...chemistryTopic.diagramImages.map((diagram) => diagram.image)];
+  assert(chemistryIDs.every(cloudAssets.isCloudFile), 'chemistry cover and diagrams resolve to cloud file IDs');
+  const chemistryMap = await cloudAssets.getTempFileURLMap(chemistryIDs);
+  assert.strictEqual(Object.keys(chemistryMap).length, chemistryIDs.length, 'chemistry topic assets resolve in one runtime batch');
+  chemistryIDs.forEach((id) => {
+    assert(cloudAssets.applyTempFileURL(id, chemistryMap).startsWith('https://signed.example/'), 'chemistry asset receives signed URL');
+  });
+
+  reset();
+  setServerFailure();
+  setClientFailure();
+  const missingChemistryMap = await cloudAssets.getTempFileURLMap(chemistryIDs);
+  chemistryIDs.forEach((id) => {
+    assert.strictEqual(cloudAssets.applyTempFileURL(id, missingChemistryMap), '', 'chemistry image failure preserves text-only rendering');
+  });
+
+  console.log('OK cloud assets use server signing first, client fallback, 50-item batches, chemistry topic batches and text-safe failure');
 }
 
 run()

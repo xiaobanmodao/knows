@@ -2,6 +2,15 @@ const { getTopicById } = require('../../repository');
 const { applyTempFileURL, getTempFileURLMap, isCloudFile } = require('../../../../utils/cloud-assets');
 const { openChemistryContent } = require('../../content-routes');
 
+function prepareDiagramImages(diagrams, fileMap = {}) {
+  return (diagrams || []).map((diagram) => ({
+    ...diagram,
+    image: applyTempFileURL(diagram.image, fileMap) || (isCloudFile(diagram.image) ? '' : diagram.image),
+    hasImage: Boolean(diagram.image),
+    imageLoadFailed: false,
+  }));
+}
+
 Page({
   data: {
     topic: null,
@@ -28,15 +37,21 @@ Page({
         gradeText: topic.gradeBands.join(' · '),
         coverImage: isCloudFile(topic.coverImage) ? '' : topic.coverImage,
         hasCoverImage: Boolean(topic.coverImage),
+        diagramImages: prepareDiagramImages(topic.diagramImages),
       },
       imageLoadFailed: false,
       notFound: '',
     });
 
-    const fileMap = await getTempFileURLMap([topic.coverImage]);
+    const imagePaths = [
+      topic.coverImage,
+      ...topic.diagramImages.map((diagram) => diagram.image),
+    ].filter(Boolean);
+    const fileMap = await getTempFileURLMap(imagePaths);
     if (!this.pageActive || this.assetRequestToken !== requestToken || this.topicId !== topic.id) return;
     this.setData({
       'topic.coverImage': applyTempFileURL(topic.coverImage, fileMap) || (isCloudFile(topic.coverImage) ? '' : topic.coverImage),
+      'topic.diagramImages': prepareDiagramImages(topic.diagramImages, fileMap),
       imageLoadFailed: false,
     });
   },
@@ -60,6 +75,12 @@ Page({
 
   onImageError() {
     this.setData({ imageLoadFailed: true });
+  },
+
+  onDiagramError(event) {
+    const index = Number(event.currentTarget.dataset.index);
+    if (!Number.isInteger(index) || index < 0) return;
+    this.setData({ [`topic.diagramImages[${index}].imageLoadFailed`]: true });
   },
 
   reopen() {

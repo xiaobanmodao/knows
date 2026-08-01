@@ -53,6 +53,10 @@ function hydrateTopic(topic) {
   return clone({
     ...topic,
     coverImage: resolveAssetUrl(topic.coverImage),
+    diagramImages: (topic.diagramImages || []).map((diagram) => ({
+      ...diagram,
+      image: resolveAssetUrl(diagram.image),
+    })),
     knowledgeItems: knowledge.map(hydrateKnowledge),
     templates: methods.map(hydrateTemplate),
     knowledgeCount: knowledge.length,

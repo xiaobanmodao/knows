@@ -5,6 +5,8 @@ const english = require('../packages/english/data/english-content');
 const englishUnits = require('../packages/english/data/english-units');
 const physics = require('../packages/physics/data/physics-content');
 const physicsCurriculum = require('../packages/physics/data/physics-curriculum');
+const { topics: chemistryTopics } = require('../packages/chemistry/data/chemistry-topics');
+const { templates: chemistryTemplates } = require('../packages/chemistry/data/chemistry-templates');
 
 const chapters = math.getAllChapters();
 const studyMap = math.getMathStudyMap();
@@ -30,7 +32,7 @@ function readPngSize(localPath) {
   };
 }
 
-function assertImage(owner, image) {
+function assertImage(owner, image, expectedWidth = EXPECTED_WIDTH, expectedHeight = EXPECTED_HEIGHT) {
   if (!image) {
     issues.push(`${owner}: 缺少图片`);
     return;
@@ -54,8 +56,8 @@ function assertImage(owner, image) {
 
     if (!size) {
       issues.push(`${owner}: PNG 文件头异常 -> ${image}`);
-    } else if (size.width !== EXPECTED_WIDTH || size.height !== EXPECTED_HEIGHT) {
-      issues.push(`${owner}: 图片尺寸应为 ${EXPECTED_WIDTH}x${EXPECTED_HEIGHT}，实际为 ${size.width}x${size.height} -> ${image}`);
+    } else if (size.width !== expectedWidth || size.height !== expectedHeight) {
+      issues.push(`${owner}: 图片尺寸应为 ${expectedWidth}x${expectedHeight}，实际为 ${size.width}x${size.height} -> ${image}`);
     }
 
     if (ownerByHash.has(hash)) {
@@ -107,6 +109,17 @@ englishUnits.units.forEach((unit) => {
     assertImage(`${content.subject.name}专题封面 ${topic.title}`, topic.coverImage);
     assertImage(`${content.subject.name}专题图示 ${topic.title}`, topic.diagramImage);
   });
+});
+
+chemistryTopics.forEach((topic) => {
+  assertImage(`化学专题封面 ${topic.title}`, topic.coverImage);
+  (topic.diagramImages || []).forEach((diagram) => {
+    assertImage(`化学专题图示 ${topic.title}/${diagram.title}`, diagram.image, 1200, 760);
+  });
+});
+
+chemistryTemplates.forEach((template) => {
+  assertImage(`化学方法图 ${template.name}`, template.figure, 960, 600);
 });
 
 if (issues.length) {
