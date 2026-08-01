@@ -16,10 +16,28 @@ const SUBJECT_MANIFEST = [
     status: 'active',
     packageRoot: 'packages/math',
     entryRoute: '/packages/math/pages/index/index',
-    chapterCount: 29,
-    topicCount: 29,
-    knowledgeCount: 89,
-    templateCount: 36,
+    packagePages: [
+      'pages/index/index',
+      'pages/chapter/index',
+      'pages/topic/index',
+      'pages/knowledge/index',
+      'pages/template/index',
+    ],
+    routes: {
+      subject: '/packages/math/pages/index/index',
+      chapter: '/packages/math/pages/chapter/index',
+      topic: '/packages/math/pages/topic/index',
+      knowledge: '/packages/math/pages/knowledge/index',
+      template: '/packages/math/pages/template/index',
+    },
+    contentTypes: ['subject', 'chapter', 'topic', 'knowledge', 'template'],
+    referenceKinds: ['formula'],
+    counts: {
+      chapter: 29,
+      topic: 29,
+      knowledge: 89,
+      template: 36,
+    },
     packageLabel: '29 专题',
   },
   {
@@ -33,14 +51,34 @@ const SUBJECT_MANIFEST = [
     status: 'active',
     packageRoot: 'packages/english',
     entryRoute: '/packages/english/pages/index/index',
-    bookCount: 5,
-    unitCount: 42,
-    topicCount: 6,
-    knowledgeCount: 18,
-    vocabularyCount: 336,
-    grammarCount: 84,
-    templateCount: 6,
-    exampleCount: 924,
+    packagePages: [
+      'pages/index/index',
+      'pages/unit/index',
+      'pages/topic/index',
+      'pages/knowledge/index',
+      'pages/template/index',
+    ],
+    routes: {
+      subject: '/packages/english/pages/index/index',
+      unit: '/packages/english/pages/unit/index',
+      word: '/packages/english/pages/unit/index',
+      grammar: '/packages/english/pages/unit/index',
+      topic: '/packages/english/pages/topic/index',
+      knowledge: '/packages/english/pages/knowledge/index',
+      template: '/packages/english/pages/template/index',
+    },
+    contentTypes: ['subject', 'unit', 'word', 'grammar', 'topic', 'knowledge', 'template'],
+    referenceKinds: ['word', 'grammar'],
+    counts: {
+      book: 5,
+      unit: 42,
+      topic: 6,
+      knowledge: 18,
+      vocabulary: 336,
+      grammar: 84,
+      template: 6,
+      example: 924,
+    },
     packageLabel: '42 单元',
   },
   {
@@ -54,13 +92,31 @@ const SUBJECT_MANIFEST = [
     status: 'active',
     packageRoot: 'packages/physics',
     entryRoute: '/packages/physics/pages/index/index',
-    bookCount: 3,
-    chapterCount: 22,
-    topicCount: 6,
-    knowledgeCount: 84,
-    templateCount: 22,
-    exampleCount: 252,
-    experimentCount: 29,
+    packagePages: [
+      'pages/index/index',
+      'pages/chapter/index',
+      'pages/topic/index',
+      'pages/knowledge/index',
+      'pages/template/index',
+    ],
+    routes: {
+      subject: '/packages/physics/pages/index/index',
+      chapter: '/packages/physics/pages/chapter/index',
+      topic: '/packages/physics/pages/topic/index',
+      knowledge: '/packages/physics/pages/knowledge/index',
+      template: '/packages/physics/pages/template/index',
+    },
+    contentTypes: ['subject', 'chapter', 'topic', 'knowledge', 'template'],
+    referenceKinds: ['formula', 'experiment'],
+    counts: {
+      book: 3,
+      chapter: 22,
+      topic: 6,
+      knowledge: 84,
+      template: 22,
+      example: 252,
+      experiment: 29,
+    },
     packageLabel: '22 章',
   },
 ];
@@ -76,18 +132,65 @@ const FEATURED_MATH_CHAPTERS = [
   { id: 'ch08-system', stage: '七年级下册', title: '二元一次方程组', subtitle: '消元思想与多元方程组', highlight: '两未知量建模与解题的核心入口。', tags: ['方程组', '建模'] },
 ];
 
-function getSubjectRegistry() {
-  return SUBJECT_MANIFEST.map((subject) => ({ ...subject }));
+const COUNT_ALIASES = {
+  book: 'bookCount',
+  chapter: 'chapterCount',
+  unit: 'unitCount',
+  topic: 'topicCount',
+  knowledge: 'knowledgeCount',
+  template: 'templateCount',
+  vocabulary: 'vocabularyCount',
+  grammar: 'grammarCount',
+  example: 'exampleCount',
+  experiment: 'experimentCount',
+};
+
+function hydrateSubject(subject) {
+  const counts = { ...(subject.counts || {}) };
+  const aliases = Object.entries(COUNT_ALIASES).reduce((result, [key, alias]) => ({
+    ...result,
+    [alias]: counts[key] || 0,
+  }), {});
+  return {
+    ...subject,
+    gradeBands: [...(subject.gradeBands || [])],
+    packagePages: [...(subject.packagePages || [])],
+    routes: { ...(subject.routes || {}) },
+    contentTypes: [...(subject.contentTypes || [])],
+    referenceKinds: [...(subject.referenceKinds || [])],
+    counts,
+    ...aliases,
+  };
 }
 
-function getSubjectMeta(subjectId) {
-  return SUBJECT_MANIFEST.find((subject) => subject.id === subjectId) || SUBJECT_MANIFEST[0];
+function getSubjectRegistry({ includeBuilding = false } = {}) {
+  return SUBJECT_MANIFEST
+    .filter((subject) => includeBuilding || subject.status === 'active')
+    .map(hydrateSubject);
+}
+
+function getSubjectMeta(subjectId, options) {
+  const subjects = getSubjectRegistry(options);
+  return subjects.find((subject) => subject.id === subjectId)
+    || subjects.find((subject) => subject.id === 'math')
+    || subjects[0];
+}
+
+function getSubjectIds(options) {
+  return getSubjectRegistry(options).map((subject) => subject.id);
+}
+
+function getSubjectRoutes(subjectId, options) {
+  return { ...getSubjectMeta(subjectId, options).routes };
 }
 
 module.exports = {
   SUBJECT_LABELS,
   SUBJECT_MANIFEST,
   FEATURED_MATH_CHAPTERS,
+  COUNT_ALIASES,
   getSubjectRegistry,
   getSubjectMeta,
+  getSubjectIds,
+  getSubjectRoutes,
 };

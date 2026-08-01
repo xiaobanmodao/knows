@@ -1,8 +1,13 @@
+const { SUBJECT_MANIFEST } = require('../data/subject-manifest');
+const noteSubjectFixture = { id: 'synthetic-note-subject', status: 'active' };
+SUBJECT_MANIFEST.push(noteSubjectFixture);
 const {
+  NOTE_SUBJECT_IDS,
   buildNoteFacets,
   filterNotes,
   prepareNotes,
 } = require('../utils/note-filter');
+SUBJECT_MANIFEST.pop();
 
 const sourceNotes = [
   {
@@ -40,6 +45,12 @@ const sourceNotes = [
 ];
 
 const notes = prepareNotes(sourceNotes);
+if (!NOTE_SUBJECT_IDS.includes(noteSubjectFixture.id)) {
+  throw new Error('笔记学科筛选应从活跃学科清单派生');
+}
+if (prepareNotes([{ id: 'synthetic-01', subjectId: noteSubjectFixture.id }])[0].subjectId !== noteSubjectFixture.id) {
+  throw new Error('笔记应保留清单中的活跃学科');
+}
 if (notes.length !== 4) throw new Error(`有效笔记应为 4 条，实际 ${notes.length}`);
 if (notes[0].id !== 'physics-01' || notes[1].id !== 'english-01') {
   throw new Error('笔记没有按更新时间倒序排列');

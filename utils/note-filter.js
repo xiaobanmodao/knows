@@ -1,6 +1,7 @@
 const { normalizeSearchText } = require('./search-text');
+const { getSubjectIds } = require('../data/subject-manifest');
 
-const NOTE_SUBJECT_IDS = ['math', 'english', 'physics'];
+const NOTE_SUBJECT_IDS = getSubjectIds();
 const ALL_FILTER_ID = '__all__';
 
 function formatUpdatedAt(value) {

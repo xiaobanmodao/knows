@@ -1,30 +1,13 @@
-const { SUBJECT_MANIFEST } = require('../data/subject-manifest');
+const {
+  getSubjectMeta,
+  getSubjectRegistry,
+  getSubjectRoutes,
+} = require('../data/subject-manifest');
 
-const PACKAGE_ROUTES = {
-  math: {
-    subject: '/packages/math/pages/index/index',
-    chapter: '/packages/math/pages/chapter/index',
-    topic: '/packages/math/pages/topic/index',
-    knowledge: '/packages/math/pages/knowledge/index',
-    template: '/packages/math/pages/template/index',
-  },
-  english: {
-    subject: '/packages/english/pages/index/index',
-    unit: '/packages/english/pages/unit/index',
-    word: '/packages/english/pages/unit/index',
-    grammar: '/packages/english/pages/unit/index',
-    topic: '/packages/english/pages/topic/index',
-    knowledge: '/packages/english/pages/knowledge/index',
-    template: '/packages/english/pages/template/index',
-  },
-  physics: {
-    subject: '/packages/physics/pages/index/index',
-    chapter: '/packages/physics/pages/chapter/index',
-    topic: '/packages/physics/pages/topic/index',
-    knowledge: '/packages/physics/pages/knowledge/index',
-    template: '/packages/physics/pages/template/index',
-  },
-};
+const PACKAGE_ROUTES = getSubjectRegistry().reduce((routes, subject) => ({
+  ...routes,
+  [subject.id]: getSubjectRoutes(subject.id),
+}), {});
 
 function normalizeSubjectId(subjectId) {
   return PACKAGE_ROUTES[subjectId] ? subjectId : 'math';
@@ -55,7 +38,7 @@ function buildContentRoute(item = {}) {
 
 function getSubjectEntryRoute(subjectId) {
   const normalizedId = normalizeSubjectId(subjectId);
-  const subject = SUBJECT_MANIFEST.find((item) => item.id === normalizedId);
+  const subject = getSubjectMeta(normalizedId);
   return subject ? subject.entryRoute : PACKAGE_ROUTES.math.subject;
 }
 

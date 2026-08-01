@@ -2,7 +2,8 @@ const BACKUP_FORMAT = 'knows-local-backup';
 const BACKUP_VERSION = 1;
 const CURRENT_CONTENT_SCHEMA_VERSION = 4;
 const MAX_BACKUP_TEXT_LENGTH = 2 * 1024 * 1024;
-const SUBJECT_IDS = new Set(['math', 'english', 'physics']);
+const { getSubjectIds } = require('../data/subject-manifest');
+const SUBJECT_IDS = new Set(getSubjectIds());
 const CONTENT_TYPES = new Set(['subject', 'chapter', 'unit', 'topic', 'knowledge', 'template', 'word', 'grammar']);
 const MATH_GRADES = new Set(['grade7', 'grade8', 'grade9']);
 const {

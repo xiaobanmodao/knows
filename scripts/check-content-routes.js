@@ -1,10 +1,55 @@
 const fs = require('fs');
 const path = require('path');
 
-const { buildContentRoute } = require('../utils/content-routes');
+const { SUBJECT_MANIFEST } = require('../data/subject-manifest');
+
+const routeFixture = {
+  id: 'synthetic-route-subject',
+  status: 'active',
+  routes: {
+    subject: '/packages/synthetic-route-subject/pages/index/index',
+    knowledge: '/packages/synthetic-route-subject/pages/knowledge/index',
+  },
+};
+SUBJECT_MANIFEST.push(routeFixture);
+
+const { PACKAGE_ROUTES, buildContentRoute } = require('../utils/content-routes');
 
 const root = path.resolve(__dirname, '..');
 const issues = [];
+if (JSON.stringify(PACKAGE_ROUTES[routeFixture.id]) !== JSON.stringify(routeFixture.routes)) {
+  issues.push('分包路由未从活跃学科清单派生');
+}
+const expectedPackageRoutes = {
+  math: {
+    subject: '/packages/math/pages/index/index',
+    chapter: '/packages/math/pages/chapter/index',
+    topic: '/packages/math/pages/topic/index',
+    knowledge: '/packages/math/pages/knowledge/index',
+    template: '/packages/math/pages/template/index',
+  },
+  english: {
+    subject: '/packages/english/pages/index/index',
+    unit: '/packages/english/pages/unit/index',
+    word: '/packages/english/pages/unit/index',
+    grammar: '/packages/english/pages/unit/index',
+    topic: '/packages/english/pages/topic/index',
+    knowledge: '/packages/english/pages/knowledge/index',
+    template: '/packages/english/pages/template/index',
+  },
+  physics: {
+    subject: '/packages/physics/pages/index/index',
+    chapter: '/packages/physics/pages/chapter/index',
+    topic: '/packages/physics/pages/topic/index',
+    knowledge: '/packages/physics/pages/knowledge/index',
+    template: '/packages/physics/pages/template/index',
+  },
+};
+Object.entries(expectedPackageRoutes).forEach(([subjectId, routes]) => {
+  if (JSON.stringify(PACKAGE_ROUTES[subjectId]) !== JSON.stringify(routes)) {
+    issues.push(`${subjectId} 分包路由与兼容基线不一致`);
+  }
+});
 const routeChecks = [
   [{ subjectId: 'math', type: 'subject' }, '/packages/math/pages/index/index'],
   [{ subjectId: 'math', type: 'chapter', id: 'ch11-triangle' }, '/packages/math/pages/chapter/index?id=ch11-triangle&subjectId=math'],
@@ -33,6 +78,8 @@ legacyPages.forEach((name) => {
     issues.push(`旧路径未使用统一兼容跳转页: pages/${name}/index`);
   }
 });
+
+SUBJECT_MANIFEST.pop();
 
 if (issues.length) {
   console.log('FOUND_CONTENT_ROUTE_ISSUES');

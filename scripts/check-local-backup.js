@@ -29,7 +29,11 @@ global.wx = {
   },
 };
 
+const { SUBJECT_MANIFEST } = require('../data/subject-manifest');
+const backupSubjectFixture = { id: 'synthetic-backup-subject', status: 'active' };
+SUBJECT_MANIFEST.push(backupSubjectFixture);
 const backup = require('../utils/local-backup');
+SUBJECT_MANIFEST.pop();
 const backupFile = require('../utils/local-backup-file');
 const storage = require('../utils/storage');
 
@@ -97,6 +101,12 @@ const created = backup.createBackup(source, {
 });
 const text = backup.serializeBackup(created);
 const parsed = backup.parseBackupText(text);
+
+if (backup.normalizeSnapshot({
+  favorites: [{ id: 'synthetic-1', subjectId: backupSubjectFixture.id, type: 'knowledge' }],
+}).favorites[0].subjectId !== backupSubjectFixture.id) {
+  throw new Error('备份学科校验应从活跃学科清单派生');
+}
 
 if (parsed.data.readingPreferences.fontSize !== 'large') {
   throw new Error('新备份应包含阅读显示设置');
