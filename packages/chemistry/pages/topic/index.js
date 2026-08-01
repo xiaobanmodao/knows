@@ -1,6 +1,6 @@
 const { getTopicById } = require('../../repository');
 const { applyTempFileURL, getTempFileURLMap, isCloudFile } = require('../../../../utils/cloud-assets');
-const { openContent } = require('../../../../utils/content-routes');
+const { openChemistryContent } = require('../../content-routes');
 
 Page({
   data: {
@@ -11,6 +11,8 @@ Page({
 
   async onLoad(options) {
     this.pageActive = true;
+    const requestToken = (this.assetRequestToken || 0) + 1;
+    this.assetRequestToken = requestToken;
     this.topicId = options.id;
     const topic = getTopicById(options.id);
 
@@ -32,7 +34,7 @@ Page({
     });
 
     const fileMap = await getTempFileURLMap([topic.coverImage]);
-    if (!this.pageActive || this.topicId !== topic.id) return;
+    if (!this.pageActive || this.assetRequestToken !== requestToken || this.topicId !== topic.id) return;
     this.setData({
       'topic.coverImage': applyTempFileURL(topic.coverImage, fileMap) || (isCloudFile(topic.coverImage) ? '' : topic.coverImage),
       imageLoadFailed: false,
@@ -41,18 +43,19 @@ Page({
 
   onUnload() {
     this.pageActive = false;
+    this.assetRequestToken = (this.assetRequestToken || 0) + 1;
   },
 
   openSubjectHome() {
-    openContent({ subjectId: 'chemistry', type: 'subject' });
+    openChemistryContent({ type: 'subject' });
   },
 
   openKnowledge(event) {
-    openContent({ subjectId: 'chemistry', type: 'knowledge', id: event.currentTarget.dataset.id });
+    openChemistryContent({ type: 'knowledge', id: event.currentTarget.dataset.id });
   },
 
   openTemplate(event) {
-    openContent({ subjectId: 'chemistry', type: 'template', id: event.currentTarget.dataset.id });
+    openChemistryContent({ type: 'template', id: event.currentTarget.dataset.id });
   },
 
   onImageError() {

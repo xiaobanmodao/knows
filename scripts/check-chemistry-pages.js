@@ -17,6 +17,7 @@ function assertFile(relativePath) {
 }
 
 const requiredFiles = [
+  'packages/chemistry/content-routes.js',
   'packages/chemistry/repository.js',
   'packages/chemistry/pages/index/index.js',
   'packages/chemistry/pages/index/index.json',
@@ -148,21 +149,13 @@ const knowledgeJson = JSON.parse(read('packages/chemistry/pages/knowledge/index.
 assert.strictEqual(knowledgeJson.usingComponents['content-block'], '/components/content-block/index', 'knowledge page content-block registration');
 assert.strictEqual(knowledgeJson.usingComponents['reading-settings'], '/components/reading-settings/index', 'knowledge page reading-settings registration');
 
-const knowledgeJs = read('packages/chemistry/pages/knowledge/index.js');
 const knowledgeWxml = read('packages/chemistry/pages/knowledge/index.wxml');
-assert(knowledgeJs.includes("options.focusType === 'equation'"), 'knowledge page accepts equation focus');
-assert(knowledgeJs.includes("options.focusType === 'experiment'"), 'knowledge page accepts experiment focus');
-assert(knowledgeJs.includes("options.restore === '1'"), 'knowledge page accepts restore');
-assert(knowledgeJs.includes('wx.pageScrollTo'), 'knowledge page scrolls to focus');
-assert(knowledgeJs.includes('detailsExpanded: true'), 'direct focus expands details');
 assert(knowledgeWxml.includes("item.type === 'equation' ? 'equation-' + item.equationId"), 'equation anchor binding');
 assert(knowledgeWxml.includes("item.type === 'experiment' ? 'experiment-' + item.experimentId"), 'experiment anchor binding');
 assert(knowledgeWxml.includes('reading-preferences="{{readingPreferences}}"'), 'chemistry content blocks receive reading settings');
 assert(knowledgeWxml.includes('<reading-settings'), 'chemistry knowledge page renders reading settings');
 
-const templateJs = read('packages/chemistry/pages/template/index.js');
 const templateWxml = read('packages/chemistry/pages/template/index.wxml');
-assert(templateJs.includes("type: 'template'"), 'template page stores template type');
 assert(templateWxml.includes('example.scenario'), 'template page renders worked scenario');
 assert(templateWxml.includes('example.steps'), 'template page renders worked steps');
 assert(templateWxml.includes('example.conclusion'), 'template page renders worked conclusion');
@@ -280,4 +273,408 @@ chemistryCopyFixtures.forEach(([section, visibleLines]) => {
   assert.deepStrictEqual(copySection(section).split('\n'), visibleLines, `${section.type} copy includes every visible field`);
 });
 
-console.log(`OK chemistry pages: ${home.themes.length} themes, ${home.topics.length} topics, ${knowledgeItems.length} knowledge items, ${templates.length} templates and focus/copy contracts checked`);
+const realSetTimeout = global.setTimeout;
+const cloudAssets = require('../utils/cloud-assets');
+const {
+  buildChemistryContentRoute,
+  openChemistryContent,
+} = require('../packages/chemistry/content-routes');
+
+function clone(value) {
+  return JSON.parse(JSON.stringify(value));
+}
+
+function setDataPath(data, dataPath, value) {
+  const parts = dataPath.replace(/\[(\d+)\]/g, '.$1').split('.');
+  let cursor = data;
+  parts.forEach((part, index) => {
+    if (index === parts.length - 1) {
+      cursor[part] = value;
+      return;
+    }
+    if (!cursor[part]) {
+      cursor[part] = /^\d+$/.test(parts[index + 1]) ? [] : {};
+    }
+    cursor = cursor[part];
+  });
+}
+
+function createPageInstance(config, eventLog = []) {
+  const instance = {
+    ...config,
+    data: clone(config.data),
+    setData(patch, callback) {
+      Object.entries(patch).forEach(([key, value]) => setDataPath(this.data, key, value));
+      eventLog.push({ type: 'setData', patch });
+      if (callback) callback();
+    },
+  };
+  return instance;
+}
+
+function createWxMock(options = {}) {
+  const calls = {
+    events: [],
+    navigations: [],
+    modals: [],
+    scrolls: [],
+    loadingShown: 0,
+    loadingHidden: 0,
+    navigateBack: 0,
+  };
+
+  function navigate(method, config) {
+    calls.navigations.push({ method, url: config.url });
+    calls.events.push({ type: 'navigation', method, url: config.url });
+    const shouldFail = options.failFirstNavigation && calls.navigations.length === 1;
+    if (shouldFail) {
+      if (config.fail) config.fail({ errMsg: 'mock navigation failure' });
+    } else if (config.success) {
+      config.success({});
+    }
+    if (config.complete) config.complete();
+  }
+
+  return {
+    calls,
+    api: {
+      showLoading() { calls.loadingShown += 1; },
+      hideLoading() { calls.loadingHidden += 1; },
+      showModal(config) {
+        calls.modals.push(config);
+        if (config.success) config.success({ confirm: options.confirmRetry !== false, cancel: options.confirmRetry === false });
+      },
+      navigateTo(config) { navigate('navigateTo', config); },
+      redirectTo(config) { navigate('redirectTo', config); },
+      navigateBack() { calls.navigateBack += 1; },
+      pageScrollTo(config) {
+        calls.scrolls.push(config);
+        calls.events.push({ type: 'pageScrollTo', config });
+      },
+      setNavigationBarTitle() {},
+      showToast() {},
+      getStorageSync() { return ''; },
+      setStorageSync() {},
+      setClipboardData(config) { if (config.success) config.success(); },
+    },
+  };
+}
+
+function createAppMock(options = {}) {
+  const calls = {
+    addRecent: [],
+    getReadingPosition: [],
+    saveReadingPosition: [],
+    getKnowledgeNote: [],
+    toggleFavorite: [],
+    saveKnowledgeNote: [],
+  };
+  const preferences = {
+    version: 1,
+    fontSize: 'standard',
+    lineHeight: 'standard',
+    imageWidth: 'full',
+  };
+
+  return {
+    calls,
+    app: {
+      globalData: { favorites: [] },
+      refreshSession() {},
+      addRecent(item) { calls.addRecent.push(item); },
+      getReadingPreferences() { return { ...preferences }; },
+      setReadingPreferences(next) { return { saved: true, preferences: next }; },
+      resetReadingPreferences() { return { saved: true, preferences: { ...preferences } }; },
+      getReadingPosition(subjectId, id) {
+        calls.getReadingPosition.push({ subjectId, id });
+        return options.readingPosition || null;
+      },
+      saveReadingPosition(item, scrollTop, viewState) {
+        calls.saveReadingPosition.push({ item, scrollTop, viewState });
+      },
+      getKnowledgeNote(subjectId, id) {
+        calls.getKnowledgeNote.push({ subjectId, id });
+        return options.note || null;
+      },
+      toggleFavorite(item) {
+        calls.toggleFavorite.push(item);
+        return true;
+      },
+      saveKnowledgeNote(item) {
+        calls.saveKnowledgeNote.push(item);
+        return item.content ? { content: item.content, tags: item.tags } : null;
+      },
+    },
+  };
+}
+
+function loadPageConfig(pageName, assetPromise = Promise.resolve({})) {
+  const originalGetTempFileURLMap = cloudAssets.getTempFileURLMap;
+  let config;
+  cloudAssets.getTempFileURLMap = () => assetPromise;
+  global.Page = (value) => {
+    config = value;
+  };
+
+  const modulePath = require.resolve(`../packages/chemistry/pages/${pageName}/index`);
+  delete require.cache[modulePath];
+  try {
+    require(modulePath);
+  } finally {
+    cloudAssets.getTempFileURLMap = originalGetTempFileURLMap;
+  }
+  assert(config, `runtime Page config ${pageName}`);
+  return config;
+}
+
+function event(id) {
+  return { currentTarget: { dataset: { id } } };
+}
+
+function deferred() {
+  let resolve;
+  const promise = new Promise((next) => {
+    resolve = next;
+  });
+  return { promise, resolve };
+}
+
+async function flushAsync() {
+  await Promise.resolve();
+  await new Promise((resolve) => realSetTimeout(resolve, 0));
+}
+
+async function withImmediateTimers(callback) {
+  global.setTimeout = (fn) => {
+    fn();
+    return 0;
+  };
+  try {
+    await callback();
+  } finally {
+    global.setTimeout = realSetTimeout;
+  }
+}
+
+function assertLastNavigation(wxMock, method, url, message) {
+  const actual = wxMock.calls.navigations[wxMock.calls.navigations.length - 1];
+  assert.deepStrictEqual(actual, { method, url }, message);
+}
+
+async function runNavigationChecks() {
+  assert.strictEqual(
+    buildChemistryContentRoute({
+      type: 'knowledge',
+      id: 'chem id',
+      focusType: 'equation',
+      focusId: 'eq/1',
+      restore: true,
+    }),
+    '/packages/chemistry/pages/knowledge/index?id=chem%20id&focusType=equation&focusId=eq%2F1&restore=1',
+    'package route preserves and encodes focus/restore query semantics',
+  );
+
+  let wxMock = createWxMock();
+  global.wx = wxMock.api;
+  let config = loadPageConfig('index');
+  let page = createPageInstance(config, wxMock.calls.events);
+  page.openTopic(event(topics[0].id));
+  assertLastNavigation(wxMock, 'navigateTo', `/packages/chemistry/pages/topic/index?id=${topics[0].id}`, 'subject to topic URL');
+
+  wxMock = createWxMock();
+  global.wx = wxMock.api;
+  config = loadPageConfig('topic');
+  page = createPageInstance(config, wxMock.calls.events);
+  page.openSubjectHome();
+  assertLastNavigation(wxMock, 'navigateTo', '/packages/chemistry/pages/index/index', 'topic to subject URL');
+  page.openKnowledge(event(topics[0].knowledgeIds[0]));
+  assertLastNavigation(wxMock, 'navigateTo', `/packages/chemistry/pages/knowledge/index?id=${topics[0].knowledgeIds[0]}`, 'topic to knowledge URL');
+  page.openTemplate(event(topics[0].templateIds[0]));
+  assertLastNavigation(wxMock, 'navigateTo', `/packages/chemistry/pages/template/index?id=${topics[0].templateIds[0]}`, 'topic to template URL');
+
+  const appMock = createAppMock();
+  wxMock = createWxMock();
+  global.wx = wxMock.api;
+  global.getApp = () => appMock.app;
+  config = loadPageConfig('knowledge');
+  page = createPageInstance(config, wxMock.calls.events);
+  page.onLoad({ id: relatedSource.id });
+  await flushAsync();
+  page.openContext();
+  assertLastNavigation(wxMock, 'navigateTo', `/packages/chemistry/pages/topic/index?id=${relatedSource.topicId}`, 'knowledge to context URL');
+  page.openRelated(event(relatedSource.relatedIds[0]));
+  assertLastNavigation(wxMock, 'navigateTo', `/packages/chemistry/pages/knowledge/index?id=${relatedSource.relatedIds[0]}`, 'knowledge to related URL');
+  const nextId = repository.getKnowledgeNavigation(relatedSource.id).next.id;
+  page.openAdjacent(event(nextId));
+  assertLastNavigation(wxMock, 'redirectTo', `/packages/chemistry/pages/knowledge/index?id=${nextId}`, 'knowledge to adjacent URL');
+  page.openTemplate(event(relatedSource.templateIds[0]));
+  assertLastNavigation(wxMock, 'navigateTo', `/packages/chemistry/pages/template/index?id=${relatedSource.templateIds[0]}`, 'knowledge to template URL');
+
+  const template = templates[0];
+  const templateAppMock = createAppMock();
+  wxMock = createWxMock();
+  global.wx = wxMock.api;
+  global.getApp = () => templateAppMock.app;
+  config = loadPageConfig('template');
+  page = createPageInstance(config, wxMock.calls.events);
+  await page.onLoad({ id: template.id });
+  page.openTopic(event(template.topicIds[0]));
+  assertLastNavigation(wxMock, 'navigateTo', `/packages/chemistry/pages/topic/index?id=${template.topicIds[0]}`, 'template to topic URL');
+
+  wxMock = createWxMock({ failFirstNavigation: true });
+  global.wx = wxMock.api;
+  openChemistryContent({ type: 'topic', id: topics[0].id });
+  assert.strictEqual(wxMock.calls.navigations.length, 2, 'failed package navigation retries once');
+  assert.strictEqual(wxMock.calls.modals.length, 1, 'failed package navigation shows one retry dialog');
+  assert.strictEqual(wxMock.calls.modals[0].content, '请检查网络后重试，已保留当前页面。', 'failure dialog keeps current page');
+  assert.strictEqual(wxMock.calls.navigateBack, 0, 'failed package navigation never leaves current page');
+  assert.strictEqual(wxMock.calls.loadingShown, 2, 'retry opens loading state for both attempts');
+  assert.strictEqual(wxMock.calls.loadingHidden, 2, 'retry closes loading state for both attempts');
+}
+
+async function runFocusChecks() {
+  const equationOwner = knowledgeItems.find((knowledge) => knowledge.sections.some((section) => section.type === 'equation'));
+  const equation = equationOwner.sections.find((section) => section.type === 'equation');
+  const experimentOwner = knowledgeItems.find((knowledge) => knowledge.sections.some((section) => section.type === 'experiment'));
+  const experiment = experimentOwner.sections.find((section) => section.type === 'experiment');
+
+  async function assertDirectFocus(knowledge, focusType, focusId) {
+    const appMock = createAppMock({ readingPosition: { scrollTop: 640, viewState: { detailsExpanded: false } } });
+    const wxMock = createWxMock();
+    global.wx = wxMock.api;
+    global.getApp = () => appMock.app;
+    const config = loadPageConfig('knowledge');
+    const page = createPageInstance(config, wxMock.calls.events);
+
+    await withImmediateTimers(async () => {
+      page.onLoad({ id: knowledge.id, focusType, focusId, restore: '1' });
+      await flushAsync();
+    });
+
+    const scrollIndex = wxMock.calls.events.findIndex((item) => item.type === 'pageScrollTo' && item.config.selector === `#${focusType}-${focusId}`);
+    assert(scrollIndex >= 0, `${focusType} direct focus scrolls to exact selector`);
+    assert(wxMock.calls.events.slice(0, scrollIndex).some((item) => item.type === 'setData' && item.patch.detailsExpanded === true), `${focusType} expands details before scroll`);
+    assert(!wxMock.calls.scrolls.some((item) => item.scrollTop === 640), `${focusType} focus takes precedence over restore`);
+  }
+
+  await assertDirectFocus(equationOwner, 'equation', equation.equationId);
+  await assertDirectFocus(experimentOwner, 'experiment', experiment.experimentId);
+
+  const appMock = createAppMock({ readingPosition: { scrollTop: 520, viewState: { detailsExpanded: false } } });
+  const wxMock = createWxMock();
+  global.wx = wxMock.api;
+  global.getApp = () => appMock.app;
+  const config = loadPageConfig('knowledge');
+  const page = createPageInstance(config, wxMock.calls.events);
+  await withImmediateTimers(async () => {
+    page.onLoad({ id: equationOwner.id, restore: '1' });
+    await flushAsync();
+  });
+  assert(wxMock.calls.scrolls.some((item) => item.scrollTop === 520), 'restore-only load scrolls to saved reading position');
+  assert(!wxMock.calls.scrolls.some((item) => item.selector), 'restore-only load does not invent a focus selector');
+}
+
+async function runIdentityAndMissingChecks() {
+  const knowledge = relatedSource;
+  let appMock = createAppMock();
+  let wxMock = createWxMock();
+  global.wx = wxMock.api;
+  global.getApp = () => appMock.app;
+  let config = loadPageConfig('knowledge');
+  let page = createPageInstance(config, wxMock.calls.events);
+  page.onLoad({ id: knowledge.id });
+  await flushAsync();
+  page.toggleFavorite();
+  page.setData({ noteDraft: '化学笔记', noteTags: ['方程式'] });
+  page.saveNote();
+
+  assert.deepStrictEqual(appMock.calls.addRecent[0], {
+    id: knowledge.id,
+    title: knowledge.title,
+    subtitle: `化学 · ${repository.getKnowledgeContext(knowledge).title}`,
+    subjectId: 'chemistry',
+    type: 'knowledge',
+    containerId: knowledge.topicId,
+  }, 'knowledge recent identity');
+  assert.deepStrictEqual(appMock.calls.getReadingPosition[0], { subjectId: 'chemistry', id: knowledge.id }, 'knowledge reading-position lookup identity');
+  assert(appMock.calls.saveReadingPosition.some((item) => item.item.subjectId === 'chemistry' && item.item.id === knowledge.id), 'knowledge reading-position save identity');
+  assert.deepStrictEqual(appMock.calls.getKnowledgeNote[0], { subjectId: 'chemistry', id: knowledge.id }, 'knowledge note lookup identity');
+  assert.strictEqual(appMock.calls.toggleFavorite[0].subjectId, 'chemistry', 'knowledge favorite subject identity');
+  assert.strictEqual(appMock.calls.toggleFavorite[0].type, 'knowledge', 'knowledge favorite type identity');
+  assert.strictEqual(appMock.calls.saveKnowledgeNote[0].subjectId, 'chemistry', 'knowledge note save subject identity');
+  assert.strictEqual(appMock.calls.saveKnowledgeNote[0].id, knowledge.id, 'knowledge note save ID');
+
+  const template = templates[0];
+  appMock = createAppMock();
+  wxMock = createWxMock();
+  global.wx = wxMock.api;
+  global.getApp = () => appMock.app;
+  config = loadPageConfig('template');
+  page = createPageInstance(config, wxMock.calls.events);
+  await page.onLoad({ id: template.id });
+  page.toggleFavorite();
+  assert.strictEqual(appMock.calls.addRecent[0].subjectId, 'chemistry', 'template recent subject identity');
+  assert.strictEqual(appMock.calls.addRecent[0].type, 'template', 'template recent type identity');
+  assert.strictEqual(appMock.calls.addRecent[0].id, template.id, 'template recent ID');
+  assert.strictEqual(appMock.calls.toggleFavorite[0].subjectId, 'chemistry', 'template favorite subject identity');
+  assert.strictEqual(appMock.calls.toggleFavorite[0].type, 'template', 'template favorite type identity');
+
+  const missingPages = [
+    ['topic', { id: 'missing-topic' }],
+    ['knowledge', { id: 'missing-knowledge' }],
+    ['template', { id: 'missing-template' }],
+  ];
+  for (const [pageName, loadOptions] of missingPages) {
+    appMock = createAppMock();
+    wxMock = createWxMock();
+    global.wx = wxMock.api;
+    global.getApp = () => appMock.app;
+    config = loadPageConfig(pageName);
+    page = createPageInstance(config, wxMock.calls.events);
+    await Promise.resolve(page.onLoad(loadOptions));
+    assert(page.data.notFound, `${pageName} missing ID sets a controlled error message`);
+    assert.strictEqual(page.data[pageName === 'topic' ? 'topic' : pageName], null, `${pageName} missing ID keeps content null`);
+    assert.strictEqual(wxMock.calls.navigations.length, 0, `${pageName} missing ID does not navigate or crash`);
+  }
+}
+
+async function runUnloadGuardChecks() {
+  const fixtures = [
+    ['index', {}],
+    ['topic', { id: topics[0].id }],
+    ['knowledge', { id: knowledgeItems[0].id }],
+    ['template', { id: templates[0].id }],
+  ];
+
+  for (const [pageName, loadOptions] of fixtures) {
+    const assetRequest = deferred();
+    const appMock = createAppMock();
+    const wxMock = createWxMock();
+    global.wx = wxMock.api;
+    global.getApp = () => appMock.app;
+    const config = loadPageConfig(pageName, assetRequest.promise);
+    const page = createPageInstance(config, wxMock.calls.events);
+    const loadResult = page.onLoad(loadOptions);
+    assert.strictEqual(typeof page.onUnload, 'function', `${pageName} page invalidates pending requests on unload`);
+    const beforeUnload = wxMock.calls.events.filter((item) => item.type === 'setData').length;
+    page.onUnload();
+    assetRequest.resolve({});
+    await Promise.resolve(loadResult);
+    await flushAsync();
+    const afterResolve = wxMock.calls.events.filter((item) => item.type === 'setData').length;
+    assert.strictEqual(afterResolve, beforeUnload, `${pageName} late asset resolution does not call setData after unload`);
+  }
+}
+
+async function main() {
+  await runNavigationChecks();
+  await runFocusChecks();
+  await runIdentityAndMissingChecks();
+  await runUnloadGuardChecks();
+  console.log(`OK chemistry pages: ${home.themes.length} themes, ${home.topics.length} topics, ${knowledgeItems.length} knowledge items, ${templates.length} templates, runtime routes/lifecycles and focus/copy contracts checked`);
+}
+
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});

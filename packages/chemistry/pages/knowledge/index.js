@@ -5,7 +5,7 @@ const {
   getRelatedKnowledge,
 } = require('../../repository');
 const { applyTempFileURL, getTempFileURLMap, isCloudFile } = require('../../../../utils/cloud-assets');
-const { openContent } = require('../../../../utils/content-routes');
+const { openChemistryContent } = require('../../content-routes');
 const {
   DEFAULT_READING_PREFERENCES,
   buildReadingDisplayClass,
@@ -48,6 +48,7 @@ Page({
   },
 
   onLoad(options) {
+    this.pageActive = true;
     const hasSupportedFocus = options.focusType === 'equation' || options.focusType === 'experiment';
     this.pendingFocus = hasSupportedFocus && options.focusId
       ? { type: options.focusType, id: options.focusId }
@@ -107,6 +108,8 @@ Page({
   },
 
   async loadKnowledge(knowledgeId) {
+    const requestToken = (this.assetRequestToken || 0) + 1;
+    this.assetRequestToken = requestToken;
     this.currentKnowledgeId = knowledgeId;
     const knowledge = getKnowledgeById(knowledgeId);
 
@@ -180,7 +183,7 @@ Page({
     this.persistReadingPosition();
 
     const fileMap = await getTempFileURLMap([knowledge.coverImage]);
-    if (this.currentKnowledgeId !== knowledgeId) return;
+    if (!this.pageActive || this.assetRequestToken !== requestToken || this.currentKnowledgeId !== knowledgeId) return;
     this.setData({
       'knowledge.coverImage': applyTempFileURL(knowledge.coverImage, fileMap) || (isCloudFile(knowledge.coverImage) ? '' : knowledge.coverImage),
       coverImageLoadFailed: false,
@@ -235,33 +238,25 @@ Page({
 
   openContext() {
     if (!this.data.context) return;
-    openContent({ subjectId: 'chemistry', type: 'topic', id: this.data.context.id });
+    openChemistryContent({ type: 'topic', id: this.data.context.id });
   },
 
   openRelated(event) {
     const { id } = event.currentTarget.dataset;
     if (!id) return;
     this.persistReadingPosition();
-    this.pendingFocus = null;
-    this.shouldRestorePosition = false;
-    this.currentScrollTop = 0;
-    wx.pageScrollTo({ scrollTop: 0, duration: 0 });
-    this.loadKnowledge(id);
+    openChemistryContent({ type: 'knowledge', id });
   },
 
   openAdjacent(event) {
     const { id } = event.currentTarget.dataset;
     if (!id) return;
     this.persistReadingPosition();
-    this.pendingFocus = null;
-    this.shouldRestorePosition = false;
-    this.currentScrollTop = 0;
-    wx.pageScrollTo({ scrollTop: 0, duration: 0 });
-    this.loadKnowledge(id);
+    openChemistryContent({ type: 'knowledge', id }, { replace: true });
   },
 
   openTemplate(event) {
-    openContent({ subjectId: 'chemistry', type: 'template', id: event.currentTarget.dataset.id });
+    openChemistryContent({ type: 'template', id: event.currentTarget.dataset.id });
   },
 
   toggleDetails() {
@@ -351,6 +346,8 @@ Page({
   },
 
   onUnload() {
+    this.pageActive = false;
+    this.assetRequestToken = (this.assetRequestToken || 0) + 1;
     this.persistReadingPosition();
   },
 

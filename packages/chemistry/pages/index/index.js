@@ -1,6 +1,6 @@
 const { getSubjectHome } = require('../../repository');
 const { applyTempFileURL, getTempFileURLMap, isCloudFile } = require('../../../../utils/cloud-assets');
-const { openContent } = require('../../../../utils/content-routes');
+const { openChemistryContent } = require('../../content-routes');
 
 function prepareThemes(themes, fileMap = {}) {
   return themes.map((theme) => ({
@@ -24,6 +24,8 @@ Page({
 
   async onLoad() {
     this.pageActive = true;
+    const requestToken = (this.assetRequestToken || 0) + 1;
+    this.assetRequestToken = requestToken;
     const home = getSubjectHome();
 
     if (!home || !home.subject) {
@@ -40,16 +42,17 @@ Page({
 
     const imagePaths = home.topics.map((topic) => topic.coverImage).filter(Boolean);
     const fileMap = await getTempFileURLMap(imagePaths);
-    if (!this.pageActive) return;
+    if (!this.pageActive || this.assetRequestToken !== requestToken) return;
     this.setData({ themes: prepareThemes(home.themes, fileMap) });
   },
 
   onUnload() {
     this.pageActive = false;
+    this.assetRequestToken = (this.assetRequestToken || 0) + 1;
   },
 
   openTopic(event) {
-    openContent({ subjectId: 'chemistry', type: 'topic', id: event.currentTarget.dataset.id });
+    openChemistryContent({ type: 'topic', id: event.currentTarget.dataset.id });
   },
 
   onImageError(event) {
