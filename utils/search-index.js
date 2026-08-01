@@ -108,9 +108,21 @@ function searchAllSubjects(keyword, subjectId = 'all') {
     .map(({ score, tokens, ...entry }) => entry);
 }
 
+function getSearchIndexEntries(types = []) {
+  const typeSet = new Set(Array.isArray(types) ? types : [types]);
+  return SEARCH_INDEX
+    .filter((entry) => !typeSet.size || typeSet.has(entry.type))
+    .map((entry) => ({
+      ...entry,
+      tags: [...(entry.tags || [])],
+      tokens: [...(entry.tokens || [])],
+    }));
+}
+
 module.exports = {
   SEARCH_INDEX_META,
   TYPE_LABELS,
   normalizeSearchText,
+  getSearchIndexEntries,
   searchAllSubjects,
 };

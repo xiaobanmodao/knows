@@ -1,0 +1,153 @@
+const crypto = require('crypto');
+const math = require('../packages/math/repository');
+const physics = require('../packages/physics/data/physics-curriculum');
+
+function compact(value, maxLength = 160) {
+  const text = String(value || '').replace(/\s+/g, ' ').trim();
+  return text.length > maxLength ? `${text.slice(0, maxLength - 1)}…` : text;
+}
+
+function unique(values, maxItems = 18) {
+  const seen = new Set();
+  return values
+    .flat(Infinity)
+    .map((value) => compact(value, 90))
+    .filter(Boolean)
+    .filter((value) => {
+      const key = value.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .slice(0, maxItems);
+}
+
+function buildFormulaEntries() {
+  const mathEntries = math.getAllChapters().flatMap((chapter) => (
+    chapter.knowledgeItems.map((knowledge) => {
+      const formula = knowledge.sections.find((section) => section.type === 'formula');
+      if (!formula) throw new Error(`数学小节缺少公式区：${knowledge.id}`);
+      return {
+        key: `math:formula:${knowledge.id}`,
+        kind: 'formula',
+        subjectId: 'math',
+        refId: knowledge.id,
+        containerId: chapter.id,
+        focusId: '',
+        title: knowledge.title,
+        subtitle: `数学 · ${chapter.stage} · ${chapter.title}`,
+        primary: formula.formula,
+        secondary: formula.description,
+        tags: unique(knowledge.tags, 3),
+        tokens: unique([
+          knowledge.keywords,
+          formula.conditions,
+          knowledge.mathDetail && knowledge.mathDetail.searchTerms,
+        ]),
+      };
+    })
+  ));
+
+  const physicsEntries = physics.knowledgeItems.map((knowledge) => {
+    const chapter = physics.getChapterById(knowledge.chapterId);
+    const formula = knowledge.sections.find((section) => section.type === 'formula');
+    if (!chapter || !formula) throw new Error(`物理知识点缺少章节或公式区：${knowledge.id}`);
+    return {
+      key: `physics:formula:${knowledge.id}`,
+      kind: 'formula',
+      subjectId: 'physics',
+      refId: knowledge.id,
+      containerId: chapter.id,
+      focusId: '',
+      title: knowledge.title,
+      subtitle: `物理 · ${chapter.bookLabel} · ${chapter.title}`,
+      primary: formula.formula,
+      secondary: formula.unitNote || formula.description,
+      tags: unique(knowledge.tags, 3),
+      tokens: unique([
+        knowledge.keywords,
+        formula.conditions,
+        formula.directionRules,
+        formula.quantities && formula.quantities.flatMap((item) => [item.name, item.symbol, item.unit]),
+      ]),
+    };
+  });
+
+  return [...mathEntries, ...physicsEntries];
+}
+
+function buildExperimentEntries() {
+  return physics.knowledgeItems.flatMap((knowledge) => {
+    const chapter = physics.getChapterById(knowledge.chapterId);
+    return knowledge.sections
+      .filter((section) => section.type === 'experiment')
+      .map((experiment) => ({
+        key: `physics:experiment:${experiment.experimentId}`,
+        kind: 'experiment',
+        subjectId: 'physics',
+        refId: knowledge.id,
+        containerId: knowledge.chapterId,
+        focusId: experiment.experimentId,
+        title: experiment.title,
+        subtitle: `物理 · ${chapter.bookLabel} · ${chapter.title}`,
+        primary: experiment.method,
+        secondary: experiment.goal,
+        tags: unique([knowledge.tags, experiment.controls], 3),
+        tokens: unique([
+          knowledge.title,
+          experiment.apparatus,
+          experiment.phenomenon,
+          experiment.conclusion,
+          experiment.records,
+        ]),
+      }));
+  });
+}
+
+function buildReferenceIndex() {
+  const entries = [...buildFormulaEntries(), ...buildExperimentEntries()];
+  const keys = new Set();
+  entries.forEach((entry) => {
+    if (!entry.key || keys.has(entry.key)) throw new Error(`参考索引键重复或为空：${entry.key}`);
+    keys.add(entry.key);
+  });
+  const counts = entries.reduce((result, entry) => ({
+    ...result,
+    [entry.kind]: (result[entry.kind] || 0) + 1,
+  }), { word: 336, grammar: 84 });
+  return {
+    meta: {
+      version: 1,
+      sourceHash: crypto.createHash('sha256').update(JSON.stringify(entries)).digest('hex'),
+      entryCount: entries.length,
+      counts,
+    },
+    entries,
+  };
+}
+
+function renderReferenceIndexModule(index) {
+  const subjectCodes = ['math', 'english', 'physics'];
+  const kindCodes = ['formula', 'word', 'grammar', 'experiment'];
+  const subjectMap = Object.fromEntries(subjectCodes.map((value, index) => [value, index]));
+  const kindMap = Object.fromEntries(kindCodes.map((value, index) => [value, index]));
+  const rows = index.entries.map((entry) => [
+    subjectMap[entry.subjectId],
+    kindMap[entry.kind],
+    entry.refId,
+    entry.containerId,
+    entry.focusId,
+    entry.title,
+    entry.subtitle,
+    entry.primary,
+    entry.secondary,
+    entry.tags,
+    entry.tokens,
+  ]);
+  return `// Generated by scripts/build-reference-index.js. Do not edit manually.\nconst REFERENCE_INDEX_META=${JSON.stringify(index.meta)};\nconst REFERENCE_SUBJECT_CODES=${JSON.stringify(subjectCodes)};\nconst REFERENCE_KIND_CODES=${JSON.stringify(kindCodes)};\nconst REFERENCE_INDEX_ROWS=${JSON.stringify(rows)};\nmodule.exports={REFERENCE_INDEX_META,REFERENCE_SUBJECT_CODES,REFERENCE_KIND_CODES,REFERENCE_INDEX_ROWS};\n`;
+}
+
+module.exports = {
+  buildReferenceIndex,
+  renderReferenceIndexModule,
+};
