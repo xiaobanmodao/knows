@@ -68,6 +68,7 @@ node scripts/check-remote-assets.js
 node scripts/check-content-migration.js
 node scripts/check-note-filters.js
 node scripts/check-local-backup.js
+node scripts/check-reading-display.js
 node scripts/check-content-review-meta.js
 node scripts/check-search-experience.js
 node scripts/check-search-index.js
@@ -90,6 +91,9 @@ node scripts/check-cloud-assets-runtime.js
 5. `codex/physics-depth-v1.5.1` 补齐 84 个物理知识点的物理量、单位、条件与方向，并统一 29 个实验的结构化记录
 6. `codex/math-depth-v1.5.2` 补齐 89 个数学小节的成立条件、推导关系、成立原因和跨学科联系
 7. `codex/reference-indexes-v1.6` 建设公式、单词、语法和实验轻量索引与内容直达
+8. `codex/reference-indexes-v1.6` 完成“我的”页本地笔记筛选
+9. `codex/reference-indexes-v1.6` 完成本地数据备份与恢复
+10. `codex/reference-indexes-v1.6` 完成阅读显示设置
 
 ## 后续开发
 
