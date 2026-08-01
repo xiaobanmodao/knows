@@ -5,6 +5,7 @@
 .tmp-v12-audit/
 .codex-output/
 .codex-preview/
+.worktrees/
 scripts/__pycache__/
 dist/
 
