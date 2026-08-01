@@ -1,5 +1,12 @@
 const assert = require('assert');
-const { knowledgeItems, getChemistryExperiments, getChemistryEquations } = require('../packages/chemistry/data/chemistry-knowledge');
+const chemistryKnowledge = require('../packages/chemistry/data/chemistry-knowledge');
+
+const {
+  knowledgeItems,
+  getChemistryEquations,
+  getChemistryExperiments,
+  getRawChemistrySections,
+} = chemistryKnowledge;
 
 const EXPECTED_EQUATIONS = {
   'chem-eq-hydrogen-peroxide': '2H2O2 -> 2H2O + O2(g)',
@@ -77,59 +84,94 @@ function addCounts(target, source, multiplier = 1) {
   });
 }
 
-function readNumber(text, start) {
+function readPositiveInteger(text, start, label) {
   let end = start;
   while (/\d/.test(text[end] || '')) end += 1;
-  return { value: end === start ? 1 : Number(text.slice(start, end)), end };
+  if (end === start) return { value: 1, end };
+
+  const token = text.slice(start, end);
+  assert(!token.startsWith('0'), `${label} must be a positive integer without a leading zero`);
+  const value = Number(token);
+  assert(Number.isSafeInteger(value) && value > 0, `${label} must be a positive safe integer`);
+  return { value, end };
 }
 
 function parseFormula(formula, start = 0, nested = false) {
   const counts = {};
   let index = start;
+  let componentCount = 0;
   while (index < formula.length) {
     if (formula[index] === ')') {
       if (!nested) throw new Error(`unexpected ) in ${formula}`);
-      return { counts, end: index + 1 };
+      assert(componentCount > 0, `empty group in ${formula}`);
+      return { counts, end: index + 1, componentCount };
     }
     if (formula[index] === '(') {
       const group = parseFormula(formula, index + 1, true);
-      const multiplier = readNumber(formula, group.end);
+      const multiplier = readPositiveInteger(formula, group.end, `group subscript in ${formula}`);
       addCounts(counts, group.counts, multiplier.value);
       index = multiplier.end;
+      componentCount += 1;
       continue;
     }
     const elementMatch = formula.slice(index).match(/^([A-Z][a-z]?)/);
     if (!elementMatch) throw new Error(`invalid formula at ${formula.slice(index)}`);
     const element = elementMatch[1];
-    const amount = readNumber(formula, index + element.length);
+    const amount = readPositiveInteger(formula, index + element.length, `element subscript in ${formula}`);
     counts[element] = (counts[element] || 0) + amount.value;
     index = amount.end;
+    componentCount += 1;
   }
   if (nested) throw new Error(`unclosed group in ${formula}`);
-  return { counts, end: index };
+  assert(componentCount > 0, 'formula must contain at least one element or group');
+  return { counts, end: index, componentCount };
 }
 
 function parseTerm(term) {
-  const normalized = term.replace(/\((?:aq|s|l|g)\)/gi, '').replace(/\s+/g, '');
-  const match = normalized.match(/^(\d+)?([A-Z].*)$/);
-  assert(match, `invalid equation term: ${term}`);
+  const normalized = term.trim();
+  assert(normalized, 'equation term must not be empty');
+  assert(!/\s/.test(normalized), `equation term contains internal whitespace: ${term}`);
+
+  let formulaWithState = normalized;
+  let coefficient = 1;
+  const coefficientMatch = formulaWithState.match(/^(\d+)/);
+  if (coefficientMatch) {
+    const token = coefficientMatch[1];
+    assert(!token.startsWith('0'), `coefficient must be a positive integer: ${term}`);
+    coefficient = Number(token);
+    assert(Number.isSafeInteger(coefficient) && coefficient > 0, `coefficient must be a positive safe integer: ${term}`);
+    formulaWithState = formulaWithState.slice(token.length);
+  }
+
+  const stateMatch = formulaWithState.match(/\((?:g|s|l|aq)\)$/);
+  const formula = stateMatch
+    ? formulaWithState.slice(0, -stateMatch[0].length)
+    : formulaWithState;
+  assert(formula, `equation term requires a formula before its state: ${term}`);
+
   const counts = {};
-  addCounts(counts, parseFormula(match[2]).counts, Number(match[1] || 1));
+  addCounts(counts, parseFormula(formula).counts, coefficient);
   return counts;
 }
 
 function parseSide(side) {
-  return side.split('+').reduce((counts, term) => {
+  const normalized = side.trim();
+  assert(normalized, 'equation side must not be empty');
+  const terms = normalized.split('+');
+  assert(terms.every((term) => term.trim()), 'equation side contains an empty term');
+  return terms.reduce((counts, term) => {
     addCounts(counts, parseTerm(term));
     return counts;
   }, {});
 }
 
 function assertBalanced(equation) {
+  assert.strictEqual(typeof equation, 'string', 'equation must be a string');
   assert(/^[A-Za-z0-9()+\- >]+$/.test(equation), `${equation} must be ASCII`);
   assert(!/[↑↓→=]/.test(equation), `${equation} contains a forbidden arrow or state marker`);
+  const arrows = equation.match(/->/g) || [];
+  assert.strictEqual(arrows.length, 1, `${equation} must contain exactly one ->`);
   const sides = equation.split('->');
-  assert.strictEqual(sides.length, 2, `${equation} must contain one ->`);
   const left = parseSide(sides[0]);
   const right = parseSide(sides[1]);
   new Set([...Object.keys(left), ...Object.keys(right)]).forEach((element) => {
@@ -140,11 +182,35 @@ function assertBalanced(equation) {
 assert.deepStrictEqual(parseTerm('2Ca(OH)2'), { Ca: 2, O: 4, H: 4 });
 assertBalanced('Cu + 2AgNO3 -> Cu(NO3)2 + 2Ag');
 assert.throws(() => assertBalanced('2H2 + O2 -> H2O'), /not balanced/);
+[
+  ['multiple terminal states', '2H2(g)(s) + O2 -> 2H2O'],
+  ['state before formula', '2(g)H2 + O2 -> 2H2O'],
+  ['empty group', '2H2() + O2 -> 2H2O'],
+  ['zero coefficient', '0H2 + O2 -> H2O'],
+  ['zero subscript', '2H0 + O2 -> 2H2O'],
+  ['dangling term', '2H2 + O2 + -> 2H2O'],
+  ['empty side', ' -> 2H2O'],
+  ['empty middle term', '2H2 + + O2 -> 2H2O'],
+  ['multiple arrows', '2H2 -> O2 -> 2H2O'],
+  ['unsupported character', '2H2 * O2 -> 2H2O'],
+].forEach(([label, equation]) => {
+  assert.throws(() => assertBalanced(equation), undefined, `${label} must be rejected`);
+});
 
-const equations = getChemistryEquations();
+assert.strictEqual(typeof getRawChemistrySections, 'function', 'getRawChemistrySections export');
+const equations = getRawChemistrySections('equation');
 assert(equations.length >= 24, `expected at least 24 equations, found ${equations.length}`);
-assert.strictEqual(new Set(equations.map((item) => item.equationId)).size, equations.length, 'equation IDs');
-assert.strictEqual(new Set(equations.map((item) => item.equation)).size, equations.length, 'equation strings');
+assert.strictEqual(
+  new Set(equations.map((item) => item.equationId)).size,
+  equations.length,
+  'raw equation IDs must be unique before runtime deduplication',
+);
+assert.strictEqual(
+  new Set(equations.map((item) => item.equation)).size,
+  equations.length,
+  'raw equation strings must be unique before runtime deduplication',
+);
+assert.strictEqual(getChemistryEquations().length, equations.length, 'runtime equation getter must preserve valid raw count');
 const equationById = new Map(equations.map((equation) => [equation.equationId, equation]));
 
 Object.entries(EXPECTED_EQUATIONS).forEach(([equationId, expected]) => {
@@ -164,7 +230,13 @@ equations.forEach((equation) => {
   );
 });
 
-const experiments = getChemistryExperiments();
+const experiments = getRawChemistrySections('experiment');
+assert.strictEqual(
+  new Set(experiments.map((item) => item.experimentId)).size,
+  experiments.length,
+  'raw experiment IDs must be unique before runtime deduplication',
+);
+assert.strictEqual(getChemistryExperiments().length, experiments.length, 'runtime experiment getter must preserve valid raw count');
 assert.deepStrictEqual(experiments.map((item) => item.experimentId).sort(), [...REQUIRED_EXPERIMENT_IDS].sort());
 experiments.forEach((experiment) => {
   ['purpose', 'phenomenon', 'conclusion', 'safety'].forEach((field) => {

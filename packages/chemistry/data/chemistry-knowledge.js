@@ -7,16 +7,21 @@ function clone(value) {
   return JSON.parse(JSON.stringify(value));
 }
 
+function getRawChemistrySections(type) {
+  const sections = knowledgeItems.flatMap((knowledge) => (
+    (knowledge.sections || []).filter((section) => section.type === type)
+  ));
+  return clone(sections);
+}
+
 function collectUniqueSections(type, idField) {
   const records = new Map();
-  knowledgeItems.forEach((knowledge) => {
-    knowledge.sections.forEach((section) => {
-      if (section.type === type && !records.has(section[idField])) {
-        records.set(section[idField], section);
-      }
-    });
+  getRawChemistrySections(type).forEach((section) => {
+    if (!records.has(section[idField])) {
+      records.set(section[idField], section);
+    }
   });
-  return clone([...records.values()]);
+  return [...records.values()];
 }
 
 function getChemistryExperiments() {
@@ -32,5 +37,6 @@ module.exports = {
   foundationKnowledge,
   getChemistryEquations,
   getChemistryExperiments,
+  getRawChemistrySections,
   knowledgeItems,
 };

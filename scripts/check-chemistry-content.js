@@ -116,6 +116,36 @@ function assertSection(section, label) {
   assert.fail(`${label} has unsupported section type ${section.type}`);
 }
 
+function assertRawSectionUniqueness(rawEquations, rawExperiments) {
+  assert.strictEqual(
+    new Set(rawEquations.map((item) => item.equationId)).size,
+    rawEquations.length,
+    'raw equation IDs must be unique before runtime deduplication',
+  );
+  assert.strictEqual(
+    new Set(rawEquations.map((item) => item.equation)).size,
+    rawEquations.length,
+    'raw equation strings must be unique before runtime deduplication',
+  );
+  assert.strictEqual(
+    new Set(rawExperiments.map((item) => item.experimentId)).size,
+    rawExperiments.length,
+    'raw experiment IDs must be unique before runtime deduplication',
+  );
+}
+
+function withInjectedRawSection(section, callback) {
+  knowledgeItems.push({
+    id: 'chem-k-validator-fixture',
+    sections: [section],
+  });
+  try {
+    callback();
+  } finally {
+    knowledgeItems.pop();
+  }
+}
+
 const { knowledgeItems } = chemistryKnowledge;
 assert.strictEqual(themes.length, 5, 'chemistry theme count');
 assert.strictEqual(topics.length, 10, 'chemistry topic count');
@@ -166,11 +196,18 @@ knowledgeItems.forEach((item) => {
 
 const experimentGetter = chemistryKnowledge.getChemistryExperiments;
 const equationGetter = chemistryKnowledge.getChemistryEquations;
+const rawSectionGetter = chemistryKnowledge.getRawChemistrySections;
 assert.strictEqual(typeof experimentGetter, 'function', 'getChemistryExperiments export');
 assert.strictEqual(typeof equationGetter, 'function', 'getChemistryEquations export');
+assert.strictEqual(typeof rawSectionGetter, 'function', 'getRawChemistrySections export');
 
+const rawExperiments = rawSectionGetter('experiment');
+const rawEquations = rawSectionGetter('equation');
 const experiments = experimentGetter();
 const equations = equationGetter();
+assertRawSectionUniqueness(rawEquations, rawExperiments);
+assert.strictEqual(rawExperiments.length, 8, 'raw chemistry experiment count');
+assert(rawEquations.length >= 24, `raw chemistry equation count: ${rawEquations.length}`);
 assert.deepStrictEqual(experiments.map((item) => item.experimentId).sort(), [...EXPECTED_EXPERIMENT_IDS].sort());
 assert.strictEqual(experiments.length, 8, 'chemistry experiment count');
 assert.strictEqual(new Set(experiments.map((item) => item.experimentId)).size, experiments.length, 'experiment IDs');
@@ -185,6 +222,33 @@ assert.notStrictEqual(experiments[0], experimentClone[0], 'experiment records mu
 assert.notStrictEqual(experiments[0].steps, experimentClone[0].steps, 'experiment nested arrays must be cloned');
 assert.notStrictEqual(equations, equationClone, 'equation array must be cloned');
 assert.notStrictEqual(equations[0], equationClone[0], 'equation records must be cloned');
+
+const equationFixture = rawEquations[0];
+const experimentFixture = rawExperiments[0];
+assert.throws(
+  () => withInjectedRawSection(
+    { ...equationFixture, equation: '2H2 + O2 -> 2H2O' },
+    () => assertRawSectionUniqueness(rawSectionGetter('equation'), rawSectionGetter('experiment')),
+  ),
+  /raw equation IDs must be unique/,
+  'duplicate raw equation IDs must be rejected before runtime deduplication',
+);
+assert.throws(
+  () => withInjectedRawSection(
+    { ...equationFixture, equationId: 'chem-eq-validator-duplicate-string' },
+    () => assertRawSectionUniqueness(rawSectionGetter('equation'), rawSectionGetter('experiment')),
+  ),
+  /raw equation strings must be unique/,
+  'duplicate raw equation strings under different IDs must be rejected before runtime deduplication',
+);
+assert.throws(
+  () => withInjectedRawSection(
+    { ...experimentFixture, title: '重复实验夹具' },
+    () => assertRawSectionUniqueness(rawSectionGetter('equation'), rawSectionGetter('experiment')),
+  ),
+  /raw experiment IDs must be unique/,
+  'duplicate raw experiment IDs must be rejected before runtime deduplication',
+);
 
 rejectForbidden({ themes, topics, templates, knowledgeItems });
 assert(!JSON.stringify({ themes, topics, templates, knowledgeItems }).includes('石棉'), 'obsolete asbestos wording');
