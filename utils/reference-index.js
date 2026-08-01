@@ -4,7 +4,7 @@ const {
   REFERENCE_KIND_CODES,
   REFERENCE_INDEX_ROWS,
 } = require('../data/reference-index');
-const { getSearchIndexEntries, normalizeSearchText } = require('./search-index');
+const { expandSearchTerms, getSearchIndexEntries, normalizeSearchText } = require('./search-index');
 
 const REFERENCE_KINDS = [
   { id: 'formula', title: '公式', count: REFERENCE_INDEX_META.counts.formula, subjectIds: ['math', 'physics'] },
@@ -62,14 +62,24 @@ function hasKeyword(value, normalizedKeyword) {
 
 function filterReferenceEntries({ kind = 'formula', subjectId = 'all', keyword = '' } = {}) {
   const normalizedKeyword = normalizeSearchText(keyword);
-  return getReferenceEntries(kind).filter((entry) => {
-    if (subjectId !== 'all' && entry.subjectId !== subjectId) return false;
-    if (!normalizedKeyword) return true;
-    return hasKeyword(
-      [entry.title, entry.primary, entry.secondary, entry.tags, entry.tokens],
-      normalizedKeyword,
-    );
-  });
+  const searchTerms = expandSearchTerms(keyword);
+  return getReferenceEntries(kind).reduce((results, entry) => {
+    if (subjectId !== 'all' && entry.subjectId !== subjectId) return results;
+    if (!normalizedKeyword) {
+      results.push({ ...entry, matchTerms: [] });
+      return results;
+    }
+    const searchable = [entry.title, entry.primary, entry.secondary, entry.tags, entry.tokens];
+    const matchedTerm = searchTerms.find((term) => hasKeyword(searchable, term));
+    if (matchedTerm) {
+      results.push({
+        ...entry,
+        matchTerms: searchTerms,
+        matchLabel: matchedTerm !== normalizedKeyword ? `关联匹配：${matchedTerm}` : '',
+      });
+    }
+    return results;
+  }, []);
 }
 
 function getReferenceStats() {

@@ -5,7 +5,9 @@ const {
   SEARCH_INDEX_ROWS,
 } = require('../data/search-index');
 const { SUBJECT_LABELS } = require('../data/subject-manifest');
+const { SEARCH_ALIAS_GROUPS } = require('../data/search-aliases');
 const { normalizeSubjectId } = require('./content-routes');
+const { normalizeSearchText } = require('./search-text');
 
 const TYPE_LABELS = {
   unit: '教材单元',
@@ -17,18 +19,18 @@ const TYPE_LABELS = {
   template: '方法模板',
 };
 
-const SEARCH_ALIASES = {
-  '阅读主旨': ['主旨', '篇章结构'],
-  '语境猜词': ['猜词', '上下文'],
-  '受力分析': ['受力', '平衡'],
-  '欧姆定律': ['欧姆', '电阻与电流'],
-  spelt: ['spell'],
-  spelled: ['spell'],
-  color: ['colour'],
-  favorite: ['favourite'],
-  practice: ['practise'],
-  geese: ['goose'],
+const TYPE_PRIORITY_BOOST = {
+  word: 18,
+  grammar: 18,
+  knowledge: 24,
+  template: 12,
 };
+
+const SEARCH_ALIAS_LOOKUP = SEARCH_ALIAS_GROUPS.reduce((lookup, group) => {
+  const normalizedTerms = [...new Set(group.terms.map(normalizeSearchText).filter(Boolean))];
+  normalizedTerms.forEach((term) => lookup.set(term, normalizedTerms.filter((item) => item !== term)));
+  return lookup;
+}, new Map());
 
 const SEARCH_INDEX = SEARCH_INDEX_ROWS.map((row) => {
   const [refId, subjectCode, typeCode, containerId, focusId, title, subtitle, description, tags, tokens] = row;
@@ -49,29 +51,36 @@ const SEARCH_INDEX = SEARCH_INDEX_ROWS.map((row) => {
   };
 });
 
-function normalizeSearchText(value) {
-  return String(value || '')
-    .toLowerCase()
-    .replace(/[＝]/g, '=')
-    .replace(/[／]/g, '/')
-    .replace(/[－—–]/g, '-')
-    .replace(/[（]/g, '(')
-    .replace(/[）]/g, ')')
-    .replace(/\s+/g, ' ')
-    .trim();
+function expandSearchTerms(value) {
+  const normalized = normalizeSearchText(value);
+  if (!normalized) return [];
+  return [normalized, ...(SEARCH_ALIAS_LOOKUP.get(normalized) || [])];
 }
 
 function scoreEntry(entry, keyword) {
   const title = normalizeSearchText(entry.title);
-  const tokenMatched = (entry.tokens || []).some((token) => normalizeSearchText(token).includes(keyword));
   const titleScore = title === keyword
-    ? 140
+    ? 160
     : title.startsWith(keyword)
-      ? 105
+      ? 120
       : title.includes(keyword)
-        ? 80
+        ? 95
         : 0;
-  return titleScore + (tokenMatched ? 30 : 0);
+  const scoreValues = (values, exactScore, includeScore) => (values || []).reduce((best, value) => {
+    const normalized = normalizeSearchText(value);
+    if (!normalized) return best;
+    if (normalized === keyword) return Math.max(best, exactScore);
+    if (normalized.includes(keyword)) return Math.max(best, includeScore);
+    return best;
+  }, 0);
+  const fieldScores = [
+    { field: 'title', score: titleScore },
+    { field: 'tags', score: scoreValues(entry.tags, 72, 58) },
+    { field: 'tokens', score: scoreValues(entry.tokens, 66, 46) },
+    { field: 'description', score: scoreValues([entry.description], 34, 28) },
+    { field: 'subtitle', score: scoreValues([entry.subtitle], 22, 16) },
+  ];
+  return fieldScores.reduce((best, item) => (item.score > best.score ? item : best), { field: '', score: 0 });
 }
 
 function searchAllSubjects(keyword, subjectId = 'all') {
@@ -81,24 +90,36 @@ function searchAllSubjects(keyword, subjectId = 'all') {
   }
 
   const selectedSubjectId = subjectId === 'all' ? 'all' : normalizeSubjectId(subjectId);
-  const keywords = [normalizedKeyword, ...(SEARCH_ALIASES[normalizedKeyword] || []).map(normalizeSearchText)];
+  const keywords = expandSearchTerms(normalizedKeyword);
   const resultMap = new Map();
 
   SEARCH_INDEX
     .filter((entry) => selectedSubjectId === 'all' || entry.subjectId === selectedSubjectId)
     .forEach((entry) => {
-      const score = keywords.reduce((best, currentKeyword, index) => {
-        const currentScore = scoreEntry(entry, currentKeyword);
-        return Math.max(best, index === 0 ? currentScore : Math.floor(currentScore * 0.82));
-      }, 0);
+      const match = keywords.reduce((best, currentKeyword, index) => {
+        const current = scoreEntry(entry, currentKeyword);
+        const weightedScore = index === 0 ? current.score : Math.floor(current.score * 0.65);
+        return weightedScore > best.score
+          ? { score: weightedScore, term: currentKeyword, field: current.field }
+          : best;
+      }, { score: 0, term: '', field: '' });
 
-      if (score > 0) {
+      if (match.score > 0) {
+        const matchLabel = match.term && match.term !== normalizedKeyword
+          ? `关联匹配：${match.term}`
+          : match.field === 'tokens'
+            ? `关键词：${match.term}`
+            : '';
         resultMap.set(entry.key, {
           ...entry,
           id: entry.key,
           subjectLabel: SUBJECT_LABELS[entry.subjectId],
           typeLabel: TYPE_LABELS[entry.type],
-          score,
+          score: match.score + (TYPE_PRIORITY_BOOST[entry.type] || 0),
+          matchedField: match.field,
+          matchedTerm: match.term,
+          matchTerms: keywords,
+          matchLabel,
         });
       }
     });
@@ -122,6 +143,7 @@ function getSearchIndexEntries(types = []) {
 module.exports = {
   SEARCH_INDEX_META,
   TYPE_LABELS,
+  expandSearchTerms,
   normalizeSearchText,
   getSearchIndexEntries,
   searchAllSubjects,
