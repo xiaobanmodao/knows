@@ -22,7 +22,7 @@ const SUBJECT_REVIEW_META = {
   physics: {
     status: 'verified',
     statusLabel: '已复核',
-    reviewedAt: '2026-07-19',
+    reviewedAt: '2026-08-01',
     sourceLabel: '义务教育物理课程标准（2022年版）与人教版初中物理公开教材资料',
     sourceRefs: [
       { title: '义务教育课程方案和课程标准（2022年版）', url: 'https://www.moe.gov.cn/srcsite/A26/s8001/202204/t20220420_619921.html' },

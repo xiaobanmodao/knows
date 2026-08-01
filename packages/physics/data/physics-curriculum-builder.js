@@ -1,4 +1,6 @@
 const { getContentReviewMeta } = require('./content-review-meta');
+const { getPhysicsKnowledgeDepth } = require('./details/physics-depth-knowledge');
+const { getPhysicsExperimentDepth } = require('./details/physics-depth-experiments');
 
 const ASSET_ROOT = '/assets/figures/generated/subjects/physics';
 
@@ -29,6 +31,7 @@ function buildProblem(chapterId, knowledgeId, example, index) {
 }
 
 function buildKnowledge(chapter, item) {
+  const physicsDetail = getPhysicsKnowledgeDepth(chapter, item);
   const sections = [
     { type: 'text', title: '通俗理解', content: item.summary },
     { type: 'list', title: '核心知识', items: item.points },
@@ -40,15 +43,24 @@ function buildKnowledge(chapter, item) {
       title: '公式与规律',
       formula: item.formula,
       description: '代入前先统一国际单位，并明确每个物理量对应同一对象和同一过程。',
+      quantities: physicsDetail.quantities,
+      conditions: physicsDetail.conditions,
+      directionRules: physicsDetail.directionRules,
+      unitNote: physicsDetail.unitNote,
+      formulaDetails: physicsDetail.formulaDetails,
     });
   }
 
   if (item.experiment) {
+    const experimentDepth = getPhysicsExperimentDepth(item.id);
     sections.push({
       type: 'experiment',
       ...item.experiment,
+      ...experimentDepth,
       apparatusText: item.experiment.apparatus.join('、'),
       errorsText: item.experiment.errors.join('；'),
+      controlsText: experimentDepth.controls.join('；'),
+      recordsText: experimentDepth.records.join('；'),
     });
   }
 
@@ -66,6 +78,7 @@ function buildKnowledge(chapter, item) {
     keywords: [...new Set([item.title, item.formula, ...item.points, ...chapter.keywords].filter(Boolean))],
     knowledgePoints: item.points,
     mistakeChecklist: item.mistakes,
+    physicsDetail,
     sections,
     template: {
       id: chapter.method.id,
