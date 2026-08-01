@@ -164,30 +164,51 @@ assert(contentBlockJs.includes('readingPreferences'), 'content-block 缺少 read
 assert(contentBlockWxml.includes('readingDisplayClass'), 'content-block 根节点未应用阅读显示类');
 assert(contentBlockWxss.includes('@import "../../styles/reading-display.wxss"'), 'content-block 未导入共享阅读样式');
 
+function classAttributesFor(wxml, className) {
+  const pattern = new RegExp(`<[^>]+class="([^"]*\\b${className}\\b[^"]*)"[^>]*>`, 'g');
+  return Array.from(wxml.matchAll(pattern), (match) => match[1]);
+}
+
+function classAttributeFor(wxml, className) {
+  return classAttributesFor(wxml, className)[0] || '';
+}
+
+[
+  ['example-box__row', 'example-box__label', 'example-box__value'],
+  ['experiment-box__row', 'experiment-box__label', 'experiment-box__value'],
+  ['reasoning-line', 'reasoning-line__index', 'reasoning-line__text'],
+  ['reasoning-step', 'reasoning-step__label', 'reasoning-step__text'],
+  ['reasoning-conclusion', 'reasoning-conclusion__label', 'reasoning-conclusion__text'],
+  ['experiment-step', 'experiment-step__index', 'experiment-step__text'],
+].forEach(([rowClass, labelClass, valueClass]) => {
+  const rowClassAttributes = classAttributesFor(contentBlockWxml, rowClass);
+  const labelClassAttributes = classAttributesFor(contentBlockWxml, labelClass);
+  const valueClassAttributes = classAttributesFor(contentBlockWxml, valueClass);
+  assert(rowClassAttributes.length > 0 && rowClassAttributes.every((classes) => !classes.includes('reading-copy--') && !classes.includes('reading-leading--')), `content-block ${rowClass} 不应让标签继承阅读令牌`);
+  assert(labelClassAttributes.length > 0 && labelClassAttributes.every((classes) => !classes.includes('reading-copy--') && !classes.includes('reading-leading--')), `content-block ${labelClass} 应保持固定排版`);
+  assert(valueClassAttributes.length > 0 && valueClassAttributes.every((classes) => classes.includes('reading-copy--') && classes.includes('reading-leading--')), `content-block ${valueClass} 正文缺少阅读令牌`);
+});
+
 [
   'content-block__text',
   'formula-box__formula',
   'formula-box__desc',
   'formula-rule',
-  'reasoning-line',
+  'reasoning-line__text',
+  'reasoning-step__text',
+  'reasoning-conclusion__text',
   'steps-box__text',
   'list-box__text',
   'table-box__cell',
   'example-box__sentence',
   'example-box__translation',
-  'example-box__row',
-  'experiment-box__row',
-  'experiment-step',
+  'example-box__value',
+  'experiment-box__value',
+  'experiment-step__text',
 ].forEach((className) => {
   const pattern = new RegExp(`class="[^\"]*${className}[^\"]*reading-copy--\\d+[^\"]*reading-leading--\\d+[^\"]*"`);
   assert(pattern.test(contentBlockWxml), `content-block 缺少 ${className} 的语义排版令牌`);
 });
-
-function classAttributeFor(wxml, className) {
-  const pattern = new RegExp(`<[^>]+class="([^"]*\\b${className}\\b[^"]*)"[^>]*>`);
-  const match = wxml.match(pattern);
-  return match ? match[1] : '';
-}
 
 ['math', 'english', 'physics'].forEach((subject) => {
   const pageRoot = `packages/${subject}/pages/knowledge`;

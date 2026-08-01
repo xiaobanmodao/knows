@@ -34,14 +34,14 @@
   <view wx:if="{{section.type === 'reasoning'}}" class="reasoning-box">
     <view class="reasoning-group">
       <view class="reasoning-group__title">成立条件</view>
-      <view wx:for="{{section.conditions}}" wx:key="index" class="reasoning-line reading-copy--24 reading-leading--175"><text class="reasoning-line__index">{{index + 1}}</text><text>{{item}}</text></view>
+      <view wx:for="{{section.conditions}}" wx:key="index" class="reasoning-line"><text class="reasoning-line__index">{{index + 1}}</text><text class="reasoning-line__text reading-copy--24 reading-leading--175">{{item}}</text></view>
     </view>
     <view wx:for="{{section.derivations}}" wx:key="title" class="reasoning-group">
       <view class="reasoning-group__title">{{item.title}}</view>
-      <view wx:for="{{item.steps}}" wx:for-item="step" wx:for-index="stepIndex" wx:key="stepIndex" class="reasoning-step reading-copy--24 reading-leading--175">
-        <text class="reasoning-step__label">{{stepIndex + 1}}</text><text>{{step}}</text>
+      <view wx:for="{{item.steps}}" wx:for-item="step" wx:for-index="stepIndex" wx:key="stepIndex" class="reasoning-step">
+        <text class="reasoning-step__label">{{stepIndex + 1}}</text><text class="reasoning-step__text reading-copy--24 reading-leading--175">{{step}}</text>
       </view>
-      <view class="reasoning-conclusion reading-copy--24 reading-leading--170"><text class="reasoning-conclusion__label">得到</text><text>{{item.conclusion}}</text></view>
+      <view class="reasoning-conclusion"><text class="reasoning-conclusion__label">得到</text><text class="reasoning-conclusion__text reading-copy--24 reading-leading--170">{{item.conclusion}}</text></view>
     </view>
     <view class="reasoning-group">
       <view class="reasoning-group__title">为什么成立</view>
@@ -82,22 +82,22 @@
   <view wx:if="{{section.type === 'example'}}" class="example-box">
     <view class="example-box__sentence reading-copy--28 reading-leading--170">{{section.sentence}}</view>
     <view class="example-box__translation reading-copy--24 reading-leading--170">{{section.translation}}</view>
-    <view class="example-box__row reading-copy--24 reading-leading--175"><text class="example-box__label">重点结构</text><text>{{section.focus}}</text></view>
-    <view class="example-box__row reading-copy--24 reading-leading--175"><text class="example-box__label">使用提醒</text><text>{{section.note}}</text></view>
+    <view class="example-box__row"><text class="example-box__label">重点结构</text><text class="example-box__value reading-copy--24 reading-leading--175">{{section.focus}}</text></view>
+    <view class="example-box__row"><text class="example-box__label">使用提醒</text><text class="example-box__value reading-copy--24 reading-leading--175">{{section.note}}</text></view>
   </view>
 
   <view wx:if="{{section.type === 'experiment'}}" class="experiment-box">
-    <view wx:if="{{section.method}}" class="experiment-box__row reading-copy--24 reading-leading--175"><text class="experiment-box__label">方法</text><text>{{section.method}}</text></view>
-    <view class="experiment-box__row reading-copy--24 reading-leading--175"><text class="experiment-box__label">目的</text><text>{{section.goal}}</text></view>
-    <view class="experiment-box__row reading-copy--24 reading-leading--175"><text class="experiment-box__label">器材</text><text>{{section.apparatusText}}</text></view>
-    <view wx:if="{{section.controlsText}}" class="experiment-box__row reading-copy--24 reading-leading--175"><text class="experiment-box__label">控制</text><text>{{section.controlsText}}</text></view>
+    <view wx:if="{{section.method}}" class="experiment-box__row"><text class="experiment-box__label">方法</text><text class="experiment-box__value reading-copy--24 reading-leading--175">{{section.method}}</text></view>
+    <view class="experiment-box__row"><text class="experiment-box__label">目的</text><text class="experiment-box__value reading-copy--24 reading-leading--175">{{section.goal}}</text></view>
+    <view class="experiment-box__row"><text class="experiment-box__label">器材</text><text class="experiment-box__value reading-copy--24 reading-leading--175">{{section.apparatusText}}</text></view>
+    <view wx:if="{{section.controlsText}}" class="experiment-box__row"><text class="experiment-box__label">控制</text><text class="experiment-box__value reading-copy--24 reading-leading--175">{{section.controlsText}}</text></view>
     <view class="experiment-box__steps">
-      <view wx:for="{{section.steps}}" wx:key="index" class="experiment-step reading-copy--24 reading-leading--170"><text class="experiment-step__index">{{index + 1}}</text><text>{{item}}</text></view>
+      <view wx:for="{{section.steps}}" wx:key="index" class="experiment-step"><text class="experiment-step__index">{{index + 1}}</text><text class="experiment-step__text reading-copy--24 reading-leading--170">{{item}}</text></view>
     </view>
-    <view wx:if="{{section.recordsText}}" class="experiment-box__row reading-copy--24 reading-leading--175"><text class="experiment-box__label">记录</text><text>{{section.recordsText}}</text></view>
-    <view class="experiment-box__row reading-copy--24 reading-leading--175"><text class="experiment-box__label">现象</text><text>{{section.phenomenon}}</text></view>
-    <view class="experiment-box__row reading-copy--24 reading-leading--175"><text class="experiment-box__label">结论</text><text>{{section.conclusion}}</text></view>
-    <view class="experiment-box__row reading-copy--24 reading-leading--175"><text class="experiment-box__label">误差</text><text>{{section.errorsText}}</text></view>
-    <view class="experiment-box__row experiment-box__row--safe reading-copy--24 reading-leading--175"><text class="experiment-box__label">安全</text><text>{{section.safety}}</text></view>
+    <view wx:if="{{section.recordsText}}" class="experiment-box__row"><text class="experiment-box__label">记录</text><text class="experiment-box__value reading-copy--24 reading-leading--175">{{section.recordsText}}</text></view>
+    <view class="experiment-box__row"><text class="experiment-box__label">现象</text><text class="experiment-box__value reading-copy--24 reading-leading--175">{{section.phenomenon}}</text></view>
+    <view class="experiment-box__row"><text class="experiment-box__label">结论</text><text class="experiment-box__value reading-copy--24 reading-leading--175">{{section.conclusion}}</text></view>
+    <view class="experiment-box__row"><text class="experiment-box__label">误差</text><text class="experiment-box__value reading-copy--24 reading-leading--175">{{section.errorsText}}</text></view>
+    <view class="experiment-box__row experiment-box__row--safe"><text class="experiment-box__label">安全</text><text class="experiment-box__value reading-copy--24 reading-leading--175">{{section.safety}}</text></view>
   </view>
 </view>
