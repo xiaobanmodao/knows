@@ -66,6 +66,7 @@ node scripts/check-unique-figures.js
 node scripts/prepare-remote-assets.js
 node scripts/check-remote-assets.js
 node scripts/check-content-migration.js
+node scripts/check-note-filters.js
 node scripts/check-content-review-meta.js
 node scripts/check-search-experience.js
 node scripts/check-search-index.js
