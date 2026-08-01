@@ -76,6 +76,45 @@
   <empty-state wx:else title="{{noteEmptyTitle}}" description="{{noteEmptyDescription}}" />
 
   <view class="section-title top-gap">
+    <view class="section-title__main">本地数据</view>
+    <view class="section-title__sub">仅保存在本机</view>
+  </view>
+
+  <view class="local-data-tool">
+    <view class="local-data-counts">
+      <view wx:for="{{localDataCountItems}}" wx:key="id" class="local-data-count">
+        <view class="local-data-count__value">{{item.count}}</view>
+        <view class="local-data-count__label">{{item.title}}</view>
+      </view>
+    </view>
+    <view class="local-data-actions">
+      <button class="local-data-action local-data-action--primary" disabled="{{backupBusy}}" bindtap="exportLocalData">
+        <text class="local-data-action__icon">↑</text>
+        <text>导出备份</text>
+      </button>
+      <button class="local-data-action" disabled="{{backupBusy}}" bindtap="chooseLocalBackup">
+        <text class="local-data-action__icon">↓</text>
+        <text>选择备份恢复</text>
+      </button>
+    </view>
+    <view class="local-data-hint">备份文件可能包含笔记正文，请妥善保管。恢复前会先校验文件并显示内容数量。</view>
+
+    <view wx:if="{{pendingBackupPreview}}" class="backup-preview">
+      <view class="backup-preview__title">待恢复备份</view>
+      <view class="backup-preview__file">{{pendingBackupPreview.fileName}}</view>
+      <view class="backup-preview__meta">{{pendingBackupPreview.createdLabel}} · v{{pendingBackupPreview.appVersion}}</view>
+      <view class="backup-preview__counts">
+        <view wx:for="{{pendingBackupPreview.countItems}}" wx:key="id" class="backup-preview__count">{{item.title}} {{item.count}}</view>
+      </view>
+      <view class="backup-preview__actions">
+        <button class="backup-preview__action backup-preview__action--primary" data-mode="merge" bindtap="restorePendingBackup">合并恢复</button>
+        <button class="backup-preview__action backup-preview__action--danger" data-mode="replace" bindtap="restorePendingBackup">覆盖恢复</button>
+        <button class="backup-preview__cancel" bindtap="cancelBackupRestore">取消</button>
+      </view>
+    </view>
+  </view>
+
+  <view class="section-title top-gap">
     <view class="section-title__main">服务说明</view>
     <view class="section-title__sub">{{releaseInfo.serviceScope}}</view>
   </view>
