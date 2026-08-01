@@ -207,6 +207,48 @@ const EXPERIMENT_TITLES = {
   'chem-exp-water-composition': '水的组成及变化的探究',
   'chem-exp-combustion-conditions': '燃烧条件的探究',
 };
+const GLOBAL_EXPERIMENT_SAFETY = [
+  ['school laboratory', /学校实验室/],
+  ['teacher control', /教师/],
+  ['labeled materials', /标签|标明|标识/],
+  ['protective eyewear', /护目镜/],
+  ['no tasting', /(禁止|不得)[^；。]*品尝/],
+  ['no direct smelling', /(禁止|不得)[^；。]*(直接闻|凑近闻|闻气味)/],
+  ['no ignition of unknown gas', /(禁止|不得)[^；。]*点燃未知/],
+  ['no improvised apparatus', /(禁止|不得)[^；。]*(自制|临时拼装|改装|生活容器|家用器具)/],
+  ['controlled waste', /(废液|残余物|实验溶液|废弃物)[^；。]*(教师|指定|回收|处理)/],
+  ['abnormal-event response', /(异常|溅洒|破裂|泄漏|失火)[^；。]*(停止|报告|教师|应急)/],
+];
+const EXPERIMENT_SPECIFIC_SAFETY = {
+  'chem-exp-oxygen': [
+    ['approved apparatus', /(批准|专用|合规)[^；。]*装置/],
+    ['labeled peroxide', /(有标签的过氧化氢|过氧化氢[^；。]*标签)/],
+    ['teacher reagent/apparatus control', /教师[^；。]*(加入|添加|加药|检查)/],
+    ['apparatus cooling', /冷却/],
+    ['oxygen combustion risk', /氧气[^；。]*(支持燃烧|助燃)/],
+  ],
+  'chem-exp-combustion-conditions': [
+    ['ventilation', /通风/],
+    ['no fume inhalation', /(燃烧烟气|烟气)[^；。]*(禁止|不得)[^；。]*吸入/],
+    ['secured sleeves', /袖口/],
+    ['hot residue control', /(热残余物|高温残余物|热器材)[^；。]*(冷却|处理)/],
+    ['teacher-controlled extinguishing', /教师[^；。]*灭火|灭火[^；。]*教师/],
+  ],
+  'chem-exp-water-composition': [
+    ['approved low-voltage supply', /学校专用低压/],
+    ['no improvised wiring', /(禁止|不得)[^；。]*(自制线路|自制接线|临时接线|改装导线)/],
+    ['no mixed-gas storage', /(禁止|不得)[^；。]*(混合|共同储存|储存)[^；。]*(氢气|氧气)|氢气[^；。]*氧气[^；。]*(禁止|不得)[^；。]*(混合|共同储存|储存)/],
+    ['observation not gas production', /(不作为|禁止|不得)[^；。]*(独立制气|制氢|燃料|氢能)/],
+  ],
+  'chem-exp-sodium-chloride-solution': [
+    ['contents label', /内容物|氯化钠溶液/],
+    ['date label', /配制日期|日期/],
+    ['context label', /实验情境|用途|班级/],
+    ['no food container', /(禁止|不得)[^；。]*食品容器/],
+    ['balance control', /天平/],
+    ['glassware control', /玻璃/],
+  ],
+};
 const SOURCE_KEYS = [
   'moe-chemistry-2022',
   'moe-textbook-catalog-2024',
@@ -228,6 +270,20 @@ const FORBIDDEN_FIELDS = new Set([
   'quizzes',
   'score',
 ]);
+const FORBIDDEN_CONTENT_PATTERNS = [
+  '题目',
+  '题给',
+  '作答',
+  '答题',
+  '练习要求',
+  '习题',
+  '试题',
+  '测验',
+  '自测',
+  '考试',
+  '得分',
+  '提交答案',
+];
 
 function assertNonemptyString(value, label) {
   assert.strictEqual(typeof value, 'string', `${label} must be a string`);
@@ -252,8 +308,91 @@ function rejectForbiddenFields(value, path = 'chemistry') {
   });
 }
 
+function rejectForbiddenContent(value, path = 'chemistry') {
+  if (typeof value === 'string') {
+    FORBIDDEN_CONTENT_PATTERNS.forEach((pattern) => {
+      assert(!value.includes(pattern), `${path} contains forbidden learner-facing assessment wording: ${pattern}`);
+    });
+    return;
+  }
+  if (!value || typeof value !== 'object') return;
+  Object.keys(value).forEach((key) => rejectForbiddenContent(value[key], `${path}.${key}`));
+}
+
 function collectSections(type) {
   return foundationKnowledge.flatMap((item) => item.sections.filter((section) => section.type === type));
+}
+
+function addElementCounts(target, source, multiplier = 1) {
+  Object.entries(source).forEach(([element, count]) => {
+    target[element] = (target[element] || 0) + count * multiplier;
+  });
+}
+
+function readFormulaNumber(text, start) {
+  let end = start;
+  while (/\d/.test(text[end] || '')) end += 1;
+  return {
+    value: end === start ? 1 : Number(text.slice(start, end)),
+    end,
+  };
+}
+
+function parseFormulaGroup(formula, start = 0, closes = false) {
+  const counts = {};
+  let index = start;
+  while (index < formula.length) {
+    if (formula[index] === ')') {
+      if (!closes) throw new Error(`unexpected ) in ${formula}`);
+      return { counts, end: index + 1 };
+    }
+    if (formula[index] === '(') {
+      const nested = parseFormulaGroup(formula, index + 1, true);
+      const multiplier = readFormulaNumber(formula, nested.end);
+      addElementCounts(counts, nested.counts, multiplier.value);
+      index = multiplier.end;
+      continue;
+    }
+    const match = formula.slice(index).match(/^([A-Z][a-z]?)/);
+    if (!match) throw new Error(`invalid formula at ${formula.slice(index)}`);
+    const element = match[1];
+    const amount = readFormulaNumber(formula, index + element.length);
+    counts[element] = (counts[element] || 0) + amount.value;
+    index = amount.end;
+  }
+  if (closes) throw new Error(`unclosed group in ${formula}`);
+  return { counts, end: index };
+}
+
+function parseEquationTerm(term) {
+  const normalized = term.replace(/\((?:aq|s|l|g)\)/gi, '').replace(/\s+/g, '');
+  const coefficientMatch = normalized.match(/^(\d+)?(.+)$/);
+  assert(coefficientMatch, `invalid equation term: ${term}`);
+  const counts = {};
+  addElementCounts(
+    counts,
+    parseFormulaGroup(coefficientMatch[2]).counts,
+    Number(coefficientMatch[1] || 1),
+  );
+  return counts;
+}
+
+function parseEquationSide(side) {
+  return side.split('+').reduce((counts, term) => {
+    addElementCounts(counts, parseEquationTerm(term));
+    return counts;
+  }, {});
+}
+
+function assertEquationBalanced(equation) {
+  const sides = equation.split('->');
+  assert.strictEqual(sides.length, 2, `${equation} must contain one -> arrow`);
+  const left = parseEquationSide(sides[0]);
+  const right = parseEquationSide(sides[1]);
+  const elements = new Set([...Object.keys(left), ...Object.keys(right)]);
+  elements.forEach((element) => {
+    assert.strictEqual(left[element] || 0, right[element] || 0, `${equation} is not balanced for ${element}`);
+  });
 }
 
 assert.strictEqual(themes.length, 5);
@@ -380,6 +519,10 @@ Object.entries(REQUIRED_SCOPE_TEXT).forEach(([id, fragments]) => {
 const foundationText = JSON.stringify(foundationKnowledge);
 assert(!foundationText.includes('各处甜味'), 'solution examples must not imply tasting laboratory materials');
 assert(!foundationText.includes('SO4 2-'), 'ion charges must not use ambiguous spaced notation');
+assert(
+  !JSON.stringify({ themes, topics, templates, foundationKnowledge }).includes('石棉'),
+  'chemistry content must use material-neutral approved heat-resistant support wording',
+);
 
 const experiments = collectSections('experiment');
 assert.strictEqual(experiments.length, 4, 'foundation experiment count');
@@ -393,16 +536,30 @@ experiments.forEach((experiment) => {
   ['apparatus', 'steps', 'errors'].forEach((field) => {
     assert(Array.isArray(experiment[field]) && experiment[field].length >= 2, `${experiment.experimentId}.${field}`);
   });
-  assert(/教师|护目镜|禁止|不得/.test(experiment.safety), `${experiment.experimentId}.safety must be concrete`);
+  const cardText = JSON.stringify(experiment);
+  GLOBAL_EXPERIMENT_SAFETY.forEach(([dimension, pattern]) => {
+    assert(pattern.test(cardText), `${experiment.experimentId} missing global safety dimension: ${dimension}`);
+  });
+  EXPERIMENT_SPECIFIC_SAFETY[experiment.experimentId].forEach(([dimension, pattern]) => {
+    assert(pattern.test(cardText), `${experiment.experimentId} missing specific safety dimension: ${dimension}`);
+  });
 });
 
 const equations = collectSections('equation');
 assert(equations.length >= 10, `expected at least 10 equations, found ${equations.length}`);
 assert.strictEqual(new Set(equations.map((item) => item.equationId)).size, equations.length, 'equation IDs must be unique');
+assert.strictEqual(new Set(equations.map((item) => item.equation)).size, equations.length, 'equation strings must be unique');
+assertEquationBalanced('Cu + 2AgNO3 -> Cu(NO3)2 + 2Ag');
+assert.throws(() => assertEquationBalanced('2H2 + O2 -> H2O'), /not balanced/);
 equations.forEach((equation) => {
   assertNonemptyString(equation.equationId, 'equation.equationId');
   assertNonemptyString(equation.equation, `${equation.equationId}.equation`);
   assert(equation.equation.includes('->'), `${equation.equationId}.equation must use searchable ->`);
+  assert(
+    /^[A-Za-z0-9()+\- >]+$/.test(equation.equation) && !/[↑↓→=]/.test(equation.equation),
+    `${equation.equationId}.equation must use ASCII formulas with (g)/(s) state notation`,
+  );
+  assertEquationBalanced(equation.equation);
   assertNonemptyString(equation.condition, `${equation.equationId}.condition`);
   assert(
     (typeof equation.phenomenon === 'string' && equation.phenomenon.trim())
@@ -410,6 +567,15 @@ equations.forEach((equation) => {
     `${equation.equationId} needs phenomenon or interpretation`,
   );
 });
+const aluminumEquation = equations.find((equation) => equation.equationId === 'chem-eq-aluminum-oxygen');
+assert(aluminumEquation, 'chem-eq-aluminum-oxygen must exist');
+assert.match(aluminumEquation.condition, /完全反应.*计算假设/, 'aluminum equation must be a supplied complete-reaction assumption');
+assert.strictEqual(aluminumEquation.phenomenon, '', 'aluminum calculation must not claim a combustion phenomenon');
+assert.match(
+  aluminumEquation.interpretation,
+  /不作为.*点燃|不得.*点燃|不构成.*点燃/,
+  'aluminum calculation must explicitly reject learner ignition framing',
+);
 
 const allEntities = [...themes, ...topics, ...templates, ...foundationKnowledge];
 for (let index = 1; index < allEntities.length; index += 1) {
@@ -433,8 +599,32 @@ const forcedReview = buildTheme({
 });
 assert.strictEqual(forcedReview.contentMeta.status, 'verified', 'builders must force verified review metadata');
 assert.strictEqual(forcedReview.contentMeta.reviewedAt, '2026-08-01', 'builders must force canonical review date');
+const cloneProbeA = buildTheme({ id: 'chem-theme-clone-a', title: '复核克隆甲' });
+const cloneProbeB = buildTheme({ id: 'chem-theme-clone-b', title: '复核克隆乙' });
+assert.notStrictEqual(cloneProbeA.contentMeta, cloneProbeB.contentMeta, 'metadata objects must be isolated');
+assert.notStrictEqual(cloneProbeA.contentMeta.sourceKeys, cloneProbeB.contentMeta.sourceKeys, 'sourceKeys arrays must be isolated');
+assert.notStrictEqual(cloneProbeA.contentMeta.sourceRefs, cloneProbeB.contentMeta.sourceRefs, 'sourceRefs arrays must be isolated');
+assert.notStrictEqual(
+  cloneProbeA.contentMeta.sourceRefs[0],
+  cloneProbeB.contentMeta.sourceRefs[0],
+  'nested source records must be isolated',
+);
+const expectedFirstSourceTitle = cloneProbeB.contentMeta.sourceRefs[0].title;
+cloneProbeA.contentMeta.status = 'mutated';
+cloneProbeA.contentMeta.sourceKeys[0] = 'mutated-source-key';
+cloneProbeA.contentMeta.sourceRefs.push({ key: 'mutated-source', title: 'mutated', url: 'https://example.invalid' });
+cloneProbeA.contentMeta.sourceRefs[0].title = 'mutated-source-title';
+assert.strictEqual(cloneProbeB.contentMeta.status, 'verified', 'top-level metadata mutation must not leak');
+assert.deepStrictEqual(cloneProbeB.contentMeta.sourceKeys, SOURCE_KEYS, 'sourceKeys mutation must not leak');
+assert.strictEqual(cloneProbeB.contentMeta.sourceRefs.length, 3, 'sourceRefs array mutation must not leak');
+assert.strictEqual(
+  cloneProbeB.contentMeta.sourceRefs[0].title,
+  expectedFirstSourceTitle,
+  'nested source-record mutation must not leak',
+);
 
 rejectForbiddenFields({ themes, topics, templates, foundationKnowledge });
+rejectForbiddenContent({ themes, topics, templates, foundationKnowledge });
 
 console.log(
   `OK chemistry foundations: ${themes.length} themes, ${topics.length} topics, `
