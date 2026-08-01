@@ -1,0 +1,63 @@
+<view class="page-shell" wx:if="{{template}}">
+  <view class="context-path" bindtap="openSubjectHome">化学 / 方法 / {{template.name}}</view>
+
+  <view class="template-header">
+    <view class="template-header__meta">
+      <view class="template-header__category">{{template.category}}</view>
+      <view class="template-collect {{isFavorite ? 'template-collect--active' : ''}}" bindtap="toggleFavorite" role="button">{{isFavorite ? '已收藏' : '收藏'}}</view>
+    </view>
+    <view class="template-header__title">{{template.name}}</view>
+    <view class="template-header__summary">{{template.summary}}</view>
+    <view class="template-header__tags"><text wx:for="{{template.keywords}}" wx:key="*this" class="template-tag">{{item}}</text></view>
+  </view>
+
+  <view wx:if="{{template.hasFigure}}" class="template-figure section-gap">
+    <view class="section-heading">方法图解</view>
+    <image wx:if="{{template.figure && !figureLoadFailed}}" class="template-figure__image" src="{{template.figure}}" mode="widthFix" binderror="onImageError"></image>
+    <view wx:else class="template-figure__fallback">图示暂未加载，以下文字步骤可以独立阅读</view>
+  </view>
+
+  <view wx:if="{{template.cues.length}}" class="method-section section-gap">
+    <view class="section-heading">识别信号</view>
+    <view wx:for="{{template.cues}}" wx:key="index" class="cue-row"><view class="cue-row__dot"></view><view class="cue-row__text">{{item}}</view></view>
+  </view>
+
+  <view wx:if="{{template.steps.length}}" class="method-section section-gap">
+    <view class="section-heading">操作步骤</view>
+    <view wx:for="{{template.steps}}" wx:key="order" wx:for-item="step" class="step-row"><view class="step-row__index">{{step.order}}</view><view class="step-row__text">{{step.action}}</view></view>
+  </view>
+
+  <view wx:if="{{template.pitfalls.length}}" class="method-section method-section--warning section-gap">
+    <view class="section-heading">常见失误</view>
+    <view wx:for="{{template.pitfalls}}" wx:key="index" class="pitfall-row"><view class="pitfall-row__mark">!</view><view class="pitfall-row__text">{{item}}</view></view>
+  </view>
+
+  <view wx:if="{{template.examples.length}}" class="section-title section-gap">
+    <view class="section-title__main">完整示例</view>
+    <view class="section-title__sub">{{template.examples.length}} 个</view>
+  </view>
+  <view wx:if="{{template.examples.length}}" class="example-list">
+    <view wx:for="{{template.examples}}" wx:key="scenario" wx:for-item="example" class="worked-example card">
+      <view class="worked-example__label">情境</view>
+      <view class="worked-example__scenario">{{example.scenario}}</view>
+      <view class="worked-example__steps">
+        <view wx:for="{{example.steps}}" wx:key="index" wx:for-item="step" class="step-row step-row--compact"><view class="step-row__index">{{index + 1}}</view><view class="step-row__text">{{step}}</view></view>
+      </view>
+      <view class="worked-example__conclusion"><text class="worked-example__label">结论</text><text>{{example.conclusion}}</text></view>
+    </view>
+  </view>
+
+  <view wx:if="{{relatedTopics.length}}" class="section-title section-gap">
+    <view class="section-title__main">适用专题</view>
+    <view class="section-title__sub">{{relatedTopics.length}} 个</view>
+  </view>
+  <view wx:if="{{relatedTopics.length}}" class="topic-links">
+    <view wx:for="{{relatedTopics}}" wx:key="id" wx:for-item="topic" class="topic-link" data-id="{{topic.id}}" bindtap="openTopic"><view class="topic-link__title">{{topic.title}}</view><view class="topic-link__meta">{{topic.knowledgeCount}} 个知识点</view><view class="topic-link__arrow">›</view></view>
+  </view>
+</view>
+
+<view wx:elif="{{notFound}}" class="error-state">
+  <view class="error-state__title">方法不存在</view>
+  <view class="error-state__message">{{notFound}}</view>
+  <view class="error-state__retry" bindtap="reopen">重新打开</view>
+</view>

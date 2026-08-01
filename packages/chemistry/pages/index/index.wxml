@@ -1,0 +1,41 @@
+<view class="page-shell" wx:if="{{subject}}">
+  <view class="subject-header">
+    <view class="subject-header__eyebrow">九年级化学</view>
+    <view class="subject-header__title">{{subject.name}}</view>
+    <view class="subject-header__summary">{{subject.summary}}</view>
+    <view class="subject-stats">
+      <view class="subject-stat"><text class="subject-stat__value">{{subject.counts.themes}}</text><text class="subject-stat__label">课标主题</text></view>
+      <view class="subject-stat"><text class="subject-stat__value">{{subject.counts.topics}}</text><text class="subject-stat__label">知识专题</text></view>
+      <view class="subject-stat"><text class="subject-stat__value">{{subject.counts.knowledge}}</text><text class="subject-stat__label">知识点</text></view>
+      <view class="subject-stat"><text class="subject-stat__value">{{subject.counts.templates}}</text><text class="subject-stat__label">方法</text></view>
+    </view>
+  </view>
+
+  <view wx:for="{{themes}}" wx:key="id" wx:for-item="theme" wx:for-index="themeIndex" class="theme-band">
+    <view class="theme-band__head">
+      <view class="theme-band__title">{{theme.title}}</view>
+      <view class="theme-band__count">{{theme.topicCount}} 个专题 · {{theme.knowledgeCount}} 个知识点</view>
+    </view>
+    <view class="theme-band__summary">{{theme.summary}}</view>
+    <view class="topic-list">
+      <view wx:for="{{theme.topics}}" wx:key="id" wx:for-item="topic" wx:for-index="topicIndex" class="topic-row card" data-id="{{topic.id}}" bindtap="openTopic">
+        <view class="topic-row__media">
+          <image wx:if="{{topic.coverImage && !topic.imageLoadFailed}}" class="topic-row__image" src="{{topic.coverImage}}" mode="aspectFill" data-theme-index="{{themeIndex}}" data-topic-index="{{topicIndex}}" binderror="onImageError"></image>
+          <view wx:else class="topic-row__fallback">化学</view>
+        </view>
+        <view class="topic-row__body">
+          <view class="topic-row__title">{{topic.title}}</view>
+          <view class="topic-row__summary">{{topic.summary}}</view>
+          <view class="topic-row__meta">{{topic.knowledgeCount}} 个知识点 · {{topic.templateCount}} 个方法 · {{topic.gradeText}}</view>
+        </view>
+        <view class="topic-row__arrow">›</view>
+      </view>
+    </view>
+  </view>
+</view>
+
+<view wx:elif="{{notFound}}" class="error-state">
+  <view class="error-state__title">内容暂未打开</view>
+  <view class="error-state__message">{{notFound}}</view>
+  <view class="error-state__retry" bindtap="reopen">重新打开</view>
+</view>

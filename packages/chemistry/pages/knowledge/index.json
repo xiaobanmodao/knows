@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "化学知识点",
+  "usingComponents": {
+    "content-block": "/components/content-block/index",
+    "reading-settings": "/components/reading-settings/index"
+  }
+}
