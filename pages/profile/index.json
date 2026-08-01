@@ -1,3 +1,8 @@
 {
-  "navigationBarTitleText": "我的"
+  "navigationBarTitleText": "我的",
+  "usingComponents": {
+    "empty-state": "/components/empty-state/index",
+    "highlight-text": "/components/highlight-text/index",
+    "search-bar": "/components/search-bar/index"
+  }
 }

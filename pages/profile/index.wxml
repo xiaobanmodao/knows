@@ -23,21 +23,57 @@
     </view>
   </view>
 
-  <view wx:if="{{notes.length}}" class="section-title top-gap">
+  <view class="section-title top-gap">
     <view class="section-title__main">我的笔记</view>
-    <view class="section-title__sub">{{notes.length}} 条</view>
+    <view class="section-title__sub">{{noteCountLabel}} 条</view>
+  </view>
+
+  <view wx:if="{{noteTotal}}" class="note-tools">
+    <search-bar value="{{noteQuery}}" placeholder="查找笔记标题、正文或标签" bind:change="onNoteQueryChange" bind:submit="onNoteQuerySubmit" />
+
+    <view class="note-subject-filter" role="tablist" aria-label="笔记学科筛选">
+      <view
+        wx:for="{{noteSubjectFilters}}"
+        wx:key="id"
+        class="note-subject-filter__item {{selectedNoteSubjectId === item.id ? 'note-subject-filter__item--active' : ''}}"
+        data-id="{{item.id}}"
+        bindtap="selectNoteSubject"
+        role="tab"
+        aria-selected="{{selectedNoteSubjectId === item.id}}"
+      >
+        <view>{{item.title}}</view>
+        <view class="note-subject-filter__count">{{item.count}}</view>
+      </view>
+    </view>
+
+    <scroll-view wx:if="{{noteTagFilters.length}}" class="note-tag-filter" scroll-x enable-flex>
+      <view class="note-tag-filter__item {{selectedNoteTag === allNoteFilterId ? 'note-tag-filter__item--active' : ''}}" data-tag="{{allNoteFilterId}}" bindtap="selectNoteTag">全部标签</view>
+      <view
+        wx:for="{{noteTagFilters}}"
+        wx:key="id"
+        class="note-tag-filter__item {{selectedNoteTag === item.id ? 'note-tag-filter__item--active' : ''}}"
+        data-tag="{{item.id}}"
+        bindtap="selectNoteTag"
+      >{{item.title}} {{item.count}}</view>
+    </scroll-view>
+
+    <view class="note-result-head">
+      <view class="note-result-head__count">{{filteredNoteCount}} 条笔记</view>
+      <view wx:if="{{hasNoteFilters}}" class="note-result-head__reset" bindtap="resetNoteFilters">重置</view>
+    </view>
   </view>
 
   <view wx:if="{{notes.length}}" class="note-list">
     <view wx:for="{{notes}}" wx:key="id" wx:for-item="note" class="profile-note card" data-id="{{note.id}}" data-subject-id="{{note.subjectId}}" bindtap="openNote">
-      <view class="profile-note__meta">{{note.subjectLabel}} · 知识点</view>
-      <view class="profile-note__title">{{note.title}}</view>
-      <view wx:if="{{note.content}}" class="profile-note__content">{{note.content}}</view>
+      <view class="profile-note__meta">{{note.subjectLabel}} · {{note.updatedLabel}}</view>
+      <view class="profile-note__title"><highlight-text text="{{note.title}}" terms="{{noteQueryTerms}}" /></view>
+      <view wx:if="{{note.content}}" class="profile-note__content"><highlight-text text="{{note.content}}" terms="{{noteQueryTerms}}" /></view>
       <view wx:if="{{note.tags.length}}" class="profile-note__tags">
-        <text wx:for="{{note.tags}}" wx:key="*this" class="profile-note__tag">{{item}}</text>
+        <view wx:for="{{note.tags}}" wx:key="*this" wx:for-item="tag" class="profile-note__tag {{selectedNoteTag === tag ? 'profile-note__tag--active' : ''}}" data-tag="{{tag}}" catchtap="selectNoteTag"><highlight-text text="{{tag}}" terms="{{noteQueryTerms}}" /></view>
       </view>
     </view>
   </view>
+  <empty-state wx:else title="{{noteEmptyTitle}}" description="{{noteEmptyDescription}}" />
 
   <view class="section-title top-gap">
     <view class="section-title__main">服务说明</view>
