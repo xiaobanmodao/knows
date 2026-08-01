@@ -200,6 +200,35 @@ function migrateStoredItems(key, resolveId, limit) {
   return result;
 }
 
+function migrateReadingItem(item, resolveId) {
+  if (!item || !item.id) return null;
+  const subjectId = item.subjectId || 'math';
+  const id = subjectId === 'math' ? resolveId(item.id) || item.id : item.id;
+  return {
+    ...item,
+    id,
+    subjectId,
+    type: 'knowledge',
+    containerId: item.containerId || item.chapterId || '',
+  };
+}
+
+function migrateReadingStorage(resolveId) {
+  const positions = getReadingPositions();
+  const migratedPositions = Object.values(positions)
+    .map((item) => migrateReadingItem(item, resolveId))
+    .filter(Boolean)
+    .sort((left, right) => (right.updatedAt || 0) - (left.updatedAt || 0))
+    .slice(0, 100)
+    .reduce((result, item) => {
+      result[itemKey(item)] = item;
+      return result;
+    }, {});
+  const lastReading = migrateReadingItem(getLastReading(), resolveId);
+  write(READING_POSITIONS_KEY, migratedPositions);
+  write(LAST_READING_KEY, lastReading);
+}
+
 function migrateContentStorage(resolveId) {
   const currentVersion = Number(read(CONTENT_SCHEMA_VERSION_KEY, 0));
 
@@ -210,6 +239,7 @@ function migrateContentStorage(resolveId) {
   migrateStoredItems(FAVORITES_KEY, resolveId, 100);
   migrateStoredItems(RECENTS_KEY, resolveId, 30);
   migrateStoredItems(NOTES_KEY, resolveId, 200);
+  migrateReadingStorage(resolveId);
   write(CONTENT_SCHEMA_VERSION_KEY, CURRENT_CONTENT_SCHEMA_VERSION);
   return true;
 }
@@ -223,6 +253,55 @@ function setMathGrade(gradeId) {
   const nextGradeId = MATH_GRADES.has(gradeId) ? gradeId : 'grade8';
   write(MATH_GRADE_KEY, nextGradeId);
   return nextGradeId;
+}
+
+function getLocalDataSnapshot() {
+  return {
+    contentSchemaVersion: Number(read(CONTENT_SCHEMA_VERSION_KEY, CURRENT_CONTENT_SCHEMA_VERSION)),
+    favorites: getFavorites(),
+    recents: getRecents(),
+    searchHistory: getSearchHistory(),
+    readingPositions: getReadingPositions(),
+    lastReading: getLastReading(),
+    notes: getNotes(),
+    mathGrade: getMathGrade(),
+  };
+}
+
+function replaceLocalData(snapshot) {
+  const previous = getLocalDataSnapshot();
+  const entries = [
+    [FAVORITES_KEY, snapshot.favorites],
+    [RECENTS_KEY, snapshot.recents],
+    [SEARCH_HISTORY_KEY, snapshot.searchHistory],
+    [READING_POSITIONS_KEY, snapshot.readingPositions],
+    [LAST_READING_KEY, snapshot.lastReading],
+    [NOTES_KEY, snapshot.notes],
+    [MATH_GRADE_KEY, snapshot.mathGrade],
+    [CONTENT_SCHEMA_VERSION_KEY, snapshot.contentSchemaVersion],
+  ];
+  const rollbackEntries = [
+    [FAVORITES_KEY, previous.favorites],
+    [RECENTS_KEY, previous.recents],
+    [SEARCH_HISTORY_KEY, previous.searchHistory],
+    [READING_POSITIONS_KEY, previous.readingPositions],
+    [LAST_READING_KEY, previous.lastReading],
+    [NOTES_KEY, previous.notes],
+    [MATH_GRADE_KEY, previous.mathGrade],
+    [CONTENT_SCHEMA_VERSION_KEY, previous.contentSchemaVersion],
+  ];
+
+  try {
+    entries.forEach(([key, value]) => wx.setStorageSync(key, value));
+  } catch (error) {
+    try {
+      rollbackEntries.forEach(([key, value]) => wx.setStorageSync(key, value));
+    } catch (rollbackError) {
+      // Preserve the original write error for a useful user-facing message.
+    }
+    throw error;
+  }
+  return getLocalDataSnapshot();
 }
 
 module.exports = {
@@ -241,4 +320,6 @@ module.exports = {
   migrateContentStorage,
   getMathGrade,
   setMathGrade,
+  getLocalDataSnapshot,
+  replaceLocalData,
 };

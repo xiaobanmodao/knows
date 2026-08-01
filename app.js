@@ -3,6 +3,7 @@ const { CLOUD_ENV_ID } = require('./utils/asset-config');
 const { resolveKnowledgeId } = require('./utils/content-ids');
 const { getSubjectRegistry } = require('./data/subject-manifest');
 const { clearTempFileURLCache } = require('./utils/cloud-assets');
+const { mergeSnapshots, normalizeSnapshot } = require('./utils/local-backup');
 
 App({
   globalData: {
@@ -82,5 +83,20 @@ App({
 
   setMathGrade(gradeId) {
     return storage.setMathGrade(gradeId);
+  },
+
+  getLocalDataSnapshot() {
+    return storage.getLocalDataSnapshot();
+  },
+
+  restoreLocalData(snapshot, mode = 'merge') {
+    const current = storage.getLocalDataSnapshot();
+    const next = mode === 'replace'
+      ? normalizeSnapshot(snapshot)
+      : mergeSnapshots(current, snapshot);
+    storage.replaceLocalData(next);
+    storage.migrateContentStorage(resolveKnowledgeId);
+    this.refreshSession();
+    return storage.getLocalDataSnapshot();
   },
 });

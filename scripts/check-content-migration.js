@@ -9,6 +9,20 @@ const memory = new Map([
   ['knows_knowledge_notes', [
     { id: 'ch01-rational-lesson-1', title: '旧笔记', content: '保留这条笔记', tags: ['基础'] },
   ]],
+  ['knows_reading_positions', {
+    'math:knowledge:ch01-rational-lesson-1': {
+      id: 'ch01-rational-lesson-1',
+      title: '旧阅读位置',
+      scrollTop: 120,
+      updatedAt: 300,
+    },
+  }],
+  ['knows_last_reading', {
+    id: 'ch01-rational-lesson-1',
+    title: '旧继续阅读',
+    scrollTop: 120,
+    updatedAt: 300,
+  }],
 ]);
 
 global.wx = {
@@ -48,6 +62,15 @@ if (!recents.length || recents[0].id === 'ch03-linear-equation-lesson-2') {
 
 if (!migratedNotes.length || migratedNotes[0].id === 'ch01-rational-lesson-1') {
   issues.push('旧数学笔记应迁移到稳定知识点 ID');
+}
+
+const migratedReadingIds = Object.values(memory.get('knows_reading_positions')).map((item) => item.id);
+if (!migratedReadingIds.length || migratedReadingIds[0] === 'ch01-rational-lesson-1') {
+  issues.push('旧阅读位置应迁移到稳定知识点 ID');
+}
+
+if (memory.get('knows_last_reading').id === 'ch01-rational-lesson-1') {
+  issues.push('旧继续阅读应迁移到稳定知识点 ID');
 }
 
 if (memory.get('knows_content_schema_version') !== 4) {
