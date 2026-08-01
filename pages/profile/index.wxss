@@ -78,6 +78,57 @@
   margin-top: 32rpx;
 }
 
+.reference-links {
+  overflow: hidden;
+  border: 2rpx solid #e3e8f1;
+  border-radius: 16rpx;
+  background: #ffffff;
+}
+
+.reference-link {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  min-height: 108rpx;
+  padding: 20rpx 24rpx;
+  border-bottom: 2rpx solid #edf0f5;
+}
+
+.reference-link:last-child {
+  border-bottom: 0;
+}
+
+.reference-link__body {
+  min-width: 0;
+  flex: 1;
+}
+
+.reference-link__title {
+  color: #1e2a43;
+  font-size: 26rpx;
+  font-weight: 800;
+}
+
+.reference-link__desc {
+  margin-top: 6rpx;
+  color: #6d778a;
+  font-size: 21rpx;
+  line-height: 1.55;
+}
+
+.reference-link__count {
+  min-width: 54rpx;
+  color: #1c62c8;
+  font-size: 23rpx;
+  font-weight: 700;
+  text-align: right;
+}
+
+.reference-link__arrow {
+  color: #9ba6b8;
+  font-size: 34rpx;
+}
+
 .note-list {
   display: grid;
   gap: 16rpx;

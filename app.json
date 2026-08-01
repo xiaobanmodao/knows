@@ -10,6 +10,7 @@
     "pages/knowledge/index",
     "pages/template/index",
     "pages/search/index",
+    "pages/reference-index/index",
     "pages/favorites/index",
     "pages/profile/index"
   ],

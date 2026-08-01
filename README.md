@@ -1,6 +1,6 @@
 # 知识通小程序
 
-微信原生小程序版初中知识库项目。当前 `v1.5.2-dev.1` 已按英语、物理、数学顺序完成三科首轮内容补深，默认游客模式，支持：
+微信原生小程序版初中知识库项目。当前 `v1.6.0-dev.1` 在三科首轮内容补深基础上建设统一查阅索引，默认游客模式，支持：
 
 - 数学 29 章、29 个专题、89 个详细教材小节、89 条独立推导与 36 个题型模板
 - 英语 42 个可学习教材单元、42 张独立单元知识图、336 个详细词条、84 个详细单元语法点和 924 个单元例句，已核对的五册内容全部补深，另有 6 个能力专题
@@ -13,6 +13,7 @@
 - 教材目录与专题索引分开切换，知识点支持折叠阅读和上下篇连续浏览
 - 搜索支持学科与内容类型筛选、相关度分组和英语单词/语法单元内直达
 - 本地继续阅读、阅读位置恢复、知识笔记和自定义标签
+- 173 条数学/物理公式、336 个英语单词、84 个语法点和 29 个物理实验统一索引
 
 ## 当前结构
 
@@ -68,6 +69,7 @@ node scripts/check-content-migration.js
 node scripts/check-content-review-meta.js
 node scripts/check-search-experience.js
 node scripts/check-search-index.js
+node scripts/check-reference-index.js
 node scripts/check-content-routes.js
 node scripts/check-package-boundaries.js
 node scripts/check-content-schema.js
@@ -84,6 +86,7 @@ node scripts/check-cloud-assets-runtime.js
 4. `codex/english-depth-v1.5` 已按七上、七下、八上、八下、九上顺序完成英语逐词讲解与单元语法
 5. `codex/physics-depth-v1.5.1` 补齐 84 个物理知识点的物理量、单位、条件与方向，并统一 29 个实验的结构化记录
 6. `codex/math-depth-v1.5.2` 补齐 89 个数学小节的成立条件、推导关系、成立原因和跨学科联系
+7. `codex/reference-indexes-v1.6` 建设公式、单词、语法和实验轻量索引与内容直达
 
 ## 后续开发
 

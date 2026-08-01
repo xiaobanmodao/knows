@@ -7,6 +7,22 @@
     </view>
   </view>
 
+  <view class="section-title top-gap">
+    <view class="section-title__main">知识索引</view>
+    <view class="section-title__sub">{{referenceTotal}} 条</view>
+  </view>
+
+  <view class="reference-links">
+    <view wx:for="{{referenceItems}}" wx:key="id" class="reference-link" data-kind="{{item.id}}" bindtap="openReference">
+      <view class="reference-link__body">
+        <view class="reference-link__title">{{item.title}}</view>
+        <view class="reference-link__desc">{{item.description}}</view>
+      </view>
+      <view class="reference-link__count">{{item.count}}</view>
+      <view class="reference-link__arrow">›</view>
+    </view>
+  </view>
+
   <view wx:if="{{notes.length}}" class="section-title top-gap">
     <view class="section-title__main">我的笔记</view>
     <view class="section-title__sub">{{notes.length}} 条</view>

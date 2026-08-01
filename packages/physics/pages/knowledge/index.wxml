@@ -44,7 +44,9 @@
     <view class="section-title__sub">{{essentialSections.length}} 个重点模块</view>
   </view>
   <view wx:if="{{essentialSections.length}}">
-    <content-block wx:for="{{essentialSections}}" wx:key="title" section="{{item}}" />
+    <view wx:for="{{essentialSections}}" wx:key="title" id="{{item.anchorId}}">
+      <content-block section="{{item}}" />
+    </view>
   </view>
 
   <view wx:if="{{detailSections.length}}" class="fold-control card" bindtap="toggleDetails">

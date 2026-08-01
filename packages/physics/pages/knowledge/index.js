@@ -19,7 +19,9 @@ function splitKnowledgeSections(sections) {
     }
 
     if (['formula', 'example', 'experiment'].includes(section.type)) {
-      essential.push(section);
+      essential.push(section.type === 'experiment'
+        ? { ...section, anchorId: `experiment-${section.experimentId}` }
+        : section);
     } else {
       detail.push(section);
     }
@@ -53,7 +55,8 @@ Page({
 
   onLoad(options) {
     this.subjectId = normalizeSubjectId(options.subjectId);
-    this.shouldRestorePosition = options.restore === '1';
+    this.pendingFocusId = options.focusType === 'experiment' ? options.focusId : '';
+    this.shouldRestorePosition = options.restore === '1' && !this.pendingFocusId;
     this.currentScrollTop = 0;
     this.loadKnowledge(options.id);
   },
@@ -144,6 +147,8 @@ Page({
       noteTagDraft: '',
       noteDirty: false,
       isFavorite: app.globalData.favorites.some((item) => item.id === knowledge.id && (item.subjectId || 'math') === this.subjectId && (item.type || 'knowledge') === 'knowledge'),
+    }, () => {
+      this.scrollToPendingFocus();
     });
     this.persistReadingPosition();
 
@@ -184,6 +189,15 @@ Page({
     this.shouldRestorePosition = false;
     setTimeout(() => {
       wx.pageScrollTo({ scrollTop, duration: 0 });
+    }, 120);
+  },
+
+  scrollToPendingFocus() {
+    if (!this.pendingFocusId) return;
+    const focusId = this.pendingFocusId;
+    this.pendingFocusId = '';
+    setTimeout(() => {
+      wx.pageScrollTo({ selector: `#experiment-${focusId}`, duration: 240 });
     }, 120);
   },
 

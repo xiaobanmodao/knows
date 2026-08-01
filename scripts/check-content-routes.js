@@ -12,6 +12,7 @@ const routeChecks = [
   [{ subjectId: 'english', type: 'word', id: 'eng-unit-g8a-u1', focusId: 'eng-word-sample' }, '/packages/english/pages/unit/index?id=eng-unit-g8a-u1&subjectId=english&focusType=word&focusId=eng-word-sample'],
   [{ subjectId: 'english', type: 'grammar', id: 'eng-unit-g9a-u1', focusId: 'eng-grammar-sample' }, '/packages/english/pages/unit/index?id=eng-unit-g9a-u1&subjectId=english&focusType=grammar&focusId=eng-grammar-sample'],
   [{ subjectId: 'physics', type: 'chapter', id: 'phy-ch17-ohm-law' }, '/packages/physics/pages/chapter/index?id=phy-ch17-ohm-law&subjectId=physics'],
+  [{ subjectId: 'physics', type: 'knowledge', id: 'phy-ch03-melting-freezing', focusType: 'experiment', focusId: 'phy-ch03-melting-freezing-experiment' }, '/packages/physics/pages/knowledge/index?id=phy-ch03-melting-freezing&subjectId=physics&focusType=experiment&focusId=phy-ch03-melting-freezing-experiment'],
   [{ type: 'knowledge', id: 'legacy-math-id', restore: true }, '/packages/math/pages/knowledge/index?id=legacy-math-id&subjectId=math&restore=1'],
 ];
 

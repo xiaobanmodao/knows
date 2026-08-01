@@ -1,0 +1,69 @@
+<view class="page-shell reference-page">
+  <view class="reference-header">
+    <view class="reference-header__title">知识索引</view>
+    <view class="reference-header__summary">{{referenceTotal}} 条已复核条目</view>
+  </view>
+
+  <view class="reference-tabs" role="tablist" aria-label="索引类型">
+    <view
+      wx:for="{{kinds}}"
+      wx:key="id"
+      class="reference-tab {{selectedKind === item.id ? 'reference-tab--active' : ''}}"
+      data-kind="{{item.id}}"
+      bindtap="selectKind"
+      role="tab"
+      aria-selected="{{selectedKind === item.id}}"
+    >
+      <view class="reference-tab__title">{{item.title}}</view>
+      <view class="reference-tab__count">{{item.count}}</view>
+    </view>
+  </view>
+
+  <search-bar value="{{query}}" placeholder="在当前索引中查找" bind:change="onQueryChange" bind:submit="onQuerySubmit" />
+
+  <view wx:if="{{subjectFilters.length}}" class="reference-subjects" role="tablist" aria-label="学科筛选">
+    <view
+      wx:for="{{subjectFilters}}"
+      wx:key="id"
+      class="reference-subject {{selectedSubjectId === item.id ? 'reference-subject--active' : ''}}"
+      data-id="{{item.id}}"
+      bindtap="selectSubject"
+      role="tab"
+      aria-selected="{{selectedSubjectId === item.id}}"
+    >{{item.title}}</view>
+  </view>
+
+  <view class="reference-result-head">
+    <view class="reference-result-head__title">{{query ? '匹配结果' : '全部条目'}}</view>
+    <view class="reference-result-head__count">{{totalCount}} 条</view>
+  </view>
+
+  <view wx:if="{{entries.length}}" class="reference-list">
+    <view
+      wx:for="{{entries}}"
+      wx:key="key"
+      class="reference-item"
+      data-kind="{{item.kind}}"
+      data-ref-id="{{item.refId}}"
+      data-subject-id="{{item.subjectId}}"
+      data-focus-id="{{item.focusId}}"
+      bindtap="openEntry"
+    >
+      <view class="reference-item__body">
+        <view class="reference-item__top">
+          <view class="reference-item__title">{{item.title}}</view>
+          <view class="reference-item__subject reference-item__subject--{{item.subjectId}}">{{item.subjectLabel}}</view>
+        </view>
+        <view class="reference-item__primary">{{item.primary}}</view>
+        <view wx:if="{{item.secondary}}" class="reference-item__secondary">{{item.secondary}}</view>
+        <view class="reference-item__meta">{{item.subtitle}}</view>
+        <view wx:if="{{item.tags.length}}" class="reference-item__tags">
+          <text wx:for="{{item.tags}}" wx:key="*this" class="reference-item__tag">{{item}}</text>
+        </view>
+      </view>
+      <view class="reference-item__arrow">›</view>
+    </view>
+    <view wx:if="{{hasMore}}" class="reference-more" bindtap="loadMore">继续显示 {{totalCount - visibleCount}} 条</view>
+  </view>
+  <empty-state wx:else title="没有找到匹配条目" description="当前关键词没有对应的索引条目。" />
+</view>
