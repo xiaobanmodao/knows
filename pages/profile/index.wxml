@@ -75,7 +75,7 @@
   </view>
   <empty-state wx:else title="{{noteEmptyTitle}}" description="{{noteEmptyDescription}}" />
 
-  <view class="profile-reading-entry" bindtap="openReadingSettings">
+  <view class="profile-reading-entry" bindtap="openReadingSettings" role="button" aria-label="阅读显示：{{readingPreferenceSummary}}">
     <view class="profile-reading-entry__marker">Aa</view>
     <view class="profile-reading-entry__content">
       <view class="profile-reading-entry__title">阅读显示</view>

@@ -1,5 +1,5 @@
 <view wx:if="{{visible}}" class="reading-settings-mask" bindtap="close">
-  <view class="reading-settings" catchtap="stopPropagation">
+  <view class="reading-settings" catchtap="stopPropagation" role="dialog" aria-modal="true" aria-label="阅读显示设置">
     <view class="reading-settings__header">
       <view class="reading-settings__title">阅读显示</view>
       <view class="reading-settings__close" bindtap="close" role="button" aria-label="关闭">×</view>
@@ -7,7 +7,7 @@
 
     <view wx:for="{{groups}}" wx:key="id" wx:for-item="group" class="reading-settings__group">
       <view class="reading-settings__group-title">{{group.title}}</view>
-      <view class="reading-settings__options">
+      <view class="reading-settings__options" role="radiogroup" aria-label="{{group.title}}">
         <view
           wx:for="{{group.items}}"
           wx:key="id"
@@ -16,9 +16,9 @@
           data-field="{{group.id}}"
           data-value="{{option.id}}"
           bindtap="selectOption"
-          role="button"
+          role="radio"
           aria-label="{{group.title}}：{{option.label}}"
-          aria-pressed="{{option.selected}}"
+          aria-checked="{{option.selected}}"
         >{{option.label}}</view>
       </view>
     </view>

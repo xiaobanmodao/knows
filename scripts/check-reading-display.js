@@ -108,6 +108,10 @@ assert(componentWxml.includes('bindtap="selectOption"'), '设置面板缺少分�
 assert(componentWxml.includes('bindtap="resetPreferences"'), '设置面板缺少恢复默认入口');
 assert(componentWxml.includes('role="button"'), '设置面板的可点击项缺少按钮语义');
 assert(componentWxml.includes('aria-label="{{group.title}}：{{option.label}}"'), '设置选项缺少独立辅助阅读标签');
+assert(componentWxml.includes('role="dialog" aria-modal="true" aria-label="阅读显示设置"'), '设置面板缺少模态对话框语义');
+assert(componentWxml.includes('role="radiogroup" aria-label="{{group.title}}"'), '设置分组缺少单选组语义');
+assert(componentWxml.includes('role="radio"'), '设置选项缺少单选项语义');
+assert(componentWxml.includes('aria-checked="{{option.selected}}"'), '设置选项缺少选中状态');
 assert(componentWxml.includes('>\u00d7</view>'), '关闭按钮应显示乘号符号，不应显示字符实体');
 assert(!componentWxml.includes('&#215;'), '关闭按钮不应保留未解析的字符实体');
 assert(componentWxss.includes('min-height: 88rpx'), '设置控件点击高度不足');
@@ -177,6 +181,11 @@ function classAttributeFor(wxml, className) {
   return classAttributesFor(wxml, className)[0] || '';
 }
 
+function styleBlockFor(wxss, className) {
+  const match = wxss.match(new RegExp(`\\.${className}\\s*\\{([^}]*)\\}`));
+  return match ? match[1] : '';
+}
+
 [
   ['example-box__row', 'example-box__label', 'example-box__value'],
   ['experiment-box__row', 'experiment-box__label', 'experiment-box__value'],
@@ -223,6 +232,7 @@ function classAttributeFor(wxml, className) {
 
   assert(json.usingComponents['reading-settings'] === '/components/reading-settings/index', `${subject} 未注册阅读设置组件`);
   assert(wxml.includes('Aa 阅读'), `${subject} 缺少阅读设置入口`);
+  assert(/class="reading-command"[^>]*role="button"[^>]*aria-label="打开阅读显示设置"/.test(wxml), `${subject} 阅读设置入口缺少按钮语义`);
   assert(classAttributeFor(wxml, 'page-shell').includes('{{readingDisplayClass}}'), `${subject} 页面根节点缺少显示类`);
   assert((wxml.match(/reading-preferences="{{readingPreferences}}"/g) || []).length === 2, `${subject} 未向全部 content-block 传入偏好`);
   assert(wxml.includes('<reading-settings'), `${subject} 缺少设置面板实例`);
@@ -249,6 +259,10 @@ function classAttributeFor(wxml, className) {
 
   assert(classAttributeFor(wxml, 'knowledge-figure__image').includes('reading-image'), `${subject} 知识图缺少图片宽度令牌`);
   assert(classAttributeFor(wxml, 'problem-card__image').includes('reading-image'), `${subject} 例题图缺少图片宽度令牌`);
+  assert(/class="knowledge-figure__image reading-image"[^>]*mode="widthFix"/.test(wxml), `${subject} 知识图应按宽度等比缩放`);
+  assert(/class="problem-card__image reading-image"[^>]*mode="widthFix"/.test(wxml), `${subject} 例题图应按宽度等比缩放`);
+  assert(!/\\bheight\\s*:/.test(styleBlockFor(wxss, 'knowledge-figure__image')), `${subject} 知识图不应使用固定高度`);
+  assert(!/\\bheight\\s*:/.test(styleBlockFor(wxss, 'problem-card__image')), `${subject} 例题图不应使用固定高度`);
 
   [
     'context-path',
@@ -292,6 +306,7 @@ const profileWxml = read('pages/profile/index.wxml');
 const profileWxss = read('pages/profile/index.wxss');
 assert(profileJson.usingComponents['reading-settings'] === '/components/reading-settings/index', 'profile 未注册阅读设置组件');
 assert(profileWxml.includes('Aa') && profileWxml.includes('阅读显示'), 'profile 缺少阅读显示入口');
+assert(/class="profile-reading-entry"[^>]*role="button"[^>]*aria-label="阅读显示：{{readingPreferenceSummary}}"/.test(profileWxml), 'profile 阅读显示入口缺少按钮语义');
 assert(profileWxml.includes('{{readingPreferenceSummary}}'), 'profile 未显示当前阅读偏好摘要');
 assert((profileWxml.match(/<reading-settings/g) || []).length === 1, 'profile 应只包含一个阅读设置组件');
 assert(profileWxml.includes('visible="{{readingSettingsVisible}}"'), 'profile 设置面板可见状态未受控');
