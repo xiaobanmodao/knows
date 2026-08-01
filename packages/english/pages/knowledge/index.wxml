@@ -1,15 +1,18 @@
-<view class="page-shell" wx:if="{{knowledge}}">
+<view class="page-shell {{readingDisplayClass}}" wx:if="{{knowledge}}">
   <view wx:if="{{context}}" class="context-path" bindtap="openContext">{{subjectLabel}} / {{context.title}} / 知识点</view>
 
   <view class="knowledge-hero card">
     <view class="knowledge-hero__meta">
       <view class="pill">{{subjectLabel}} · {{context.title}}</view>
-      <view class="collect-btn {{isFavorite ? 'collect-btn--active' : ''}}" bindtap="toggleFavorite">
-        {{isFavorite ? '已收藏' : '收藏'}}
+      <view class="knowledge-hero__actions">
+        <view class="reading-command" bindtap="openReadingSettings">Aa 阅读</view>
+        <view class="collect-btn {{isFavorite ? 'collect-btn--active' : ''}}" bindtap="toggleFavorite">
+          {{isFavorite ? '已收藏' : '收藏'}}
+        </view>
       </view>
     </view>
     <view class="knowledge-hero__title">{{knowledge.title}}</view>
-    <view class="knowledge-hero__summary">{{knowledge.summary}}</view>
+    <view class="knowledge-hero__summary reading-copy--25 reading-leading--190">{{knowledge.summary}}</view>
     <view class="knowledge-hero__tags">
       <text wx:for="{{knowledge.tags}}" wx:key="*this" class="tag">{{item}}</text>
     </view>
@@ -28,15 +31,15 @@
     </view>
     <view wx:for="{{knowledge.knowledgePoints}}" wx:key="index" class="core-card__item">
       <view class="core-card__index">{{index + 1}}</view>
-      <view class="core-card__text">{{item}}</view>
+      <view class="core-card__text reading-copy--25 reading-leading--180">{{item}}</view>
     </view>
   </view>
 
   <view wx:if="{{knowledge.coverImage}}" class="knowledge-figure card top-gap">
     <view class="knowledge-figure__title">关键图解</view>
-    <image wx:if="{{!coverImageLoadFailed}}" class="knowledge-figure__image" src="{{knowledge.coverImage}}" mode="aspectFit" binderror="onCoverImageError"></image>
+    <image wx:if="{{!coverImageLoadFailed}}" class="knowledge-figure__image reading-image" src="{{knowledge.coverImage}}" mode="aspectFit" binderror="onCoverImageError"></image>
     <view wx:else class="knowledge-figure__fallback">图示暂未加载，文字内容可继续阅读</view>
-    <view class="knowledge-figure__caption">{{knowledge.figureCaption}}</view>
+    <view class="knowledge-figure__caption reading-copy--23 reading-leading--170">{{knowledge.figureCaption}}</view>
   </view>
 
   <view wx:if="{{essentialSections.length}}" class="section-title top-gap">
@@ -44,7 +47,7 @@
     <view class="section-title__sub">{{essentialSections.length}} 个重点模块</view>
   </view>
   <view wx:if="{{essentialSections.length}}">
-    <content-block wx:for="{{essentialSections}}" wx:key="title" section="{{item}}" />
+    <content-block wx:for="{{essentialSections}}" wx:key="title" section="{{item}}" reading-preferences="{{readingPreferences}}" />
   </view>
 
   <view wx:if="{{detailSections.length}}" class="fold-control card" bindtap="toggleDetails">
@@ -55,14 +58,14 @@
     <view class="fold-control__action">{{detailsExpanded ? '收起' : '展开'}} {{detailsExpanded ? '⌃' : '⌄'}}</view>
   </view>
   <view wx:if="{{detailsExpanded}}" class="top-gap">
-    <content-block wx:for="{{detailSections}}" wx:key="title" section="{{item}}" />
+    <content-block wx:for="{{detailSections}}" wx:key="title" section="{{item}}" reading-preferences="{{readingPreferences}}" />
   </view>
 
   <view wx:if="{{knowledge.mistakeChecklist && knowledge.mistakeChecklist.length}}" class="study-card study-card--warn card top-gap">
     <view class="study-card__title">易错辨析</view>
     <view wx:for="{{knowledge.mistakeChecklist}}" wx:key="index" class="study-card__item">
       <view class="study-card__index">!</view>
-      <view class="study-card__text">{{item}}</view>
+      <view class="study-card__text reading-copy--24 reading-leading--185">{{item}}</view>
     </view>
   </view>
 
@@ -75,7 +78,7 @@
       <view class="note-card__save {{noteDirty ? 'note-card__save--active' : ''}}" bindtap="saveNote">保存</view>
     </view>
     <textarea
-      class="note-card__input"
+      class="note-card__input reading-copy--25 reading-leading--175"
       value="{{noteDraft}}"
       maxlength="800"
       auto-height
@@ -102,11 +105,11 @@
       </view>
       <view class="fold-control__action">{{templateExpanded ? '收起' : '展开'}} {{templateExpanded ? '⌃' : '⌄'}}</view>
     </view>
-    <view class="template-box__when">{{knowledge.template.whenToUse}}</view>
+    <view class="template-box__when reading-copy--24 reading-leading--180">{{knowledge.template.whenToUse}}</view>
     <view wx:if="{{templateExpanded}}">
       <view wx:for="{{knowledge.template.steps}}" wx:key="index" class="template-box__step">
         <view class="template-box__index">{{index + 1}}</view>
-        <view class="template-box__text">{{item}}</view>
+        <view class="template-box__text reading-copy--25 reading-leading--180">{{item}}</view>
       </view>
     </view>
   </view>
@@ -123,24 +126,24 @@
         <view class="pill">{{problem.difficulty}}</view>
       </view>
       <view class="problem-card__section">
-        <text class="problem-card__label">题干：</text>{{problem.stem}}
+        <text class="problem-card__label">题干：</text><text class="problem-card__copy reading-copy--24 reading-leading--190">{{problem.stem}}</text>
       </view>
       <view class="problem-card__toggle" data-index="{{index}}" bindtap="toggleProblem">{{problem.expanded ? '收起解析' : '展开解析'}}</view>
       <view wx:if="{{problem.expanded}}">
-        <image wx:if="{{problem.image && !problem.imageLoadFailed}}" class="problem-card__image" src="{{problem.image}}" mode="aspectFit" data-index="{{index}}" binderror="onProblemImageError"></image>
+        <image wx:if="{{problem.image && !problem.imageLoadFailed}}" class="problem-card__image reading-image" src="{{problem.image}}" mode="aspectFit" data-index="{{index}}" binderror="onProblemImageError"></image>
         <view wx:elif="{{problem.image && problem.imageLoadFailed}}" class="problem-card__image-fallback">例题图暂未加载，可先阅读题干和解析</view>
         <view wx:if="{{problem.steps && problem.steps.length}}" class="problem-card__steps">
           <view class="problem-card__label">解题过程：</view>
           <view wx:for="{{problem.steps}}" wx:key="index" class="problem-step">
             <view class="problem-step__index">{{index + 1}}</view>
-            <view class="problem-step__text">{{item}}</view>
+            <view class="problem-step__text reading-copy--24 reading-leading--185">{{item}}</view>
           </view>
         </view>
         <view class="problem-card__section">
-          <text class="problem-card__label">答案：</text>{{problem.answer}}
+          <text class="problem-card__label">答案：</text><text class="problem-card__copy reading-copy--24 reading-leading--190">{{problem.answer}}</text>
         </view>
         <view class="problem-card__section">
-          <text class="problem-card__label">解析：</text>{{problem.analysis}}
+          <text class="problem-card__label">解析：</text><text class="problem-card__copy reading-copy--24 reading-leading--190">{{problem.analysis}}</text>
         </view>
       </view>
     </view>
@@ -168,3 +171,11 @@
     </view>
   </view>
 </view>
+
+<reading-settings
+  visible="{{readingSettingsVisible}}"
+  preferences="{{readingPreferences}}"
+  bindchange="changeReadingPreferences"
+  bindreset="resetReadingPreferences"
+  bindclose="closeReadingSettings"
+/>

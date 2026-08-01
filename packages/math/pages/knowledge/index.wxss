@@ -1,3 +1,5 @@
+@import "../../../../styles/reading-display.wxss";
+
 .knowledge-hero {
   padding: 30rpx;
 }
@@ -7,9 +9,18 @@
   justify-content: space-between;
   gap: 16rpx;
   align-items: center;
+  flex-wrap: wrap;
 }
 
-.collect-btn {
+.knowledge-hero__actions {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 12rpx;
+}
+
+.collect-btn,
+.reading-command {
   padding: 12rpx 22rpx;
   border-radius: 999rpx;
   background: #edf2ff;

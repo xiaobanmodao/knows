@@ -111,6 +111,8 @@ assert(sharedWxss.includes('.reading-image--narrow .reading-image'), '缺少窄�
 assert(sharedWxss.includes('width: 72%'), '窄图宽度必须为 72%');
 assert(sharedWxss.includes('width: 86%'), '适中图片宽度必须为 86%');
 assert(sharedWxss.includes('width: 100%'), '全宽图片必须为 100%');
+assert(!sharedWxss.includes('.reading-font--standard'), '标准字号不应覆盖页面现有排版');
+assert(!sharedWxss.includes('.reading-line--standard'), '标准行距不应覆盖页面现有排版');
 
 let readingSettingsConfig;
 global.Component = (config) => {
@@ -179,6 +181,158 @@ assert(contentBlockWxss.includes('@import "../../styles/reading-display.wxss"'),
 ].forEach((className) => {
   const pattern = new RegExp(`class="[^\"]*${className}[^\"]*reading-copy--\\d+[^\"]*reading-leading--\\d+[^\"]*"`);
   assert(pattern.test(contentBlockWxml), `content-block 缺少 ${className} 的语义排版令牌`);
+});
+
+function classAttributeFor(wxml, className) {
+  const pattern = new RegExp(`<[^>]+class="([^"]*\\b${className}\\b[^"]*)"[^>]*>`);
+  const match = wxml.match(pattern);
+  return match ? match[1] : '';
+}
+
+['math', 'english', 'physics'].forEach((subject) => {
+  const pageRoot = `packages/${subject}/pages/knowledge`;
+  const json = JSON.parse(read(`${pageRoot}/index.json`));
+  const js = read(`${pageRoot}/index.js`);
+  const wxml = read(`${pageRoot}/index.wxml`);
+  const wxss = read(`${pageRoot}/index.wxss`);
+
+  assert(json.usingComponents['reading-settings'] === '/components/reading-settings/index', `${subject} 未注册阅读设置组件`);
+  assert(wxml.includes('Aa 阅读'), `${subject} 缺少阅读设置入口`);
+  assert(classAttributeFor(wxml, 'page-shell').includes('{{readingDisplayClass}}'), `${subject} 页面根节点缺少显示类`);
+  assert((wxml.match(/reading-preferences="{{readingPreferences}}"/g) || []).length === 2, `${subject} 未向全部 content-block 传入偏好`);
+  assert(wxml.includes('<reading-settings'), `${subject} 缺少设置面板实例`);
+  assert(wxml.includes('visible="{{readingSettingsVisible}}"'), `${subject} 设置面板可见状态未受控`);
+  assert(wxml.includes('preferences="{{readingPreferences}}"'), `${subject} 设置面板未接收当前偏好`);
+  assert(wxml.includes('bindchange="changeReadingPreferences"'), `${subject} 设置面板缺少 change 处理器`);
+  assert(wxml.includes('bindreset="resetReadingPreferences"'), `${subject} 设置面板缺少 reset 处理器`);
+  assert(wxml.includes('bindclose="closeReadingSettings"'), `${subject} 设置面板缺少 close 处理器`);
+  assert(wxss.includes('@import "../../../../styles/reading-display.wxss"'), `${subject} 未导入共享阅读样式`);
+  assert((js.match(/this\.syncReadingPreferences\(\);/g) || []).length === 2, `${subject} 未在 onLoad 和 onShow 同步设置`);
+  assert(js.includes('readingPreferences: { ...DEFAULT_READING_PREFERENCES }'), `${subject} 缺少独立的默认阅读偏好`);
+  assert(js.includes('readingDisplayClass: buildReadingDisplayClass(DEFAULT_READING_PREFERENCES)'), `${subject} 缺少默认显示类`);
+  assert(js.includes('readingSettingsVisible: false'), `${subject} 缺少设置面板初始状态`);
+
+  [
+    'syncReadingPreferences',
+    'openReadingSettings',
+    'closeReadingSettings',
+    'changeReadingPreferences',
+    'resetReadingPreferences',
+  ].forEach((methodName) => {
+    assert(new RegExp(`${methodName}\\s*\\(`).test(js), `${subject} 缺少 ${methodName} 处理器`);
+  });
+
+  assert(classAttributeFor(wxml, 'knowledge-figure__image').includes('reading-image'), `${subject} 知识图缺少图片宽度令牌`);
+  assert(classAttributeFor(wxml, 'problem-card__image').includes('reading-image'), `${subject} 例题图缺少图片宽度令牌`);
+
+  [
+    'context-path',
+    'pill',
+    'collect-btn',
+    'reading-command',
+    'text-command',
+    'fold-control__action',
+    'note-card__save',
+    'problem-card__toggle',
+    'page-navigation__item',
+  ].forEach((className) => {
+    assert(!classAttributeFor(wxml, className).includes('reading-copy'), `${subject} 固定控件 ${className} 不应使用正文字号令牌`);
+  });
+
+  [
+    'knowledge-hero__summary',
+    'core-card__text',
+    'knowledge-figure__caption',
+    'study-card__text',
+    'note-card__input',
+    'template-box__when',
+    'template-box__text',
+    'problem-card__copy',
+    'problem-step__text',
+  ].forEach((className) => {
+    const classAttribute = classAttributeFor(wxml, className);
+    assert(classAttribute.includes('reading-copy--') && classAttribute.includes('reading-leading--'), `${subject} 正文 ${className} 缺少语义排版令牌`);
+  });
+});
+
+const physicsJs = read('packages/physics/pages/knowledge/index.js');
+const physicsWxml = read('packages/physics/pages/knowledge/index.wxml');
+assert(physicsJs.includes("options.focusType === 'experiment'"), 'physics 丢失实验定向导航');
+assert(physicsJs.includes('scrollToPendingFocus()'), 'physics 丢失实验锚点滚动');
+assert(physicsWxml.includes('id="{{item.anchorId}}"'), 'physics 丢失实验内容锚点');
+
+const pageConfigs = {};
+global.Page = (config) => {
+  pageConfigs[global.currentReadingSubject] = config;
+};
+['math', 'english', 'physics'].forEach((subject) => {
+  global.currentReadingSubject = subject;
+  require(`../packages/${subject}/pages/knowledge/index`);
+});
+delete global.currentReadingSubject;
+
+assert(pageConfigs.math.data.readingPreferences !== pageConfigs.english.data.readingPreferences, '页面间不应共享可变阅读偏好对象');
+assert(pageConfigs.english.data.readingPreferences !== pageConfigs.physics.data.readingPreferences, '页面间不应共享可变阅读偏好对象');
+
+function createPageInstance(config) {
+  return {
+    data: {
+      ...config.data,
+      currentScrollTop: 128,
+      detailsExpanded: true,
+      templateExpanded: true,
+      noteDraft: '保留笔记',
+      knowledge: { problems: [{ expanded: true }] },
+    },
+    updates: [],
+    setData(value) {
+      this.updates.push(value);
+      this.data = { ...this.data, ...value };
+    },
+  };
+}
+
+const toastCalls = [];
+wx.showToast = (options) => toastCalls.push(options);
+global.getApp = () => ({
+  getReadingPreferences() {
+    return { version: 1, fontSize: 'large', lineHeight: 'relaxed', imageWidth: 'medium' };
+  },
+  setReadingPreferences(preferences) {
+    return { saved: false, preferences };
+  },
+  resetReadingPreferences() {
+    return { saved: false, preferences: { ...DEFAULT_READING_PREFERENCES } };
+  },
+});
+
+Object.entries(pageConfigs).forEach(([subject, config]) => {
+  const instance = createPageInstance(config);
+  const preservedState = {
+    currentScrollTop: instance.data.currentScrollTop,
+    detailsExpanded: instance.data.detailsExpanded,
+    templateExpanded: instance.data.templateExpanded,
+    noteDraft: instance.data.noteDraft,
+    knowledge: instance.data.knowledge,
+  };
+
+  config.openReadingSettings.call(instance);
+  assert(JSON.stringify(instance.updates.pop()) === JSON.stringify({ readingSettingsVisible: true }), `${subject} 打开设置面板不应修改阅读状态`);
+  config.closeReadingSettings.call(instance);
+  assert(JSON.stringify(instance.updates.pop()) === JSON.stringify({ readingSettingsVisible: false }), `${subject} 关闭设置面板不应修改阅读状态`);
+  Object.entries(preservedState).forEach(([key, value]) => {
+    assert(instance.data[key] === value, `${subject} 设置面板开关修改了 ${key}`);
+  });
+
+  const nextPreferences = { version: 1, fontSize: 'small', lineHeight: 'compact', imageWidth: 'narrow' };
+  config.changeReadingPreferences.call(instance, { detail: { preferences: nextPreferences } });
+  assert(instance.data.readingPreferences === nextPreferences, `${subject} 保存失败时未保留会话偏好`);
+  assert(instance.data.readingDisplayClass === 'reading-font--small reading-line--compact reading-image--narrow', `${subject} 未即时应用会话显示类`);
+  assert(toastCalls.pop().title === '设置未保存', `${subject} 保存失败提示错误`);
+
+  config.resetReadingPreferences.call(instance);
+  assert(instance.data.readingPreferences.fontSize === 'standard', `${subject} 重置失败时未保留默认会话效果`);
+  assert(toastCalls.pop().title === '设置未保存', `${subject} 重置失败提示错误`);
 });
 
 console.log('OK reading preference normalization, classes and labels checked');

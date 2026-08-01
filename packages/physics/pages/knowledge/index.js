@@ -8,6 +8,10 @@ const {
 } = require('../../repository');
 const { applyTempFileURL, getTempFileURLMap, isCloudFile } = require('../../../../utils/cloud-assets');
 const { openContent } = require('../../../../utils/content-routes');
+const {
+  DEFAULT_READING_PREFERENCES,
+  buildReadingDisplayClass,
+} = require('../../../../utils/reading-preferences');
 
 function splitKnowledgeSections(sections) {
   const essential = [];
@@ -51,6 +55,9 @@ Page({
     noteTags: [],
     noteTagDraft: '',
     noteDirty: false,
+    readingPreferences: { ...DEFAULT_READING_PREFERENCES },
+    readingDisplayClass: buildReadingDisplayClass(DEFAULT_READING_PREFERENCES),
+    readingSettingsVisible: false,
   },
 
   onLoad(options) {
@@ -58,10 +65,12 @@ Page({
     this.pendingFocusId = options.focusType === 'experiment' ? options.focusId : '';
     this.shouldRestorePosition = options.restore === '1' && !this.pendingFocusId;
     this.currentScrollTop = 0;
+    this.syncReadingPreferences();
     this.loadKnowledge(options.id);
   },
 
   onShow() {
+    this.syncReadingPreferences();
     const { knowledge } = this.data;
 
     if (knowledge) {
@@ -71,6 +80,40 @@ Page({
         isFavorite: app.globalData.favorites.some((item) => item.id === knowledge.id && (item.subjectId || 'math') === this.subjectId && (item.type || 'knowledge') === 'knowledge'),
       });
     }
+  },
+
+  syncReadingPreferences() {
+    const preferences = getApp().getReadingPreferences();
+    const readingDisplayClass = buildReadingDisplayClass(preferences);
+    if (readingDisplayClass !== this.data.readingDisplayClass) {
+      this.setData({ readingPreferences: preferences, readingDisplayClass });
+    }
+  },
+
+  openReadingSettings() {
+    this.setData({ readingSettingsVisible: true });
+  },
+
+  closeReadingSettings() {
+    this.setData({ readingSettingsVisible: false });
+  },
+
+  changeReadingPreferences(event) {
+    const result = getApp().setReadingPreferences(event.detail.preferences);
+    this.setData({
+      readingPreferences: result.preferences,
+      readingDisplayClass: buildReadingDisplayClass(result.preferences),
+    });
+    if (!result.saved) wx.showToast({ title: '设置未保存', icon: 'none' });
+  },
+
+  resetReadingPreferences() {
+    const result = getApp().resetReadingPreferences();
+    this.setData({
+      readingPreferences: result.preferences,
+      readingDisplayClass: buildReadingDisplayClass(result.preferences),
+    });
+    if (!result.saved) wx.showToast({ title: '设置未保存', icon: 'none' });
   },
 
   async loadKnowledge(knowledgeId) {

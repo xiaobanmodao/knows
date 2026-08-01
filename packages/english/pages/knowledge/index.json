@@ -1,6 +1,7 @@
 {
   "navigationBarTitleText": "知识点详情",
   "usingComponents": {
-    "content-block": "/components/content-block/index"
+    "content-block": "/components/content-block/index",
+    "reading-settings": "/components/reading-settings/index"
   }
 }
