@@ -2,7 +2,7 @@
   <view class="reading-settings" catchtap="stopPropagation">
     <view class="reading-settings__header">
       <view class="reading-settings__title">阅读显示</view>
-      <view class="reading-settings__close" bindtap="close" aria-label="关闭">&#215;</view>
+      <view class="reading-settings__close" bindtap="close" role="button" aria-label="关闭">×</view>
     </view>
 
     <view wx:for="{{groups}}" wx:key="id" wx:for-item="group" class="reading-settings__group">
@@ -16,10 +16,13 @@
           data-field="{{group.id}}"
           data-value="{{option.id}}"
           bindtap="selectOption"
+          role="button"
+          aria-label="{{group.title}}：{{option.label}}"
+          aria-pressed="{{option.selected}}"
         >{{option.label}}</view>
       </view>
     </view>
 
-    <view class="reading-settings__reset" bindtap="resetPreferences">恢复默认</view>
+    <view class="reading-settings__reset" bindtap="resetPreferences" role="button" aria-label="恢复默认">恢复默认</view>
   </view>
 </view>
