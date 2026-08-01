@@ -4,9 +4,11 @@ const grade7LowerWordDepth = require('./english-depth-grade7b-words');
 const grade7LowerGrammarDepth = require('./english-depth-grade7b-grammar');
 const grade8UpperWordDepth = require('./english-depth-grade8a-words');
 const grade8UpperGrammarDepth = require('./english-depth-grade8a-grammar');
+const grade8LowerWordDepth = require('./english-depth-grade8b-words');
+const grade8LowerGrammarDepth = require('./english-depth-grade8b-grammar');
 
-const wordDepth = [...grade7UpperWordDepth, ...grade7LowerWordDepth, ...grade8UpperWordDepth];
-const grammarDepth = [...grade7UpperGrammarDepth, ...grade7LowerGrammarDepth, ...grade8UpperGrammarDepth];
+const wordDepth = [...grade7UpperWordDepth, ...grade7LowerWordDepth, ...grade8UpperWordDepth, ...grade8LowerWordDepth];
+const grammarDepth = [...grade7UpperGrammarDepth, ...grade7LowerGrammarDepth, ...grade8UpperGrammarDepth, ...grade8LowerGrammarDepth];
 
 const REFERENCE_SOURCES = {
   'cambridge-dictionary': {
@@ -43,6 +45,13 @@ const BOOK_DEPTH_STATUS = {
     reviewedAt: '2026-07-22',
   },
   'eng-book-g8a-2024': {
+    status: 'complete',
+    detailVersion: 2,
+    wordCount: 64,
+    grammarCount: 16,
+    reviewedAt: '2026-08-01',
+  },
+  'eng-book-g8b-2024': {
     status: 'complete',
     detailVersion: 2,
     wordCount: 64,
