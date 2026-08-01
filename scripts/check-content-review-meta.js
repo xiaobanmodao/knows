@@ -3,6 +3,10 @@ const englishUnits = require('../packages/english/data/english-units');
 const englishContent = require('../packages/english/data/english-content');
 const physicsCurriculum = require('../packages/physics/data/physics-curriculum');
 const physicsContent = require('../packages/physics/data/physics-content');
+const { themes: chemistryThemes } = require('../packages/chemistry/data/chemistry-themes');
+const { topics: chemistryTopics } = require('../packages/chemistry/data/chemistry-topics');
+const { templates: chemistryTemplates } = require('../packages/chemistry/data/chemistry-templates');
+const { knowledgeItems: chemistryKnowledge } = require('../packages/chemistry/data/chemistry-knowledge');
 
 const issues = [];
 
@@ -40,6 +44,7 @@ function checkMeta(item, label, subjectId) {
   if (subjectId === 'math' && !sourceText.includes('数学')) issues.push(`${label}: 数学来源标识缺失`);
   if (subjectId === 'english' && !sourceText.includes('英语')) issues.push(`${label}: 英语来源标识缺失`);
   if (subjectId === 'physics' && !sourceText.includes('物理')) issues.push(`${label}: 物理来源标识缺失`);
+  if (subjectId === 'chemistry' && !sourceText.includes('化学')) issues.push(`${label}: 化学来源标识缺失`);
 }
 
 const mathKnowledge = math.getAllChapters().flatMap((chapter) => chapter.knowledgeItems);
@@ -54,12 +59,20 @@ englishUnits.units.forEach((unit) => {
 englishContent.knowledgeItems.forEach((item) => checkMeta(item, `英语专题/${item.title}`, 'english'));
 physicsCurriculum.knowledgeItems.forEach((item) => checkMeta(item, `物理章节/${item.title}`, 'physics'));
 physicsContent.knowledgeItems.forEach((item) => checkMeta(item, `物理专题/${item.title}`, 'physics'));
+chemistryThemes.forEach((item) => checkMeta(item, `化学主题/${item.title}`, 'chemistry'));
+chemistryTopics.forEach((item) => checkMeta(item, `化学专题/${item.title}`, 'chemistry'));
+chemistryTemplates.forEach((item) => checkMeta(item, `化学方法/${item.title}`, 'chemistry'));
+chemistryKnowledge.forEach((item) => checkMeta(item, `化学知识/${item.title}`, 'chemistry'));
 
 if (mathKnowledge.length !== 89) issues.push(`数学知识点数量应为 89，当前为 ${mathKnowledge.length}`);
 if (englishUnits.units.length !== 42) issues.push(`英语单元数量应为 42，当前为 ${englishUnits.units.length}`);
 if (englishUnits.vocabulary.length !== 336) issues.push(`英语单词数量应为 336，当前为 ${englishUnits.vocabulary.length}`);
 if (englishUnits.grammarPoints.length !== 84) issues.push(`英语语法数量应为 84，当前为 ${englishUnits.grammarPoints.length}`);
 if (physicsCurriculum.knowledgeItems.length !== 84) issues.push(`物理知识点数量应为 84，当前为 ${physicsCurriculum.knowledgeItems.length}`);
+if (chemistryThemes.length !== 5) issues.push(`化学课标主题数量应为 5，当前为 ${chemistryThemes.length}`);
+if (chemistryTopics.length !== 10) issues.push(`化学专题数量应为 10，当前为 ${chemistryTopics.length}`);
+if (chemistryKnowledge.length !== 40) issues.push(`化学知识点数量应为 40，当前为 ${chemistryKnowledge.length}`);
+if (chemistryTemplates.length !== 12) issues.push(`化学方法数量应为 12，当前为 ${chemistryTemplates.length}`);
 
 if (issues.length) {
   console.log('FOUND_CONTENT_REVIEW_META_ISSUES');
@@ -67,4 +80,8 @@ if (issues.length) {
   process.exit(1);
 }
 
-console.log(`OK review metadata checked for ${mathKnowledge.length} math lessons, ${englishUnits.units.length} English units, ${englishUnits.vocabulary.length} words, ${englishUnits.grammarPoints.length} grammar points and ${physicsCurriculum.knowledgeItems.length} physics points`);
+console.log(
+  `OK review metadata checked for ${mathKnowledge.length} math lessons, ${englishUnits.units.length} English units, `
+    + `${englishUnits.vocabulary.length} words, ${englishUnits.grammarPoints.length} grammar points, `
+    + `${physicsCurriculum.knowledgeItems.length} physics points and ${chemistryKnowledge.length} chemistry points`,
+);

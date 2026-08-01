@@ -401,13 +401,13 @@ assert.strictEqual(themes.length, 5);
 assert.strictEqual(topics.length, 10);
 assert.strictEqual(templates.length, 12);
 assert.strictEqual(foundationKnowledge.length, 20);
-assert.strictEqual(knowledgeItems.length, 20);
+assert.strictEqual(knowledgeItems.length, 40);
 
 assert.deepStrictEqual(themes.map((item) => item.id), THEME_IDS);
 assert.deepStrictEqual(topics.map((item) => item.id), TOPIC_CONTRACT.map((item) => item.id));
 assert.deepStrictEqual(templates.map((item) => item.id), TEMPLATE_IDS);
 assert.deepStrictEqual(foundationKnowledge.map((item) => item.id), FOUNDATION_IDS);
-assert.deepStrictEqual(knowledgeItems.map((item) => item.id), FOUNDATION_IDS);
+assert.deepStrictEqual(knowledgeItems.slice(0, FOUNDATION_IDS.length).map((item) => item.id), FOUNDATION_IDS);
 
 const topicIds = new Set(TOPIC_CONTRACT.map((item) => item.id));
 const templateIds = new Set(TEMPLATE_IDS);

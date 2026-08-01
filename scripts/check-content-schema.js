@@ -3,6 +3,10 @@ const english = require('../packages/english/data/english-content');
 const englishUnits = require('../packages/english/data/english-units');
 const physics = require('../packages/physics/data/physics-content');
 const physicsCurriculum = require('../packages/physics/data/physics-curriculum');
+const { themes: chemistryThemes } = require('../packages/chemistry/data/chemistry-themes');
+const { topics: chemistryTopics } = require('../packages/chemistry/data/chemistry-topics');
+const { templates: chemistryTemplates } = require('../packages/chemistry/data/chemistry-templates');
+const { knowledgeItems: chemistryKnowledge } = require('../packages/chemistry/data/chemistry-knowledge');
 const { SUBJECT_MANIFEST } = require('../data/subject-manifest');
 
 const issues = [];
@@ -10,6 +14,7 @@ const globalIds = new Set();
 let formulaCount = 0;
 let experimentCount = 0;
 let reasoningCount = 0;
+let equationCount = 0;
 
 function requireFields(entity, fields, label) {
   fields.forEach((field) => {
@@ -27,7 +32,7 @@ function register(entity, type, subjectId) {
   globalIds.add(key);
 }
 
-function checkSections(knowledge, label) {
+function checkSections(knowledge, label, options = {}) {
   (knowledge.sections || []).forEach((section, index) => {
     if (section.type === 'formula') {
       formulaCount += 1;
@@ -36,10 +41,20 @@ function checkSections(knowledge, label) {
 
     if (section.type === 'experiment') {
       experimentCount += 1;
+      const purposeField = options.experimentPurposeField || 'goal';
       requireFields(
         section,
-        ['title', 'goal', 'apparatus', 'steps', 'phenomenon', 'conclusion', 'errors', 'safety'],
+        ['title', purposeField, 'apparatus', 'steps', 'phenomenon', 'conclusion', 'errors', 'safety'],
         `${label} 实验 ${index + 1}`,
+      );
+    }
+
+    if (section.type === 'equation') {
+      equationCount += 1;
+      requireFields(
+        section,
+        ['equationId', 'title', 'equation', 'condition', 'interpretation', 'ratioNote'],
+        `${label} 方程式 ${index + 1}`,
       );
     }
 
@@ -141,10 +156,64 @@ physicsCurriculum.templates.forEach((template) => {
   requireFields(template, ['name', 'category', 'steps', 'cues', 'figure'], `物理模板 ${template.id}`);
 });
 
+const chemistryThemeIds = new Set(chemistryThemes.map((item) => item.id));
+const chemistryTopicIds = new Set(chemistryTopics.map((item) => item.id));
+const chemistryKnowledgeIds = new Set(chemistryKnowledge.map((item) => item.id));
+const chemistryTemplateIds = new Set(chemistryTemplates.map((item) => item.id));
+chemistryThemes.forEach((theme) => {
+  register(theme, 'theme', 'chemistry');
+  requireFields(theme, ['title', 'summary', 'topicIds', 'contentMeta'], `化学主题 ${theme.id}`);
+  theme.topicIds.forEach((topicId) => {
+    if (!chemistryTopicIds.has(topicId)) issues.push(`化学主题专题引用无效: ${theme.id} -> ${topicId}`);
+  });
+});
+chemistryTopics.forEach((topic) => {
+  register(topic, 'topic', 'chemistry');
+  requireFields(
+    topic,
+    ['themeId', 'title', 'gradeBands', 'summary', 'objective', 'knowledgeIds', 'templateIds', 'coverImage', 'contentMeta'],
+    `化学专题 ${topic.id}`,
+  );
+  if (!chemistryThemeIds.has(topic.themeId)) issues.push(`化学专题主题引用无效: ${topic.id}`);
+  topic.knowledgeIds.forEach((knowledgeId) => {
+    if (!chemistryKnowledgeIds.has(knowledgeId)) issues.push(`化学专题知识引用无效: ${topic.id} -> ${knowledgeId}`);
+  });
+  topic.templateIds.forEach((templateId) => {
+    if (!chemistryTemplateIds.has(templateId)) issues.push(`化学专题方法引用无效: ${topic.id} -> ${templateId}`);
+  });
+});
+chemistryKnowledge.forEach((knowledge) => {
+  register(knowledge, 'knowledge', 'chemistry');
+  requireFields(
+    knowledge,
+    ['topicId', 'title', 'summary', 'boundary', 'knowledgePoints', 'sections', 'templateIds', 'relatedIds', 'contentMeta'],
+    `化学知识 ${knowledge.id}`,
+  );
+  checkSections(knowledge, `化学知识 ${knowledge.id}`, { experimentPurposeField: 'purpose' });
+  if (!chemistryTopicIds.has(knowledge.topicId)) issues.push(`化学知识父级无效: ${knowledge.id}`);
+  knowledge.relatedIds.forEach((relatedId) => {
+    if (!chemistryKnowledgeIds.has(relatedId)) issues.push(`化学关联知识无效: ${knowledge.id} -> ${relatedId}`);
+  });
+});
+chemistryTemplates.forEach((template) => {
+  register(template, 'template', 'chemistry');
+  requireFields(
+    template,
+    ['name', 'category', 'summary', 'topicIds', 'steps', 'cues', 'figure', 'contentMeta'],
+    `化学方法 ${template.id}`,
+  );
+  template.topicIds.forEach((topicId) => {
+    if (!chemistryTopicIds.has(topicId)) issues.push(`化学方法专题引用无效: ${template.id} -> ${topicId}`);
+  });
+});
+
 if (issues.length) {
   console.log('FOUND_CONTENT_SCHEMA_ISSUES');
   issues.forEach((issue) => console.log(issue));
   process.exit(1);
 }
 
-console.log(`OK ${globalIds.size} schema entities, ${formulaCount} formulas, ${reasoningCount} reasoning blocks, ${experimentCount} experiments and parent references checked`);
+console.log(
+  `OK ${globalIds.size} schema entities, ${formulaCount} formulas, ${equationCount} equations, `
+    + `${reasoningCount} reasoning blocks, ${experimentCount} experiments and parent references checked`,
+);
