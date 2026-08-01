@@ -14,6 +14,7 @@ const depthBookSpecs = [
   { id: 'eng-book-g7b-2024', label: '七年级下册', unitCount: 8, wordCount: 64, grammarCount: 16 },
   { id: 'eng-book-g8a-2024', label: '八年级上册', unitCount: 8, wordCount: 64, grammarCount: 16 },
   { id: 'eng-book-g8b-2024', label: '八年级下册', unitCount: 8, wordCount: 64, grammarCount: 16 },
+  { id: 'eng-book-g9a-2025', label: '九年级上册', unitCount: 8, wordCount: 64, grammarCount: 16 },
 ];
 const depthBookIds = new Set(depthBookSpecs.map((item) => item.id));
 const depthUnits = english.units.filter((unit) => depthBookIds.has(unit.bookId));
@@ -76,8 +77,8 @@ depthBookSpecs.forEach((spec) => {
   }
 });
 
-if (wordDepth.length !== 272 || grammarDepth.length !== 68) {
-  issue('补深数据', `应为 272 词/68 语法，当前 ${wordDepth.length}/${grammarDepth.length}`);
+if (wordDepth.length !== 336 || grammarDepth.length !== 84) {
+  issue('补深数据', `应为 336 词/84 语法，当前 ${wordDepth.length}/${grammarDepth.length}`);
 }
 
 depthWords.forEach((word) => {
@@ -137,8 +138,8 @@ depthGrammar.forEach((point) => {
 
 const wordExampleCount = english.vocabulary.reduce((sum, word) => sum + (word.examples ? word.examples.length : 1), 0);
 const grammarExampleCount = english.grammarPoints.reduce((sum, point) => sum + point.examples.length, 0);
-if (wordExampleCount + grammarExampleCount !== 844) {
-  issue('英语例句', `八年级下册补深后应为 844，当前 ${wordExampleCount + grammarExampleCount}`);
+if (wordExampleCount + grammarExampleCount !== 924) {
+  issue('英语例句', `九年级上册补深后应为 924，当前 ${wordExampleCount + grammarExampleCount}`);
 }
 
 function findWord(unitId, headword) {
@@ -167,6 +168,13 @@ const factChecks = [
   ['recover 康复时不及物', /不及物/.test(findWord('eng-unit-g8b-stay-healthy', 'recover').senses[0].transitivity)],
   ['recommend 可接 doing', findWord('eng-unit-g8b-good-read', 'recommend').collocationDetails.some((item) => item.phrase === 'recommend doing')],
   ['the elderly 为复数集合', /复数/.test(findWord('eng-unit-g8b-making-difference', 'elderly').senses[0].countability)],
+  ['progress 不可数', /不可数/.test(findWord('eng-unit-g9a-changing-world', 'progress').senses[0].countability)],
+  ['progress 记录名词与动词音标', findWord('eng-unit-g9a-changing-world', 'progress').phonetics.uk.length === 2],
+  ['memorize 包含英式拼写', findWord('eng-unit-g9a-our-memory', 'memorize').spellingVariants.some((item) => item.value === 'memorise')],
+  ['resource 记录英美发音差异', findWord('eng-unit-g9a-smart-learning', 'resource').phonetics.us.includes('/ˈriːsɔːrs/')],
+  ['spacecraft 单复数同形', findWord('eng-unit-g9a-beyond-earth', 'spacecraft').searchTerms.includes('spacecraft')],
+  ['evidence 不可数', /不可数/.test(findWord('eng-unit-g9a-beyond-earth', 'evidence').senses[0].countability)],
+  ['relay 说明动词重音', /动词常读/.test(findWord('eng-unit-g9a-more-than-game', 'relay').senses[0].transitivity)],
 ];
 factChecks.forEach(([label, passed]) => {
   if (!passed) issue('重点事实', label);
@@ -178,4 +186,4 @@ if (issues.length) {
   process.exit(1);
 }
 
-console.log(`OK ${depthUnits.length} units, ${depthWords.length} detailed words, ${depthGrammar.length} detailed grammar points and 844 examples checked`);
+console.log(`OK ${depthUnits.length} units, ${depthWords.length} detailed words, ${depthGrammar.length} detailed grammar points and 924 examples checked`);

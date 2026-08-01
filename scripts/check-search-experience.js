@@ -25,6 +25,10 @@ const rankingChecks = [
   ['the elderly', 'english', 'word'],
   ['be used to doing', 'english', 'grammar'],
   ['recommend doing', 'english', 'word'],
+  ['memorise', 'english', 'word'],
+  ['a piece of evidence', 'english', 'word'],
+  ['adapt to doing', 'english', 'word'],
+  ['in spite of', 'english', 'grammar'],
 ];
 
 rankingChecks.forEach(([keyword, expectedSubjectId, expectedType]) => {
@@ -47,7 +51,7 @@ if (!practiceResult || practiceResult.title !== 'practise') {
   throw new Error(`practice: 首个单词结果应为 practise，当前为 ${practiceResult ? practiceResult.title : '无结果'}`);
 }
 
-['stomachache', 'used to', 'spelt', 'color', 'geese', '名词性物主代词', 'There be', 'practice', 'temperatures', '一般过去时', 'organise', 'flavor', 'species', '复合不定代词', 'a piece of advice', 'the elderly', 'be used to doing', 'recommend doing'].forEach((keyword) => {
+['stomachache', 'used to', 'spelt', 'color', 'geese', '名词性物主代词', 'There be', 'practice', 'temperatures', '一般过去时', 'organise', 'flavor', 'species', '复合不定代词', 'a piece of advice', 'the elderly', 'be used to doing', 'recommend doing', 'memorise', 'a piece of evidence', 'adapt to doing', 'in spite of'].forEach((keyword) => {
   const directResult = searchAllSubjects(keyword, 'english')
     .find((item) => ['word', 'grammar'].includes(item.type));
 

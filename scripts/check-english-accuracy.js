@@ -176,6 +176,12 @@ const depthFacts = [
   ['eng-unit-g8b-stay-healthy', 'recover', (word) => /不及物/.test(word.senses[0].transitivity), 'recover 表示康复时应说明不及物用法'],
   ['eng-unit-g8b-good-read', 'recommend', (word) => /及物/.test(word.senses[0].transitivity), 'recommend 应标记为及物'],
   ['eng-unit-g8b-making-difference', 'elderly', (word) => /复数.*集合/.test(word.senses[0].countability), 'the elderly 应说明复数集合意义'],
+  ['eng-unit-g9a-changing-world', 'progress', (word) => /不可数/.test(word.senses[0].countability), 'progress 作进展时应标记为不可数'],
+  ['eng-unit-g9a-changing-world', 'adapt', (word) => /adapt to.*不及物/.test(word.senses[0].transitivity), 'adapt to 应说明不及物结构'],
+  ['eng-unit-g9a-our-memory', 'memorize', (word) => word.spellingVariants.some((item) => item.value === 'memorise'), 'memorize 应记录英式拼写 memorise'],
+  ['eng-unit-g9a-beyond-earth', 'spacecraft', (word) => /单复数同形/.test(word.senses[0].countability), 'spacecraft 应说明单复数同形'],
+  ['eng-unit-g9a-beyond-earth', 'evidence', (word) => /不可数/.test(word.senses[0].countability), 'evidence 应标记为不可数'],
+  ['eng-unit-g9a-more-than-game', 'teamwork', (word) => /不可数/.test(word.senses[0].countability), 'teamwork 应标记为不可数'],
 ];
 
 depthFacts.forEach(([unitId, headword, predicate, message]) => {
@@ -187,6 +193,18 @@ const grade8UsedTo = getGrammar('eng-unit-g8b-growing-up', 'used-to');
 if (grade8UsedTo) {
   const contrastText = (grade8UsedTo.contrasts || []).map((item) => `${item.target} ${item.difference}`).join(' ');
   requireMatch(contrastText, /used to do.*be used to doing/, grade8UsedTo.id, '应明确 used to do 与 be used to doing 的区别');
+}
+
+const grade9Deduction = getGrammar('eng-unit-g9a-beyond-earth', 'certainty-evidence');
+if (grade9Deduction) {
+  const contrastText = (grade9Deduction.contrasts || []).map((item) => `${item.target} ${item.difference}`).join(' ');
+  requireMatch(contrastText, /must not.*cannot.*禁止.*不可能/, grade9Deduction.id, '应明确 must not 表禁止、cannot 表否定推测');
+}
+
+const grade9Conditionals = getGrammar('eng-unit-g9a-more-than-game', 'conditionals-sport');
+if (grade9Conditionals) {
+  const contrastText = (grade9Conditionals.contrasts || []).map((item) => `${item.target} ${item.difference}`).join(' ');
+  requireMatch(contrastText, /第一条件句.*现实.*第二条件句.*假设/, grade9Conditionals.id, '应区分第一条件句的现实可能与第二条件句的假设距离');
 }
 
 if (issues.length) {
