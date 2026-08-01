@@ -273,6 +273,8 @@ const FORBIDDEN_FIELDS = new Set([
 const FORBIDDEN_CONTENT_PATTERNS = [
   '题目',
   '题给',
+  '题意',
+  '题设',
   '作答',
   '答题',
   '练习要求',
