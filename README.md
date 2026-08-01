@@ -1,10 +1,10 @@
 # 知识通小程序
 
-微信原生小程序版初中知识库项目。当前 `v1.5.0-dev.1` 从稳定的 v1.4 分包底座继续补深英语知识内容，默认游客模式，支持：
+微信原生小程序版初中知识库项目。当前 `v1.5.1-dev.1` 在英语五册补深完成后继续完善物理知识内容，默认游客模式，支持：
 
 - 数学 29 章、29 个专题和 36 个题型模板
 - 英语 42 个可学习教材单元、42 张独立单元知识图、336 个详细词条、84 个详细单元语法点和 924 个单元例句，已核对的五册内容全部补深，另有 6 个能力专题
-- 物理按人教版八上、八下、九全组织 22 章、84 个章节知识点、84 张独立知识图解、22 个方法模板、252 道示例和 29 个重点实验，另保留 6 个综合专题
+- 物理按人教版八上、八下、九全组织 22 章、84 个详细知识点、225 组物理量引用、32 组方向规则、84 张独立知识图解、22 个方法模板、252 道示例和 29 个结构化重点实验，另保留 6 个综合专题
 - 教材单元、英语单词与语法，以及三科学科内容统一检索
 - 示例、实验、公式、步骤和图示等结构化内容
 - 按学科收藏与最近浏览
@@ -56,6 +56,7 @@ node scripts/check-english-accuracy.js
 node scripts/check-english-depth.js
 node scripts/check-physics-curriculum.js
 node scripts/check-physics-accuracy.js
+node scripts/check-physics-depth.js
 node scripts/check-subject-content.js
 node scripts/check-math-content.js
 node scripts/check-math-accuracy.js
@@ -79,7 +80,8 @@ node scripts/check-cloud-assets-runtime.js
 1. 正式云环境与 `getImageTempUrls` 已复核通过，运行时改为云函数签名优先、客户端兜底
 2. 在 iPhone 与 Android 实体手机完成三科首次分包加载、搜索、收藏、笔记和弱网降级回归
 3. 通过后更新为 `1.4.0-rc.1` 并生成体验版
-4. `codex/english-depth-v1.5` 按七上、七下、八上、八下、九上顺序补深英语逐词讲解与单元语法
+4. `codex/english-depth-v1.5` 已按七上、七下、八上、八下、九上顺序完成英语逐词讲解与单元语法
+5. `codex/physics-depth-v1.5.1` 补齐 84 个物理知识点的物理量、单位、条件与方向，并统一 29 个实验的结构化记录
 
 ## 后续开发
 

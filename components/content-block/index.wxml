@@ -9,6 +9,24 @@
   <view wx:if="{{section.type === 'formula'}}" class="formula-box">
     <view class="formula-box__formula">{{section.formula}}</view>
     <view class="formula-box__desc">{{section.description}}</view>
+    <view wx:if="{{section.quantities && section.quantities.length}}" class="formula-box__group">
+      <view class="formula-box__label">物理量与单位</view>
+      <view class="quantity-table">
+        <view wx:for="{{section.quantities}}" wx:key="key" class="quantity-table__row">
+          <text class="quantity-table__name">{{item.name}}</text>
+          <text class="quantity-table__symbol">{{item.symbol}}</text>
+          <text class="quantity-table__unit">{{item.unit}}</text>
+        </view>
+      </view>
+    </view>
+    <view wx:if="{{section.conditions && section.conditions.length}}" class="formula-box__group">
+      <view class="formula-box__label">适用条件</view>
+      <view wx:for="{{section.conditions}}" wx:key="index" class="formula-rule">{{index + 1}}. {{item}}</view>
+    </view>
+    <view wx:if="{{section.directionRules && section.directionRules.length}}" class="formula-box__group">
+      <view class="formula-box__label">方向规则</view>
+      <view wx:for="{{section.directionRules}}" wx:key="index" class="formula-rule formula-rule--direction">{{item}}</view>
+    </view>
   </view>
 
   <view wx:if="{{section.type === 'tip'}}" class="tip-box">{{section.content}}</view>
@@ -44,11 +62,14 @@
   </view>
 
   <view wx:if="{{section.type === 'experiment'}}" class="experiment-box">
+    <view wx:if="{{section.method}}" class="experiment-box__row"><text class="experiment-box__label">方法</text><text>{{section.method}}</text></view>
     <view class="experiment-box__row"><text class="experiment-box__label">目的</text><text>{{section.goal}}</text></view>
     <view class="experiment-box__row"><text class="experiment-box__label">器材</text><text>{{section.apparatusText}}</text></view>
+    <view wx:if="{{section.controlsText}}" class="experiment-box__row"><text class="experiment-box__label">控制</text><text>{{section.controlsText}}</text></view>
     <view class="experiment-box__steps">
       <view wx:for="{{section.steps}}" wx:key="index" class="experiment-step"><text class="experiment-step__index">{{index + 1}}</text><text>{{item}}</text></view>
     </view>
+    <view wx:if="{{section.recordsText}}" class="experiment-box__row"><text class="experiment-box__label">记录</text><text>{{section.recordsText}}</text></view>
     <view class="experiment-box__row"><text class="experiment-box__label">现象</text><text>{{section.phenomenon}}</text></view>
     <view class="experiment-box__row"><text class="experiment-box__label">结论</text><text>{{section.conclusion}}</text></view>
     <view class="experiment-box__row"><text class="experiment-box__label">误差</text><text>{{section.errorsText}}</text></view>

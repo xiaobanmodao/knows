@@ -29,6 +29,13 @@ const rankingChecks = [
   ['a piece of evidence', 'english', 'word'],
   ['adapt to doing', 'english', 'word'],
   ['in spite of', 'english', 'grammar'],
+  ['F浮', 'physics', 'knowledge'],
+  ['kg/m³', 'physics', 'knowledge'],
+  ['N/kg', 'physics', 'knowledge'],
+  ['竖直向上', 'physics', 'knowledge'],
+  ['正进负出', 'physics', 'knowledge'],
+  ['同一导体', 'physics', 'knowledge'],
+  ['全反射', 'physics', 'knowledge'],
 ];
 
 rankingChecks.forEach(([keyword, expectedSubjectId, expectedType]) => {
@@ -60,9 +67,18 @@ if (!practiceResult || practiceResult.title !== 'practise') {
   }
 });
 
+['F浮', 'kg/m³', 'N/kg', '竖直向上', '正进负出', '同一导体', '全反射'].forEach((keyword) => {
+  const directResult = searchAllSubjects(keyword, 'physics')
+    .find((item) => item.type === 'knowledge');
+
+  if (!directResult || !directResult.refId || !directResult.containerId) {
+    throw new Error(`物理搜索“${keyword}”缺少知识点直达信息`);
+  }
+});
+
 const subjectOnly = searchAllSubjects('函数', 'math');
 if (!subjectOnly.length || subjectOnly.some((item) => item.subjectId !== 'math')) {
   throw new Error('学科筛选未将结果限制为数学');
 }
 
-console.log(`OK ${rankingChecks.length} search rankings, English anchors and subject filtering checked`);
+console.log(`OK ${rankingChecks.length} search rankings, English/physics anchors and subject filtering checked`);

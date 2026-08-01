@@ -53,6 +53,54 @@
   line-height: 1.8;
 }
 
+.formula-box__group {
+  margin-top: 20rpx;
+  padding-top: 18rpx;
+  border-top: 2rpx solid #dce6fb;
+}
+
+.formula-box__label {
+  margin-bottom: 12rpx;
+  color: #18356c;
+  font-size: 23rpx;
+  font-weight: 700;
+}
+
+.quantity-table__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 92rpx minmax(116rpx, auto);
+  gap: 12rpx;
+  align-items: baseline;
+  padding: 10rpx 0;
+  color: #40516d;
+  font-size: 23rpx;
+  line-height: 1.55;
+}
+
+.quantity-table__symbol {
+  color: #174ec7;
+  font-weight: 700;
+  text-align: center;
+}
+
+.quantity-table__unit {
+  overflow-wrap: anywhere;
+  text-align: right;
+}
+
+.formula-rule {
+  margin-top: 10rpx;
+  color: #465674;
+  font-size: 23rpx;
+  line-height: 1.7;
+}
+
+.formula-rule--direction {
+  padding-left: 16rpx;
+  border-left: 4rpx solid #1a70a8;
+  color: #24526d;
+}
+
 .tip-box {
   padding: 22rpx;
   border-radius: 24rpx;

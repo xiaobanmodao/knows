@@ -226,7 +226,14 @@ function buildPhysicsEntries() {
       subtitle: `物理 · ${chapter ? `${chapter.chapterLabel} ${chapter.title}` : '教材章节'}`,
       description: knowledge.summary,
       tags: knowledge.tags,
-      tokens: [knowledge.keywords, knowledge.knowledgePoints, knowledge.sections && knowledge.sections.map((section) => section.formula)],
+      tokens: [
+        knowledge.physicsDetail && knowledge.physicsDetail.quantities.map((item) => `${item.name} ${item.symbol} ${item.unit}`),
+        knowledge.physicsDetail && knowledge.physicsDetail.conditions,
+        knowledge.physicsDetail && knowledge.physicsDetail.directionRules,
+        knowledge.keywords,
+        knowledge.knowledgePoints,
+        knowledge.sections && knowledge.sections.flatMap((section) => [section.formula, section.method, section.controls, section.records]),
+      ],
     });
   });
   const templateEntries = physicsCurriculum.templates.map((template) => {
