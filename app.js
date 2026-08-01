@@ -85,6 +85,18 @@ App({
     return storage.setMathGrade(gradeId);
   },
 
+  getReadingPreferences() {
+    return storage.getReadingPreferences();
+  },
+
+  setReadingPreferences(value) {
+    return storage.setReadingPreferences(value);
+  },
+
+  resetReadingPreferences() {
+    return storage.resetReadingPreferences();
+  },
+
   getLocalDataSnapshot() {
     return storage.getLocalDataSnapshot();
   },

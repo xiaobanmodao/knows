@@ -8,6 +8,11 @@ const CONTENT_SCHEMA_VERSION_KEY = 'knows_content_schema_version';
 const MATH_GRADE_KEY = 'knows_math_grade';
 const CURRENT_CONTENT_SCHEMA_VERSION = 4;
 const MATH_GRADES = new Set(['grade7', 'grade8', 'grade9']);
+const {
+  DEFAULT_READING_PREFERENCES,
+  normalizeReadingPreferences,
+} = require('./reading-preferences');
+const READING_PREFERENCES_KEY = 'knows_reading_preferences';
 
 function read(key, fallback) {
   try {
@@ -244,6 +249,24 @@ function migrateContentStorage(resolveId) {
   return true;
 }
 
+function getReadingPreferences() {
+  return normalizeReadingPreferences(read(READING_PREFERENCES_KEY, DEFAULT_READING_PREFERENCES));
+}
+
+function setReadingPreferences(value) {
+  const preferences = normalizeReadingPreferences(value);
+  try {
+    wx.setStorageSync(READING_PREFERENCES_KEY, preferences);
+    return { preferences, saved: true };
+  } catch (error) {
+    return { preferences, saved: false };
+  }
+}
+
+function resetReadingPreferences() {
+  return setReadingPreferences(DEFAULT_READING_PREFERENCES);
+}
+
 function getMathGrade() {
   const gradeId = read(MATH_GRADE_KEY, 'grade8');
   return MATH_GRADES.has(gradeId) ? gradeId : 'grade8';
@@ -318,6 +341,9 @@ module.exports = {
   getKnowledgeNote,
   saveKnowledgeNote,
   migrateContentStorage,
+  getReadingPreferences,
+  setReadingPreferences,
+  resetReadingPreferences,
   getMathGrade,
   setMathGrade,
   getLocalDataSnapshot,
