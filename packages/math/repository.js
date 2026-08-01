@@ -3,6 +3,7 @@ const { chapterCatalog, templateLibrary } = require('./data/math-curriculum');
 const { lessonFocusMap } = require('./data/math-lesson-focus');
 const { lessonFactsMap } = require('./data/math-lesson-facts');
 const { lessonFormulaMap } = require('./data/math-lesson-formulas');
+const { getMathLessonDepth } = require('./data/details/math-lesson-depth');
 const { getContentReviewMeta } = require('./data/content-review-meta');
 const { topicPackages } = require('./data/math-topic-guides');
 const { resolveAssetUrl } = require('../../utils/asset-config');
@@ -2175,6 +2176,7 @@ function buildLessonKnowledge(chapter, sectionTitle, index) {
   };
   const figurePath = getGeneratedLessonFigurePath(profile.theme, sectionTitle) || getLessonFigurePath(chapter.id, index);
   const formulaSection = getLessonFormulaSection(sectionTitle);
+  const mathDetail = getMathLessonDepth(knowledgeId);
   const knowledgeFacts = getLessonFacts(sectionTitle, profile, pack);
   const override = lessonTextOverrideMap[sectionTitle] || null;
   const problemOverride = lessonProblemOverrideMap[sectionTitle] || null;
@@ -2204,6 +2206,7 @@ function buildLessonKnowledge(chapter, sectionTitle, index) {
     sourceImage: figurePath,
     figureCaption: getLessonCaption(profile.theme, sectionTitle),
     contentMeta: getContentReviewMeta('math'),
+    mathDetail,
     knowledgePoints: knowledgeItems,
     mistakeChecklist: uniqueList(profile.pitfalls || pack.mistakes).slice(0, 3),
     sections: [
@@ -2228,6 +2231,14 @@ function buildLessonKnowledge(chapter, sectionTitle, index) {
         items: mustItems,
       },
       ...(formulaSection ? [formulaSection] : []),
+      ...(mathDetail ? [{
+        type: 'reasoning',
+        title: '推导与联系',
+        conditions: mathDetail.conditions,
+        derivations: mathDetail.derivations,
+        whyItWorks: mathDetail.whyItWorks,
+        connections: mathDetail.connections,
+      }] : []),
       {
         type: 'table',
         title: '知识关系表',

@@ -2,7 +2,7 @@ const SUBJECT_REVIEW_META = {
   math: {
     status: 'verified',
     statusLabel: '已复核',
-    reviewedAt: '2026-07-19',
+    reviewedAt: '2026-08-01',
     sourceLabel: '义务教育数学课程标准（2022年版）与人教版公开教材资料',
     sourceRefs: [
       { title: '义务教育数学课程标准（2022年版）', url: 'https://www.moe.gov.cn/srcsite/A26/s8001/202204/W020220420582346895190.pdf' },
