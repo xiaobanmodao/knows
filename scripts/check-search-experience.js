@@ -36,6 +36,10 @@ const rankingChecks = [
   ['正进负出', 'physics', 'knowledge'],
   ['同一导体', 'physics', 'knowledge'],
   ['全反射', 'physics', 'knowledge'],
+  ['勾股定理为什么成立', 'math', 'knowledge'],
+  ['数轴方向翻转', 'math', 'knowledge'],
+  ['现实可行域', 'math', 'knowledge'],
+  ['随机误差', 'math', 'knowledge'],
 ];
 
 rankingChecks.forEach(([keyword, expectedSubjectId, expectedType]) => {
@@ -76,9 +80,18 @@ if (!practiceResult || practiceResult.title !== 'practise') {
   }
 });
 
+['勾股定理为什么成立', '数轴方向翻转', '现实可行域', '随机误差'].forEach((keyword) => {
+  const directResult = searchAllSubjects(keyword, 'math')
+    .find((item) => item.type === 'knowledge');
+
+  if (!directResult || !directResult.refId || !directResult.containerId) {
+    throw new Error(`数学搜索“${keyword}”缺少知识点直达信息`);
+  }
+});
+
 const subjectOnly = searchAllSubjects('函数', 'math');
 if (!subjectOnly.length || subjectOnly.some((item) => item.subjectId !== 'math')) {
   throw new Error('学科筛选未将结果限制为数学');
 }
 
-console.log(`OK ${rankingChecks.length} search rankings, English/physics anchors and subject filtering checked`);
+console.log(`OK ${rankingChecks.length} search rankings, English/physics/math anchors and subject filtering checked`);

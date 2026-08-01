@@ -1,8 +1,8 @@
 # 知识通小程序
 
-微信原生小程序版初中知识库项目。当前 `v1.5.1-dev.1` 在英语五册补深完成后继续完善物理知识内容，默认游客模式，支持：
+微信原生小程序版初中知识库项目。当前 `v1.5.2-dev.1` 已按英语、物理、数学顺序完成三科首轮内容补深，默认游客模式，支持：
 
-- 数学 29 章、29 个专题和 36 个题型模板
+- 数学 29 章、29 个专题、89 个详细教材小节、89 条独立推导与 36 个题型模板
 - 英语 42 个可学习教材单元、42 张独立单元知识图、336 个详细词条、84 个详细单元语法点和 924 个单元例句，已核对的五册内容全部补深，另有 6 个能力专题
 - 物理按人教版八上、八下、九全组织 22 章、84 个详细知识点、225 组物理量引用、32 组方向规则、84 张独立知识图解、22 个方法模板、252 道示例和 29 个结构化重点实验，另保留 6 个综合专题
 - 教材单元、英语单词与语法，以及三科学科内容统一检索
@@ -60,6 +60,7 @@ node scripts/check-physics-depth.js
 node scripts/check-subject-content.js
 node scripts/check-math-content.js
 node scripts/check-math-accuracy.js
+node scripts/check-math-depth.js
 node scripts/check-unique-figures.js
 node scripts/prepare-remote-assets.js
 node scripts/check-remote-assets.js
@@ -82,6 +83,7 @@ node scripts/check-cloud-assets-runtime.js
 3. 通过后更新为 `1.4.0-rc.1` 并生成体验版
 4. `codex/english-depth-v1.5` 已按七上、七下、八上、八下、九上顺序完成英语逐词讲解与单元语法
 5. `codex/physics-depth-v1.5.1` 补齐 84 个物理知识点的物理量、单位、条件与方向，并统一 29 个实验的结构化记录
+6. `codex/math-depth-v1.5.2` 补齐 89 个数学小节的成立条件、推导关系、成立原因和跨学科联系
 
 ## 后续开发
 

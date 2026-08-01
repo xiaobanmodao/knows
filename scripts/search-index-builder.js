@@ -82,7 +82,16 @@ function buildMathEntries() {
     subtitle: `数学 · ${chapter.stage} · ${chapter.title}`,
     description: knowledge.summary,
     tags: knowledge.tags,
-    tokens: [knowledge.keywords, knowledge.knowledgePoints, knowledge.legacyIds],
+    tokens: [
+      knowledge.keywords,
+      knowledge.mathDetail && knowledge.mathDetail.searchTerms,
+      knowledge.mathDetail && knowledge.mathDetail.conditions,
+      knowledge.mathDetail && knowledge.mathDetail.derivations.flatMap((item) => [item.steps, item.conclusion]),
+      knowledge.mathDetail && knowledge.mathDetail.whyItWorks,
+      knowledge.mathDetail && knowledge.mathDetail.connections.flatMap((item) => [item.title, item.description, item.keywords]),
+      knowledge.knowledgePoints,
+      knowledge.legacyIds,
+    ],
   })));
   const topicEntries = topics.map((topic) => makeEntry({
     refId: topic.id,

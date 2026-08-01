@@ -1,7 +1,7 @@
 <view class="content-block">
   <view class="content-block__head">
     <view class="content-block__title">{{section.title}}</view>
-    <view wx:if="{{section.type === 'formula' || section.type === 'example' || section.type === 'experiment'}}" class="content-block__copy" bindtap="copySection">复制</view>
+    <view wx:if="{{section.type === 'formula' || section.type === 'example' || section.type === 'experiment' || section.type === 'reasoning'}}" class="content-block__copy" bindtap="copySection">复制</view>
   </view>
 
   <view wx:if="{{section.type === 'text'}}" class="content-block__text">{{section.content}}</view>
@@ -30,6 +30,31 @@
   </view>
 
   <view wx:if="{{section.type === 'tip'}}" class="tip-box">{{section.content}}</view>
+
+  <view wx:if="{{section.type === 'reasoning'}}" class="reasoning-box">
+    <view class="reasoning-group">
+      <view class="reasoning-group__title">成立条件</view>
+      <view wx:for="{{section.conditions}}" wx:key="index" class="reasoning-line"><text class="reasoning-line__index">{{index + 1}}</text><text>{{item}}</text></view>
+    </view>
+    <view wx:for="{{section.derivations}}" wx:key="title" class="reasoning-group">
+      <view class="reasoning-group__title">{{item.title}}</view>
+      <view wx:for="{{item.steps}}" wx:for-item="step" wx:for-index="stepIndex" wx:key="stepIndex" class="reasoning-step">
+        <text class="reasoning-step__label">{{stepIndex + 1}}</text><text>{{step}}</text>
+      </view>
+      <view class="reasoning-conclusion"><text class="reasoning-conclusion__label">得到</text><text>{{item.conclusion}}</text></view>
+    </view>
+    <view class="reasoning-group">
+      <view class="reasoning-group__title">为什么成立</view>
+      <view wx:for="{{section.whyItWorks}}" wx:key="index" class="reasoning-why">{{item}}</view>
+    </view>
+    <view class="reasoning-group reasoning-group--last">
+      <view class="reasoning-group__title">跨学科联系</view>
+      <view wx:for="{{section.connections}}" wx:key="key" class="reasoning-connection">
+        <view class="reasoning-connection__title">{{item.title}}</view>
+        <view class="reasoning-connection__desc">{{item.description}}</view>
+      </view>
+    </view>
+  </view>
 
   <view wx:if="{{section.type === 'steps'}}" class="steps-box">
     <view wx:for="{{section.steps}}" wx:key="index" class="steps-box__item">

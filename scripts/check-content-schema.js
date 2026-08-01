@@ -9,6 +9,7 @@ const issues = [];
 const globalIds = new Set();
 let formulaCount = 0;
 let experimentCount = 0;
+let reasoningCount = 0;
 
 function requireFields(entity, fields, label) {
   fields.forEach((field) => {
@@ -41,6 +42,15 @@ function checkSections(knowledge, label) {
         `${label} 实验 ${index + 1}`,
       );
     }
+
+    if (section.type === 'reasoning') {
+      reasoningCount += 1;
+      requireFields(
+        section,
+        ['title', 'conditions', 'derivations', 'whyItWorks', 'connections'],
+        `${label} 推导 ${index + 1}`,
+      );
+    }
   });
 }
 
@@ -57,7 +67,7 @@ mathChapters.forEach((chapter) => {
   requireFields(chapter, ['title', 'stage', 'knowledgeItems', 'templateItems'], `数学章节 ${chapter.id}`);
   chapter.knowledgeItems.forEach((knowledge) => {
     register(knowledge, 'knowledge', 'math');
-    requireFields(knowledge, ['chapterId', 'title', 'summary', 'contentMeta', 'sections', 'problems'], `数学知识点 ${knowledge.id}`);
+    requireFields(knowledge, ['chapterId', 'title', 'summary', 'contentMeta', 'mathDetail', 'sections', 'problems'], `数学知识点 ${knowledge.id}`);
     checkSections(knowledge, `数学知识点 ${knowledge.id}`);
     if (!mathChapterIds.has(knowledge.chapterId)) issues.push(`数学知识点父级无效: ${knowledge.id}`);
   });
@@ -137,4 +147,4 @@ if (issues.length) {
   process.exit(1);
 }
 
-console.log(`OK ${globalIds.size} schema entities, ${formulaCount} formulas, ${experimentCount} experiments and parent references checked`);
+console.log(`OK ${globalIds.size} schema entities, ${formulaCount} formulas, ${reasoningCount} reasoning blocks, ${experimentCount} experiments and parent references checked`);

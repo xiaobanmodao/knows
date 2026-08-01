@@ -38,6 +38,21 @@ Component({
           `误差：${section.errorsText || ''}`,
           `安全：${section.safety || ''}`,
         ].filter(Boolean).join('\n');
+      } else if (section.type === 'reasoning') {
+        content = [
+          section.title,
+          '成立条件',
+          ...(section.conditions || []).map((item, index) => `${index + 1}. ${item}`),
+          ...(section.derivations || []).flatMap((item) => [
+            item.title,
+            ...(item.steps || []).map((step, index) => `${index + 1}. ${step}`),
+            `得到：${item.conclusion || ''}`,
+          ]),
+          '为什么成立',
+          ...(section.whyItWorks || []),
+          '跨学科联系',
+          ...(section.connections || []).map((item) => `${item.title}：${item.description}`),
+        ].filter(Boolean).join('\n');
       }
 
       if (!content) {
