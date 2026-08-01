@@ -6,6 +6,12 @@ const memory = new Map([
   ['knows_last_reading', null],
   ['knows_knowledge_notes', []],
   ['knows_math_grade', 'grade8'],
+  ['knows_reading_preferences', {
+    version: 1,
+    fontSize: 'standard',
+    lineHeight: 'compact',
+    imageWidth: 'full',
+  }],
   ['knows_content_schema_version', 4],
 ]);
 
@@ -57,7 +63,33 @@ const source = {
     tags: ['公式', '公式', '运动'], updatedAt: 400,
   }],
   mathGrade: 'grade7',
+  readingPreferences: {
+    version: 1,
+    fontSize: 'large',
+    lineHeight: 'relaxed',
+    imageWidth: 'medium',
+  },
 };
+
+function checksumText(value) {
+  let hash = 2166136261;
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0).toString(16).padStart(8, '0');
+}
+
+function refreshChecksum(value) {
+  value.checksum = checksumText(JSON.stringify({
+    format: value.format,
+    backupVersion: value.backupVersion,
+    contentSchemaVersion: value.contentSchemaVersion,
+    createdAt: value.createdAt,
+    appVersion: value.appVersion,
+    data: value.data,
+  }));
+}
 
 const created = backup.createBackup(source, {
   appVersion: '1.6.0-dev.1',
@@ -65,6 +97,21 @@ const created = backup.createBackup(source, {
 });
 const text = backup.serializeBackup(created);
 const parsed = backup.parseBackupText(text);
+
+if (parsed.data.readingPreferences.fontSize !== 'large') {
+  throw new Error('新备份应包含阅读显示设置');
+}
+if (created.backupVersion !== 1) {
+  throw new Error('增加可选设置不应升级备份格式');
+}
+
+const oldBackup = JSON.parse(text);
+delete oldBackup.data.readingPreferences;
+refreshChecksum(oldBackup);
+const oldParsed = backup.parseBackupText(JSON.stringify(oldBackup));
+if (oldParsed.data.readingPreferences !== null) {
+  throw new Error('旧备份缺少阅读设置时应保留缺失状态');
+}
 
 expectError(() => backup.parseBackupText(''), '文件为空');
 expectError(() => backup.parseBackupText('{broken'), '有效的 JSON');
@@ -115,6 +162,28 @@ const current = {
   searchHistory: ['欧姆定律'],
   mathGrade: 'grade9',
 };
+const currentPreferences = {
+  version: 1,
+  fontSize: 'small',
+  lineHeight: 'compact',
+  imageWidth: 'narrow',
+};
+const mergedOld = backup.mergeSnapshots(
+  { ...current, readingPreferences: currentPreferences },
+  oldParsed.data,
+);
+if (mergedOld.readingPreferences.fontSize !== 'small') {
+  throw new Error('旧备份不应重置当前阅读设置');
+}
+
+const mergedNew = backup.mergeSnapshots(
+  { ...current, readingPreferences: currentPreferences },
+  parsed.data,
+);
+if (mergedNew.readingPreferences.fontSize !== 'large') {
+  throw new Error('新备份应恢复备份中的阅读设置');
+}
+
 const merged = backup.mergeSnapshots(current, parsed.data);
 if (merged.favorites.length !== 2 || merged.favorites[0].title !== '当前较新收藏') {
   throw new Error('合并时应按稳定 ID 去重并保留较新收藏');
@@ -127,9 +196,12 @@ storage.replaceLocalData(merged);
 if (storage.getFavorites().length !== 2 || storage.getMathGrade() !== 'grade7') {
   throw new Error('规范化快照应完整写入本地存储');
 }
+if (storage.getReadingPreferences().fontSize !== 'large') {
+  throw new Error('替换恢复应写入备份中的阅读设置');
+}
 
 const beforeFailure = JSON.stringify(storage.getLocalDataSnapshot());
-failKey = 'knows_knowledge_notes';
+failKey = 'knows_content_schema_version';
 try {
   storage.replaceLocalData({ ...merged, notes: [{ id: 'should-not-persist' }] });
   throw new Error('模拟写入失败应抛出错误');

@@ -5,6 +5,10 @@ const MAX_BACKUP_TEXT_LENGTH = 2 * 1024 * 1024;
 const SUBJECT_IDS = new Set(['math', 'english', 'physics']);
 const CONTENT_TYPES = new Set(['subject', 'chapter', 'unit', 'topic', 'knowledge', 'template', 'word', 'grammar']);
 const MATH_GRADES = new Set(['grade7', 'grade8', 'grade9']);
+const {
+  DEFAULT_READING_PREFERENCES,
+  normalizeReadingPreferences,
+} = require('./reading-preferences');
 
 function isRecord(value) {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
@@ -117,6 +121,8 @@ function normalizeSearchHistory(history) {
 function normalizeSnapshot(snapshot = {}) {
   const source = isRecord(snapshot) ? snapshot : {};
   const schemaVersion = cleanNumber(source.contentSchemaVersion, CURRENT_CONTENT_SCHEMA_VERSION);
+  const hasReadingPreferences = Object.prototype.hasOwnProperty.call(source, 'readingPreferences')
+    && source.readingPreferences !== null;
   return {
     contentSchemaVersion: Math.min(schemaVersion, CURRENT_CONTENT_SCHEMA_VERSION),
     favorites: normalizeArray(source.favorites, (item) => normalizeContentItem(item, 'savedAt'), 100),
@@ -126,6 +132,9 @@ function normalizeSnapshot(snapshot = {}) {
     lastReading: normalizeReadingItem(source.lastReading),
     notes: normalizeArray(source.notes, normalizeNote, 200),
     mathGrade: MATH_GRADES.has(source.mathGrade) ? source.mathGrade : 'grade8',
+    readingPreferences: hasReadingPreferences
+      ? normalizeReadingPreferences(source.readingPreferences)
+      : null,
   };
 }
 
@@ -182,6 +191,8 @@ function checksumPayload(backup) {
 
 function createBackup(snapshot, metadata = {}) {
   const data = normalizeSnapshot(snapshot);
+  data.readingPreferences = data.readingPreferences
+    || normalizeReadingPreferences(DEFAULT_READING_PREFERENCES);
   const createdDate = new Date(metadata.createdAt || Date.now());
   if (Number.isNaN(createdDate.getTime())) {
     throw new Error('备份时间无效');
@@ -285,6 +296,9 @@ function mergeSnapshots(currentSnapshot, incomingSnapshot) {
     lastReading: lastReadingCandidates[0] || null,
     notes: mergeTimedItems(current.notes, incoming.notes, 'updatedAt', 200, normalizeNote),
     mathGrade: incoming.mathGrade,
+    readingPreferences: incoming.readingPreferences
+      || current.readingPreferences
+      || DEFAULT_READING_PREFERENCES,
   });
 }
 

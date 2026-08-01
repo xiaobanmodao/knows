@@ -288,11 +288,16 @@ function getLocalDataSnapshot() {
     lastReading: getLastReading(),
     notes: getNotes(),
     mathGrade: getMathGrade(),
+    readingPreferences: getReadingPreferences(),
   };
 }
 
 function replaceLocalData(snapshot) {
   const previous = getLocalDataSnapshot();
+  const nextReadingPreferences = snapshot.readingPreferences === null
+    || typeof snapshot.readingPreferences === 'undefined'
+    ? previous.readingPreferences
+    : normalizeReadingPreferences(snapshot.readingPreferences);
   const entries = [
     [FAVORITES_KEY, snapshot.favorites],
     [RECENTS_KEY, snapshot.recents],
@@ -301,6 +306,7 @@ function replaceLocalData(snapshot) {
     [LAST_READING_KEY, snapshot.lastReading],
     [NOTES_KEY, snapshot.notes],
     [MATH_GRADE_KEY, snapshot.mathGrade],
+    [READING_PREFERENCES_KEY, nextReadingPreferences],
     [CONTENT_SCHEMA_VERSION_KEY, snapshot.contentSchemaVersion],
   ];
   const rollbackEntries = [
@@ -311,6 +317,7 @@ function replaceLocalData(snapshot) {
     [LAST_READING_KEY, previous.lastReading],
     [NOTES_KEY, previous.notes],
     [MATH_GRADE_KEY, previous.mathGrade],
+    [READING_PREFERENCES_KEY, previous.readingPreferences],
     [CONTENT_SCHEMA_VERSION_KEY, previous.contentSchemaVersion],
   ];
 
