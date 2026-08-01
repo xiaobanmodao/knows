@@ -163,6 +163,17 @@
   overflow-wrap: anywhere;
 }
 
+.reference-item__match {
+  display: inline-flex;
+  margin-top: 10rpx;
+  padding: 5rpx 9rpx;
+  border-radius: 6rpx;
+  background: #eef4ff;
+  color: #245bb5;
+  font-size: 19rpx;
+  font-weight: 700;
+}
+
 .reference-item__secondary {
   margin-top: 8rpx;
   color: #556176;

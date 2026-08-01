@@ -128,6 +128,17 @@
   color: #5c6680;
 }
 
+.result-card__match {
+  display: inline-flex;
+  margin-top: 12rpx;
+  padding: 6rpx 10rpx;
+  border-radius: 6rpx;
+  background: #eef4ff;
+  color: #245bb5;
+  font-size: 20rpx;
+  font-weight: 700;
+}
+
 .result-card__desc {
   margin-top: 12rpx;
   font-size: 24rpx;
@@ -136,5 +147,8 @@
 }
 
 .result-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10rpx;
   margin-top: 12rpx;
 }

@@ -73,13 +73,14 @@
             bindtap="openResult"
           >
             <view class="result-card__top">
-              <view class="result-card__title">{{result.title}}</view>
+              <view class="result-card__title"><highlight-text text="{{result.title}}" terms="{{result.matchTerms}}" /></view>
               <view class="pill">{{result.subjectLabel}} · {{result.typeLabel}}</view>
             </view>
-            <view class="result-card__subtitle">{{result.subtitle}}</view>
-            <view class="result-card__desc">{{result.description}}</view>
+            <view wx:if="{{result.matchLabel}}" class="result-card__match">{{result.matchLabel}}</view>
+            <view class="result-card__subtitle"><highlight-text text="{{result.subtitle}}" terms="{{result.matchTerms}}" /></view>
+            <view class="result-card__desc"><highlight-text text="{{result.description}}" terms="{{result.matchTerms}}" /></view>
             <view class="result-card__tags">
-              <text wx:for="{{result.tags}}" wx:key="*this" wx:for-item="tag" class="tag">{{tag}}</text>
+              <view wx:for="{{result.tags}}" wx:key="*this" wx:for-item="tag" class="tag"><highlight-text text="{{tag}}" terms="{{result.matchTerms}}" /></view>
             </view>
           </view>
         </view>

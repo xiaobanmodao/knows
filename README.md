@@ -69,6 +69,7 @@ node scripts/check-content-migration.js
 node scripts/check-content-review-meta.js
 node scripts/check-search-experience.js
 node scripts/check-search-index.js
+node scripts/check-search-semantics.js
 node scripts/check-reference-index.js
 node scripts/check-content-routes.js
 node scripts/check-package-boundaries.js

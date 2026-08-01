@@ -51,14 +51,15 @@
     >
       <view class="reference-item__body">
         <view class="reference-item__top">
-          <view class="reference-item__title">{{item.title}}</view>
+          <view class="reference-item__title"><highlight-text text="{{item.title}}" terms="{{item.matchTerms}}" /></view>
           <view class="reference-item__subject reference-item__subject--{{item.subjectId}}">{{item.subjectLabel}}</view>
         </view>
-        <view class="reference-item__primary">{{item.primary}}</view>
-        <view wx:if="{{item.secondary}}" class="reference-item__secondary">{{item.secondary}}</view>
+        <view wx:if="{{item.matchLabel}}" class="reference-item__match">{{item.matchLabel}}</view>
+        <view class="reference-item__primary"><highlight-text text="{{item.primary}}" terms="{{item.matchTerms}}" /></view>
+        <view wx:if="{{item.secondary}}" class="reference-item__secondary"><highlight-text text="{{item.secondary}}" terms="{{item.matchTerms}}" /></view>
         <view class="reference-item__meta">{{item.subtitle}}</view>
         <view wx:if="{{item.tags.length}}" class="reference-item__tags">
-          <text wx:for="{{item.tags}}" wx:key="*this" class="reference-item__tag">{{item}}</text>
+          <view wx:for="{{item.tags}}" wx:key="*this" wx:for-item="tag" class="reference-item__tag"><highlight-text text="{{tag}}" terms="{{item.matchTerms}}" /></view>
         </view>
       </view>
       <view class="reference-item__arrow">›</view>

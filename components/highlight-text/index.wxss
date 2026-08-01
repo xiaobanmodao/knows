@@ -1,0 +1,10 @@
+.highlight-text {
+  display: inline;
+}
+
+.highlight-text__mark {
+  border-radius: 4rpx;
+  background: #fff0a8;
+  color: #7c4b00;
+  font-weight: 800;
+}

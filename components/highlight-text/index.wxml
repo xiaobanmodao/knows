@@ -1,0 +1,1 @@
+<text class="highlight-text"><text wx:for="{{segments}}" wx:key="key" class="{{item.highlighted ? 'highlight-text__mark' : ''}}">{{item.text}}</text></text>
