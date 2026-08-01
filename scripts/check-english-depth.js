@@ -13,6 +13,7 @@ const depthBookSpecs = [
   { id: 'eng-book-g7a-2024', label: '七年级上册', unitCount: 10, wordCount: 80, grammarCount: 20 },
   { id: 'eng-book-g7b-2024', label: '七年级下册', unitCount: 8, wordCount: 64, grammarCount: 16 },
   { id: 'eng-book-g8a-2024', label: '八年级上册', unitCount: 8, wordCount: 64, grammarCount: 16 },
+  { id: 'eng-book-g8b-2024', label: '八年级下册', unitCount: 8, wordCount: 64, grammarCount: 16 },
 ];
 const depthBookIds = new Set(depthBookSpecs.map((item) => item.id));
 const depthUnits = english.units.filter((unit) => depthBookIds.has(unit.bookId));
@@ -75,8 +76,8 @@ depthBookSpecs.forEach((spec) => {
   }
 });
 
-if (wordDepth.length !== 208 || grammarDepth.length !== 52) {
-  issue('补深数据', `应为 208 词/52 语法，当前 ${wordDepth.length}/${grammarDepth.length}`);
+if (wordDepth.length !== 272 || grammarDepth.length !== 68) {
+  issue('补深数据', `应为 272 词/68 语法，当前 ${wordDepth.length}/${grammarDepth.length}`);
 }
 
 depthWords.forEach((word) => {
@@ -136,8 +137,8 @@ depthGrammar.forEach((point) => {
 
 const wordExampleCount = english.vocabulary.reduce((sum, word) => sum + (word.examples ? word.examples.length : 1), 0);
 const grammarExampleCount = english.grammarPoints.reduce((sum, point) => sum + point.examples.length, 0);
-if (wordExampleCount + grammarExampleCount !== 764) {
-  issue('英语例句', `八年级上册补深后应为 764，当前 ${wordExampleCount + grammarExampleCount}`);
+if (wordExampleCount + grammarExampleCount !== 844) {
+  issue('英语例句', `八年级下册补深后应为 844，当前 ${wordExampleCount + grammarExampleCount}`);
 }
 
 function findWord(unitId, headword) {
@@ -160,6 +161,12 @@ const factChecks = [
   ['schedule 英式音标', findWord('eng-unit-g8a-plan-yourself', 'schedule').phonetics.uk.includes('/ˈʃedʒuːl/')],
   ['schedule 美式音标', findWord('eng-unit-g8a-plan-yourself', 'schedule').phonetics.us.includes('/ˈskedʒuːl/')],
   ['organize 包含英式变体', findWord('eng-unit-g8a-home-sweet-home', 'organize').spellingVariants.some((item) => item.value === 'organise')],
+  ['leisure 英式音标', findWord('eng-unit-g8b-time-to-relax', 'leisure').phonetics.uk.includes('/ˈleʒə/')],
+  ['leisure 美式音标', findWord('eng-unit-g8b-time-to-relax', 'leisure').phonetics.us.includes('/ˈliːʒər/')],
+  ['advice 不可数', /不可数/.test(findWord('eng-unit-g8b-stay-healthy', 'advice').senses[0].countability)],
+  ['recover 康复时不及物', /不及物/.test(findWord('eng-unit-g8b-stay-healthy', 'recover').senses[0].transitivity)],
+  ['recommend 可接 doing', findWord('eng-unit-g8b-good-read', 'recommend').collocationDetails.some((item) => item.phrase === 'recommend doing')],
+  ['the elderly 为复数集合', /复数/.test(findWord('eng-unit-g8b-making-difference', 'elderly').senses[0].countability)],
 ];
 factChecks.forEach(([label, passed]) => {
   if (!passed) issue('重点事实', label);
@@ -171,4 +178,4 @@ if (issues.length) {
   process.exit(1);
 }
 
-console.log(`OK ${depthUnits.length} units, ${depthWords.length} detailed words, ${depthGrammar.length} detailed grammar points and 764 examples checked`);
+console.log(`OK ${depthUnits.length} units, ${depthWords.length} detailed words, ${depthGrammar.length} detailed grammar points and 844 examples checked`);

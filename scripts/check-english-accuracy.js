@@ -172,12 +172,22 @@ const depthFacts = [
   ['eng-unit-g7b-rain-or-shine', 'weather', (word) => /不可数/.test(word.senses[0].countability), 'weather 应标记为不可数'],
   ['eng-unit-g7b-day-to-remember', 'happen', (word) => /不及物/.test(word.senses[0].transitivity), 'happen 应标记为不及物'],
   ['eng-unit-g7b-day-to-remember', 'experience', (word) => /经验.*不可数/.test(word.senses[0].countability), 'experience 应区分经历与经验的可数性'],
+  ['eng-unit-g8b-stay-healthy', 'advice', (word) => /不可数/.test(word.senses[0].countability), 'advice 应标记为不可数'],
+  ['eng-unit-g8b-stay-healthy', 'recover', (word) => /不及物/.test(word.senses[0].transitivity), 'recover 表示康复时应说明不及物用法'],
+  ['eng-unit-g8b-good-read', 'recommend', (word) => /及物/.test(word.senses[0].transitivity), 'recommend 应标记为及物'],
+  ['eng-unit-g8b-making-difference', 'elderly', (word) => /复数.*集合/.test(word.senses[0].countability), 'the elderly 应说明复数集合意义'],
 ];
 
 depthFacts.forEach(([unitId, headword, predicate, message]) => {
   const word = getWord(unitId, headword);
   if (word && !predicate(word)) issue(`${unitId}/${headword}`, message);
 });
+
+const grade8UsedTo = getGrammar('eng-unit-g8b-growing-up', 'used-to');
+if (grade8UsedTo) {
+  const contrastText = (grade8UsedTo.contrasts || []).map((item) => `${item.target} ${item.difference}`).join(' ');
+  requireMatch(contrastText, /used to do.*be used to doing/, grade8UsedTo.id, '应明确 used to do 与 be used to doing 的区别');
+}
 
 if (issues.length) {
   console.log('FOUND_ENGLISH_ACCURACY_ISSUES');
