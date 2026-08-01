@@ -1,6 +1,7 @@
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 import math
+import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 DIAGRAM_DIR = ROOT / 'assets/figures/generated/chemistry/diagrams'
@@ -392,8 +393,8 @@ def draw_ph_scale():
         x = x0 + value * cell
         draw.rectangle([x, y, x + cell, y + 82], fill=colors[value], outline=WHITE, width=2)
         centered(draw, [x, y, x + cell, y + 82], value, WHITE, F_HEAD)
-    arrow(draw, (x0, 250), (x0 + 6.5 * cell, 250), RED, 4)
-    arrow(draw, (x0 + 14 * cell, 250), (x0 + 7.5 * cell, 250), BLUE, 4)
+    arrow(draw, (x0 + 6.5 * cell, 250), (x0, 250), RED, 4)
+    arrow(draw, (x0 + 7.5 * cell, 250), (x0 + 14 * cell, 250), BLUE, 4)
     text(draw, (x0, 205), '酸性增强', RED, F_HEAD)
     text(draw, (x0 + 14 * cell, 205), '碱性增强', BLUE, F_HEAD, 'rm')
     text(draw, (x0 + 7 * cell, 455), '中性', GREEN, F_HEAD, 'mm')
@@ -657,34 +658,48 @@ def draw_template_experiment_design():
 
 
 def main():
+    diagram_generators = {
+        'laboratory-observation-cycle': draw_laboratory_cycle,
+        'oxygen-preparation': draw_oxygen_preparation,
+        'carbon-dioxide-preparation': draw_carbon_dioxide_preparation,
+        'water-electrolysis': draw_water_electrolysis,
+        'particle-model': draw_particle_model,
+        'particle-conservation': draw_particle_conservation,
+        'solubility-curve': draw_solubility_curve,
+        'metal-activity': draw_metal_activity,
+        'corrosion-conditions': draw_corrosion_conditions,
+        'ph-scale': draw_ph_scale,
+        'acid-base-neutralization': draw_neutralization,
+        'ion-test-evidence': draw_ion_test_evidence,
+        'material-lifecycle': draw_material_lifecycle,
+    }
+    template_generators = {
+        'chem-tpl-observation': draw_template_observation,
+        'chem-tpl-instrument-reading': draw_template_instrument,
+        'chem-tpl-gas-apparatus': draw_template_gas_apparatus,
+        'chem-tpl-gas-collection-test': draw_template_gas_collection,
+        'chem-tpl-valence-formula': draw_template_valence,
+        'chem-tpl-equation-balancing': draw_template_balancing,
+        'chem-tpl-mass-conservation': draw_template_mass_conservation,
+        'chem-tpl-stoichiometry': draw_template_stoichiometry,
+        'chem-tpl-solubility-curve': draw_template_solubility,
+        'chem-tpl-mass-fraction': draw_template_mass_fraction,
+        'chem-tpl-solution-preparation': draw_template_solution_preparation,
+        'chem-tpl-experiment-design': draw_template_experiment_design,
+    }
+    requested = set(sys.argv[1:])
+    available = set(diagram_generators) | set(template_generators)
+    unknown = requested - available
+    if unknown:
+        raise SystemExit(f"unknown chemistry asset target(s): {', '.join(sorted(unknown))}")
+
     diagram_outputs = [
-        draw_laboratory_cycle(),
-        draw_oxygen_preparation(),
-        draw_carbon_dioxide_preparation(),
-        draw_water_electrolysis(),
-        draw_particle_model(),
-        draw_particle_conservation(),
-        draw_solubility_curve(),
-        draw_metal_activity(),
-        draw_corrosion_conditions(),
-        draw_ph_scale(),
-        draw_neutralization(),
-        draw_ion_test_evidence(),
-        draw_material_lifecycle(),
+        generate() for name, generate in diagram_generators.items()
+        if not requested or name in requested
     ]
     template_outputs = [
-        draw_template_observation(),
-        draw_template_instrument(),
-        draw_template_gas_apparatus(),
-        draw_template_gas_collection(),
-        draw_template_valence(),
-        draw_template_balancing(),
-        draw_template_mass_conservation(),
-        draw_template_stoichiometry(),
-        draw_template_solubility(),
-        draw_template_mass_fraction(),
-        draw_template_solution_preparation(),
-        draw_template_experiment_design(),
+        generate() for name, generate in template_generators.items()
+        if not requested or name in requested
     ]
     print(f'generated {len(diagram_outputs)} chemistry diagrams at {DW}x{DH}')
     print(f'generated {len(template_outputs)} chemistry template figures at {TW}x{TH}')

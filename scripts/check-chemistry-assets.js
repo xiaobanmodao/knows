@@ -31,6 +31,20 @@ const requiredDiagramNames = [
 
 const issues = [];
 
+function checkScientificDiagramSource() {
+  const generatorPath = path.join(root, 'scripts/generate-chemistry-assets.py');
+  const generator = fs.readFileSync(generatorPath, 'utf8');
+  const acidArrow = 'arrow(draw, (x0 + 6.5 * cell, 250), (x0, 250), RED, 4)';
+  const alkaliArrow = 'arrow(draw, (x0 + 7.5 * cell, 250), (x0 + 14 * cell, 250), BLUE, 4)';
+
+  if (!generator.includes(acidArrow)) {
+    issues.push('ph-scale: 酸性增强箭头必须从接近中性指向 pH 0');
+  }
+  if (!generator.includes(alkaliArrow)) {
+    issues.push('ph-scale: 碱性增强箭头必须从接近中性指向 pH 14');
+  }
+}
+
 function relativeSource(value) {
   return localPath(value).split('?')[0];
 }
@@ -282,6 +296,7 @@ function checkRemoteOutputs(expectedAssets, sourceComplete) {
   });
 }
 
+checkScientificDiagramSource();
 checkPromptManifest();
 const expectedAssets = new Set();
 checkDataReferences(expectedAssets);
