@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { getPackageRegistry } = require('../data/package-manifest');
 
 const root = path.resolve(__dirname, '..');
 const issues = [];
@@ -89,7 +90,8 @@ function checkAppConfig() {
   }
 
   const packageRoots = new Set();
-  (appConfig.subPackages || []).forEach((packageConfig) => {
+  const configuredPackages = appConfig.subPackages || [];
+  configuredPackages.forEach((packageConfig) => {
     if (!packageConfig.root || packageRoots.has(packageConfig.root)) {
       issues.push(`app.json subPackages: root 缺失或重复 -> ${packageConfig.root || '(空)'}`);
       return;
@@ -104,8 +106,21 @@ function checkAppConfig() {
     packageConfig.pages.forEach((pagePath) => checkPage(`${packageConfig.root}/${pagePath}`));
   });
 
+  const expectedPackages = getPackageRegistry();
+  expectedPackages.forEach((expected) => {
+    const matches = configuredPackages.filter((item) => (
+      item.name === expected.id && item.root === expected.root
+    ));
+    if (matches.length !== 1 || JSON.stringify(matches[0].pages) !== JSON.stringify(expected.pages)) {
+      issues.push(`app.json subPackages: ${expected.id} 与包注册表不一致`);
+    }
+  });
+  if (configuredPackages.length !== expectedPackages.length) {
+    issues.push(`app.json subPackages: 配置 ${configuredPackages.length} 个，注册表要求 ${expectedPackages.length} 个`);
+  }
+
   if (appConfig.preloadRule) {
-    warnings.push('app.json: 当前配置了 preloadRule，请确认仍符合按需加载要求');
+    issues.push('app.json: 不应配置 preloadRule，应保持按需加载');
   }
 
   if (appConfig.cloud !== true) {

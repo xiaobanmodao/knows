@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { getPackageRegistry } = require('../data/package-manifest');
 
 const root = path.resolve(__dirname, '..');
 const infoPath = path.resolve(root, process.argv[2] || '.codex-output/v1.4-packages-preview.json');
@@ -12,9 +13,7 @@ const info = JSON.parse(fs.readFileSync(infoPath, 'utf8'));
 const sizes = new Map((info.size && info.size.packages || []).map((item) => [item.name, item.size]));
 const limits = new Map([
   ['main', 700 * 1024],
-  ['/packages/english/', 1024 * 1024],
-  ['/packages/math/', 1024 * 1024],
-  ['/packages/physics/', 1024 * 1024],
+  ...getPackageRegistry().map((item) => [`/${item.root}/`, item.sizeLimitBytes]),
 ]);
 const issues = [];
 

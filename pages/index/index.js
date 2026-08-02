@@ -9,6 +9,9 @@ const { openCatalogRoute } = require('../../utils/catalog-routes');
 Page({
   data: {
     subjects: [],
+    subjectCount: 0,
+    subjectNames: '',
+    subjectNamesText: '',
     featuredChapters: [],
     totalChapters: 0,
     favoritesCount: 0,
@@ -19,8 +22,12 @@ Page({
 
   onLoad() {
     const subjects = getSubjectRegistry();
+    const subjectNames = subjects.map((subject) => subject.shortName);
     this.setData({
       subjects,
+      subjectCount: subjects.length,
+      subjectNames: subjectNames.join(' · '),
+      subjectNamesText: subjectNames.join('、'),
       featuredChapters: FEATURED_MATH_CHAPTERS,
       totalChapters: subjects[0].chapterCount,
       totalKnowledge: subjects.reduce((sum, subject) => (

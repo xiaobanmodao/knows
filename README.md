@@ -19,11 +19,13 @@
 
 - `app.js` / `app.json` / `app.wxss`：全局入口
 - `pages/`：首页、搜索、收藏、我的，以及旧内容路径的轻量兼容跳转页
+- `packages/catalog/`：按需加载的全局搜索与知识索引工具分包
 - `packages/math/`：数学目录、章节、专题、知识点、模板页面与数学数据仓库
 - `packages/english/`：英语教材目录、单元、专题、知识点、模板页面与英语数据仓库
 - `packages/physics/`：物理教材目录、章节、专题、知识点、模板页面与物理数据仓库
 - `components/`：学科卡片、搜索栏、内容块、空状态
 - `data/subject-manifest.js`：不含正文的轻量学科清单与首页推荐项
+- `data/reference-index-meta.js`：主包内仅含参考类型、数量和源哈希的生成元数据
 - `data/search-index.js`：由构建脚本生成的主包轻量搜索索引
 - `utils/content-routes.js`：根据学科、类型和稳定 ID 生成分包路径
 - `utils/subjects.js`：保留轻量学科信息与索引搜索的主包兼容门面
@@ -52,6 +54,8 @@
 
 ```bash
 node scripts/check-release-readiness.js
+node scripts/check-package-manifest.js
+node scripts/check-student-copy.js
 node scripts/check-english-units.js
 node scripts/check-english-accuracy.js
 node scripts/check-english-depth.js

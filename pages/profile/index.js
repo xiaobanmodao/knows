@@ -31,6 +31,7 @@ const {
 } = require('../../utils/reading-preferences');
 
 const subjects = getSubjectRegistry();
+const subjectNamesText = subjects.map((subject) => subject.shortName).join('、');
 const referenceTotal = REFERENCE_KIND_META.reduce((total, item) => total + item.count, 0);
 const referenceDescriptions = {
   formula: '数学与物理公式、条件和单位',
@@ -130,6 +131,7 @@ function buildCountItems(counts) {
 Page({
   data: {
     mode: '游客模式',
+    subjectNamesText,
     releaseInfo: RELEASE_INFO,
     hasIcpBeian: Boolean(RELEASE_INFO.icpBeianNumber),
     notes: [],

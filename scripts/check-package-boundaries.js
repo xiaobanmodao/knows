@@ -3,7 +3,7 @@ const path = require('path');
 
 const root = path.resolve(__dirname, '..');
 const appConfig = JSON.parse(fs.readFileSync(path.join(root, 'app.json'), 'utf8'));
-const { getSubjectRegistry } = require('../data/subject-manifest');
+const { getPackageRegistry } = require('../data/package-manifest');
 const issues = [];
 
 function walk(directory) {
@@ -41,10 +41,9 @@ mainRoots.forEach((file) => {
   });
 });
 
-const packageSubjects = getSubjectRegistry();
-const packageRoots = packageSubjects.map((subject) => subject.id);
-packageRoots.forEach((subjectId) => {
-  const packageRoot = path.join(root, 'packages', subjectId);
+const packageRegistry = getPackageRegistry();
+packageRegistry.forEach((packageMeta) => {
+  const packageRoot = path.join(root, packageMeta.root);
   walk(packageRoot).filter((file) => file.endsWith('.js')).forEach((file) => {
     requiredFiles(file).forEach((dependency) => {
       const packagesRoot = path.join(root, 'packages') + path.sep;
@@ -57,16 +56,38 @@ packageRoots.forEach((subjectId) => {
 
 const configuredPackages = appConfig.subPackages || [];
 if (appConfig.preloadRule) {
-  issues.push('v1.4 不应配置自动预下载 preloadRule');
+  issues.push('不应配置自动预下载 preloadRule');
 }
 
-packageSubjects.forEach((subject) => {
-  const subjectId = subject.id;
-  const config = configuredPackages.find((item) => item.root === `packages/${subjectId}` && item.name === subjectId);
-  if (!config || JSON.stringify(config.pages) !== JSON.stringify(subject.packagePages)) {
-    issues.push(`app.json 缺少完整 ${subjectId} 普通分包配置`);
+packageRegistry.forEach((packageMeta) => {
+  const matches = configuredPackages.filter((item) => (
+    item.root === packageMeta.root && item.name === packageMeta.id
+  ));
+  if (matches.length !== 1 || JSON.stringify(matches[0].pages) !== JSON.stringify(packageMeta.pages)) {
+    issues.push(`app.json 分包 ${packageMeta.id} 与包注册表不一致`);
   }
 });
+if (configuredPackages.length !== packageRegistry.length) {
+  issues.push(`app.json 配置 ${configuredPackages.length} 个分包，包注册表要求 ${packageRegistry.length} 个`);
+}
+configuredPackages.forEach((configuredPackage) => {
+  const packageMeta = packageRegistry.find((item) => item.root === configuredPackage.root);
+  if (!packageMeta
+    || configuredPackage.name !== packageMeta.id
+    || JSON.stringify(configuredPackage.pages) !== JSON.stringify(packageMeta.pages)) {
+    issues.push(`app.json 包含未注册或不一致的分包 ${configuredPackage.root || '(空)'}`);
+  }
+});
+
+['data/search-index.js', 'data/reference-index.js'].forEach((file) => {
+  if (fs.existsSync(path.join(root, file))) {
+    issues.push(`主包仍包含完整索引: ${file}`);
+  }
+});
+const referenceMetaSource = fs.readFileSync(path.join(root, 'data/reference-index-meta.js'), 'utf8');
+if (referenceMetaSource.includes('REFERENCE_INDEX_ROWS')) {
+  issues.push('data/reference-index-meta.js 不得包含完整参考索引行');
+}
 
 if (issues.length) {
   console.log('FOUND_PACKAGE_BOUNDARY_ISSUES');
@@ -74,4 +95,4 @@ if (issues.length) {
   process.exit(1);
 }
 
-console.log(`OK main package isolation, ${packageRoots.length} package boundaries and no preload rule checked`);
+console.log(`OK main package isolation, ${packageRegistry.length} package boundaries and no preload rule checked`);

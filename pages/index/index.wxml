@@ -2,14 +2,12 @@
   <view class="hero-gradient hero card">
     <view class="hero__label">知识库小程序</view>
     <view class="hero__title">知识通</view>
-    <view class="hero__desc">
-      初中数学、英语和物理知识库。英语可按人教版教材单元学习，无需登录即可搜索和阅读。
-    </view>
+    <view class="hero__desc">面向初中阶段的多学科知识库。无需登录即可搜索、阅读和保存本地笔记。</view>
 
     <view class="hero__stats">
       <view class="hero__stat">
         <view class="hero__stat-num">{{totalKnowledge}}</view>
-        <view class="hero__stat-label">三科内容条目</view>
+        <view class="hero__stat-label">{{subjectCount}} 科内容条目</view>
       </view>
       <view class="hero__stat">
         <view class="hero__stat-num">{{favoritesCount}}</view>
@@ -37,7 +35,7 @@
 
   <view class="section-title">
     <view class="section-title__main">学科入口</view>
-    <view class="section-title__sub">数学 · 英语 · 物理</view>
+    <view class="section-title__sub">{{subjectNames}}</view>
   </view>
 
   <view class="grid">

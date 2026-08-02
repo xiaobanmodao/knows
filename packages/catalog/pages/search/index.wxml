@@ -3,7 +3,7 @@
   <view class="subject-filter">
     <view wx:for="{{subjectFilters}}" wx:key="id" wx:for-item="filter" class="subject-filter__item {{selectedSubjectId === filter.id ? 'subject-filter__item--active' : ''}}" data-id="{{filter.id}}" bindtap="selectSubject">{{filter.title}}</view>
   </view>
-  <view class="search-note">搜索教材单元、英语单词与语法，以及三科学科知识和方法。</view>
+  <view class="search-note">搜索教材单元、英语单词与语法，以及各学科知识和方法。</view>
 
   <view wx:if="{{!hasSearched}}" class="quick-panel">
     <view wx:if="{{searchHistory.length}}" class="section-title top-gap">
