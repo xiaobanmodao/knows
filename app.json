@@ -16,6 +16,14 @@
   ],
   "subPackages": [
     {
+      "root": "packages/catalog",
+      "name": "catalog",
+      "pages": [
+        "pages/search/index",
+        "pages/reference-index/index"
+      ]
+    },
+    {
       "root": "packages/english",
       "name": "english",
       "pages": [

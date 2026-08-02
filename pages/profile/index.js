@@ -1,6 +1,7 @@
 const { RELEASE_INFO } = require('../../utils/release-info');
 const { getSubjectRegistry, SUBJECT_LABELS } = require('../../data/subject-manifest');
 const { openContent } = require('../../utils/content-routes');
+const { openCatalogRoute } = require('../../utils/catalog-routes');
 const { REFERENCE_KIND_META } = require('../../data/reference-index');
 const {
   ALL_FILTER_ID,
@@ -291,7 +292,7 @@ Page({
   },
 
   openReference(event) {
-    wx.navigateTo({ url: `/pages/reference-index/index?kind=${event.currentTarget.dataset.kind}` });
+    openCatalogRoute('referenceIndex', { kind: event.currentTarget.dataset.kind });
   },
 
   exportLocalData() {

@@ -4,6 +4,7 @@ const {
   SUBJECT_LABELS,
 } = require('../../data/subject-manifest');
 const { openContent } = require('../../utils/content-routes');
+const { openCatalogRoute } = require('../../utils/catalog-routes');
 
 Page({
   data: {
@@ -50,9 +51,7 @@ Page({
   },
 
   openSearch() {
-    wx.navigateTo({
-      url: '/pages/search/index',
-    });
+    openCatalogRoute('search');
   },
 
   openSubject(event) {

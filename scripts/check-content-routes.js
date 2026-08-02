@@ -26,6 +26,90 @@ const {
 
 const root = path.resolve(__dirname, '..');
 const issues = [];
+const appConfig = JSON.parse(fs.readFileSync(path.join(root, 'app.json'), 'utf8'));
+const catalogConfig = (appConfig.subPackages || []).find((item) => item.name === 'catalog');
+if (!catalogConfig || catalogConfig.root !== 'packages/catalog'
+  || JSON.stringify(catalogConfig.pages) !== JSON.stringify(['pages/search/index', 'pages/reference-index/index'])) {
+  issues.push('app.json 缺少完整 catalog 普通分包');
+}
+
+['search', 'reference-index'].forEach((name) => {
+  const source = fs.readFileSync(path.join(root, `pages/${name}/index.js`), 'utf8');
+  if (!source.includes('createLegacyRoutePage') || !source.includes('buildCatalogRoute')) {
+    issues.push(`旧 catalog 路径不是统一 URL 兼容页: pages/${name}/index`);
+  }
+});
+
+const directEntryFiles = [
+  'pages/index/index.js',
+  'pages/profile/index.js',
+  'packages/math/pages/index/index.js',
+  'packages/english/pages/index/index.js',
+  'packages/english/pages/unit/index.js',
+  'packages/physics/pages/index/index.js',
+];
+directEntryFiles.forEach((file) => {
+  const source = fs.readFileSync(path.join(root, file), 'utf8');
+  if (/['\"`]\/pages\/(search|reference-index)\/index/.test(source)) {
+    issues.push(`新入口仍指向旧主包路径: ${file}`);
+  }
+});
+
+function openLegacyCatalogPage(name, options) {
+  const pagePath = path.join(root, `pages/${name}/index.js`);
+  let pageDefinition;
+  const redirects = [];
+  const previousPage = global.Page;
+  const previousWx = global.wx;
+  const previousGetApp = global.getApp;
+
+  global.Page = (definition) => {
+    pageDefinition = definition;
+  };
+  global.wx = {
+    showLoading() {},
+    hideLoading() {},
+    redirectTo({ url, complete }) {
+      redirects.push(url);
+      complete();
+    },
+  };
+  global.getApp = () => ({
+    globalData: { searchHistory: [] },
+    refreshSession() {},
+  });
+
+  delete require.cache[require.resolve(pagePath)];
+  require(pagePath);
+
+  const page = {
+    ...pageDefinition,
+    data: { ...pageDefinition.data },
+    setData(data) {
+      Object.assign(this.data, data);
+    },
+  };
+  pageDefinition.onLoad.call(page, options);
+
+  global.Page = previousPage;
+  global.wx = previousWx;
+  global.getApp = previousGetApp;
+  delete require.cache[require.resolve(pagePath)];
+  return redirects;
+}
+
+const legacyCatalogCases = [
+  ['search', { q: '欧姆定律', subjectId: 'physics' }, '/packages/catalog/pages/search/index?q=%E6%AC%A7%E5%A7%86%E5%AE%9A%E5%BE%8B&subjectId=physics'],
+  ['search', { q: '化学方程式', subjectId: 'chemistry' }, '/packages/catalog/pages/search/index?q=%E5%8C%96%E5%AD%A6%E6%96%B9%E7%A8%8B%E5%BC%8F&subjectId=chemistry'],
+  ['reference-index', { kind: 'equation' }, '/packages/catalog/pages/reference-index/index?kind=equation'],
+];
+legacyCatalogCases.forEach(([name, options, expectedUrl]) => {
+  const redirects = openLegacyCatalogPage(name, options);
+  if (JSON.stringify(redirects) !== JSON.stringify([expectedUrl])) {
+    issues.push(`旧 catalog 路径未保留查询参数: pages/${name}/index`);
+  }
+});
+
 if (appendQuery('/target', { q: '欧姆定律', empty: '', zero: 0 }) !== '/target?q=%E6%AC%A7%E5%A7%86%E5%AE%9A%E5%BE%8B&zero=0') {
   issues.push('appendQuery 未保留 0 或未编码中文参数');
 }

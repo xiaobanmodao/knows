@@ -1,6 +1,7 @@
 const { getChapterGroups, getMathStudyMap } = require('../../repository');
 const { applyTempFileURL, getTempFileURLMap, isCloudFile } = require('../../../../utils/cloud-assets');
 const { openContent } = require('../../../../utils/content-routes');
+const { openCatalogRoute } = require('../../../../utils/catalog-routes');
 
 function buildGradeView(gradeId, studyMap, chapterGroups) {
   const activeGradePackage = studyMap.gradePackages.find((grade) => grade.id === gradeId)
@@ -116,9 +117,7 @@ Page({
   },
 
   openSearch() {
-    wx.navigateTo({
-      url: '/pages/search/index',
-    });
+    openCatalogRoute('search');
   },
 
   openChapter(event) {

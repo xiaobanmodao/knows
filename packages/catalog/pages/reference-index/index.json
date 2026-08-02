@@ -1,0 +1,8 @@
+{
+  "navigationBarTitleText": "知识索引",
+  "usingComponents": {
+    "empty-state": "/components/empty-state/index",
+    "highlight-text": "/components/highlight-text/index",
+    "search-bar": "/components/search-bar/index"
+  }
+}

@@ -1,6 +1,7 @@
 const { getEnglishUnitById, getEnglishUnitNavigation } = require('../../repository');
 const { applyTempFileURL, getTempFileURLMap, isCloudFile } = require('../../../../utils/cloud-assets');
 const { openContent } = require('../../../../utils/content-routes');
+const { openCatalogRoute } = require('../../../../utils/catalog-routes');
 
 Page({
   data: {
@@ -99,8 +100,9 @@ Page({
   },
 
   openSearch(event) {
-    wx.navigateTo({
-      url: `/pages/search/index?subjectId=english&q=${encodeURIComponent(event.currentTarget.dataset.keyword)}`,
+    openCatalogRoute('search', {
+      subjectId: 'english',
+      q: event.currentTarget.dataset.keyword,
     });
   },
 

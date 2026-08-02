@@ -1,6 +1,7 @@
 const { getSubjectHome, normalizeSubjectId } = require('../../repository');
 const { applyTempFileURL, getTempFileURLMap, isCloudFile } = require('../../../../utils/cloud-assets');
 const { openContent } = require('../../../../utils/content-routes');
+const { openCatalogRoute } = require('../../../../utils/catalog-routes');
 
 Page({
   data: {
@@ -137,9 +138,7 @@ Page({
   },
 
   openSearch() {
-    wx.navigateTo({
-      url: `/pages/search/index?subjectId=${this.subjectId}`,
-    });
+    openCatalogRoute('search', { subjectId: this.subjectId });
   },
 
   onImageError(event) {
