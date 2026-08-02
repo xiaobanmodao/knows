@@ -13,6 +13,7 @@ const {
   knowledgeItems: chemistryKnowledge,
 } = require('../packages/chemistry/data/chemistry-knowledge');
 const subjects = require('../utils/subjects');
+const { searchAllSubjects } = require('../packages/catalog/utils/search-index');
 
 const issues = [];
 const globalIds = new Map();
@@ -169,7 +170,7 @@ chemistryTemplates.forEach((template) => registerId(template.id, `化学方法/$
   ['粗盐提纯', 'chemistry'],
   ['燃烧条件', 'chemistry'],
 ].forEach(([keyword, subjectId]) => {
-  const results = subjects.searchAllSubjects(keyword);
+  const results = searchAllSubjects(keyword);
   if (!results.some((result) => result.subjectId === subjectId)) {
     issues.push(`搜索“${keyword}”未命中 ${subjectId}`);
   }

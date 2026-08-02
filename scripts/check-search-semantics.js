@@ -6,7 +6,7 @@ const {
 const {
   expandSearchTerms,
   searchAllSubjects,
-} = require('../utils/search-index');
+} = require('../packages/catalog/utils/search-index');
 
 const normalizationChecks = [
   ['v ＝ s ／ t', 'v=s/t'],

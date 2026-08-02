@@ -7,16 +7,23 @@ const {
   renderSearchIndexModule,
   validateSubjectTokenBudget,
 } = require('./search-index-builder');
-const { SEARCH_INDEX_META, SEARCH_INDEX_ROWS } = require('../data/search-index');
-const { searchAllSubjects } = require('../utils/search-index');
+const { SEARCH_INDEX_META, SEARCH_INDEX_ROWS } = require('../packages/catalog/data/search-index');
+const { searchAllSubjects } = require('../packages/catalog/utils/search-index');
 
 const root = path.resolve(__dirname, '..');
-const generatedPath = path.join(root, 'data/search-index.js');
+const generatedPath = path.join(root, 'packages/catalog/data/search-index.js');
 const built = buildSearchIndex();
 const issues = [];
 
 if (fs.readFileSync(generatedPath, 'utf8') !== renderSearchIndexModule(built)) {
-  issues.push('data/search-index.js 与当前内容源不一致，请运行 node scripts/build-search-index.js');
+  issues.push('packages/catalog/data/search-index.js 与当前内容源不一致，请运行 node scripts/build-search-index.js');
+}
+
+if (fs.existsSync(path.join(root, 'data/search-index.js'))) {
+  issues.push('主包仍包含完整 data/search-index.js');
+}
+if (fs.existsSync(path.join(root, 'utils/search-index.js'))) {
+  issues.push('主包仍包含完整 utils/search-index.js');
 }
 
 if (SEARCH_INDEX_META.sourceHash !== built.meta.sourceHash
@@ -128,8 +135,8 @@ canonicalChecks.forEach(([keyword, subjectId]) => {
 
 let searchPage;
 global.Page = (config) => { searchPage = config; };
-delete require.cache[require.resolve('../pages/search/index')];
-require('../pages/search/index');
+delete require.cache[require.resolve('../packages/catalog/pages/search/index')];
+require('../packages/catalog/pages/search/index');
 const searchFilterIds = searchPage.data.subjectFilters.map((item) => item.id);
 if (searchFilterIds.join(',') !== 'all,math,english,physics,chemistry') {
   issues.push(`搜索页学科筛选未从四科清单生成：${searchFilterIds.join(',')}`);

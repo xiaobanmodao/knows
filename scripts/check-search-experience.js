@@ -1,4 +1,4 @@
-const { searchAllSubjects } = require('../utils/subjects');
+const { searchAllSubjects } = require('../packages/catalog/utils/search-index');
 
 const rankingChecks = [
   ['手拉手模型', 'math', 'template'],

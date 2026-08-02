@@ -1,6 +1,7 @@
 const fs = require('fs');
 const physics = require('../packages/physics/data/physics-curriculum');
 const subjects = require('../utils/subjects');
+const { searchAllSubjects } = require('../packages/catalog/utils/search-index');
 
 const issues = [];
 const ids = new Map();
@@ -86,7 +87,7 @@ physics.chapters.forEach((chapter, index) => {
   ['电磁感应', 'knowledge'],
   ['光纤', 'knowledge'],
 ].forEach(([keyword, type]) => {
-  const results = subjects.searchAllSubjects(keyword, 'physics');
+  const results = searchAllSubjects(keyword, 'physics');
   if (!results.some((item) => item.subjectId === 'physics' && item.type === type)) {
     issues.push(`物理搜索“${keyword}”未命中 ${type}`);
   }

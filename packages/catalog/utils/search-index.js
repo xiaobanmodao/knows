@@ -4,10 +4,10 @@ const {
   TYPE_CODES,
   SEARCH_INDEX_ROWS,
 } = require('../data/search-index');
-const { SUBJECT_LABELS } = require('../data/subject-manifest');
-const { SEARCH_ALIAS_GROUPS } = require('../data/search-aliases');
-const { normalizeSubjectId } = require('./content-routes');
-const { normalizeSearchText } = require('./search-text');
+const { SUBJECT_LABELS } = require('../../../data/subject-manifest');
+const { SEARCH_ALIAS_GROUPS } = require('../../../data/search-aliases');
+const { normalizeSubjectId } = require('../../../utils/content-routes');
+const { normalizeSearchText } = require('../../../utils/search-text');
 
 const TYPE_LABELS = {
   unit: '教材单元',

@@ -1,5 +1,6 @@
 const englishUnits = require('../packages/english/data/english-units');
 const subjects = require('../utils/subjects');
+const { searchAllSubjects } = require('../packages/catalog/utils/search-index');
 
 const issues = [];
 const ids = new Map();
@@ -111,7 +112,7 @@ if (exampleOwners.size !== 924) {
   ['The Changing World', 'unit'],
   ['be harmful to', 'word'],
 ].forEach(([keyword, type]) => {
-  const results = subjects.searchAllSubjects(keyword, 'english');
+  const results = searchAllSubjects(keyword, 'english');
   if (!results.some((item) => item.type === type)) {
     issues.push(`英语搜索“${keyword}”未命中 ${type}`);
   }

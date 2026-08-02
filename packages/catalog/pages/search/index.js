@@ -1,5 +1,5 @@
 const { getSubjectRegistry, SUBJECT_LABELS } = require('../../../../data/subject-manifest');
-const { searchAllSubjects } = require('../../../../utils/search-index');
+const { searchAllSubjects } = require('../../utils/search-index');
 const { openContent } = require('../../../../utils/content-routes');
 
 const RESULT_GROUPS = [

@@ -3,7 +3,6 @@ const {
   getSubjectMeta,
   getSubjectRegistry,
 } = require('../data/subject-manifest');
-const { searchAllSubjects } = require('./search-index');
 const { normalizeSubjectId } = require('./content-routes');
 
 module.exports = {
@@ -11,5 +10,4 @@ module.exports = {
   getSubjectMeta,
   getSubjectRegistry,
   normalizeSubjectId,
-  searchAllSubjects,
 };
