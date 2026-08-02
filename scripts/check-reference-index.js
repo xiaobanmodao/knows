@@ -7,30 +7,40 @@ const {
 } = require('./reference-index-builder');
 const {
   REFERENCE_KIND_META,
+  REFERENCE_INDEX_META: MAIN_REFERENCE_INDEX_META,
+} = require('../data/reference-index-meta');
+const {
   REFERENCE_INDEX_META,
-} = require('../data/reference-index');
+} = require('../packages/catalog/data/reference-index');
 const {
   REFERENCE_KINDS,
   filterReferenceEntries,
   getReferenceEntries,
-} = require('../utils/reference-index');
+} = require('../packages/catalog/utils/reference-index');
 const { buildContentRoute } = require('../utils/content-routes');
 const { getSubjectRegistry } = require('../data/subject-manifest');
 
 const root = path.resolve(__dirname, '..');
-const outputPath = path.join(root, 'data/reference-index.js');
+const outputPath = path.join(root, 'packages/catalog/data/reference-index.js');
+const metaPath = path.join(root, 'data/reference-index-meta.js');
 const expectedIndex = buildReferenceIndex();
 const expectedSource = renderReferenceIndexModule(expectedIndex);
 const actualSource = fs.readFileSync(outputPath, 'utf8');
+const metaSource = fs.readFileSync(metaPath, 'utf8');
 const issues = [];
 
 function issue(owner, message) {
   issues.push(`${owner}: ${message}`);
 }
 
-if (actualSource !== expectedSource) issue('生成文件', 'data/reference-index.js 与三科内容源不一致');
-if (Buffer.byteLength(actualSource, 'utf8') > 150 * 1024) issue('生成文件', '索引源文件超过 150 KiB 主包预算');
+if (fs.existsSync(path.join(root, 'data/reference-index.js'))) issue('主包', '仍包含完整 data/reference-index.js');
+if (fs.existsSync(path.join(root, 'utils/reference-index.js'))) issue('主包', '仍包含完整 utils/reference-index.js');
+if (actualSource !== expectedSource) issue('生成文件', 'packages/catalog/data/reference-index.js 与三科内容源不一致');
+if (metaSource.includes('REFERENCE_INDEX_ROWS')) issue('主包元数据', '不得包含完整参考索引行');
 if (REFERENCE_INDEX_META.sourceHash !== expectedIndex.meta.sourceHash) issue('源哈希', '运行时哈希与构建结果不一致');
+if (MAIN_REFERENCE_INDEX_META.sourceHash !== REFERENCE_INDEX_META.sourceHash) {
+  issue('源哈希', '主包元数据与 catalog 完整索引不一致');
+}
 
 const priorEntries = expectedIndex.entries.filter((entry) => entry.subjectId !== 'chemistry');
 const priorHash = crypto.createHash('sha256').update(JSON.stringify(priorEntries)).digest('hex');
@@ -135,8 +145,8 @@ global.wx = {
     if (complete) complete({});
   },
 };
-delete require.cache[require.resolve('../pages/reference-index/index')];
-require('../pages/reference-index/index');
+delete require.cache[require.resolve('../packages/catalog/pages/reference-index/index')];
+require('../packages/catalog/pages/reference-index/index');
 [
   ['experiment', 'chem-k-oxygen-preparation', 'chem-exp-oxygen'],
   ['equation', 'chem-k-neutralization', 'chem-eq-neutralization'],

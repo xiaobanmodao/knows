@@ -2,7 +2,7 @@ const { SUBJECT_LABELS } = require('../../../../data/subject-manifest');
 const {
   REFERENCE_KINDS,
   filterReferenceEntries,
-} = require('../../../../utils/reference-index');
+} = require('../../utils/reference-index');
 const { openContent } = require('../../../../utils/content-routes');
 
 const PAGE_SIZE = 60;

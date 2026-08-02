@@ -2,7 +2,7 @@ const { RELEASE_INFO } = require('../../utils/release-info');
 const { getSubjectRegistry, SUBJECT_LABELS } = require('../../data/subject-manifest');
 const { openContent } = require('../../utils/content-routes');
 const { openCatalogRoute } = require('../../utils/catalog-routes');
-const { REFERENCE_KIND_META } = require('../../data/reference-index');
+const { REFERENCE_KIND_META } = require('../../data/reference-index-meta');
 const {
   ALL_FILTER_ID,
   NOTE_SUBJECT_IDS,
