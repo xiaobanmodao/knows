@@ -1,6 +1,10 @@
-const { openContent } = require('./content-routes');
+const { openContent, openRoute } = require('./content-routes');
 
-function createLegacyRoutePage({ resolveItem, loadingText = '正在打开内容' }) {
+function createLegacyRoutePage({ resolveItem, resolveUrl, loadingText = '正在打开内容' }) {
+  if (typeof resolveItem !== 'function' && typeof resolveUrl !== 'function') {
+    throw new Error('Legacy route page requires resolveItem or resolveUrl');
+  }
+
   return {
     data: {
       loadingText,
@@ -14,14 +18,16 @@ function createLegacyRoutePage({ resolveItem, loadingText = '正在打开内容'
     },
 
     openTarget() {
-      const item = resolveItem(this.legacyOptions || {});
       this.setData({ failed: false, loadingText });
-      const targetUrl = openContent(item, {
+      const navigationOptions = {
         replace: true,
         fail: (error, failedUrl) => {
           this.setData({ failed: true, targetUrl: failedUrl });
         },
-      });
+      };
+      const targetUrl = typeof resolveUrl === 'function'
+        ? openRoute(resolveUrl(this.legacyOptions || {}), navigationOptions)
+        : openContent(resolveItem(this.legacyOptions || {}), navigationOptions);
       this.setData({ targetUrl });
     },
 

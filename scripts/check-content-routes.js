@@ -13,10 +13,37 @@ const routeFixture = {
 };
 SUBJECT_MANIFEST.push(routeFixture);
 
-const { PACKAGE_ROUTES, buildContentRoute } = require('../utils/content-routes');
+const {
+  PACKAGE_ROUTES,
+  appendQuery,
+  buildContentRoute,
+  openRoute,
+} = require('../utils/content-routes');
+const {
+  buildCatalogRoute,
+  openCatalogRoute,
+} = require('../utils/catalog-routes');
 
 const root = path.resolve(__dirname, '..');
 const issues = [];
+if (appendQuery('/target', { q: '欧姆定律', empty: '', zero: 0 }) !== '/target?q=%E6%AC%A7%E5%A7%86%E5%AE%9A%E5%BE%8B&zero=0') {
+  issues.push('appendQuery 未保留 0 或未编码中文参数');
+}
+if (buildCatalogRoute('search', { q: '化学方程式', subjectId: 'chemistry' })
+  !== '/packages/catalog/pages/search/index?q=%E5%8C%96%E5%AD%A6%E6%96%B9%E7%A8%8B%E5%BC%8F&subjectId=chemistry') {
+  issues.push('catalog 搜索路由不匹配');
+}
+if (buildCatalogRoute('referenceIndex', { kind: 'equation' })
+  !== '/packages/catalog/pages/reference-index/index?kind=equation') {
+  issues.push('catalog 参考索引路由不匹配');
+}
+let rejectedUnknownCatalogRoute = false;
+try {
+  buildCatalogRoute('unknown');
+} catch (error) {
+  rejectedUnknownCatalogRoute = /unknown/.test(error.message);
+}
+if (!rejectedUnknownCatalogRoute) issues.push('未知 catalog routeId 必须抛出明确错误');
 if (JSON.stringify(PACKAGE_ROUTES[routeFixture.id]) !== JSON.stringify(routeFixture.routes)) {
   issues.push('分包路由未从活跃学科清单派生');
 }
@@ -77,6 +104,33 @@ routeChecks.forEach(([item, expected]) => {
     issues.push(`路由不匹配: ${JSON.stringify(item)} -> ${actual}，期望 ${expected}`);
   }
 });
+
+const navigationCalls = [];
+const modalCalls = [];
+global.wx = {
+  showLoading() { navigationCalls.push('showLoading'); },
+  hideLoading() { navigationCalls.push('hideLoading'); },
+  navigateTo({ url, fail, complete }) {
+    navigationCalls.push(url);
+    fail(new Error('mock download failure'));
+    complete();
+  },
+  showModal(options) {
+    modalCalls.push({ confirmText: options.confirmText, showCancel: options.showCancel });
+    options.success({ confirm: true });
+  },
+};
+const openedCatalogUrl = openCatalogRoute('search', { q: '欧姆定律' });
+if (openedCatalogUrl !== '/packages/catalog/pages/search/index?q=%E6%AC%A7%E5%A7%86%E5%AE%9A%E5%BE%8B') {
+  issues.push('openCatalogRoute 返回 URL 错误');
+}
+if (navigationCalls.filter((item) => item.startsWith('/packages/catalog/')).length !== 2) {
+  issues.push('导航失败后必须只重试一次');
+}
+if (modalCalls.length !== 2 || modalCalls[0].showCancel !== true || modalCalls[1].showCancel !== false) {
+  issues.push('第一次失败应提供重试，第二次失败应停止重试');
+}
+delete global.wx;
 
 const legacyPages = [
   'math', 'subject', 'chapter', 'english-unit', 'physics-chapter', 'topic', 'knowledge', 'template',

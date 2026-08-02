@@ -42,9 +42,8 @@ function getSubjectEntryRoute(subjectId) {
   return subject ? subject.entryRoute : PACKAGE_ROUTES.math.subject;
 }
 
-function openContent(item, options = {}) {
+function openRoute(url, options = {}) {
   const method = options.replace ? 'redirectTo' : 'navigateTo';
-  const url = buildContentRoute(item);
   const retry = options.retry !== false;
 
   if (options.loading !== false) {
@@ -71,7 +70,7 @@ function openContent(item, options = {}) {
         showCancel: retry,
         success(modalResult) {
           if (retry && modalResult.confirm) {
-            openContent(item, { ...options, retry: false });
+            openRoute(url, { ...options, retry: false });
           }
         },
       });
@@ -86,10 +85,16 @@ function openContent(item, options = {}) {
   return url;
 }
 
+function openContent(item, options = {}) {
+  return openRoute(buildContentRoute(item), options);
+}
+
 module.exports = {
   PACKAGE_ROUTES,
   normalizeSubjectId,
+  appendQuery,
   buildContentRoute,
   getSubjectEntryRoute,
+  openRoute,
   openContent,
 };
