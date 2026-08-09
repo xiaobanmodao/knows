@@ -27,11 +27,11 @@
 - `content-audit.js` exports `collectAuditEntities()` returning normalized, stable-sorted entities with `subjectId`, `type`, `id`, `title`, `parentId` and `reviewed`.
 - Existing `collectContentAudit()` and `checkAuditReport()` behavior remains unchanged.
 
-- [ ] **Step 1: Write the failing queue contract assertion**
+- [x] **Step 1: Write the failing queue contract assertion**
 
 Add a test import for `collectAuditEntities` and assert the queue can obtain the current `untracked` entity set. Before the export exists, the test must fail with a missing function or incomplete queue module.
 
-- [ ] **Step 2: Run the checker before implementation**
+- [x] **Step 2: Run the checker before implementation**
 
 Run:
 
@@ -41,15 +41,15 @@ node scripts/check-content-review-queue.js
 
 Expected: FAIL because the queue collector/checker has not been implemented.
 
-- [ ] **Step 3: Export the existing normalized collector**
+- [x] **Step 3: Export the existing normalized collector**
 
 Rename the private `collectEntities` export or add the alias `collectAuditEntities` without duplicating data loading. Keep its existing stable sort and return shape.
 
-- [ ] **Step 4: Run the focused contract check**
+- [x] **Step 4: Run the focused contract check**
 
 Run `node scripts/check-content-review-queue.js`; it may still fail on the missing generated report, but it must no longer fail because the shared collector is absent.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add scripts/content-audit.js scripts/check-content-review-queue.js
@@ -69,23 +69,23 @@ git commit -m "feat(audit): expose review queue entity collector"
 - Each item returns `{ key, subjectId, type, id, title, parentId, status, priority, priorityReason, searchKey, sourceCandidates, evidence }`.
 - `checkContentReviewQueue(report)` rejects missing untracked entities, reviewed entities, duplicate keys, unstable order, invalid priorities, invalid counts and invalid hashes.
 
-- [ ] **Step 1: Add failing report expectations**
+- [x] **Step 1: Add failing report expectations**
 
 Extend `check-content-review-queue.js` to require `schemaVersion: 1`, `status: "review-queue"`, `totals.queued === 140`, `items.length === 140`, subject totals `math: 94`, `english: 12`, `physics: 34`, and a 64-character `sourceHash`.
 
-- [ ] **Step 2: Run the checker to verify the expected failure**
+- [x] **Step 2: Run the checker to verify the expected failure**
 
 Run `node scripts/check-content-review-queue.js`; expected failure is the missing collector or report contract, not a syntax error.
 
-- [ ] **Step 3: Implement the deterministic queue builder**
+- [x] **Step 3: Implement the deterministic queue builder**
 
 Filter only `untracked` entities. Assign priority `1` to `chapter`, `unit`, `theme` and `topic`, and priority `2` to `template` and `structured-template`. Use explicit subject source policies and evidence requirements; keep them as review instructions, not claimed sources. Normalize structured search types by removing the `structured-` prefix.
 
-- [ ] **Step 4: Implement the generated report writer**
+- [x] **Step 4: Implement the generated report writer**
 
 Write `dist/content-audit/content-review-queue.json` with two-space JSON and a trailing newline. Run `checkContentReviewQueue()` before writing.
 
-- [ ] **Step 5: Run focused generation and validation**
+- [x] **Step 5: Run focused generation and validation**
 
 ```bash
 node scripts/build-content-review-queue.js
@@ -94,7 +94,7 @@ node scripts/check-content-review-queue.js
 
 Expected: 140 queue items, no reviewed item, and stable subject/type/priority counts.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add scripts/content-review-queue.js scripts/build-content-review-queue.js scripts/check-content-review-queue.js
@@ -112,19 +112,19 @@ git commit -m "feat(audit): generate deterministic review queue"
 - `check-release-readiness.js` runs the queue builder and checker after the content audit builder/checker.
 - README lists the queue commands beside the audit commands and states that the queue exposes quality debt rather than approving it.
 
-- [ ] **Step 1: Add a failing release integration assertion**
+- [x] **Step 1: Add a failing release integration assertion**
 
 Require all three queue scripts and the `dist/content-audit/content-review-queue.json` output path in the release checker.
 
-- [ ] **Step 2: Run targeted release checks**
+- [x] **Step 2: Run targeted release checks**
 
 Run `node scripts/check-release-readiness.js`; expected failure is the missing queue scripts until Task 2 is implemented.
 
-- [ ] **Step 3: Implement actual builder/checker execution**
+- [x] **Step 3: Implement actual builder/checker execution**
 
 Reuse the existing child-process helper pattern used for the content audit. Capture the last three lines of a failed child process in the release issue output; do not silently pass when the report is absent or stale.
 
-- [ ] **Step 4: Update release documentation**
+- [x] **Step 4: Update release documentation**
 
 Add:
 
@@ -135,7 +135,7 @@ node scripts/check-content-review-queue.js
 
 Explain that `untracked` remains visible and that physical-device A1-A10 is still a separate release gate.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add scripts/check-release-readiness.js README.md
@@ -152,15 +152,15 @@ git commit -m "docs(audit): gate review queue in release checks"
 - The implementation record documents the queue schema, current 140-item breakdown, commands, deterministic hash and next review order.
 - The route document points to v1.9.1 and keeps the v1.8 physical-device gate explicit.
 
-- [ ] **Step 1: Run the complete existing check matrix**
+- [x] **Step 1: Run the complete existing check matrix**
 
 Run every `scripts/check-*.js`, the audit builder/checker, the queue builder/checker, `git diff --check` and package-size validation. Expected: no failures and no runtime package changes.
 
-- [ ] **Step 2: Verify queue determinism**
+- [x] **Step 2: Verify queue determinism**
 
 Run the queue builder twice, compare SHA-256 byte-for-byte, and assert the item keys are identical.
 
-- [ ] **Step 3: Record the review order**
+- [x] **Step 3: Record the review order**
 
 Document priority 1 containers before priority 2 templates, list each subject count, and state that no item was promoted automatically.
 
