@@ -45,7 +45,7 @@
   <view class="shortcut-row">
     <view class="shortcut card" bindtap="openFavorites">
       <view class="shortcut__title">收藏夹</view>
-      <view class="shortcut__desc">保存高频模板题和关键知识点</view>
+      <view class="shortcut__desc">保存常用方法和关键知识点</view>
     </view>
     <view class="shortcut card" bindtap="openProfile">
       <view class="shortcut__title">游客模式</view>

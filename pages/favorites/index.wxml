@@ -20,7 +20,7 @@
       <view class="bookmark-card__subtitle">{{favorite.subtitle}}</view>
     </view>
   </view>
-  <empty-state wx:else title="还没有收藏内容" description="进入知识点详情页后，可以把重要模板题收藏起来。" />
+  <empty-state wx:else title="还没有收藏内容" description="进入知识点详情页后，可以把重要方法和知识点收藏起来。" />
 
   <view class="section-title top-gap">
     <view class="section-title__main">最近浏览</view>

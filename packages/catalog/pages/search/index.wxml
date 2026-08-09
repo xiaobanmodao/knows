@@ -86,6 +86,6 @@
         </view>
       </view>
     </view>
-    <empty-state wx:else title="没有找到匹配内容" description="换个关键词试试，比如单元名、单词、语法、题型或公式。" />
+    <empty-state wx:else title="没有找到匹配内容" description="换个关键词试试，比如单元名、单词、语法、方法或公式。" />
   </view>
 </view>

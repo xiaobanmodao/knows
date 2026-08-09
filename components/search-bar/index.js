@@ -6,7 +6,7 @@ Component({
     },
     placeholder: {
       type: String,
-      value: '搜索知识点、题型模板',
+      value: '搜索知识点、方法模板',
     },
     autoFocus: {
       type: Boolean,

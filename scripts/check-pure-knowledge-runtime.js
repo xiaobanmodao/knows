@@ -23,6 +23,8 @@ const FORBIDDEN_RUNTIME_COPY = [
   '掌握度',
   '自测',
   '测评',
+  '模板题',
+  '集中练',
 ].map((pattern) => ({ pattern, regex: new RegExp(pattern, 'i') }));
 
 function findForbiddenRuntimeCopy(source, file) {
@@ -47,6 +49,9 @@ function collectFiles(directory, files = []) {
 function collectRuntimeFiles(root = ROOT) {
   const files = [path.join(root, 'app.js'), path.join(root, 'app.json')]
     .filter((file) => fs.existsSync(file));
+  const visibleDataFiles = [path.join(root, 'data', 'subject-manifest.js')]
+    .filter((file) => fs.existsSync(file));
+  visibleDataFiles.forEach((file) => files.push(file));
   ['pages', 'components'].forEach((directory) => {
     collectFiles(path.join(root, directory), files);
   });
@@ -55,6 +60,16 @@ function collectRuntimeFiles(root = ROOT) {
     .forEach((file) => {
       if (!files.includes(file)) files.push(file);
     });
+  const packagesRoot = path.join(root, 'packages');
+  if (fs.existsSync(packagesRoot)) {
+    fs.readdirSync(packagesRoot, { withFileTypes: true })
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => path.join(packagesRoot, entry.name, 'repository.js'))
+      .filter((file) => fs.existsSync(file))
+      .forEach((file) => {
+        if (!files.includes(file)) files.push(file);
+      });
+  }
   return files.sort();
 }
 
