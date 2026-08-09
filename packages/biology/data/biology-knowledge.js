@@ -1,6 +1,11 @@
 const { buildKnowledge } = require('./biology-builders');
+const { getBiologyReview } = require('./content-review-meta');
 
 function defineKnowledge(definition) {
+  const observation = definition.safetyObservation && {
+    ...definition.safetyObservation,
+    id: `bio-exp-${definition.id.slice('bio-k-'.length)}`,
+  };
   const examples = definition.examples.map(([scenario, explanation, conclusion], index) => ({
     id: `bio-ex-${definition.id.slice(6)}-${index + 1}`,
     scenario,
@@ -9,6 +14,7 @@ function defineKnowledge(definition) {
   }));
   return buildKnowledge({
     ...definition,
+    safetyObservation: observation,
     tags: definition.tags || definition.keywords.slice(0, 3),
     boundary: definition.boundary || '本条用初中阶段可观察的事实解释概念，不把局部观察扩大为超出证据范围的结论。',
     pitfalls: [definition.pitfall],
@@ -19,7 +25,7 @@ function defineKnowledge(definition) {
 }
 
 function safetyObservation(context, precautions, steps, emergencyNote) {
-  return { context, precautions, steps, emergencyNote };
+  return { context, precautions, steps, emergencyNote, review: getBiologyReview() };
 }
 
 const knowledgeItems = [

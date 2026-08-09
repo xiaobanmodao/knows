@@ -12,6 +12,9 @@ const {
   getChemistryExperiments,
   knowledgeItems: chemistryKnowledge,
 } = require('../packages/chemistry/data/chemistry-knowledge');
+const { topics: biologyTopics } = require('../packages/biology/data/biology-topics');
+const { knowledgeItems: biologyKnowledge } = require('../packages/biology/data/biology-knowledge');
+const { templates: biologyTemplates } = require('../packages/biology/data/biology-templates');
 const subjects = require('../utils/subjects');
 const { searchAllSubjects } = require('../packages/catalog/utils/search-index');
 
@@ -152,6 +155,25 @@ chemistryKnowledge.forEach((knowledge) => {
 });
 chemistryTemplates.forEach((template) => registerId(template.id, `化学方法/${template.name}`));
 
+if (biologyTopics.length !== 6 || biologyKnowledge.length !== 36 || biologyTemplates.length !== 6) {
+  issues.push('biology: 应达到 6 专题、36 知识点和 6 方法');
+}
+biologyTopics.forEach((topic) => {
+  registerId(topic.id, `生物专题/${topic.title}`);
+  if (topic.subjectId !== 'biology' || topic.knowledgeIds.length !== 6 || topic.templateIds.length !== 1) {
+    issues.push(`生物专题引用无效：${topic.id}`);
+  }
+});
+biologyKnowledge.forEach((knowledge) => {
+  registerId(knowledge.id, `生物知识/${knowledge.title}`);
+  if (knowledge.subjectId !== 'biology' || !biologyTopics.some((topic) => topic.id === knowledge.topicId)) {
+    issues.push(`生物知识归属无效：${knowledge.id}`);
+  }
+  knowledge.examples.forEach((example) => registerId(example.id, `生物示例/${knowledge.title}`));
+  if (knowledge.safetyObservation) registerId(knowledge.safetyObservation.id, `生物观察/${knowledge.title}`);
+});
+biologyTemplates.forEach((template) => registerId(template.id, `生物方法/${template.name}`));
+
 [
   ['被动语态', 'english'],
   ['定语从句', 'english'],
@@ -169,6 +191,12 @@ chemistryTemplates.forEach((template) => registerId(template.id, `化学方法/$
   ['中和反应', 'chemistry'],
   ['粗盐提纯', 'chemistry'],
   ['燃烧条件', 'chemistry'],
+  ['细胞膜', 'biology'],
+  ['光合作用', 'biology'],
+  ['消化系统', 'biology'],
+  ['生态系统', 'biology'],
+  ['遗传和变异', 'biology'],
+  ['生物多样性', 'biology'],
 ].forEach(([keyword, subjectId]) => {
   const results = searchAllSubjects(keyword);
   if (!results.some((result) => result.subjectId === subjectId)) {
@@ -187,4 +215,4 @@ if (issues.length) {
   process.exit(1);
 }
 
-console.log(`OK 4 subjects, ${globalIds.size} globally unique content IDs checked`);
+console.log(`OK 5 subjects, ${globalIds.size} globally unique content IDs checked`);

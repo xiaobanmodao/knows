@@ -3,4 +3,5 @@ module.exports = [
   require('./english'),
   require('./physics'),
   require('./chemistry'),
+  require('./biology'),
 ];

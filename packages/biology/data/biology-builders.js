@@ -1,3 +1,5 @@
+const { getBiologyReview } = require('./content-review-meta');
+
 function requireText(entity, field, kind) {
   if (!entity || typeof entity[field] !== 'string' || !entity[field].trim()) {
     throw new Error(`${kind} requires a nonempty ${field}`);
@@ -9,7 +11,7 @@ function buildEntity(kind, entity, parentField) {
   requireText(entity, 'title', kind);
   if (!entity.id.startsWith('bio-')) throw new Error(`${kind} ID must start with bio-`);
   if (parentField) requireText(entity, parentField, kind);
-  return { ...entity, subjectId: 'biology' };
+  return { ...entity, subjectId: 'biology', review: getBiologyReview() };
 }
 
 function buildTopic(entity) {

@@ -7,6 +7,9 @@ const { themes: chemistryThemes } = require('../packages/chemistry/data/chemistr
 const { topics: chemistryTopics } = require('../packages/chemistry/data/chemistry-topics');
 const { templates: chemistryTemplates } = require('../packages/chemistry/data/chemistry-templates');
 const { knowledgeItems: chemistryKnowledge } = require('../packages/chemistry/data/chemistry-knowledge');
+const { topics: biologyTopics } = require('../packages/biology/data/biology-topics');
+const { knowledgeItems: biologyKnowledge } = require('../packages/biology/data/biology-knowledge');
+const { templates: biologyTemplates } = require('../packages/biology/data/biology-templates');
 const { SUBJECT_MANIFEST } = require('../data/subject-manifest');
 
 const issues = [];
@@ -204,6 +207,41 @@ chemistryTemplates.forEach((template) => {
   );
   template.topicIds.forEach((topicId) => {
     if (!chemistryTopicIds.has(topicId)) issues.push(`化学方法专题引用无效: ${template.id} -> ${topicId}`);
+  });
+});
+
+const biologyTopicIds = new Set(biologyTopics.map((item) => item.id));
+const biologyKnowledgeIds = new Set(biologyKnowledge.map((item) => item.id));
+const biologyTemplateIds = new Set(biologyTemplates.map((item) => item.id));
+biologyTopics.forEach((topic) => {
+  register(topic, 'topic', 'biology');
+  requireFields(topic, ['unitLabel', 'title', 'summary', 'gradeBands', 'keywords', 'knowledgeIds', 'templateIds', 'coverImage', 'review'], `生物专题 ${topic.id}`);
+  topic.knowledgeIds.forEach((knowledgeId) => {
+    if (!biologyKnowledgeIds.has(knowledgeId)) issues.push(`生物专题知识引用无效: ${topic.id} -> ${knowledgeId}`);
+  });
+  topic.templateIds.forEach((templateId) => {
+    if (!biologyTemplateIds.has(templateId)) issues.push(`生物专题方法引用无效: ${topic.id} -> ${templateId}`);
+  });
+});
+biologyKnowledge.forEach((knowledge) => {
+  register(knowledge, 'knowledge', 'biology');
+  requireFields(knowledge, ['topicId', 'title', 'summary', 'keywords', 'knowledgePoints', 'examples', 'coverImage', 'review'], `生物知识 ${knowledge.id}`);
+  if (!Array.isArray(knowledge.templateIds)) issues.push(`生物知识方法引用格式无效: ${knowledge.id}`);
+  if (!biologyTopicIds.has(knowledge.topicId)) issues.push(`生物知识父级无效: ${knowledge.id}`);
+  knowledge.examples.forEach((example) => {
+    register(example, 'example', 'biology');
+    requireFields(example, ['scenario', 'explanation', 'conclusion'], `生物示例 ${example.id}`);
+  });
+  if (knowledge.safetyObservation) {
+    register(knowledge.safetyObservation, 'observation', 'biology');
+    requireFields(knowledge.safetyObservation, ['context', 'precautions', 'steps', 'emergencyNote', 'review'], `生物观察 ${knowledge.safetyObservation.id}`);
+  }
+});
+biologyTemplates.forEach((template) => {
+  register(template, 'template', 'biology');
+  requireFields(template, ['name', 'category', 'summary', 'topicIds', 'steps', 'pitfalls', 'figure', 'review'], `生物方法 ${template.id}`);
+  template.topicIds.forEach((topicId) => {
+    if (!biologyTopicIds.has(topicId)) issues.push(`生物方法专题引用无效: ${template.id} -> ${topicId}`);
   });
 });
 

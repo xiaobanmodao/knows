@@ -80,7 +80,7 @@ const expectedBiology = {
     template: '/packages/biology/pages/template/index',
   },
   contentTypes: ['subject', 'topic', 'knowledge', 'template'],
-  referenceKinds: [],
+  referenceKinds: ['experiment'],
   counts: {
     unit: 6,
     topic: 6,

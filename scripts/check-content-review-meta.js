@@ -7,6 +7,9 @@ const { themes: chemistryThemes } = require('../packages/chemistry/data/chemistr
 const { topics: chemistryTopics } = require('../packages/chemistry/data/chemistry-topics');
 const { templates: chemistryTemplates } = require('../packages/chemistry/data/chemistry-templates');
 const { knowledgeItems: chemistryKnowledge } = require('../packages/chemistry/data/chemistry-knowledge');
+const { topics: biologyTopics } = require('../packages/biology/data/biology-topics');
+const { knowledgeItems: biologyKnowledge } = require('../packages/biology/data/biology-knowledge');
+const { templates: biologyTemplates } = require('../packages/biology/data/biology-templates');
 
 const issues = [];
 
@@ -47,6 +50,19 @@ function checkMeta(item, label, subjectId) {
   if (subjectId === 'chemistry' && !sourceText.includes('化学')) issues.push(`${label}: 化学来源标识缺失`);
 }
 
+function checkBiologyReview(item, label) {
+  const review = item && item.review;
+  if (!review) {
+    issues.push(`${label}: 缺少 review`);
+    return;
+  }
+  if (review.status !== 'reviewed') issues.push(`${label}: review.status 必须为 reviewed`);
+  if (review.reviewedAt !== '2026-08-10') issues.push(`${label}: review.reviewedAt 必须为 2026-08-10`);
+  if (!Array.isArray(review.sourceKeys) || review.sourceKeys.length < 2) {
+    issues.push(`${label}: review.sourceKeys 至少包含两条来源`);
+  }
+}
+
 const mathKnowledge = math.getAllChapters().flatMap((chapter) => chapter.knowledgeItems);
 mathKnowledge.forEach((item) => checkMeta(item, `数学/${item.title}`, 'math'));
 
@@ -63,6 +79,12 @@ chemistryThemes.forEach((item) => checkMeta(item, `化学主题/${item.title}`, 
 chemistryTopics.forEach((item) => checkMeta(item, `化学专题/${item.title}`, 'chemistry'));
 chemistryTemplates.forEach((item) => checkMeta(item, `化学方法/${item.title}`, 'chemistry'));
 chemistryKnowledge.forEach((item) => checkMeta(item, `化学知识/${item.title}`, 'chemistry'));
+biologyTopics.forEach((item) => checkBiologyReview(item, `生物专题/${item.title}`));
+biologyKnowledge.forEach((item) => {
+  checkBiologyReview(item, `生物知识/${item.title}`);
+  if (item.safetyObservation) checkBiologyReview(item.safetyObservation, `生物观察/${item.safetyObservation.id || item.title}`);
+});
+biologyTemplates.forEach((item) => checkBiologyReview(item, `生物方法/${item.title}`));
 
 if (mathKnowledge.length !== 89) issues.push(`数学知识点数量应为 89，当前为 ${mathKnowledge.length}`);
 if (englishUnits.units.length !== 42) issues.push(`英语单元数量应为 42，当前为 ${englishUnits.units.length}`);
@@ -73,6 +95,12 @@ if (chemistryThemes.length !== 5) issues.push(`化学课标主题数量应为 5�
 if (chemistryTopics.length !== 10) issues.push(`化学专题数量应为 10，当前为 ${chemistryTopics.length}`);
 if (chemistryKnowledge.length !== 40) issues.push(`化学知识点数量应为 40，当前为 ${chemistryKnowledge.length}`);
 if (chemistryTemplates.length !== 12) issues.push(`化学方法数量应为 12，当前为 ${chemistryTemplates.length}`);
+if (biologyTopics.length !== 6) issues.push(`生物专题数量应为 6，当前为 ${biologyTopics.length}`);
+if (biologyKnowledge.length !== 36) issues.push(`生物知识点数量应为 36，当前为 ${biologyKnowledge.length}`);
+if (biologyTemplates.length !== 6) issues.push(`生物方法数量应为 6，当前为 ${biologyTemplates.length}`);
+if (biologyKnowledge.filter((item) => item.safetyObservation).length !== 6) {
+  issues.push('生物受控观察数量应为 6');
+}
 
 if (issues.length) {
   console.log('FOUND_CONTENT_REVIEW_META_ISSUES');
@@ -83,5 +111,6 @@ if (issues.length) {
 console.log(
   `OK review metadata checked for ${mathKnowledge.length} math lessons, ${englishUnits.units.length} English units, `
     + `${englishUnits.vocabulary.length} words, ${englishUnits.grammarPoints.length} grammar points, `
-    + `${physicsCurriculum.knowledgeItems.length} physics points and ${chemistryKnowledge.length} chemistry points`,
+    + `${physicsCurriculum.knowledgeItems.length} physics points, ${chemistryKnowledge.length} chemistry points, `
+    + `${biologyKnowledge.length} biology points and ${biologyTemplates.length} biology templates`,
 );
