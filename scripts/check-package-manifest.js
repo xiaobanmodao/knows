@@ -5,8 +5,8 @@ const { getPackageMeta, getPackageRegistry } = require('../data/package-manifest
 const activePackages = getPackageRegistry();
 assert.deepStrictEqual(
   activePackages.map((item) => item.id),
-  ['catalog', 'math', 'english', 'physics', 'chemistry'],
-  '默认包清单必须包含 catalog 和四个 active 学科包',
+  ['catalog', 'math', 'english', 'physics', 'chemistry', 'biology'],
+  '默认包清单必须包含 catalog 和五个 active 学科包',
 );
 
 const catalog = getPackageMeta('catalog');
