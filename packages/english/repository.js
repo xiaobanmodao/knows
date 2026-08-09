@@ -3,6 +3,7 @@ const units = require('./data/english-units');
 const { getSubjectMeta, SUBJECT_LABELS } = require('../../data/subject-manifest');
 const { resolveAssetUrl } = require('../../utils/asset-config');
 const { getEnglishTopicReviewMeta } = require('./data/topic-review-meta');
+const { getEnglishTemplateReviewMeta } = require('./data/template-review-meta');
 
 function hydrateTopic(topic) {
   const contentMeta = getEnglishTopicReviewMeta(topic.id);
@@ -27,8 +28,11 @@ function hydrateKnowledge(knowledge) {
 }
 
 function hydrateTemplate(template) {
+  const contentMeta = getEnglishTemplateReviewMeta(template.id);
+
   return {
     ...template,
+    ...(contentMeta ? { contentMeta } : {}),
     containerId: template.containerId || (template.topicIds || [])[0] || '',
     figure: resolveAssetUrl(template.figure),
   };

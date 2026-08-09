@@ -11,7 +11,7 @@ function getManifestEntities() {
     { type: 'grammar', entities: englishUnits.grammarPoints },
     { type: 'topic', entities: englishContent.topics.map((topic) => englishRepository.getTopicById('english', topic.id)) },
     { type: 'knowledge', entities: englishContent.knowledgeItems },
-    { type: 'template', entities: englishContent.templates },
+    { type: 'template', entities: englishContent.templates.map((template) => englishRepository.getTemplateById('english', template.id)) },
   ];
 }
 
