@@ -495,6 +495,37 @@ function checkRuntimePackageDependencyTooling() {
   }
 }
 
+function checkReleasePackageEvidenceTooling() {
+  if (!process.argv.includes('--require-device-evidence')) {
+    return;
+  }
+
+  const packageScript = 'scripts/check-release-package-evidence.js';
+  const reportPath = process.env.PACKAGE_SIZE_REPORT
+    || '.codex-output/release-regression-v1.10.1/packages-preview.json';
+  assertFile(packageScript, '发布包体证据工具');
+  assertFile(reportPath, '发布包体报告');
+
+  if (!fileExists(packageScript) || !fileExists(reportPath)) {
+    return;
+  }
+
+  try {
+    execFileSync(process.execPath, [
+      path.join(root, packageScript),
+      reportPath,
+      '--require-package-evidence',
+    ], {
+      cwd: root,
+      encoding: 'utf8',
+      stdio: 'pipe',
+    });
+  } catch (error) {
+    const output = String(error.stdout || error.stderr || error.message).trim().split('\n').slice(-3).join(' | ');
+    issues.push(`发布包体证据工具: 执行失败 -> ${output}`);
+  }
+}
+
 function checkAssetConfig() {
   const assetConfigPath = 'utils/asset-config.js';
   assertFile(assetConfigPath, '云图片配置');
@@ -558,6 +589,7 @@ checkEnglishTemplateReviewTooling();
 checkPhysicsTemplateReviewTooling();
 checkReleaseRegressionEvidenceTooling();
 checkRuntimePackageDependencyTooling();
+checkReleasePackageEvidenceTooling();
 checkAssetConfig();
 checkReleaseInfo();
 
