@@ -1,0 +1,34 @@
+<view class="page-shell" wx:if="{{subject}}">
+  <view class="subject-header">
+    <view class="subject-header__eyebrow">七年级生物</view>
+    <view class="subject-header__title">{{subject.name}}</view>
+    <view class="subject-header__summary">{{subject.summary}}</view>
+    <view class="subject-stats">
+      <view class="subject-stat"><text class="subject-stat__value">{{subject.counts.units}}</text><text class="subject-stat__label">学习单元</text></view>
+      <view class="subject-stat"><text class="subject-stat__value">{{subject.counts.examples}}</text><text class="subject-stat__label">观察示例</text></view>
+      <view class="subject-stat"><text class="subject-stat__value">{{subject.counts.knowledge}}</text><text class="subject-stat__label">知识点</text></view>
+      <view class="subject-stat"><text class="subject-stat__value">{{subject.counts.templates}}</text><text class="subject-stat__label">观察方法</text></view>
+    </view>
+  </view>
+
+  <view class="topic-list">
+    <view wx:for="{{topics}}" wx:key="id" wx:for-item="topic" wx:for-index="index" class="topic-row card" data-id="{{topic.id}}" bindtap="openTopic">
+      <view class="topic-row__media">
+        <image wx:if="{{topic.coverImage && !topic.imageLoadFailed}}" class="topic-row__image" src="{{topic.coverImage}}" mode="aspectFill" data-index="{{index}}" binderror="onImageError"></image>
+        <view wx:else class="topic-row__fallback">{{topic.unitLabel}}</view>
+      </view>
+      <view class="topic-row__body">
+        <view class="topic-row__title">{{topic.title}}</view>
+        <view class="topic-row__summary">{{topic.summary}}</view>
+        <view class="topic-row__meta">{{topic.unitLabel}} · {{topic.knowledgeCount}} 个知识点 · {{topic.gradeText}}</view>
+      </view>
+      <view class="topic-row__arrow">›</view>
+    </view>
+  </view>
+</view>
+
+<view wx:elif="{{notFound}}" class="error-state">
+  <view class="error-state__title">内容暂未打开</view>
+  <view class="error-state__message">{{notFound}}</view>
+  <view class="error-state__retry" bindtap="reopen">重新打开</view>
+</view>

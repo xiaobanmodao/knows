@@ -3,6 +3,7 @@ const SUBJECT_LABELS = {
   english: '英语',
   physics: '物理',
   chemistry: '化学',
+  biology: '生物',
 };
 
 const SUBJECT_MANIFEST = [
@@ -154,6 +155,40 @@ const SUBJECT_MANIFEST = [
       equation: 28,
     },
     packageLabel: '10 专题',
+  },
+  {
+    id: 'biology',
+    name: '初中生物',
+    shortName: '生物',
+    subtitle: '七年级生物六单元知识地图',
+    description: '按单元梳理生命科学基础知识、观察证据与科学方法。',
+    gradeBands: ['七年级'],
+    theme: 'english',
+    status: 'active',
+    packageRoot: 'packages/biology',
+    entryRoute: '/packages/biology/pages/index/index',
+    packagePages: [
+      'pages/index/index',
+      'pages/topic/index',
+      'pages/knowledge/index',
+      'pages/template/index',
+    ],
+    routes: {
+      subject: '/packages/biology/pages/index/index',
+      topic: '/packages/biology/pages/topic/index',
+      knowledge: '/packages/biology/pages/knowledge/index',
+      template: '/packages/biology/pages/template/index',
+    },
+    contentTypes: ['subject', 'topic', 'knowledge', 'template'],
+    referenceKinds: [],
+    counts: {
+      unit: 6,
+      topic: 6,
+      knowledge: 36,
+      template: 6,
+      example: 108,
+    },
+    packageLabel: '6 单元',
   },
 ];
 

@@ -11,6 +11,8 @@ const {
   getSubjectRoutes,
 } = require('../data/subject-manifest');
 
+const appConfig = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../app.json'), 'utf8'));
+
 const COUNT_ALIASES = {
   book: 'bookCount',
   chapter: 'chapterCount',
@@ -49,9 +51,44 @@ function assertValidSubjects(subjects) {
 
 assert.deepStrictEqual(
   getSubjectRegistry().map((item) => item.id),
-  ['math', 'english', 'physics', 'chemistry'],
+  ['math', 'english', 'physics', 'chemistry', 'biology'],
 );
 assertValidSubjects(getSubjectRegistry());
+
+const biology = getSubjectMeta('biology');
+assert.strictEqual(SUBJECT_LABELS.biology, '生物');
+assert.strictEqual(biology.shortName, '生物');
+assert.deepStrictEqual(biology.gradeBands, ['七年级']);
+assert.strictEqual(biology.packageRoot, 'packages/biology');
+assert.deepStrictEqual(biology.packagePages, [
+  'pages/index/index',
+  'pages/topic/index',
+  'pages/knowledge/index',
+  'pages/template/index',
+]);
+assert.deepStrictEqual(biology.contentTypes, ['subject', 'topic', 'knowledge', 'template']);
+assert.deepStrictEqual(biology.referenceKinds, []);
+assert.deepStrictEqual(biology.counts, {
+  unit: 6,
+  topic: 6,
+  knowledge: 36,
+  template: 6,
+  example: 108,
+});
+assert.deepStrictEqual(
+  (appConfig.subPackages || []).map((item) => item.name),
+  ['catalog', 'english', 'physics', 'math', 'chemistry', 'biology'],
+  'app.json 必须保留已有分包并注册 biology',
+);
+assert.deepStrictEqual(
+  (appConfig.subPackages || []).find((item) => item.name === 'biology'),
+  {
+    root: 'packages/biology',
+    name: 'biology',
+    pages: biology.packagePages,
+  },
+  'biology 分包页面必须与 registry 一致',
+);
 
 const chemistry = getSubjectMeta('chemistry');
 assert.strictEqual(SUBJECT_LABELS.chemistry, '化学');
@@ -97,15 +134,15 @@ SUBJECT_MANIFEST.push(buildingSubject);
 try {
   assert.deepStrictEqual(
     getSubjectRegistry().map((item) => item.id),
-    ['math', 'english', 'physics', 'chemistry'],
+    ['math', 'english', 'physics', 'chemistry', 'biology'],
   );
   const allSubjects = getSubjectRegistry({ includeBuilding: true });
-  assert.strictEqual(allSubjects.length, 5);
-  assert.strictEqual(allSubjects[4].id, buildingSubject.id);
+  assert.strictEqual(allSubjects.length, 6);
+  assert.strictEqual(allSubjects[5].id, buildingSubject.id);
   assertValidSubjects(allSubjects);
-  assert.deepStrictEqual(getSubjectIds(), ['math', 'english', 'physics', 'chemistry']);
+  assert.deepStrictEqual(getSubjectIds(), ['math', 'english', 'physics', 'chemistry', 'biology']);
   assert.deepStrictEqual(getSubjectIds({ includeBuilding: true }), [
-    'math', 'english', 'physics', 'chemistry', 'synthetic-building',
+    'math', 'english', 'physics', 'chemistry', 'biology', 'synthetic-building',
   ]);
   assert.strictEqual(getSubjectMeta(buildingSubject.id).id, 'math');
   assert.strictEqual(getSubjectMeta(buildingSubject.id, { includeBuilding: true }).id, buildingSubject.id);

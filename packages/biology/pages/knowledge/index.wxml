@@ -1,0 +1,141 @@
+<view class="page-shell {{readingDisplayClass}}" wx:if="{{knowledge}}">
+  <view wx:if="{{context}}" class="context-path" bindtap="openContext">生物 / {{context.title}} / 知识点</view>
+
+  <view class="knowledge-header">
+    <view class="knowledge-header__meta">
+      <view class="knowledge-header__topic">{{context ? context.title : '生物知识'}}</view>
+      <view class="knowledge-header__actions">
+        <view class="reading-command" bindtap="openReadingSettings" role="button" aria-label="打开阅读显示设置">Aa 阅读</view>
+        <view class="collect-btn {{isFavorite ? 'collect-btn--active' : ''}}" bindtap="toggleFavorite" role="button">{{isFavorite ? '已收藏' : '收藏'}}</view>
+      </view>
+    </view>
+    <view class="knowledge-header__title">{{knowledge.title}}</view>
+    <view class="knowledge-header__summary reading-copy--25 reading-leading--190">{{knowledge.summary}}</view>
+    <view class="knowledge-header__tags"><text wx:for="{{knowledge.tags}}" wx:key="*this" class="knowledge-tag">{{item}}</text></view>
+    <view wx:if="{{knowledge.contentMeta}}" class="content-review">{{knowledge.contentMeta.statusLabel}} · {{knowledge.contentMeta.reviewedAt}} · {{knowledge.contentMeta.sourceLabel}}</view>
+  </view>
+
+  <view wx:if="{{knowledge.knowledgePoints.length}}" class="core-section section-gap">
+    <view class="section-title">
+      <view><view class="section-title__main">核心知识</view><view class="section-title__sub">{{knowledge.knowledgePoints.length}} 条</view></view>
+      <view class="text-command" bindtap="copyCoreContent" role="button">复制</view>
+    </view>
+    <view wx:for="{{knowledge.knowledgePoints}}" wx:key="index" class="core-row">
+      <view class="core-row__index">{{index + 1}}</view>
+      <view class="core-row__text reading-copy--25 reading-leading--180">{{item}}</view>
+    </view>
+  </view>
+
+  <view class="explanation-section section-gap">
+    <view class="section-title__main">概念说明</view>
+    <view class="explanation-section__copy reading-copy--25 reading-leading--180">{{knowledge.summary}}</view>
+    <view wx:if="{{knowledge.boundary}}" class="explanation-section__boundary">观察边界：{{knowledge.boundary}}</view>
+  </view>
+
+  <view wx:if="{{knowledge.hasCoverImage}}" class="knowledge-figure section-gap">
+    <view class="section-title__main">关键图解</view>
+    <image wx:if="{{knowledge.coverImage && !coverImageLoadFailed}}" class="knowledge-figure__image reading-image" src="{{knowledge.coverImage}}" mode="widthFix" binderror="onCoverImageError"></image>
+    <view wx:else class="knowledge-figure__fallback">图示暂未加载，完整文字知识仍可继续阅读</view>
+  </view>
+
+  <view wx:if="{{essentialSections.length}}" class="section-title section-gap">
+    <view class="section-title__main">核心解释</view>
+    <view class="section-title__sub">{{essentialSections.length}} 个模块</view>
+  </view>
+  <view wx:if="{{essentialSections.length}}">
+    <view wx:for="{{essentialSections}}" wx:key="title" id="{{item.type === 'equation' ? 'equation-' + item.equationId : (item.type === 'experiment' ? 'experiment-' + item.experimentId : '')}}">
+      <content-block section="{{item}}" reading-preferences="{{readingPreferences}}" />
+    </view>
+  </view>
+
+  <view wx:if="{{detailSections.length}}" class="detail-control" bindtap="toggleDetails" role="button">
+    <view><view class="detail-control__title">性质、实验与边界</view><view class="detail-control__meta">{{detailSections.length}} 个模块</view></view>
+    <view class="detail-control__action">{{detailsExpanded ? '收起' : '展开'}} {{detailsExpanded ? '⌃' : '⌄'}}</view>
+  </view>
+  <view wx:if="{{detailsExpanded && detailSections.length}}" class="detail-sections">
+    <view wx:for="{{detailSections}}" wx:key="title" id="{{item.type === 'equation' ? 'equation-' + item.equationId : (item.type === 'experiment' ? 'experiment-' + item.experimentId : '')}}">
+      <content-block section="{{item}}" reading-preferences="{{readingPreferences}}" />
+    </view>
+  </view>
+
+  <view wx:if="{{knowledge.templates.length}}" class="section-title section-gap">
+    <view class="section-title__main">相关方法</view>
+    <view class="section-title__sub">{{knowledge.templates.length}} 个</view>
+  </view>
+  <view wx:if="{{knowledge.templates.length}}" class="method-list">
+    <view wx:for="{{knowledge.templates}}" wx:key="id" wx:for-item="template" class="method-row" data-id="{{template.id}}" bindtap="openTemplate">
+      <view class="method-row__category">{{template.category}}</view>
+      <view class="method-row__title">{{template.name}}</view>
+      <view class="method-row__arrow">›</view>
+    </view>
+  </view>
+
+  <view wx:if="{{knowledge.examples.length}}" class="section-title section-gap">
+    <view class="section-title__main">观察与解释</view>
+    <view class="section-title__sub">{{knowledge.examples.length}} 个例子</view>
+  </view>
+  <view wx:if="{{knowledge.examples.length}}" class="biology-example-list">
+    <view wx:for="{{knowledge.examples}}" wx:key="id" wx:for-item="example" class="biology-example">
+      <view class="biology-example__label">观察情境</view>
+      <view class="biology-example__copy reading-copy--24 reading-leading--175">{{example.scenario}}</view>
+      <view class="biology-example__label">解释</view>
+      <view class="biology-example__copy reading-copy--24 reading-leading--175">{{example.explanation}}</view>
+      <view class="biology-example__conclusion reading-copy--24 reading-leading--175">{{example.conclusion}}</view>
+    </view>
+  </view>
+
+  <view wx:if="{{knowledge.safetyObservation}}" class="observation-section section-gap">
+    <view class="section-title__main">观察提醒</view>
+    <view class="observation-section__context">{{knowledge.safetyObservation.context}}</view>
+    <view class="observation-section__title">注意事项</view>
+    <view class="observation-section__copy reading-copy--24 reading-leading--175">{{knowledge.safetyObservation.precautions}}</view>
+    <view class="observation-section__title">观察步骤</view>
+    <view wx:for="{{knowledge.safetyObservation.steps}}" wx:key="index" class="observation-step"><view class="observation-step__index">{{index + 1}}</view><view class="observation-step__copy reading-copy--24 reading-leading--175">{{item}}</view></view>
+    <view class="observation-section__emergency">{{knowledge.safetyObservation.emergencyNote}}</view>
+  </view>
+
+  <view class="note-card card section-gap">
+    <view class="note-card__head">
+      <view><view class="note-card__title">我的笔记</view><view class="note-card__meta">仅保存在本机</view></view>
+      <view class="note-card__save {{noteDirty ? 'note-card__save--active' : ''}}" bindtap="saveNote" role="button">保存</view>
+    </view>
+    <textarea class="note-card__input reading-copy--25 reading-leading--175" value="{{noteDraft}}" maxlength="800" auto-height placeholder="记录现象、条件、方程式或理解" bindinput="onNoteInput"></textarea>
+    <view wx:if="{{noteTags.length}}" class="note-card__tags">
+      <view wx:for="{{noteTags}}" wx:key="*this" class="note-tag"><text>{{item}}</text><text class="note-tag__remove" data-index="{{index}}" bindtap="removeNoteTag">×</text></view>
+    </view>
+    <view class="note-card__tag-row">
+      <input class="note-card__tag-input" value="{{noteTagDraft}}" maxlength="12" placeholder="添加标签" bindinput="onNoteTagInput" bindconfirm="addNoteTag" confirm-type="done" />
+      <view class="note-card__tag-add" bindtap="addNoteTag" role="button" aria-label="添加笔记标签">+</view>
+    </view>
+  </view>
+
+  <view wx:if="{{relatedItems.length}}" class="section-title section-gap">
+    <view class="section-title__main">相关知识</view>
+    <view class="section-title__sub">{{relatedItems.length}} 个</view>
+  </view>
+  <view wx:if="{{relatedItems.length}}" class="related-list">
+    <view wx:for="{{relatedItems}}" wx:key="id" wx:for-item="related" class="related-row" data-id="{{related.id}}" bindtap="openRelated">
+      <view class="related-row__body"><view class="related-row__title">{{related.title}}</view><view class="related-row__summary">{{related.summary}}</view></view>
+      <view class="related-row__arrow">›</view>
+    </view>
+  </view>
+
+  <view wx:if="{{navigation}}" class="page-navigation">
+    <view class="page-navigation__item {{navigation.previous ? '' : 'page-navigation__item--disabled'}}" data-id="{{navigation.previous.id}}" bindtap="openAdjacent">
+      <view class="page-navigation__direction">‹ 上一知识点</view>
+      <view class="page-navigation__title">{{navigation.previous ? navigation.previous.title : '已经是第一个知识点'}}</view>
+    </view>
+    <view class="page-navigation__item page-navigation__item--next {{navigation.next ? '' : 'page-navigation__item--disabled'}}" data-id="{{navigation.next.id}}" bindtap="openAdjacent">
+      <view class="page-navigation__direction">下一知识点 ›</view>
+      <view class="page-navigation__title">{{navigation.next ? navigation.next.title : '已经是最后一个知识点'}}</view>
+    </view>
+  </view>
+</view>
+
+<view wx:elif="{{notFound}}" class="error-state">
+  <view class="error-state__title">知识点不存在</view>
+  <view class="error-state__message">{{notFound}}</view>
+  <view class="error-state__retry" bindtap="reopen">重新打开</view>
+</view>
+
+<reading-settings visible="{{readingSettingsVisible}}" preferences="{{readingPreferences}}" bindchange="changeReadingPreferences" bindreset="resetReadingPreferences" bindclose="closeReadingSettings" />

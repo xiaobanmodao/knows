@@ -32,6 +32,16 @@ if (!catalogConfig || catalogConfig.root !== 'packages/catalog'
   || JSON.stringify(catalogConfig.pages) !== JSON.stringify(['pages/search/index', 'pages/reference-index/index'])) {
   issues.push('app.json 缺少完整 catalog 普通分包');
 }
+const biologyConfig = (appConfig.subPackages || []).find((item) => item.name === 'biology');
+if (!biologyConfig || biologyConfig.root !== 'packages/biology'
+  || JSON.stringify(biologyConfig.pages) !== JSON.stringify([
+    'pages/index/index',
+    'pages/topic/index',
+    'pages/knowledge/index',
+    'pages/template/index',
+  ])) {
+  issues.push('app.json 缺少完整 biology 普通分包');
+}
 
 ['search', 'reference-index'].forEach((name) => {
   const source = fs.readFileSync(path.join(root, `pages/${name}/index.js`), 'utf8');
@@ -161,6 +171,12 @@ const expectedPackageRoutes = {
     knowledge: '/packages/chemistry/pages/knowledge/index',
     template: '/packages/chemistry/pages/template/index',
   },
+  biology: {
+    subject: '/packages/biology/pages/index/index',
+    topic: '/packages/biology/pages/topic/index',
+    knowledge: '/packages/biology/pages/knowledge/index',
+    template: '/packages/biology/pages/template/index',
+  },
 };
 Object.entries(expectedPackageRoutes).forEach(([subjectId, routes]) => {
   if (JSON.stringify(PACKAGE_ROUTES[subjectId]) !== JSON.stringify(routes)) {
@@ -179,6 +195,10 @@ const routeChecks = [
   [{ subjectId: 'chemistry', type: 'topic', id: 'chem-topic-lab' }, '/packages/chemistry/pages/topic/index?id=chem-topic-lab&subjectId=chemistry'],
   [{ subjectId: 'chemistry', type: 'knowledge', id: 'chem-k-oxygen-preparation', focusType: 'experiment', focusId: 'chem-exp-oxygen' }, '/packages/chemistry/pages/knowledge/index?id=chem-k-oxygen-preparation&subjectId=chemistry&focusType=experiment&focusId=chem-exp-oxygen'],
   [{ subjectId: 'chemistry', type: 'template', id: 'chem-tpl-equation-balancing' }, '/packages/chemistry/pages/template/index?id=chem-tpl-equation-balancing&subjectId=chemistry'],
+  [{ subjectId: 'biology', type: 'subject' }, '/packages/biology/pages/index/index'],
+  [{ subjectId: 'biology', type: 'topic', id: 'bio-unit-cells' }, '/packages/biology/pages/topic/index?id=bio-unit-cells&subjectId=biology'],
+  [{ subjectId: 'biology', type: 'knowledge', id: 'bio-k-life-features' }, '/packages/biology/pages/knowledge/index?id=bio-k-life-features&subjectId=biology'],
+  [{ subjectId: 'biology', type: 'template', id: 'bio-tpl-evidence-chain' }, '/packages/biology/pages/template/index?id=bio-tpl-evidence-chain&subjectId=biology'],
   [{ type: 'knowledge', id: 'legacy-math-id', restore: true }, '/packages/math/pages/knowledge/index?id=legacy-math-id&subjectId=math&restore=1'],
 ];
 

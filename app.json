@@ -65,6 +65,16 @@
         "pages/knowledge/index",
         "pages/template/index"
       ]
+    },
+    {
+      "root": "packages/biology",
+      "name": "biology",
+      "pages": [
+        "pages/index/index",
+        "pages/topic/index",
+        "pages/knowledge/index",
+        "pages/template/index"
+      ]
     }
   ],
   "cloud": true,
