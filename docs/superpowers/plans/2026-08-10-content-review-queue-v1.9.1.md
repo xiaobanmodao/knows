@@ -164,11 +164,11 @@ Run the queue builder twice, compare SHA-256 byte-for-byte, and assert the item 
 
 Document priority 1 containers before priority 2 templates, list each subject count, and state that no item was promoted automatically.
 
-- [ ] **Step 4: Request independent review**
+- [x] **Step 4: Request independent review**
 
 Review all task commits against this plan; resolve P1/P2 findings before pushing.
 
-- [ ] **Step 5: Commit and push**
+- [x] **Step 5: Commit and push**
 
 ```bash
 git add docs/superpowers/plans/2026-08-10-content-review-queue-v1.9.1.md docs/v1.9.1复核队列实施记录.md docs/后续开发与发布路线.md
