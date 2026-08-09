@@ -7,7 +7,6 @@ const { buildContentManifest } = require('./content-manifest');
 const { getSubjectRegistry } = require('../data/subject-manifest');
 const { SEARCH_INDEX_META, getSearchIndexEntries } = require('../packages/catalog/utils/search-index');
 const {
-  REFERENCE_INDEX_META,
   getReferenceEntries,
 } = require('../packages/catalog/utils/reference-index');
 
@@ -19,8 +18,25 @@ const FORBIDDEN_FIELDS = new Set([
   'selfCheck',
   'learningPath',
 ]);
-const ASSET_KEYS = /^(coverImage|diagramImage|sourceImage|figure|figurePath|imagePath)$/i;
+const ASSET_KEYS = /^(coverImage|diagramImage|sourceImage|figure|figurePath|image|imagePath)$/i;
 const OFFICIAL_HOSTS = new Set(['www.moe.gov.cn', 'moe.gov.cn', 'www.pep.com.cn', 'pep.com.cn']);
+const KNOWN_SOURCE_KEYS = new Set([
+  'moe-biology-curriculum-2022',
+  'pep-compulsory-biology-textbook',
+  'moe-chemistry-2022',
+  'moe-textbook-catalog-2024',
+  'pep-chemistry-training-2024',
+  'moe-math-curriculum-2022',
+  'pep-math-current-catalog',
+  'original-derivation-review',
+  'moe-physics-2022',
+  'moe-physics-experiments',
+  'pep-physics-public',
+  'cambridge-dictionary',
+  'oxford-learners-dictionaries',
+  'cambridge-grammar',
+  'british-council-grammar',
+]);
 
 function sha256(value) {
   return crypto.createHash('sha256').update(JSON.stringify(value)).digest('hex');
@@ -179,19 +195,40 @@ function buildContentDiff() {
 
 function buildSearchSummary() {
   const entries = getSearchIndexEntries();
+  const entities = collectEntities();
+  const searchKeys = new Set(entries.map((entry) => entry.key));
+  const searchableEntities = entities.filter((entity) => entity.type !== 'theme');
+  const missingEntityKeys = searchableEntities
+    .map((entity) => {
+      const searchType = entity.type.replace(/^structured-/, '');
+      return `${entity.subjectId}:${searchType}:${entity.id}`;
+    })
+    .filter((key) => !searchKeys.has(key));
   return {
     entryCount: entries.length,
     sourceHash: SEARCH_INDEX_META.sourceHash,
     subjectCounts: { ...(SEARCH_INDEX_META.subjectCounts || {}) },
+    coverage: {
+      expectedEntityCount: searchableEntities.length,
+      missingEntityKeys,
+      excludedTypes: ['theme'],
+    },
   };
 }
 
 function buildReferenceSummary() {
   const kinds = ['word', 'grammar', 'formula', 'experiment', 'equation'];
-  const counts = Object.fromEntries(kinds.map((kind) => [kind, getReferenceEntries(kind).length]));
+  const entries = kinds
+    .flatMap((kind) => getReferenceEntries(kind))
+    .sort((a, b) => a.key.localeCompare(b.key));
+  const counts = Object.fromEntries(kinds.map((kind) => [
+    kind,
+    entries.filter((entry) => entry.kind === kind).length,
+  ]));
   return {
     entryCount: Object.values(counts).reduce((sum, count) => sum + count, 0),
-    sourceHash: REFERENCE_INDEX_META.sourceHash,
+    sourceHash: sha256(entries),
+    coverage: 'all-reference-entries',
     counts,
   };
 }
@@ -223,7 +260,7 @@ function collectContentAudit() {
   };
 }
 
-function checkAuditReport(report) {
+function checkAuditReport(report, { requireReviewed = false } = {}) {
   if (!report || report.schemaVersion !== 1) throw new Error('审计报告 schemaVersion 必须为 1');
   if (!Array.isArray(report.subjects) || report.subjects.length !== SUBJECT_ORDER.length) {
     throw new Error('审计报告必须覆盖五个启用学科');
@@ -233,13 +270,20 @@ function checkAuditReport(report) {
   }
   const entities = collectEntities();
   const ids = new Set();
+  const scopedIds = new Set();
   entities.forEach((entity) => {
     const key = `${entity.subjectId}:${entity.type}:${entity.id}`;
     if (!entity.id || !entity.title) throw new Error(`审计实体缺少 ID 或标题：${key}`);
     if (ids.has(key)) throw new Error(`审计实体重复：${key}`);
     ids.add(key);
+    const scopedId = `${entity.subjectId}:${entity.id}`;
+    if (scopedIds.has(scopedId)) throw new Error(`学科内稳定 ID 重复：${scopedId}`);
+    scopedIds.add(scopedId);
     if (!['verified', 'reviewed', 'untracked'].includes(entity.reviewed.status)) {
       throw new Error(`审计实体未复核：${key}`);
+    }
+    if (requireReviewed && entity.reviewed.status === 'untracked') {
+      throw new Error(`审计实体尚未登记复核：${key}`);
     }
     if (entity.reviewed.status !== 'untracked' && !/^\d{4}-\d{2}-\d{2}$/.test(entity.reviewed.reviewedAt)) {
       throw new Error(`审计实体复核日期无效：${key}`);
@@ -248,6 +292,10 @@ function checkAuditReport(report) {
       throw new Error(`审计实体来源不足：${key}`);
     }
     entity.reviewed.sourceRefs.forEach((source) => {
+      if (!source.key && !source.url) throw new Error(`审计实体来源缺少 key 或 URL：${key}`);
+      if (source.key && !KNOWN_SOURCE_KEYS.has(source.key)) {
+        throw new Error(`审计实体来源 key 未登记：${key}/${source.key}`);
+      }
       if (!source.url) return;
       const hostname = new URL(source.url).hostname;
       if (!OFFICIAL_HOSTS.has(hostname)) throw new Error(`审计实体来源域名不受信任：${key}/${hostname}`);
@@ -260,7 +308,11 @@ function checkAuditReport(report) {
     throw new Error('审计总实体数与采集结果不一致');
   }
   if (report.search.entryCount !== getSearchIndexEntries().length) throw new Error('搜索索引数量与审计报告不一致');
+  if (report.search.coverage && report.search.coverage.missingEntityKeys.length) {
+    throw new Error(`搜索索引缺少实体：${report.search.coverage.missingEntityKeys.join(',')}`);
+  }
   if (report.references.entryCount !== 664) throw new Error(`参考索引数量应为 664，当前 ${report.references.entryCount}`);
+  if (report.references.coverage !== 'all-reference-entries') throw new Error('参考索引哈希未声明覆盖全部入口');
   ['contentDiff', 'search', 'references'].forEach((key) => {
     if (!/^[a-f0-9]{64}$/.test(report[key].sourceHash)) throw new Error(`${key}.sourceHash 格式无效`);
   });

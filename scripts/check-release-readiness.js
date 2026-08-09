@@ -1,3 +1,4 @@
+const { execFileSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const { getPackageRegistry } = require('../data/package-manifest');
@@ -239,12 +240,27 @@ function checkCloudFunction() {
 }
 
 function checkContentAuditTooling() {
-  ['scripts/content-audit.js', 'scripts/build-content-audit.js', 'scripts/check-content-audit.js']
-    .forEach((file) => assertFile(file, '内容审计工具'));
+  const auditScripts = ['scripts/content-audit.js', 'scripts/build-content-audit.js', 'scripts/check-content-audit.js'];
+  auditScripts.forEach((file) => assertFile(file, '内容审计工具'));
 
   const auditOutput = path.resolve(root, 'dist/content-audit/content-audit.json');
   if (!auditOutput.startsWith(path.resolve(root, 'dist/content-audit') + path.sep)) {
     issues.push('内容审计工具: 输出路径必须位于 dist/content-audit/');
+  }
+
+  if (auditScripts.every(fileExists)) {
+    ['scripts/build-content-audit.js', 'scripts/check-content-audit.js'].forEach((script) => {
+      try {
+        execFileSync(process.execPath, [path.join(root, script)], {
+          cwd: root,
+          encoding: 'utf8',
+          stdio: 'pipe',
+        });
+      } catch (error) {
+        const output = String(error.stdout || error.stderr || error.message).trim().split('\n').slice(-3).join(' | ');
+        issues.push(`内容审计工具 ${script}: 执行失败 -> ${output}`);
+      }
+    });
   }
 }
 
