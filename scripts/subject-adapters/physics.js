@@ -1,5 +1,6 @@
 const physicsContent = require('../../packages/physics/data/physics-content');
 const physicsCurriculum = require('../../packages/physics/data/physics-curriculum');
+const physicsRepository = require('../../packages/physics/repository');
 
 const subjectId = 'physics';
 
@@ -28,7 +29,7 @@ function getManifestEntities() {
     { type: 'chapter', entities: physicsCurriculum.chapters },
     { type: 'knowledge', entities: physicsCurriculum.knowledgeItems },
     { type: 'template', entities: physicsCurriculum.templates },
-    { type: 'topic', entities: physicsContent.topics },
+    { type: 'topic', entities: physicsContent.topics.map((topic) => physicsRepository.getTopicById('physics', topic.id)) },
     { type: 'structured-knowledge', entities: physicsContent.knowledgeItems },
     { type: 'structured-template', entities: physicsContent.templates },
   ];

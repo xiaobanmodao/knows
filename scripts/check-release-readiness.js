@@ -395,6 +395,24 @@ function checkEnglishTopicReviewTooling() {
   }
 }
 
+function checkPhysicsTopicReviewTooling() {
+  const reviewScript = 'scripts/check-physics-topic-review.js';
+  assertFile(reviewScript, '物理专题复核工具');
+
+  if (fileExists(reviewScript)) {
+    try {
+      execFileSync(process.execPath, [path.join(root, reviewScript)], {
+        cwd: root,
+        encoding: 'utf8',
+        stdio: 'pipe',
+      });
+    } catch (error) {
+      const output = String(error.stdout || error.stderr || error.message).trim().split('\n').slice(-3).join(' | ');
+      issues.push(`物理专题复核工具: 执行失败 -> ${output}`);
+    }
+  }
+}
+
 function checkAssetConfig() {
   const assetConfigPath = 'utils/asset-config.js';
   assertFile(assetConfigPath, '云图片配置');
@@ -453,6 +471,7 @@ checkMathContainerReviewTooling();
 checkMathTopicReviewTooling();
 checkMathTemplateReviewTooling();
 checkEnglishTopicReviewTooling();
+checkPhysicsTopicReviewTooling();
 checkAssetConfig();
 checkReleaseInfo();
 
