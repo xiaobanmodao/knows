@@ -3,6 +3,7 @@ const curriculum = require('./data/physics-curriculum');
 const { getSubjectMeta, SUBJECT_LABELS } = require('../../data/subject-manifest');
 const { resolveAssetUrl } = require('../../utils/asset-config');
 const { getPhysicsTopicReviewMeta } = require('./data/topic-review-meta');
+const { getPhysicsTemplateReviewMeta } = require('./data/template-review-meta');
 
 function hydrateTopic(topic) {
   const contentMeta = getPhysicsTopicReviewMeta(topic.id);
@@ -27,8 +28,11 @@ function hydrateKnowledge(knowledge) {
 }
 
 function hydrateTemplate(template) {
+  const contentMeta = getPhysicsTemplateReviewMeta(template.id);
+
   return {
     ...template,
+    ...(contentMeta ? { contentMeta } : {}),
     containerId: template.containerId || (template.chapterIds || [])[0] || (template.topicIds || [])[0] || '',
     figure: resolveAssetUrl(template.figure),
   };

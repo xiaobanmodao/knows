@@ -28,10 +28,10 @@ function getManifestEntities() {
   return [
     { type: 'chapter', entities: physicsCurriculum.chapters },
     { type: 'knowledge', entities: physicsCurriculum.knowledgeItems },
-    { type: 'template', entities: physicsCurriculum.templates },
+    { type: 'template', entities: physicsCurriculum.templates.map((template) => physicsRepository.getTemplateById('physics', template.id)) },
     { type: 'topic', entities: physicsContent.topics.map((topic) => physicsRepository.getTopicById('physics', topic.id)) },
     { type: 'structured-knowledge', entities: physicsContent.knowledgeItems },
-    { type: 'structured-template', entities: physicsContent.templates },
+    { type: 'structured-template', entities: physicsContent.templates.map((template) => physicsRepository.getTemplateById('physics', template.id)) },
   ];
 }
 
