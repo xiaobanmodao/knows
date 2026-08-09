@@ -17,6 +17,7 @@ const DEFAULT_CHECKS = [
   { script: 'scripts/check-physics-curriculum.js', label: '物理目录' },
   { script: 'scripts/check-physics-accuracy.js', label: '物理准确性' },
   { script: 'scripts/check-physics-depth.js', label: '物理深度' },
+  { script: 'scripts/check-physics-formula-contract.test.js', label: '物理公式契约' },
   { script: 'scripts/check-physics-topic-review.js', label: '物理专题复核' },
   { script: 'scripts/check-physics-template-review.js', label: '物理方法复核' },
   { script: 'scripts/check-chemistry-content.js', label: '化学内容' },
