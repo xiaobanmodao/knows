@@ -30,7 +30,7 @@
       </view>
       <view class="chapter-hero__stat">
         <view class="chapter-hero__stat-num">{{chapter.templateItems.length}}</view>
-        <view class="chapter-hero__stat-label">题型模板</view>
+        <view class="chapter-hero__stat-label">方法模板</view>
       </view>
     </view>
 
@@ -76,7 +76,7 @@
           <text class="chapter-chip__value">{{chapter.outlineItems.length ? chapter.outlineItems[0] : chapter.title}}</text>
         </view>
         <view class="chapter-chip">
-          <text class="chapter-chip__label">题型入口</text>
+          <text class="chapter-chip__label">方法入口</text>
           <text class="chapter-chip__value">{{chapter.templateItems.length ? chapter.templateItems[0].name : '基础例题'}}</text>
         </view>
       </view>
@@ -143,13 +143,13 @@
         <text>{{knowledge.sections.length}} 个讲解模块</text>
         <text>{{knowledge.problems.length}} 道题</text>
       </view>
-      <view class="knowledge-card__footer">进入查看知识点、模板和例题</view>
+      <view class="knowledge-card__footer">进入查看知识点、方法和例题</view>
     </view>
   </view>
 
   <view wx:if="{{chapter.templateItems.length}}" class="section-title top-gap">
-    <view class="section-title__main">本章题型模板</view>
-    <view class="section-title__sub">放在知识点之后集中练</view>
+    <view class="section-title__main">本章方法模板</view>
+    <view class="section-title__sub">按知识点整理，方便查阅方法与例题</view>
   </view>
 
   <view wx:if="{{chapter.templateItems.length}}" class="grid">
