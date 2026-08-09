@@ -34,17 +34,82 @@ function buildPreviewArgs({ projectRoot, appid, outputDir }) {
   };
 }
 
+function extractPreviewErrorCode(output) {
+  const match = String(output || '').match(/\b(410\d{2})\b/);
+  return match ? match[1] : null;
+}
+
+function buildPreviewStatus({
+  status,
+  stage,
+  appid,
+  startedAt,
+  finishedAt,
+  exitCode,
+  errorCode,
+  message,
+  paths,
+}) {
+  return {
+    schemaVersion: 1,
+    status,
+    stage,
+    appid,
+    startedAt,
+    finishedAt,
+    exitCode: Number.isInteger(exitCode) ? exitCode : null,
+    errorCode: errorCode || null,
+    message: message || '',
+    paths: {
+      logPath: paths && paths.logPath,
+      reportPath: paths && paths.reportPath,
+      qrPath: paths && paths.qrPath,
+    },
+  };
+}
+
+function inferPreviewStage(output, fallback = 'preview') {
+  if (/410\d{2}|Uploading|上传失败/i.test(String(output || ''))) return 'upload';
+  if (/size\.packages|包体报告|info-output/i.test(String(output || ''))) return 'report';
+  return fallback;
+}
+
 function runPreview({ cliPath = process.env.WECHAT_DEVTOOLS_CLI || DEFAULT_CLI } = {}) {
   const config = readProjectConfig();
   const appid = validateAppId(config.appid);
   const outputDir = path.resolve(root, process.env.RELEASE_PREVIEW_OUTPUT || DEFAULT_OUTPUT_DIR);
   fs.mkdirSync(outputDir, { recursive: true });
-
-  if (!fs.existsSync(cliPath)) {
-    throw new Error(`找不到微信开发者工具 CLI：${cliPath}`);
-  }
+  const statusPath = path.join(outputDir, 'preview-status.json');
+  const startedAt = new Date().toISOString();
 
   const preview = buildPreviewArgs({ projectRoot: root, appid, outputDir });
+  const paths = {
+    logPath: path.relative(root, path.join(outputDir, 'preview.log')),
+    reportPath: path.relative(root, preview.reportPath),
+    qrPath: path.relative(root, preview.qrPath),
+  };
+  const writeStatus = ({ status, stage, exitCode = null, errorCode = null, message = '' }) => {
+    fs.writeFileSync(statusPath, `${JSON.stringify(buildPreviewStatus({
+      status,
+      stage,
+      appid,
+      startedAt,
+      finishedAt: new Date().toISOString(),
+      exitCode,
+      errorCode,
+      message,
+      paths,
+    }), null, 2)}\n`, 'utf8');
+  };
+  const fail = ({ stage, exitCode = null, errorCode = null, message }) => {
+    writeStatus({ status: 'blocked', stage, exitCode, errorCode, message });
+    throw new Error(`${message}；完整日志：${paths.logPath}；状态记录：${path.relative(root, statusPath)}`);
+  };
+
+  if (!fs.existsSync(cliPath)) {
+    fail({ stage: 'preflight', message: `找不到微信开发者工具 CLI：${cliPath}` });
+  }
+
   const result = spawnSync(cliPath, preview.args, {
     cwd: root,
     encoding: 'utf8',
@@ -53,27 +118,62 @@ function runPreview({ cliPath = process.env.WECHAT_DEVTOOLS_CLI || DEFAULT_CLI }
   const logPath = path.join(outputDir, 'preview.log');
   fs.writeFileSync(logPath, output, 'utf8');
 
-  if (result.error) throw result.error;
-  if (result.status !== 0) {
-    throw new Error(`开发者工具预览失败（退出码 ${result.status}），完整日志：${logPath}`);
+  if (result.error) {
+    fail({ stage: 'launch', exitCode: result.status, errorCode: extractPreviewErrorCode(output), message: result.error.message });
   }
-  if (/41002\s+appid missing/i.test(output)) {
-    throw new Error(`开发者工具上传仍返回 41002 appid missing，请确认当前账号拥有 ${appid} 的开发权限并重新打开项目；完整日志：${logPath}`);
+  const errorCode = extractPreviewErrorCode(output);
+  if (errorCode === '41002') {
+    fail({
+      stage: 'upload',
+      exitCode: result.status,
+      errorCode,
+      message: `开发者工具上传仍返回 41002 appid missing，请确认当前账号拥有 ${appid} 的开发权限并重新打开项目`,
+    });
+  }
+  if (result.status !== 0) {
+    fail({
+      stage: inferPreviewStage(output),
+      exitCode: result.status,
+      errorCode,
+      message: `开发者工具预览失败（退出码 ${result.status}）`,
+    });
   }
   if (!fs.existsSync(preview.reportPath) || fs.statSync(preview.reportPath).size === 0) {
-    throw new Error(`预览未生成有效包体报告：${preview.reportPath}；完整日志：${logPath}`);
+    fail({
+      stage: 'report',
+      exitCode: result.status,
+      errorCode,
+      message: `预览未生成有效包体报告：${paths.reportPath}`,
+    });
   }
 
   let report;
   try {
     report = JSON.parse(fs.readFileSync(preview.reportPath, 'utf8'));
   } catch (error) {
-    throw new Error(`包体报告不是有效 JSON：${preview.reportPath}（${error.message}）`);
+    fail({
+      stage: 'report',
+      exitCode: result.status,
+      errorCode,
+      message: `包体报告不是有效 JSON：${paths.reportPath}（${error.message}）`,
+    });
   }
   if (!report.size || !Array.isArray(report.size.packages)) {
-    throw new Error(`包体报告缺少 size.packages：${preview.reportPath}`);
+    fail({
+      stage: 'report',
+      exitCode: result.status,
+      errorCode,
+      message: `包体报告缺少 size.packages：${paths.reportPath}`,
+    });
   }
+  writeStatus({
+    status: 'passed',
+    stage: 'report',
+    exitCode: result.status,
+    message: '预览包体报告已生成并通过结构检查',
+  });
   console.log(`OK release preview report: ${path.relative(root, preview.reportPath)}`);
+  console.log(`Status: ${path.relative(root, statusPath)}`);
   console.log(`Log: ${path.relative(root, logPath)}`);
   return preview.reportPath;
 }
@@ -90,4 +190,6 @@ if (require.main === module) {
 module.exports = {
   buildPreviewArgs,
   validateAppId,
+  extractPreviewErrorCode,
+  buildPreviewStatus,
 };
