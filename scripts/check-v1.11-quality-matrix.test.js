@@ -19,6 +19,7 @@ assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-pure-kno
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-physics-formula-contract.test.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-english-depth-contract.test.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-chemistry-build-contract.test.js'));
+assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-biology-build-contract.test.js'));
 [
   'scripts/check-package-manifest.js',
   'scripts/check-student-copy.js',

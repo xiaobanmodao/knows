@@ -29,6 +29,7 @@ const DEFAULT_CHECKS = [
   { script: 'scripts/check-chemistry-assets.js', label: '化学资源' },
   { script: 'scripts/check-biology-content.js', label: '生物内容' },
   { script: 'scripts/check-biology-assets.js', label: '生物资源' },
+  { script: 'scripts/check-biology-build-contract.test.js', label: '生物构建契约' },
   { script: 'scripts/check-unique-figures.js', label: '图片唯一性' },
   { script: 'scripts/check-content-review-meta.js', label: '复核元数据' },
   { script: 'scripts/check-content-schema.js', label: '内容结构' },
