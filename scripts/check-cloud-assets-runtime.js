@@ -77,6 +77,16 @@ function setClientFailure() {
 async function run() {
   console.warn = () => {};
 
+  global.getApp = () => ({ globalData: { cloudReady: false } });
+  reset();
+  setServerSuccess();
+  setClientSuccess();
+  const unavailableRuntimeMap = await cloudAssets.getTempFileURLMap([fileID('unavailable-runtime')]);
+  assert.deepStrictEqual(unavailableRuntimeMap, {});
+  assert.strictEqual(serverCalls, 0, '云运行时未就绪时不应调用云函数');
+  assert.strictEqual(clientCalls, 0, '云运行时未就绪时不应调用客户端云存储');
+  delete global.getApp;
+
   reset();
   setServerSuccess();
   setClientFailure();

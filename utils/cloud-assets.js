@@ -18,6 +18,15 @@ function chunk(items, size) {
   return result;
 }
 
+function isCloudRuntimeReady() {
+  if (typeof getApp !== 'function') {
+    return true;
+  }
+
+  const app = getApp();
+  return !app || !app.globalData || app.globalData.cloudReady !== false;
+}
+
 function collectTempURLs(fileList) {
   const map = {};
   const failed = [];
@@ -52,7 +61,7 @@ function warnFailedTempURLs(title, failed) {
 
 function getServerTempFileURLBatch(fileIDs) {
   return new Promise((resolve) => {
-    if (!fileIDs.length || !wx.cloud || !wx.cloud.callFunction) {
+    if (!fileIDs.length || !isCloudRuntimeReady() || !wx.cloud || !wx.cloud.callFunction) {
       resolve({});
       return;
     }
@@ -79,7 +88,7 @@ function getServerTempFileURLBatch(fileIDs) {
 
 function getClientTempFileURLBatch(fileIDs) {
   return new Promise((resolve) => {
-    if (!fileIDs.length || !wx.cloud || !wx.cloud.getTempFileURL) {
+    if (!fileIDs.length || !isCloudRuntimeReady() || !wx.cloud || !wx.cloud.getTempFileURL) {
       console.warn('云存储能力不可用，无法获取图片临时链接', {
         count: fileIDs.length,
         hasWxCloud: Boolean(wx.cloud),

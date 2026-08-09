@@ -5,21 +5,45 @@ const { getSubjectRegistry } = require('./data/subject-manifest');
 const { clearTempFileURLCache } = require('./utils/cloud-assets');
 const { mergeSnapshots, normalizeSnapshot } = require('./utils/local-backup');
 
+function hasRuntimeAppId() {
+  if (typeof wx.getAccountInfoSync !== 'function') {
+    return true;
+  }
+
+  try {
+    const accountInfo = wx.getAccountInfoSync();
+    return Boolean(accountInfo && accountInfo.miniProgram && accountInfo.miniProgram.appId);
+  } catch (error) {
+    return false;
+  }
+}
+
+function initCloudEnvironment() {
+  if (!CLOUD_ENV_ID || !wx.cloud || !hasRuntimeAppId()) {
+    return false;
+  }
+
+  try {
+    wx.cloud.init({
+      env: CLOUD_ENV_ID,
+      traceUser: true,
+    });
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
 App({
   globalData: {
     userMode: 'guest',
     subjects: getSubjectRegistry(),
+    cloudReady: false,
   },
 
   onLaunch() {
     clearTempFileURLCache();
-
-    if (CLOUD_ENV_ID && wx.cloud) {
-      wx.cloud.init({
-        env: CLOUD_ENV_ID,
-        traceUser: true,
-      });
-    }
+    this.globalData.cloudReady = initCloudEnvironment();
 
     storage.migrateContentStorage(resolveKnowledgeId);
     this.refreshSession();
