@@ -16,6 +16,18 @@ assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-chemistr
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/english-curriculum-map.test.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-pure-knowledge-runtime.test.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-pure-knowledge-runtime.js'));
+[
+  'scripts/check-package-manifest.js',
+  'scripts/check-student-copy.js',
+  'scripts/check-search-experience.js',
+  'scripts/check-reference-index.js',
+  'scripts/check-content-migration.js',
+  'scripts/check-note-filters.js',
+  'scripts/check-local-backup.js',
+  'scripts/check-reading-display.js',
+].forEach((script) => {
+  assert.ok(defaultCommands.some((item) => item.script === script), `质量矩阵缺少 ${script}`);
+});
 assert.ok(!defaultCommands.some((item) => item.script === 'scripts/check-package-sizes.js'));
 assert.ok(strictCommands.some((item) => item.script === 'scripts/check-release-readiness.js'));
 assert.ok(strictCommands.some((item) => item.args.includes('--require-device-evidence')));
