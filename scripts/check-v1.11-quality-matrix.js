@@ -13,6 +13,7 @@ const DEFAULT_CHECKS = [
   { script: 'scripts/check-english-units.js', label: '英语单元' },
   { script: 'scripts/check-english-accuracy.js', label: '英语准确性' },
   { script: 'scripts/check-english-depth.js', label: '英语深度' },
+  { script: 'scripts/check-english-depth-contract.test.js', label: '英语补深契约' },
   { script: 'scripts/english-curriculum-map.test.js', label: '英语目录映射' },
   { script: 'scripts/check-physics-curriculum.js', label: '物理目录' },
   { script: 'scripts/check-physics-accuracy.js', label: '物理准确性' },

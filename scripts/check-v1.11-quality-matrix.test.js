@@ -17,6 +17,7 @@ assert.ok(defaultCommands.some((item) => item.script === 'scripts/english-curric
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-pure-knowledge-runtime.test.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-pure-knowledge-runtime.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-physics-formula-contract.test.js'));
+assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-english-depth-contract.test.js'));
 [
   'scripts/check-package-manifest.js',
   'scripts/check-student-copy.js',
