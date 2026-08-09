@@ -89,9 +89,13 @@ node scripts/check-package-sizes.js
 node scripts/check-cloud-assets-runtime.js
 node scripts/build-content-audit.js
 node scripts/check-content-audit.js
+node scripts/build-content-review-queue.js
+node scripts/check-content-review-queue.js
 ```
 
 生物学 v1.8 的实体设备回归步骤和发布门禁见：`docs/v1.8实体设备回归清单.md`。模拟器通过不等于真机通过；实体 iPhone 与 Android 回归完成前不创建 RC。
+
+复核队列只暴露尚未登记复核的内容，不会自动把内容标记为已复核；`--require-reviewed` 在来源和人工复核记录补齐后再作为严格门禁。
 
 ## 当前开发顺序
 

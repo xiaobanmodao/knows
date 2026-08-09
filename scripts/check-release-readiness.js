@@ -264,6 +264,35 @@ function checkContentAuditTooling() {
   }
 }
 
+function checkContentReviewQueueTooling() {
+  const queueScripts = [
+    'scripts/content-review-queue.js',
+    'scripts/build-content-review-queue.js',
+    'scripts/check-content-review-queue.js',
+  ];
+  queueScripts.forEach((file) => assertFile(file, '内容复核队列工具'));
+
+  const queueOutput = path.resolve(root, 'dist/content-audit/content-review-queue.json');
+  if (!queueOutput.startsWith(path.resolve(root, 'dist/content-audit') + path.sep)) {
+    issues.push('内容复核队列工具: 输出路径必须位于 dist/content-audit/');
+  }
+
+  if (queueScripts.every(fileExists)) {
+    ['scripts/build-content-review-queue.js', 'scripts/check-content-review-queue.js'].forEach((script) => {
+      try {
+        execFileSync(process.execPath, [path.join(root, script)], {
+          cwd: root,
+          encoding: 'utf8',
+          stdio: 'pipe',
+        });
+      } catch (error) {
+        const output = String(error.stdout || error.stderr || error.message).trim().split('\n').slice(-3).join(' | ');
+        issues.push(`内容复核队列工具 ${script}: 执行失败 -> ${output}`);
+      }
+    });
+  }
+}
+
 function checkAssetConfig() {
   const assetConfigPath = 'utils/asset-config.js';
   assertFile(assetConfigPath, '云图片配置');
@@ -316,6 +345,7 @@ checkProjectConfig();
 checkSitemap(appConfig);
 checkCloudFunction();
 checkContentAuditTooling();
+checkContentReviewQueueTooling();
 checkAssetConfig();
 checkReleaseInfo();
 

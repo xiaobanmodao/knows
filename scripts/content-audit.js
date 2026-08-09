@@ -57,6 +57,8 @@ function getParentId(entity) {
     || entity.bookId
     || (Array.isArray(entity.chapterIds) && entity.chapterIds[0])
     || (Array.isArray(entity.topicIds) && entity.topicIds[0])
+    || (Array.isArray(entity.relatedChapters) && entity.relatedChapters[0])
+    || (Array.isArray(entity.relatedTopicIds) && entity.relatedTopicIds[0])
     || null;
 }
 
@@ -321,6 +323,7 @@ function checkAuditReport(report, { requireReviewed = false } = {}) {
 
 module.exports = {
   SUBJECT_ORDER,
+  collectAuditEntities: collectEntities,
   collectContentAudit,
   checkAuditReport,
 };
