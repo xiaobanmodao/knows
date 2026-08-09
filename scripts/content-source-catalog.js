@@ -3,6 +3,7 @@ const crypto = require('crypto');
 const { LEGACY_KNOWLEDGE_ALIASES } = require('../data/content-id-aliases');
 const { buildContentManifest } = require('./content-manifest');
 const { collectAuditEntities } = require('./content-audit');
+const { checkSourceInput } = require('./content-source-input');
 
 const SCHEMA_VERSION = 1;
 const DIFF_SCHEMA_VERSION = 1;
@@ -87,6 +88,7 @@ function buildContentSourceCatalog() {
 }
 
 function checkContentSourceCatalog(report) {
+  checkSourceInput(report);
   if (!report || report.schemaVersion !== SCHEMA_VERSION) {
     throw new Error('内容源目录 schemaVersion 必须为 1');
   }
