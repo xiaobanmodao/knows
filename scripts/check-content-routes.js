@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const { SUBJECT_MANIFEST } = require('../data/subject-manifest');
+const { SUBJECT_MANIFEST, getSubjectRoutes } = require('../data/subject-manifest');
 
 const routeFixture = {
   id: 'synthetic-route-subject',
@@ -26,6 +26,16 @@ const {
 
 const root = path.resolve(__dirname, '..');
 const issues = [];
+const expectedBiologyRoutes = {
+  subject: '/packages/biology/pages/index/index',
+  topic: '/packages/biology/pages/topic/index',
+  knowledge: '/packages/biology/pages/knowledge/index',
+  template: '/packages/biology/pages/template/index',
+};
+const biologyManifestRoutes = getSubjectRoutes('biology');
+if (JSON.stringify(biologyManifestRoutes) !== JSON.stringify(expectedBiologyRoutes)) {
+  issues.push('biology manifest 路由必须匹配分包页面契约');
+}
 const appConfig = JSON.parse(fs.readFileSync(path.join(root, 'app.json'), 'utf8'));
 const catalogConfig = (appConfig.subPackages || []).find((item) => item.name === 'catalog');
 if (!catalogConfig || catalogConfig.root !== 'packages/catalog'
@@ -171,12 +181,7 @@ const expectedPackageRoutes = {
     knowledge: '/packages/chemistry/pages/knowledge/index',
     template: '/packages/chemistry/pages/template/index',
   },
-  biology: {
-    subject: '/packages/biology/pages/index/index',
-    topic: '/packages/biology/pages/topic/index',
-    knowledge: '/packages/biology/pages/knowledge/index',
-    template: '/packages/biology/pages/template/index',
-  },
+  biology: biologyManifestRoutes,
 };
 Object.entries(expectedPackageRoutes).forEach(([subjectId, routes]) => {
   if (JSON.stringify(PACKAGE_ROUTES[subjectId]) !== JSON.stringify(routes)) {
@@ -195,10 +200,10 @@ const routeChecks = [
   [{ subjectId: 'chemistry', type: 'topic', id: 'chem-topic-lab' }, '/packages/chemistry/pages/topic/index?id=chem-topic-lab&subjectId=chemistry'],
   [{ subjectId: 'chemistry', type: 'knowledge', id: 'chem-k-oxygen-preparation', focusType: 'experiment', focusId: 'chem-exp-oxygen' }, '/packages/chemistry/pages/knowledge/index?id=chem-k-oxygen-preparation&subjectId=chemistry&focusType=experiment&focusId=chem-exp-oxygen'],
   [{ subjectId: 'chemistry', type: 'template', id: 'chem-tpl-equation-balancing' }, '/packages/chemistry/pages/template/index?id=chem-tpl-equation-balancing&subjectId=chemistry'],
-  [{ subjectId: 'biology', type: 'subject' }, '/packages/biology/pages/index/index'],
-  [{ subjectId: 'biology', type: 'topic', id: 'bio-unit-cells' }, '/packages/biology/pages/topic/index?id=bio-unit-cells&subjectId=biology'],
-  [{ subjectId: 'biology', type: 'knowledge', id: 'bio-k-life-features' }, '/packages/biology/pages/knowledge/index?id=bio-k-life-features&subjectId=biology'],
-  [{ subjectId: 'biology', type: 'template', id: 'bio-tpl-evidence-chain' }, '/packages/biology/pages/template/index?id=bio-tpl-evidence-chain&subjectId=biology'],
+  [{ subjectId: 'biology', type: 'subject' }, biologyManifestRoutes.subject],
+  [{ subjectId: 'biology', type: 'topic', id: 'bio-unit-cells' }, `${biologyManifestRoutes.topic}?id=bio-unit-cells&subjectId=biology`],
+  [{ subjectId: 'biology', type: 'knowledge', id: 'bio-k-life-features' }, `${biologyManifestRoutes.knowledge}?id=bio-k-life-features&subjectId=biology`],
+  [{ subjectId: 'biology', type: 'template', id: 'bio-tpl-evidence-chain' }, `${biologyManifestRoutes.template}?id=bio-tpl-evidence-chain&subjectId=biology`],
   [{ type: 'knowledge', id: 'legacy-math-id', restore: true }, '/packages/math/pages/knowledge/index?id=legacy-math-id&subjectId=math&restore=1'],
 ];
 

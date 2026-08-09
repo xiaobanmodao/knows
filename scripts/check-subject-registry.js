@@ -56,24 +56,43 @@ assert.deepStrictEqual(
 assertValidSubjects(getSubjectRegistry());
 
 const biology = getSubjectMeta('biology');
-assert.strictEqual(SUBJECT_LABELS.biology, '生物');
-assert.strictEqual(biology.shortName, '生物');
-assert.deepStrictEqual(biology.gradeBands, ['七年级']);
-assert.strictEqual(biology.packageRoot, 'packages/biology');
-assert.deepStrictEqual(biology.packagePages, [
-  'pages/index/index',
-  'pages/topic/index',
-  'pages/knowledge/index',
-  'pages/template/index',
-]);
-assert.deepStrictEqual(biology.contentTypes, ['subject', 'topic', 'knowledge', 'template']);
-assert.deepStrictEqual(biology.referenceKinds, []);
-assert.deepStrictEqual(biology.counts, {
-  unit: 6,
-  topic: 6,
-  knowledge: 36,
-  template: 6,
-  example: 108,
+const expectedBiology = {
+  id: 'biology',
+  name: '初中生物',
+  shortName: '生物',
+  subtitle: '七至八年级生物六单元知识地图',
+  description: '按单元梳理生命科学基础知识、观察证据与科学方法。',
+  gradeBands: ['七年级', '八年级'],
+  theme: 'biology',
+  status: 'active',
+  packageRoot: 'packages/biology',
+  entryRoute: '/packages/biology/pages/index/index',
+  packagePages: [
+    'pages/index/index',
+    'pages/topic/index',
+    'pages/knowledge/index',
+    'pages/template/index',
+  ],
+  routes: {
+    subject: '/packages/biology/pages/index/index',
+    topic: '/packages/biology/pages/topic/index',
+    knowledge: '/packages/biology/pages/knowledge/index',
+    template: '/packages/biology/pages/template/index',
+  },
+  contentTypes: ['subject', 'topic', 'knowledge', 'template'],
+  referenceKinds: [],
+  counts: {
+    unit: 6,
+    topic: 6,
+    knowledge: 36,
+    template: 6,
+    example: 108,
+  },
+  packageLabel: '6 单元',
+};
+assert.strictEqual(SUBJECT_LABELS.biology, expectedBiology.shortName);
+Object.entries(expectedBiology).forEach(([field, expected]) => {
+  assert.deepStrictEqual(biology[field], expected, `biology.${field} 必须匹配已批准的注册契约`);
 });
 assert.deepStrictEqual(
   (appConfig.subPackages || []).map((item) => item.name),
@@ -85,7 +104,7 @@ assert.deepStrictEqual(
   {
     root: 'packages/biology',
     name: 'biology',
-    pages: biology.packagePages,
+    pages: expectedBiology.packagePages,
   },
   'biology 分包页面必须与 registry 一致',
 );
