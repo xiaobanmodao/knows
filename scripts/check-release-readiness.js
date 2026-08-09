@@ -299,6 +299,7 @@ function checkMathCurriculumAuditTooling() {
     'scripts/math-curriculum-audit.js',
     'scripts/build-math-curriculum-audit.js',
     'scripts/check-math-curriculum-audit.js',
+    'scripts/math-volume-map.test.js',
   ];
   auditScripts.forEach((file) => assertFile(file, '数学新版目录审计工具'));
 
@@ -308,7 +309,11 @@ function checkMathCurriculumAuditTooling() {
   }
 
   if (auditScripts.slice(1).every(fileExists)) {
-    ['scripts/build-math-curriculum-audit.js', 'scripts/check-math-curriculum-audit.js'].forEach((script) => {
+    [
+      'scripts/build-math-curriculum-audit.js',
+      'scripts/check-math-curriculum-audit.js',
+      'scripts/math-volume-map.test.js',
+    ].forEach((script) => {
       try {
         execFileSync(process.execPath, [path.join(root, script)], {
           cwd: root,

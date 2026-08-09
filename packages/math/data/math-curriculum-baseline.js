@@ -86,6 +86,24 @@ const MATH_CURRICULUM_BASELINE = {
     reason: '人教社公开介绍确认了结构变化，但当前未以逐册完整官方目录证明 29 个稳定容器对应新版原始章序。',
     blockedActions: ['重排章节显示顺序', '批量修改章号', '删除或重命名稳定章节 ID'],
   },
+  volumeMap: {
+    schemaVersion: 1,
+    status: 'needs-official-volume-map',
+    sourceIds: ['moe-math-standard-2022', 'moe-textbook-catalog-2024', 'pep-math-new-textbook-2024'],
+    policy: {
+      unverifiedFields: ['officialGrade', 'officialVolume', 'officialChapterNo', 'officialTitle', 'officialSections'],
+      blockedActions: ['重排章节显示顺序', '批量修改章号', '删除或重命名稳定章节 ID'],
+      migrationRule: '取得官方逐册目录后只新增证据映射和显示别名，不修改稳定 ID、lessonId 或旧链接。',
+    },
+    entries: STABLE_CHAPTER_IDS.map((stableChapterId) => ({
+      stableChapterId,
+      mappingStatus: 'needs-official-volume-map',
+      official: null,
+      sourceIds: ['moe-math-standard-2022', 'moe-textbook-catalog-2024', 'pep-math-new-textbook-2024'],
+      reviewedAt: null,
+      notes: '等待对应册次的完整官方目录，当前不填写猜测的官方年级、册次、章号或小节。',
+    })),
+  },
 };
 
 module.exports = {

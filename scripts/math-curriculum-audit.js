@@ -43,6 +43,35 @@ function buildConfirmedChange(change, chaptersById) {
   };
 }
 
+function buildVolumeMap(chaptersById) {
+  const baselineMap = MATH_CURRICULUM_BASELINE.volumeMap;
+  return {
+    schemaVersion: baselineMap.schemaVersion,
+    status: baselineMap.status,
+    sourceIds: [...baselineMap.sourceIds],
+    policy: { ...baselineMap.policy, blockedActions: [...baselineMap.policy.blockedActions] },
+    entries: baselineMap.entries.map((entry) => {
+      const chapter = chaptersById.get(entry.stableChapterId);
+      return {
+        stableChapterId: entry.stableChapterId,
+        mappingStatus: entry.mappingStatus,
+        current: chapter ? {
+          chapterNo: chapter.chapterNo,
+          title: chapter.title,
+          grade: chapter.grade,
+          volume: chapter.volume,
+          stage: chapter.stage,
+          officialSections: [...(chapter.officialSections || [])],
+        } : null,
+        official: entry.official,
+        sourceIds: [...entry.sourceIds],
+        reviewedAt: entry.reviewedAt,
+        notes: entry.notes,
+      };
+    }),
+  };
+}
+
 function collectMathCurriculumAudit() {
   const currentChapters = getCurrentChapters();
   const chaptersById = new Map(currentChapters.map((chapter) => [chapter.id, chapter]));
@@ -52,6 +81,7 @@ function collectMathCurriculumAudit() {
   const unexpectedStableIds = currentChapters.map((chapter) => chapter.id).filter((id) => !baselineIds.has(id));
   const confirmedChanges = MATH_CURRICULUM_BASELINE.confirmedChanges
     .map((change) => buildConfirmedChange(change, chaptersById));
+  const volumeMap = buildVolumeMap(chaptersById);
   const openQuestions = [{
     id: 'math-full-volume-map',
     status: MATH_CURRICULUM_BASELINE.volumeReviewStatus.status,
@@ -70,6 +100,7 @@ function collectMathCurriculumAudit() {
     stableContainerPolicy: MATH_CURRICULUM_BASELINE.stableContainerPolicy,
     current,
     confirmedChanges,
+    volumeMap,
     openQuestions,
   };
   return {
@@ -79,6 +110,7 @@ function collectMathCurriculumAudit() {
     sources: MATH_CURRICULUM_BASELINE.sources.map((source) => ({ ...source })),
     current,
     confirmedChanges,
+    volumeMap,
     openQuestions,
   };
 }
@@ -131,6 +163,28 @@ function checkBaselineContract() {
   if (!Array.isArray(volumeReviewStatus.blockedActions) || !volumeReviewStatus.blockedActions.length) {
     throw new Error('数学目录基线必须列出被阻止的重排动作');
   }
+
+  const volumeMap = MATH_CURRICULUM_BASELINE.volumeMap;
+  if (!volumeMap || volumeMap.schemaVersion !== 1 || volumeMap.status !== 'needs-official-volume-map') {
+    throw new Error('数学逐册映射基线必须保持 schemaVersion 1 和待官方目录核对状态');
+  }
+  if (JSON.stringify(volumeMap.sourceIds) !== JSON.stringify(MATH_CURRICULUM_BASELINE.sources.map((source) => source.id))) {
+    throw new Error('数学逐册映射基线来源必须覆盖三类官方来源');
+  }
+  if (!Array.isArray(volumeMap.entries) || JSON.stringify(volumeMap.entries.map((entry) => entry.stableChapterId)) !== JSON.stringify(STABLE_CHAPTER_IDS)) {
+    throw new Error('数学逐册映射基线必须按稳定章节完整列出 29 条证据记录');
+  }
+  volumeMap.entries.forEach((entry) => {
+    if (entry.mappingStatus !== 'needs-official-volume-map' || entry.official !== null || entry.reviewedAt !== null) {
+      throw new Error(`数学逐册映射基线不得填写未经核对的官方字段：${entry.stableChapterId}`);
+    }
+    if (JSON.stringify(entry.sourceIds) !== JSON.stringify(volumeMap.sourceIds)) {
+      throw new Error(`数学逐册映射来源不完整：${entry.stableChapterId}`);
+    }
+    if (!entry.notes || !entry.notes.includes('不填写猜测')) {
+      throw new Error(`数学逐册映射缺少未核对边界说明：${entry.stableChapterId}`);
+    }
+  });
 }
 
 function checkMathCurriculumAudit(report) {
@@ -170,6 +224,18 @@ function checkMathCurriculumAudit(report) {
       throw new Error(`数学目录报告来源重复：${change.id}`);
     }
   });
+  if (!report.volumeMap || report.volumeMap.status !== 'needs-official-volume-map' || report.volumeMap.entries.length !== 29) {
+    throw new Error('数学目录报告必须包含 29 条官方逐册映射记录');
+  }
+  report.volumeMap.entries.forEach((entry) => {
+    if (entry.mappingStatus === 'needs-official-volume-map' && entry.official !== null) {
+      throw new Error(`官方逐册映射未核对项不得填写官方册次、章号或标题：${entry.stableChapterId}`);
+    }
+  });
+  const expectedVolumeMap = expected.volumeMap;
+  if (JSON.stringify(report.volumeMap) !== JSON.stringify(expectedVolumeMap)) {
+    throw new Error('数学目录官方逐册映射报告与当前证据表不一致');
+  }
   if (!report.openQuestions.length || report.openQuestions.some((item) => item.status !== 'needs-official-volume-map')) {
     throw new Error('数学目录开放问题必须保持待官方逐册目录核对状态');
   }
