@@ -91,11 +91,15 @@ node scripts/build-content-audit.js
 node scripts/check-content-audit.js
 node scripts/build-content-review-queue.js
 node scripts/check-content-review-queue.js
+node scripts/build-math-curriculum-audit.js
+node scripts/check-math-curriculum-audit.js
 ```
 
 生物学 v1.8 的实体设备回归步骤和发布门禁见：`docs/v1.8实体设备回归清单.md`。模拟器通过不等于真机通过；实体 iPhone 与 Android 回归完成前不创建 RC。
 
 复核队列只暴露尚未登记复核的内容，不会自动把内容标记为已复核；`--require-reviewed` 在来源和人工复核记录补齐后再作为严格门禁。
+
+数学新版目录差异报告只记录稳定容器、公开确认的结构变化和待核对项，不自动重排章节，也不替代生物学 v1.8 的实体设备发布门禁。
 
 ## 当前开发顺序
 
