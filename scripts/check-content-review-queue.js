@@ -12,11 +12,12 @@ checkContentReviewQueue(report);
 
 assert.strictEqual(report.schemaVersion, 1, '复核队列 schemaVersion 必须为 1');
 assert.strictEqual(report.status, 'review-queue', '复核队列状态无效');
-assert.strictEqual(report.totals.queued, 111, '当前应有 111 个未复核实体');
-assert.strictEqual(report.items.length, 111, '复核队列条目数不正确');
-assert.deepStrictEqual(report.totals.bySubject, { english: 12, math: 65, physics: 34 }, '学科队列数量不正确');
+assert.strictEqual(report.totals.queued, 82, '当前应有 82 个未复核实体');
+assert.strictEqual(report.items.length, 82, '复核队列条目数不正确');
+assert.deepStrictEqual(report.totals.bySubject, { english: 12, math: 36, physics: 34 }, '学科队列数量不正确');
 assert.strictEqual(report.totals.byType['math:chapter'], undefined, '数学章节容器不应继续进入复核队列');
-assert.deepStrictEqual(report.totals.byPriority, { 1: 41, 2: 70 }, '复核队列优先级数量不正确');
+assert.strictEqual(report.totals.byType['math:topic'], undefined, '数学专题容器不应继续进入复核队列');
+assert.deepStrictEqual(report.totals.byPriority, { 1: 12, 2: 70 }, '复核队列优先级数量不正确');
 assert.ok(/^[a-f0-9]{64}$/.test(report.sourceHash), '复核队列 sourceHash 无效');
 
 const outputPath = path.resolve(__dirname, '../dist/content-audit/content-review-queue.json');
