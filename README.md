@@ -91,6 +91,7 @@ node scripts/build-content-audit.js
 node scripts/check-content-audit.js
 node scripts/build-content-review-queue.js
 node scripts/check-content-review-queue.js
+node scripts/check-math-container-review.js
 node scripts/build-math-curriculum-audit.js
 node scripts/check-math-curriculum-audit.js
 ```
@@ -100,6 +101,8 @@ node scripts/check-math-curriculum-audit.js
 复核队列只暴露尚未登记复核的内容，不会自动把内容标记为已复核；`--require-reviewed` 在来源和人工复核记录补齐后再作为严格门禁。
 
 数学新版目录差异报告只记录稳定容器、公开确认的结构变化和待核对项，不自动重排章节，也不替代生物学 v1.8 的实体设备发布门禁。
+
+数学章节复核按批次登记。当前第一批已复核七年级 `ch01-rational` 至 `ch10-statistics` 共 10 个稳定容器，其余章节、专题和方法模板仍保留在复核队列中。
 
 ## 当前开发顺序
 
