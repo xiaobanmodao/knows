@@ -2,6 +2,11 @@ const { execFileSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const { getPackageRegistry } = require('../data/package-manifest');
+const {
+  describePreviewStatus,
+  getPreviewStatusPath,
+  readPreviewStatus,
+} = require('./check-release-package-evidence');
 
 const root = path.resolve(__dirname, '..');
 const issues = [];
@@ -503,8 +508,17 @@ function checkReleasePackageEvidenceTooling() {
   const packageScript = 'scripts/check-release-package-evidence.js';
   const reportPath = process.env.PACKAGE_SIZE_REPORT
     || '.codex-output/release-regression-v1.10.1/packages-preview.json';
+  const statusPath = getPreviewStatusPath(reportPath);
+  const absoluteStatusPath = path.resolve(root, statusPath);
   assertFile(packageScript, '发布包体证据工具');
   assertFile(reportPath, '发布包体报告');
+
+  if (fs.existsSync(absoluteStatusPath)) {
+    const previewStatus = readPreviewStatus(absoluteStatusPath);
+    if (previewStatus && previewStatus.status !== 'passed') {
+      issues.push(`发布包体预览状态: ${describePreviewStatus(previewStatus, absoluteStatusPath)}`);
+    }
+  }
 
   if (!fileExists(packageScript) || !fileExists(reportPath)) {
     return;
