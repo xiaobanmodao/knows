@@ -238,6 +238,16 @@ function checkCloudFunction() {
   }
 }
 
+function checkContentAuditTooling() {
+  ['scripts/content-audit.js', 'scripts/build-content-audit.js', 'scripts/check-content-audit.js']
+    .forEach((file) => assertFile(file, '内容审计工具'));
+
+  const auditOutput = path.resolve(root, 'dist/content-audit/content-audit.json');
+  if (!auditOutput.startsWith(path.resolve(root, 'dist/content-audit') + path.sep)) {
+    issues.push('内容审计工具: 输出路径必须位于 dist/content-audit/');
+  }
+}
+
 function checkAssetConfig() {
   const assetConfigPath = 'utils/asset-config.js';
   assertFile(assetConfigPath, '云图片配置');
@@ -289,6 +299,7 @@ const appConfig = checkAppConfig();
 checkProjectConfig();
 checkSitemap(appConfig);
 checkCloudFunction();
+checkContentAuditTooling();
 checkAssetConfig();
 checkReleaseInfo();
 

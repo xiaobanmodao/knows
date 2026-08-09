@@ -87,6 +87,8 @@ node scripts/check-content-schema.js
 node scripts/check-content-diff.js
 node scripts/check-package-sizes.js
 node scripts/check-cloud-assets-runtime.js
+node scripts/build-content-audit.js
+node scripts/check-content-audit.js
 ```
 
 生物学 v1.8 的实体设备回归步骤和发布门禁见：`docs/v1.8实体设备回归清单.md`。模拟器通过不等于真机通过；实体 iPhone 与 Android 回归完成前不创建 RC。
