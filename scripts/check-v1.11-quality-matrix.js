@@ -23,6 +23,7 @@ const DEFAULT_CHECKS = [
   { script: 'scripts/check-physics-template-review.js', label: '物理方法复核' },
   { script: 'scripts/check-chemistry-content.js', label: '化学内容' },
   { script: 'scripts/check-chemistry-accuracy.js', label: '化学准确性' },
+  { script: 'scripts/check-chemistry-build-contract.test.js', label: '化学构建契约' },
   { script: 'scripts/check-chemistry-foundations.js', label: '化学基础' },
   { script: 'scripts/check-chemistry-pages.js', label: '化学页面' },
   { script: 'scripts/check-chemistry-assets.js', label: '化学资源' },
