@@ -136,6 +136,7 @@ function checkContentReviewQueue(report) {
   if (!Array.isArray(report.items)) throw new Error('复核队列 items 必须为数组');
 
   const expected = collectContentReviewQueue();
+  const allEntityKeys = new Set(collectAuditEntities().map((entity) => `${entity.subjectId}:${entity.id}`));
   if (report.sourceVersion !== expected.sourceVersion) throw new Error('复核队列 sourceVersion 不一致');
   if (report.totals.queued !== expected.items.length || report.items.length !== expected.items.length) {
     throw new Error(`复核队列数量不一致：报告 ${report.items.length}，当前 ${expected.items.length}`);
@@ -155,6 +156,9 @@ function checkContentReviewQueue(report) {
     if (item.status !== 'untracked') throw new Error(`复核队列包含非 untracked 实体：${item.key}`);
     if (!item.title || !item.searchKey || !item.parentId && ['template', 'structured-template'].includes(item.type)) {
       throw new Error(`复核队列条目字段不完整：${item.key}`);
+    }
+    if (item.parentId && !allEntityKeys.has(`${item.subjectId}:${item.parentId}`)) {
+      throw new Error(`复核队列父级不存在或跨学科：${item.key}/${item.parentId}`);
     }
     if (!Array.isArray(item.sourceCandidates) || item.sourceCandidates.length < 2) {
       throw new Error(`复核队列来源候选不足：${item.key}`);
