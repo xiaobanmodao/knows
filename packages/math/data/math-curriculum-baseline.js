@@ -92,6 +92,18 @@ const MATH_CURRICULUM_BASELINE = {
     sourceIds: ['moe-math-standard-2022', 'moe-textbook-catalog-2024', 'pep-math-new-textbook-2024'],
     policy: {
       unverifiedFields: ['officialGrade', 'officialVolume', 'officialChapterNo', 'officialTitle', 'officialSections'],
+      requiredEvidenceFields: [
+        'textbookEdition',
+        'officialGrade',
+        'officialVolume',
+        'officialChapterNo',
+        'officialTitle',
+        'officialSections',
+        'sourceIds',
+        'reviewedAt',
+        'changeReason',
+        'legacyAliasImpact',
+      ],
       blockedActions: ['重排章节显示顺序', '批量修改章号', '删除或重命名稳定章节 ID'],
       migrationRule: '取得官方逐册目录后只新增证据映射和显示别名，不修改稳定 ID、lessonId 或旧链接。',
     },

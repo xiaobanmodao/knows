@@ -5,6 +5,8 @@ const {
   MATH_CURRICULUM_BASELINE,
   STABLE_CHAPTER_IDS,
 } = require('../packages/math/data/math-curriculum-baseline');
+const { LEGACY_KNOWLEDGE_ALIASES } = require('../data/content-id-aliases');
+const { getStableLessonId } = require('../utils/content-ids');
 
 const OFFICIAL_HOSTS = new Set(['www.moe.gov.cn', 'moe.gov.cn', 'www.pep.com.cn', 'pep.com.cn']);
 
@@ -49,7 +51,12 @@ function buildVolumeMap(chaptersById) {
     schemaVersion: baselineMap.schemaVersion,
     status: baselineMap.status,
     sourceIds: [...baselineMap.sourceIds],
-    policy: { ...baselineMap.policy, blockedActions: [...baselineMap.policy.blockedActions] },
+    policy: {
+      ...baselineMap.policy,
+      blockedActions: [...baselineMap.policy.blockedActions],
+      requiredEvidenceFields: [...baselineMap.policy.requiredEvidenceFields],
+      unverifiedFields: [...baselineMap.policy.unverifiedFields],
+    },
     entries: baselineMap.entries.map((entry) => {
       const chapter = chaptersById.get(entry.stableChapterId);
       return {
@@ -72,6 +79,95 @@ function buildVolumeMap(chaptersById) {
   };
 }
 
+function buildSourceMap(volumeMap) {
+  const pendingEntries = volumeMap.entries.filter((entry) => entry.mappingStatus === 'needs-official-volume-map');
+  const mappedEntries = volumeMap.entries.filter((entry) => entry.mappingStatus !== 'needs-official-volume-map');
+  return {
+    schemaVersion: 1,
+    status: volumeMap.status,
+    sourceIds: [...volumeMap.sourceIds],
+    requiredEvidenceFields: [...volumeMap.policy.requiredEvidenceFields],
+    mappedEntryCount: mappedEntries.length,
+    pendingEntryCount: pendingEntries.length,
+    pendingEvidenceFields: pendingEntries.length ? [...volumeMap.policy.requiredEvidenceFields] : [],
+    pendingStableChapterIds: pendingEntries.map((entry) => entry.stableChapterId),
+  };
+}
+
+function buildStabilityAudit(currentChapters, current) {
+  const lessonSnapshots = currentChapters.flatMap((chapter) => chapter.officialSections.map((sectionTitle, index) => ({
+    chapterId: chapter.id,
+    sectionTitle,
+    lessonId: getStableLessonId(chapter.id, sectionTitle),
+    legacyId: `${chapter.id}-lesson-${index + 1}`,
+  })));
+  const expectedAliases = new Map(lessonSnapshots.map((item) => [item.legacyId, item.lessonId]));
+  const actualAliases = new Map(Object.entries(LEGACY_KNOWLEDGE_ALIASES));
+  const expectedLegacyIds = [...expectedAliases.keys()].sort();
+  const actualLegacyIds = [...actualAliases.keys()].sort();
+  const missingLegacyIds = expectedLegacyIds.filter((id) => !actualAliases.has(id));
+  const unexpectedLegacyIds = actualLegacyIds.filter((id) => !expectedAliases.has(id));
+  const mismatchedLegacyIds = expectedLegacyIds
+    .filter((id) => actualAliases.has(id) && actualAliases.get(id) !== expectedAliases.get(id));
+  const stableLessonIds = new Set(lessonSnapshots.map((item) => item.lessonId));
+  const lessonIdCounts = new Map();
+  lessonSnapshots.forEach((item) => lessonIdCounts.set(item.lessonId, (lessonIdCounts.get(item.lessonId) || 0) + 1));
+  const duplicateLessonIds = [...lessonIdCounts.entries()]
+    .filter(([, count]) => count > 1)
+    .map(([lessonId]) => lessonId)
+    .sort();
+  const missingAliasTargets = actualLegacyIds
+    .filter((id) => !stableLessonIds.has(actualAliases.get(id)));
+  const chapterIssues = current.missingStableIds.length + current.unexpectedStableIds.length;
+  const lessonIssues = missingLegacyIds.length
+    + unexpectedLegacyIds.length
+    + mismatchedLegacyIds.length
+    + missingAliasTargets.length
+    + duplicateLessonIds.length;
+
+  return {
+    schemaVersion: 1,
+    status: chapterIssues || lessonIssues ? 'needs-repair' : 'verified',
+    chapter: {
+      expectedCount: STABLE_CHAPTER_IDS.length,
+      actualCount: currentChapters.length,
+      missingStableIds: [...current.missingStableIds],
+      unexpectedStableIds: [...current.unexpectedStableIds],
+    },
+    lesson: {
+      expectedCount: lessonSnapshots.length,
+      actualCount: stableLessonIds.size,
+      legacyAliasCount: actualAliases.size,
+      duplicateLessonIds,
+      missingLegacyIds,
+      unexpectedLegacyIds,
+      mismatchedLegacyIds,
+      missingAliasTargets,
+    },
+  };
+}
+
+function buildDiffSummary(current, confirmedChanges) {
+  const modified = confirmedChanges.map((change) => ({
+    id: change.id,
+    stableChapterId: change.stableChapterId,
+    status: change.implementationStatus,
+    currentSignalsPresent: [...change.currentSignalsPresent],
+    expectedSignalsMissing: [...change.expectedSignalsMissing],
+  }));
+  return {
+    schemaVersion: 1,
+    counts: {
+      added: current.unexpectedStableIds.length,
+      modified: modified.length,
+      removed: current.missingStableIds.length,
+    },
+    added: [...current.unexpectedStableIds],
+    modified,
+    removed: [...current.missingStableIds],
+  };
+}
+
 function collectMathCurriculumAudit() {
   const currentChapters = getCurrentChapters();
   const chaptersById = new Map(currentChapters.map((chapter) => [chapter.id, chapter]));
@@ -82,6 +178,7 @@ function collectMathCurriculumAudit() {
   const confirmedChanges = MATH_CURRICULUM_BASELINE.confirmedChanges
     .map((change) => buildConfirmedChange(change, chaptersById));
   const volumeMap = buildVolumeMap(chaptersById);
+  const sourceMap = buildSourceMap(volumeMap);
   const openQuestions = [{
     id: 'math-full-volume-map',
     status: MATH_CURRICULUM_BASELINE.volumeReviewStatus.status,
@@ -95,12 +192,17 @@ function collectMathCurriculumAudit() {
     missingStableIds,
     unexpectedStableIds,
   };
+  const stability = buildStabilityAudit(currentChapters, current);
+  const diffSummary = buildDiffSummary(current, confirmedChanges);
   const hashInput = {
     baselineVersion: MATH_CURRICULUM_BASELINE.baselineVersion,
     stableContainerPolicy: MATH_CURRICULUM_BASELINE.stableContainerPolicy,
     current,
     confirmedChanges,
     volumeMap,
+    sourceMap,
+    stability,
+    diffSummary,
     openQuestions,
   };
   return {
@@ -111,6 +213,9 @@ function collectMathCurriculumAudit() {
     current,
     confirmedChanges,
     volumeMap,
+    sourceMap,
+    stability,
+    diffSummary,
     openQuestions,
   };
 }
@@ -170,6 +275,21 @@ function checkBaselineContract() {
   }
   if (JSON.stringify(volumeMap.sourceIds) !== JSON.stringify(MATH_CURRICULUM_BASELINE.sources.map((source) => source.id))) {
     throw new Error('数学逐册映射基线来源必须覆盖三类官方来源');
+  }
+  const requiredEvidenceFields = [
+    'textbookEdition',
+    'officialGrade',
+    'officialVolume',
+    'officialChapterNo',
+    'officialTitle',
+    'officialSections',
+    'sourceIds',
+    'reviewedAt',
+    'changeReason',
+    'legacyAliasImpact',
+  ];
+  if (JSON.stringify(volumeMap.policy.requiredEvidenceFields) !== JSON.stringify(requiredEvidenceFields)) {
+    throw new Error('数学逐册映射必须声明完整的来源证据字段');
   }
   if (!Array.isArray(volumeMap.entries) || JSON.stringify(volumeMap.entries.map((entry) => entry.stableChapterId)) !== JSON.stringify(STABLE_CHAPTER_IDS)) {
     throw new Error('数学逐册映射基线必须按稳定章节完整列出 29 条证据记录');
@@ -235,6 +355,15 @@ function checkMathCurriculumAudit(report) {
   const expectedVolumeMap = expected.volumeMap;
   if (JSON.stringify(report.volumeMap) !== JSON.stringify(expectedVolumeMap)) {
     throw new Error('数学目录官方逐册映射报告与当前证据表不一致');
+  }
+  if (JSON.stringify(report.sourceMap) !== JSON.stringify(expected.sourceMap)) {
+    throw new Error('数学来源地图覆盖报告与当前证据表不一致');
+  }
+  if (JSON.stringify(report.stability) !== JSON.stringify(expected.stability)) {
+    throw new Error('数学稳定 ID 与旧别名差异报告不一致');
+  }
+  if (JSON.stringify(report.diffSummary) !== JSON.stringify(expected.diffSummary)) {
+    throw new Error('数学目录差异汇总与当前内容不一致');
   }
   if (!report.openQuestions.length || report.openQuestions.some((item) => item.status !== 'needs-official-volume-map')) {
     throw new Error('数学目录开放问题必须保持待官方逐册目录核对状态');
