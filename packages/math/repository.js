@@ -6,6 +6,7 @@ const { lessonFormulaMap } = require('./data/math-lesson-formulas');
 const { getMathLessonDepth } = require('./data/details/math-lesson-depth');
 const { getContentReviewMeta } = require('./data/content-review-meta');
 const { getChapterReviewMeta } = require('./data/chapter-review-meta');
+const { getTopicReviewMeta } = require('./data/topic-review-meta');
 const { topicPackages } = require('./data/math-topic-guides');
 const { resolveAssetUrl } = require('../../utils/asset-config');
 const { getStableLessonId, resolveKnowledgeId } = require('../../utils/content-ids');
@@ -2542,9 +2543,11 @@ function hydrateStudyBucket(bucket) {
 function hydrateGradeTopic(topic) {
   const chapters = topic.chapterIds.map(getStudyMapChapter).filter(Boolean);
   const primaryChapter = chapters[0] || {};
+  const contentMeta = getTopicReviewMeta(topic.id);
 
   return {
     ...topic,
+    ...(contentMeta ? { contentMeta } : {}),
     chapters,
     chapterId: primaryChapter.id || '',
     chapterTitle: primaryChapter.title || '',
