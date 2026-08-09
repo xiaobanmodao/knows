@@ -18,9 +18,31 @@ const EXPECTED_IDS = [
   'ch08-system',
   'ch09-inequality',
   'ch10-statistics',
+  'ch11-triangle',
+  'ch12-congruent',
+  'ch13-symmetry',
+  'ch14-polynomial',
+  'ch15-fraction',
+  'ch16-radical',
+  'ch17-pythagorean',
+  'ch18-parallelogram',
+  'ch19-linear-function',
+  'ch20-data-analysis',
+  'ch21-quadratic-equation',
+  'ch22-quadratic-function',
+  'ch23-rotation',
+  'ch24-circle',
+  'ch25-probability',
+  'ch26-inverse-function',
+  'ch27-similarity',
+  'ch28-trigonometry',
+  'ch29-projection',
 ];
 const OFFICIAL_HOSTS = new Set(['www.moe.gov.cn', 'moe.gov.cn', 'www.pep.com.cn', 'pep.com.cn']);
 const EXPECTED_SOURCE_KEYS = new Set(['moe-math-curriculum-2022', 'pep-math-new-textbook-2024']);
+const FIRST_BATCH_IDS = new Set(EXPECTED_IDS.slice(0, 10));
+const SECOND_BATCH_IDS = new Set(EXPECTED_IDS.slice(10));
+const MAPPING_BOUNDARY_IDS = new Set(['ch19-linear-function', 'ch20-data-analysis']);
 
 function checkMathContainerReview() {
   assert.deepStrictEqual(REVIEWED_MATH_CHAPTER_IDS, EXPECTED_IDS);
@@ -38,6 +60,12 @@ function checkMathContainerReview() {
     assert.strictEqual(meta.status, 'verified', `${id} 复核状态无效`);
     assert.strictEqual(meta.statusLabel, '已复核', `${id} 复核状态标签无效`);
     assert.strictEqual(meta.reviewScope, 'stable-container', `${id} 复核范围无效`);
+    assert.strictEqual(meta.reviewBatch, FIRST_BATCH_IDS.has(id) ? 'v1.9.3' : 'v1.9.4', `${id} 批次标识无效`);
+    if (MAPPING_BOUNDARY_IDS.has(id)) {
+      assert.strictEqual(meta.scopeNote, '仅复核稳定容器，不替代新版逐册目录映射', `${id} 目录边界说明缺失`);
+    } else {
+      assert.strictEqual(meta.scopeNote, undefined, `${id} 不应携带目录映射边界说明`);
+    }
     assert.match(meta.reviewedAt, /^2026-08-10$/, `${id} 复核日期无效`);
     assert.strictEqual(meta.checkedTitle, chapter.title, `${id} 复核标题快照无效`);
     assert.deepStrictEqual(meta.checkedSections, chapter.officialSections, `${id} 复核小节快照无效`);
@@ -50,8 +78,8 @@ function checkMathContainerReview() {
     });
   });
 
-  assert.strictEqual(getChapterReviewMeta('ch11-triangle'), null, '未复核章节不得返回容器复核元数据');
-  assert.strictEqual(chapters.get('ch11-triangle').contentMeta, undefined, '未复核章节不得挂载章节复核状态');
+  assert.strictEqual(FIRST_BATCH_IDS.size, 10, 'v1.9.3 第一批数量无效');
+  assert.strictEqual(SECOND_BATCH_IDS.size, 19, 'v1.9.4 第二批数量无效');
   const first = getChapterReviewMeta(EXPECTED_IDS[0]);
   const second = getChapterReviewMeta(EXPECTED_IDS[0]);
   assert.notStrictEqual(first.sourceRefs, second.sourceRefs, '来源数组必须隔离');
