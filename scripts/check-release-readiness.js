@@ -561,6 +561,15 @@ function checkReleaseInfo() {
 
   const { RELEASE_INFO } = require(path.join(root, releaseInfoPath));
   const beianNumber = RELEASE_INFO && RELEASE_INFO.icpBeianNumber;
+  const versionName = RELEASE_INFO && RELEASE_INFO.versionName;
+  const serviceScope = RELEASE_INFO && RELEASE_INFO.serviceScope;
+
+  if (!/^\d+\.\d+\.\d+-(?:dev|rc)\.\d+$/.test(versionName || '')) {
+    issues.push(`${releaseInfoPath}: versionName 应为 x.y.z-dev.n 或 x.y.z-rc.n`);
+  }
+  if (!serviceScope || !serviceScope.includes('知识库')) {
+    issues.push(`${releaseInfoPath}: serviceScope 应明确为知识库服务范围`);
+  }
 
   if (!beianNumber) {
     issues.push(`${releaseInfoPath}: 备案已通过，icpBeianNumber 不能为空`);
