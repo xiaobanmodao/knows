@@ -328,6 +328,27 @@ function checkMathCurriculumAuditTooling() {
   }
 }
 
+function checkEnglishCurriculumMapTooling() {
+  const mapScripts = [
+    'packages/english/data/english-curriculum-baseline.js',
+    'scripts/english-curriculum-map.test.js',
+  ];
+  mapScripts.forEach((file) => assertFile(file, '英语新版目录核对工具'));
+
+  if (mapScripts.every(fileExists)) {
+    try {
+      execFileSync(process.execPath, [path.join(root, 'scripts/english-curriculum-map.test.js')], {
+        cwd: root,
+        encoding: 'utf8',
+        stdio: 'pipe',
+      });
+    } catch (error) {
+      const output = String(error.stdout || error.stderr || error.message).trim().split('\n').slice(-3).join(' | ');
+      issues.push(`英语新版目录核对工具: 执行失败 -> ${output}`);
+    }
+  }
+}
+
 function checkMathContainerReviewTooling() {
   const reviewScript = 'scripts/check-math-container-review.js';
   assertFile(reviewScript, '数学章节容器复核工具');
@@ -594,6 +615,7 @@ checkCloudFunction();
 checkContentAuditTooling();
 checkContentReviewQueueTooling();
 checkMathCurriculumAuditTooling();
+checkEnglishCurriculumMapTooling();
 checkMathContainerReviewTooling();
 checkMathTopicReviewTooling();
 checkMathTemplateReviewTooling();
