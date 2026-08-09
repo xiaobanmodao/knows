@@ -50,12 +50,20 @@ def save_under_limit(src, out):
                 return os.path.getsize(out)
             last = os.path.getsize(out)
 
-    # Final fallback: JPEG-compatible RGB is not used because project paths are PNG.
-    candidate = image.copy()
-    candidate.thumbnail((560, 394), Image.Resampling.LANCZOS)
-    quantized = candidate.quantize(colors=24, method=Image.Quantize.MEDIANCUT)
-    quantized.save(out, 'PNG', optimize=True)
-    return os.path.getsize(out)
+    # Final fallback: progressively reduce the bitmap until the hard limit is met.
+    # JPEG-compatible RGB is not used because project paths are PNG.
+    fallback_sizes = [(560, 394), (480, 338), (400, 281), (320, 225), (240, 169)]
+    fallback_colors = [24, 16, 12, 8]
+    for width, height in fallback_sizes:
+        candidate = image.copy()
+        candidate.thumbnail((width, height), Image.Resampling.LANCZOS)
+        for color_count in fallback_colors:
+            quantized = candidate.quantize(colors=color_count, method=Image.Quantize.MEDIANCUT)
+            quantized.save(out, 'PNG', optimize=True)
+            last = os.path.getsize(out)
+            if last <= limit:
+                return last
+    return last
 
 oversize = []
 for item in items:
