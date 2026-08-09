@@ -243,9 +243,21 @@ function checkContentAuditTooling() {
   const auditScripts = ['scripts/content-audit.js', 'scripts/build-content-audit.js', 'scripts/check-content-audit.js'];
   auditScripts.forEach((file) => assertFile(file, '内容审计工具'));
 
+  const sourceCatalogScripts = [
+    'scripts/content-source-catalog.js',
+    'scripts/build-content-source-catalog.js',
+    'scripts/check-content-source-catalog.js',
+  ];
+  sourceCatalogScripts.forEach((file) => assertFile(file, '结构化内容源目录工具'));
+
   const auditOutput = path.resolve(root, 'dist/content-audit/content-audit.json');
   if (!auditOutput.startsWith(path.resolve(root, 'dist/content-audit') + path.sep)) {
     issues.push('内容审计工具: 输出路径必须位于 dist/content-audit/');
+  }
+
+  const sourceCatalogOutput = path.resolve(root, 'dist/content-audit/content-source-catalog.json');
+  if (!sourceCatalogOutput.startsWith(path.resolve(root, 'dist/content-audit') + path.sep)) {
+    issues.push('结构化内容源目录工具: 输出路径必须位于 dist/content-audit/');
   }
 
   if (auditScripts.every(fileExists)) {
@@ -259,6 +271,21 @@ function checkContentAuditTooling() {
       } catch (error) {
         const output = String(error.stdout || error.stderr || error.message).trim().split('\n').slice(-3).join(' | ');
         issues.push(`内容审计工具 ${script}: 执行失败 -> ${output}`);
+      }
+    });
+  }
+
+  if (sourceCatalogScripts.every(fileExists)) {
+    ['scripts/build-content-source-catalog.js', 'scripts/check-content-source-catalog.js'].forEach((script) => {
+      try {
+        execFileSync(process.execPath, [path.join(root, script)], {
+          cwd: root,
+          encoding: 'utf8',
+          stdio: 'pipe',
+        });
+      } catch (error) {
+        const output = String(error.stdout || error.stderr || error.message).trim().split('\n').slice(-3).join(' | ');
+        issues.push(`结构化内容源目录工具 ${script}: 执行失败 -> ${output}`);
       }
     });
   }

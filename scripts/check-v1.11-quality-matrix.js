@@ -33,6 +33,7 @@ const DEFAULT_CHECKS = [
   { script: 'scripts/check-unique-figures.js', label: '图片唯一性' },
   { script: 'scripts/check-content-review-meta.js', label: '复核元数据' },
   { script: 'scripts/check-content-schema.js', label: '内容结构' },
+  { script: 'scripts/content-source-catalog.test.js', label: '内容源目录契约' },
   { script: 'scripts/check-content-audit.js', args: ['--require-reviewed'], label: '严格内容审计' },
   { script: 'scripts/check-search-index.js', label: '搜索索引' },
   { script: 'scripts/check-search-semantics.js', label: '搜索语义' },
@@ -50,6 +51,7 @@ const DEFAULT_CHECKS = [
   { script: 'scripts/check-reading-display.js', label: '阅读显示设置' },
   { script: 'scripts/check-cloud-assets-runtime.js', label: '云图片降级' },
   { script: 'scripts/check-release-readiness.js', label: '发布准备' },
+  { script: 'scripts/check-content-source-catalog.js', label: '内容源目录产物' },
 ];
 
 const RELEASE_CHECKS = [

@@ -54,7 +54,9 @@ function countArray(value) {
 }
 
 function getParentId(entity) {
-  return entity.chapterId
+  return entity.themeId
+    || entity.gradeId
+    || entity.chapterId
     || entity.unitId
     || entity.topicId
     || entity.bookId
