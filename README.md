@@ -83,6 +83,8 @@ node scripts/check-search-semantics.js
 node scripts/check-reference-index.js
 node scripts/check-content-routes.js
 node scripts/check-package-boundaries.js
+node scripts/check-pure-knowledge-runtime.test.js
+node scripts/check-pure-knowledge-runtime.js
 node scripts/check-content-schema.js
 node scripts/check-content-diff.js
 node scripts/check-package-sizes.js

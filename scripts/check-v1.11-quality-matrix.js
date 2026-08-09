@@ -34,6 +34,8 @@ const DEFAULT_CHECKS = [
   { script: 'scripts/check-search-semantics.js', label: '搜索语义' },
   { script: 'scripts/check-content-routes.js', label: '内容路由' },
   { script: 'scripts/check-package-boundaries.js', label: '分包边界' },
+  { script: 'scripts/check-pure-knowledge-runtime.test.js', label: '纯知识运行层契约' },
+  { script: 'scripts/check-pure-knowledge-runtime.js', label: '纯知识运行层文案' },
   { script: 'scripts/check-cloud-assets-runtime.js', label: '云图片降级' },
   { script: 'scripts/check-release-readiness.js', label: '发布准备' },
 ];
