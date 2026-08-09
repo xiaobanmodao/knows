@@ -5,6 +5,7 @@ const { buildContentManifest } = require('./content-manifest');
 const { collectAuditEntities } = require('./content-audit');
 
 const SCHEMA_VERSION = 1;
+const DIFF_SCHEMA_VERSION = 1;
 const SOURCE_VERSION = 'v1.11-current';
 
 function sha256(value) {
@@ -64,6 +65,10 @@ function catalogHashInput(report) {
   };
 }
 
+function hashCatalog(report) {
+  return sha256(catalogHashInput(report));
+}
+
 function buildContentSourceCatalog() {
   const entities = buildSourceEntities();
   const aliases = buildAliases();
@@ -77,7 +82,7 @@ function buildContentSourceCatalog() {
   };
   return {
     ...report,
-    sourceHash: sha256(catalogHashInput(report)),
+    sourceHash: hashCatalog(report),
   };
 }
 
@@ -94,7 +99,7 @@ function checkContentSourceCatalog(report) {
   if (report.entityCount !== report.entities.length || report.aliasCount !== report.aliases.length) {
     throw new Error('内容源目录数量与实体数组不一致');
   }
-  if (report.sourceHash !== sha256(catalogHashInput(report))) {
+  if (report.sourceHash !== hashCatalog(report)) {
     throw new Error('内容源目录 sourceHash 与实体内容不一致');
   }
 
@@ -136,10 +141,85 @@ function checkContentSourceCatalog(report) {
   return true;
 }
 
+function catalogItems(report) {
+  return [
+    ...report.entities.map((item) => ({ kind: 'entity', key: item.key, item })),
+    ...report.aliases.map((item) => ({ kind: 'alias', key: item.key, item })),
+  ].sort((left, right) => `${left.kind}:${left.key}`.localeCompare(`${right.kind}:${right.key}`));
+}
+
+function indexCatalogItems(report) {
+  return new Map(catalogItems(report).map((entry) => [`${entry.kind}:${entry.key}`, entry]));
+}
+
+function getChangedFields(before, after) {
+  return [...new Set([...Object.keys(before), ...Object.keys(after)])]
+    .filter((field) => JSON.stringify(before[field]) !== JSON.stringify(after[field]))
+    .sort();
+}
+
+function diffContentSourceCatalog(baseline, current) {
+  checkContentSourceCatalog(baseline);
+  checkContentSourceCatalog(current);
+
+  const baselineItems = indexCatalogItems(baseline);
+  const currentItems = indexCatalogItems(current);
+  const added = [];
+  const removed = [];
+  const modified = [];
+
+  currentItems.forEach((entry, compoundKey) => {
+    if (!baselineItems.has(compoundKey)) {
+      added.push({ kind: entry.kind, key: entry.key, after: entry.item });
+      return;
+    }
+    const previous = baselineItems.get(compoundKey);
+    const changes = getChangedFields(previous.item, entry.item);
+    if (changes.length > 0) {
+      modified.push({
+        kind: entry.kind,
+        key: entry.key,
+        changes,
+        before: previous.item,
+        after: entry.item,
+      });
+    }
+  });
+
+  baselineItems.forEach((entry, compoundKey) => {
+    if (!currentItems.has(compoundKey)) {
+      removed.push({ kind: entry.kind, key: entry.key, before: entry.item });
+    }
+  });
+
+  const report = {
+    schemaVersion: DIFF_SCHEMA_VERSION,
+    baselineVersion: baseline.sourceVersion,
+    currentVersion: current.sourceVersion,
+    baselineHash: baseline.sourceHash,
+    currentHash: current.sourceHash,
+    counts: {
+      added: added.length,
+      modified: modified.length,
+      removed: removed.length,
+    },
+    added,
+    modified,
+    removed,
+  };
+  return {
+    ...report,
+    sourceHash: sha256(report),
+  };
+}
+
 module.exports = {
   SCHEMA_VERSION,
+  DIFF_SCHEMA_VERSION,
   SOURCE_VERSION,
   buildContentSourceCatalog,
   checkContentSourceCatalog,
+  diffContentSourceCatalog,
+  hashCatalog,
   sha256,
 };
