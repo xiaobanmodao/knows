@@ -12,9 +12,9 @@ checkContentReviewQueue(report);
 
 assert.strictEqual(report.schemaVersion, 1, '复核队列 schemaVersion 必须为 1');
 assert.strictEqual(report.status, 'review-queue', '复核队列状态无效');
-assert.strictEqual(report.totals.queued, 140, '当前应有 140 个未复核实体');
-assert.strictEqual(report.items.length, 140, '复核队列条目数不正确');
-assert.deepStrictEqual(report.totals.bySubject, { english: 12, math: 94, physics: 34 }, '学科队列数量不正确');
+assert.strictEqual(report.totals.queued, 130, '当前应有 130 个未复核实体');
+assert.strictEqual(report.items.length, 130, '复核队列条目数不正确');
+assert.deepStrictEqual(report.totals.bySubject, { english: 12, math: 84, physics: 34 }, '学科队列数量不正确');
 assert.ok(/^[a-f0-9]{64}$/.test(report.sourceHash), '复核队列 sourceHash 无效');
 
 const outputPath = path.resolve(__dirname, '../dist/content-audit/content-review-queue.json');

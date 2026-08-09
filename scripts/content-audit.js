@@ -28,6 +28,7 @@ const KNOWN_SOURCE_KEYS = new Set([
   'pep-chemistry-training-2024',
   'moe-math-curriculum-2022',
   'pep-math-current-catalog',
+  'pep-math-new-textbook-2024',
   'original-derivation-review',
   'moe-physics-2022',
   'moe-physics-experiments',

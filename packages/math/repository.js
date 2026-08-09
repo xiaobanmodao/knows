@@ -5,6 +5,7 @@ const { lessonFactsMap } = require('./data/math-lesson-facts');
 const { lessonFormulaMap } = require('./data/math-lesson-formulas');
 const { getMathLessonDepth } = require('./data/details/math-lesson-depth');
 const { getContentReviewMeta } = require('./data/content-review-meta');
+const { getChapterReviewMeta } = require('./data/chapter-review-meta');
 const { topicPackages } = require('./data/math-topic-guides');
 const { resolveAssetUrl } = require('../../utils/asset-config');
 const { getStableLessonId, resolveKnowledgeId } = require('../../utils/content-ids');
@@ -2460,9 +2461,11 @@ function getChapterById(chapterId) {
   const templateItems = getChapterTemplates(chapter.id);
   const figure = pickFigure(chapter);
   const textBlocks = getChapterTextBlocks(chapter);
+  const contentMeta = getChapterReviewMeta(chapter.id);
 
   return {
     ...chapter,
+    ...(contentMeta ? { contentMeta } : {}),
     chapterFigure: {
       ...figure,
       image: resolveAssetUrl(figure.image),
