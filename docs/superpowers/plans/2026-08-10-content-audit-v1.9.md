@@ -158,7 +158,7 @@ Document five subjects, current counts, generated report path, hashes, commands,
 
 Review the task commits against this plan; findings must be resolved before pushing.
 
-- [ ] **Step 5: Commit and push**
+- [x] **Step 5: Commit and push**
 
 ```bash
 git add docs/v1.9内容审计工具实施记录.md docs/后续开发与发布路线.md
