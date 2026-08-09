@@ -1,0 +1,77 @@
+const { execFileSync } = require('child_process');
+const path = require('path');
+
+const root = path.resolve(__dirname, '..');
+
+const DEFAULT_CHECKS = [
+  { script: 'scripts/check-v1.11-quality-matrix.test.js', label: '质量矩阵契约' },
+  { script: 'scripts/prepare-remote-assets.js', label: '远程资源清单' },
+  { script: 'scripts/check-math-content.js', label: '数学内容' },
+  { script: 'scripts/check-math-accuracy.js', label: '数学准确性' },
+  { script: 'scripts/check-math-depth.js', label: '数学深度' },
+  { script: 'scripts/math-volume-map.test.js', label: '数学目录映射' },
+  { script: 'scripts/check-english-units.js', label: '英语单元' },
+  { script: 'scripts/check-english-accuracy.js', label: '英语准确性' },
+  { script: 'scripts/check-english-depth.js', label: '英语深度' },
+  { script: 'scripts/english-curriculum-map.test.js', label: '英语目录映射' },
+  { script: 'scripts/check-physics-curriculum.js', label: '物理目录' },
+  { script: 'scripts/check-physics-accuracy.js', label: '物理准确性' },
+  { script: 'scripts/check-physics-depth.js', label: '物理深度' },
+  { script: 'scripts/check-physics-topic-review.js', label: '物理专题复核' },
+  { script: 'scripts/check-physics-template-review.js', label: '物理方法复核' },
+  { script: 'scripts/check-chemistry-content.js', label: '化学内容' },
+  { script: 'scripts/check-chemistry-accuracy.js', label: '化学准确性' },
+  { script: 'scripts/check-chemistry-foundations.js', label: '化学基础' },
+  { script: 'scripts/check-chemistry-pages.js', label: '化学页面' },
+  { script: 'scripts/check-chemistry-assets.js', label: '化学资源' },
+  { script: 'scripts/check-biology-content.js', label: '生物内容' },
+  { script: 'scripts/check-biology-assets.js', label: '生物资源' },
+  { script: 'scripts/check-unique-figures.js', label: '图片唯一性' },
+  { script: 'scripts/check-content-review-meta.js', label: '复核元数据' },
+  { script: 'scripts/check-content-schema.js', label: '内容结构' },
+  { script: 'scripts/check-content-audit.js', args: ['--require-reviewed'], label: '严格内容审计' },
+  { script: 'scripts/check-search-index.js', label: '搜索索引' },
+  { script: 'scripts/check-search-semantics.js', label: '搜索语义' },
+  { script: 'scripts/check-content-routes.js', label: '内容路由' },
+  { script: 'scripts/check-package-boundaries.js', label: '分包边界' },
+  { script: 'scripts/check-cloud-assets-runtime.js', label: '云图片降级' },
+  { script: 'scripts/check-release-readiness.js', label: '发布准备' },
+];
+
+const RELEASE_CHECKS = [
+  { script: 'scripts/check-release-readiness.js', args: ['--require-device-evidence'], label: '实体设备与包体严格门禁' },
+];
+
+function getCheckCommands(requireReleaseEvidence = false) {
+  if (!requireReleaseEvidence) return DEFAULT_CHECKS.map((item) => ({ ...item, args: [...(item.args || [])] }));
+
+  const base = DEFAULT_CHECKS.filter((item) => item.script !== 'scripts/check-release-readiness.js');
+  return [...base, ...RELEASE_CHECKS].map((item) => ({ ...item, args: [...(item.args || [])] }));
+}
+
+function runCheck(item, index, total) {
+  const args = item.args || [];
+  console.log(`[${index}/${total}] ${item.label}`);
+  execFileSync(process.execPath, [path.join(root, item.script), ...args], {
+    cwd: root,
+    encoding: 'utf8',
+    stdio: 'inherit',
+  });
+}
+
+function main(requireReleaseEvidence = false) {
+  const commands = getCheckCommands(requireReleaseEvidence);
+  commands.forEach((item, index) => runCheck(item, index + 1, commands.length));
+  console.log(`OK v1.11 quality matrix: ${commands.length} checks`);
+}
+
+if (require.main === module) {
+  main(process.argv.includes('--require-release-evidence'));
+}
+
+module.exports = {
+  DEFAULT_CHECKS,
+  RELEASE_CHECKS,
+  getCheckCommands,
+  main,
+};
