@@ -930,7 +930,7 @@ function buildLessonRows(profile, sectionTitle, pack, knowledgeItems, formulaSec
 function buildWorkbookStyleReplacement(title, sectionTitle, profile, relatedTemplate, pack) {
   const theme = profile.theme;
   const themeGroup = getThemeGroup(theme);
-  const templateName = relatedTemplate ? relatedTemplate.name : '本节题型入口';
+  const templateName = relatedTemplate ? relatedTemplate.name : '本节方法入口';
 
   if (theme === 'number-sign') {
     return title === '模型迁移题'
@@ -1151,13 +1151,13 @@ function buildWorkbookStyleReplacement(title, sectionTitle, profile, relatedTemp
         stem: `一道综合题同时出现“${sectionTitle}”和“${templateName}”的结构时，应该怎样确定第一步？`,
         answer: `先把“${sectionTitle}”对应的定义或性质写出来，再判断“${templateName}”是否能缩短推理链。`,
         analysis: '综合题先抓最直接的数量关系，再决定是否需要模型提速。',
-        steps: ['先圈出题目给出的本节关键词。', '把关键词翻译成本节定义、性质、公式或图形关系。', '再观察是否触发题型模型。', '最后把模型结论回收到题目目标。'],
+      steps: ['先圈出题目给出的本节关键词。', '把关键词翻译成本节定义、性质、公式或图形关系。', '再观察是否适合使用方法模板。', '最后把方法结论回收到题目目标。'],
       }
     : {
         title,
         difficulty: '压轴',
         stem: `把“${sectionTitle}”放进压轴题时，怎样避免一上来就乱用模型？`,
-        answer: `先确认本节最核心的条件是否出现，再决定用定义、性质、公式、图形关系还是题型模型。`,
+        answer: `先确认本节最核心的条件是否出现，再决定用定义、性质、公式、图形关系还是方法模板。`,
         analysis: '压轴题不是先想模型，而是先找到第一条能落笔的等式或关系。',
         steps: ['先把已知条件逐条翻译成数学语言。', '找最能推进目标的一条关系。', '能算就先算，能证就先证。', '最后再接入模型或辅助线。'],
       };
@@ -2121,7 +2121,7 @@ function buildLessonProblems(chapter, sectionTitle, profile, relatedTemplate, pa
       stem: `如果把“${sectionTitle}”放进“${profile.scenario}”这类情境里，最先要观察哪些条件？`,
       answer: `先观察 ${uniqueList([...(profile.know || []), ...pack.concepts]).slice(0, 2).join('、')} 这些信息，再决定用哪种方法。`,
       analysis: '提升题不是换知识，而是把同一知识点放进更复杂的场景里。',
-      steps: ['先找题型入口。', '再决定用定义、性质还是模型。', '最后回到题目真正要求的量。'],
+      steps: ['先找方法入口。', '再决定用定义、性质还是模型。', '最后回到题目真正要求的量。'],
       image: figurePath,
     },
     {
@@ -2257,7 +2257,7 @@ function buildLessonKnowledge(chapter, sectionTitle, index) {
         type: 'tip',
         title: '易错提醒',
         content: relatedTemplate
-          ? `本节最常见的失误有：${(profile.pitfalls || pack.mistakes).join('、')}。另外它经常和“${relatedTemplate.name}”联动考查，不能只背结论，必须会识别题型入口。`
+          ? `本节最常见的失误有：${(profile.pitfalls || pack.mistakes).join('、')}。另外它经常和“${relatedTemplate.name}”联动使用，不能只背结论，必须会识别方法入口。`
           : `本节最常见的失误有：${(profile.pitfalls || pack.mistakes).join('、')}。做题时一定要把定义、图形或数量关系真正落到题目条件上。`,
       },
       {
@@ -2776,7 +2776,7 @@ function searchMath(keyword) {
       type: 'template',
       typeLabel: '模型',
       title: template.name,
-      subtitle: `${template.category} · 题型模型库`,
+      subtitle: `${template.category} · 方法模板库`,
       description: template.summary,
       tags: template.keywords.slice(0, 4),
     }));

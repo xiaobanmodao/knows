@@ -8,13 +8,13 @@
       <text class="tag">游客模式</text>
       <text class="tag">统一搜索</text>
       <text class="tag">知识点优先</text>
-      <text class="tag">题型模型</text>
+      <text class="tag">方法模板</text>
     </view>
   </view>
 
   <view class="search-slot top-space">
     <search-bar bindtap="openSearch" />
-    <view class="search-tip">搜索知识点、公式名称、章节名称或模型名，例如“相似”“勾股定理”“手拉手模型”。</view>
+    <view class="search-tip">搜索知识点、公式名称、章节名称或方法名，例如“相似”“勾股定理”“手拉手模型”。</view>
   </view>
 
   <view class="grade-switch" aria-label="选择年级">

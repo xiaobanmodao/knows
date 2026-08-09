@@ -12,7 +12,7 @@ const SUBJECT_MANIFEST = [
     name: '初中数学',
     shortName: '数学',
     subtitle: '七至九年级知识地图',
-    description: '按年级、专题和章节梳理知识点与题型方法。',
+    description: '按年级、专题和章节梳理知识点与方法模板。',
     gradeBands: ['七年级', '八年级', '九年级'],
     theme: 'math',
     status: 'active',
