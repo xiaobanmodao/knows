@@ -18,6 +18,7 @@ const {
   getReferenceEntries,
 } = require('../packages/catalog/utils/reference-index');
 const { buildContentRoute } = require('../utils/content-routes');
+const { getSubjectRegistry } = require('../data/subject-manifest');
 
 const root = path.resolve(__dirname, '..');
 const outputPath = path.join(root, 'packages/catalog/data/reference-index.js');
@@ -172,6 +173,61 @@ if (!openedRoutes[2].startsWith('/packages/biology/pages/knowledge/index')) {
 }
 delete global.Page;
 delete global.wx;
+
+const biologyKnowledgeWxml = fs.readFileSync(path.join(root, 'packages/biology/pages/knowledge/index.wxml'), 'utf8');
+const biologyKnowledgePage = fs.readFileSync(path.join(root, 'packages/biology/pages/knowledge/index.js'), 'utf8');
+if (!biologyKnowledgeWxml.includes('id="experiment-{{knowledge.safetyObservation.id}}"')) {
+  issue('生物观察定位', '知识页缺少 experiment-{{knowledge.safetyObservation.id}} 锚点');
+}
+if (!biologyKnowledgePage.includes('selector: `#${focus.type}-${focus.id}`')) {
+  issue('生物观察定位', '知识页定位选择器没有使用 experiment-<focusId> 前缀');
+}
+
+let profilePage;
+global.Page = (config) => { profilePage = config; };
+delete require.cache[require.resolve('../pages/profile/index')];
+const profileModule = require('../pages/profile/index');
+const profileReferenceIds = profilePage.data.referenceItems.map((item) => item.id);
+if (profileReferenceIds.join(',') !== 'formula,word,grammar,experiment,equation') {
+  issue('我的页参考入口', `未使用五类生成元数据：${profileReferenceIds.join(',')}`);
+}
+if (!profilePage.data.versionItems.some((item) => item.includes('化学：'))
+  || !profilePage.data.versionItems.some((item) => item.includes('生物：'))
+  || !profilePage.data.versionItems.some((item) => item.includes('5 科'))) {
+  issue('我的页学科规模', '五科目录未包含化学、生物或 5 科说明');
+}
+if (typeof profileModule.buildSubjectVersionItems !== 'function') {
+  issue('我的页学科摘要', '缺少按 subject.id 生成摘要的可验证 helper');
+} else {
+  const activeSubjects = getSubjectRegistry();
+  const reordered = [activeSubjects[3], activeSubjects[0], activeSubjects[2], activeSubjects[1], activeSubjects[4]];
+  const reorderedItems = profileModule.buildSubjectVersionItems(reordered);
+  const expectedPrefixes = ['化学：', '数学：', '物理：', '英语：', '生物：'];
+  expectedPrefixes.forEach((prefix, index) => {
+    if (!reorderedItems[index].startsWith(prefix)) {
+      issue('我的页学科摘要', `重排后第 ${index + 1} 项应以 ${prefix} 开头，实际 ${reorderedItems[index]}`);
+    }
+  });
+  if (!reorderedItems.some((item) => item.includes('5 科目录'))) {
+    issue('我的页学科摘要', '重排五科后目录数量文案不正确');
+  }
+  const syntheticSubject = {
+    id: 'biology',
+    name: '初中生物',
+    shortName: '生物',
+    counts: { topic: 8, knowledge: 32 },
+    topicCount: 8,
+    knowledgeCount: 32,
+  };
+  const syntheticItems = profileModule.buildSubjectVersionItems([...reordered, syntheticSubject]);
+  if (!syntheticItems.some((item) => item === '生物：8 专题 · 32 知识点')) {
+    issue('我的页学科摘要', `合成生物摘要缺失：${syntheticItems.join(' | ')}`);
+  }
+  if (syntheticItems.some((item) => item.includes('undefined'))) {
+    issue('我的页学科摘要', '合成生物摘要存在 undefined');
+  }
+}
+delete global.Page;
 
 const appConfig = JSON.parse(fs.readFileSync(path.join(root, 'app.json'), 'utf8'));
 if (!appConfig.pages.includes('pages/reference-index/index')) issue('页面配置', 'app.json 未注册知识索引页');

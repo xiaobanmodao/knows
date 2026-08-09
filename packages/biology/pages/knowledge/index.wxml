@@ -84,7 +84,7 @@
     </view>
   </view>
 
-  <view wx:if="{{knowledge.safetyObservation}}" class="observation-section section-gap">
+  <view wx:if="{{knowledge.safetyObservation}}" id="experiment-{{knowledge.safetyObservation.id}}" class="observation-section section-gap">
     <view class="section-title__main">观察提醒</view>
     <view class="observation-section__context">{{knowledge.safetyObservation.context}}</view>
     <view class="observation-section__title">注意事项</view>
