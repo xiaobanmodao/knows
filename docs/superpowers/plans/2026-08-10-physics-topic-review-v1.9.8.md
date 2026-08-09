@@ -194,7 +194,7 @@ Generate the queue twice and compare SHA-256 byte-for-byte.
 
 Confirm only physics topic review data, topic hydration, the physics audit adapter, queue expectations, docs and plan changed; no physics chapter/knowledge/template content, English content, images, storage schemas or release versions changed.
 
-- [ ] **Step 4: Commit the completed plan and push**
+- [x] **Step 4: Commit the completed plan and push**
 
 ```bash
 git add docs/superpowers/plans/2026-08-10-physics-topic-review-v1.9.8.md
