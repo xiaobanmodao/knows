@@ -1,3 +1,6 @@
+const fs = require('fs');
+const path = require('path');
+
 const SCHEMA_VERSION = 1;
 
 const REVIEW_STATUSES = new Set(['verified', 'reviewed', 'untracked']);
@@ -156,9 +159,104 @@ function checkSourceInput(input) {
   return true;
 }
 
+function parseCsv(text) {
+  const rows = [];
+  let row = [];
+  let field = '';
+  let inQuotes = false;
+  const source = String(text).replace(/^\uFEFF/, '');
+
+  for (let index = 0; index < source.length; index += 1) {
+    const character = source[index];
+    if (inQuotes) {
+      if (character === '"' && source[index + 1] === '"') {
+        field += '"';
+        index += 1;
+      } else if (character === '"') {
+        inQuotes = false;
+      } else {
+        field += character;
+      }
+      continue;
+    }
+    if (character === '"' && field === '') {
+      inQuotes = true;
+    } else if (character === ',') {
+      row.push(field);
+      field = '';
+    } else if (character === '\n' || character === '\r') {
+      if (character === '\r' && source[index + 1] === '\n') index += 1;
+      if (field !== '' || row.length > 0) {
+        row.push(field);
+        rows.push(row);
+      }
+      row = [];
+      field = '';
+    } else {
+      field += character;
+    }
+  }
+  if (inQuotes) fail('CSV 引号未闭合');
+  if (field !== '' || row.length > 0) {
+    row.push(field);
+    rows.push(row);
+  }
+  if (!rows.length) fail('CSV 不能为空');
+
+  const headers = rows.shift().map((header) => header.trim());
+  if (headers.some((header) => !header)) fail('CSV 表头不能为空');
+  if (new Set(headers).size !== headers.length) fail('CSV 表头不得重复');
+  return rows.map((values, rowIndex) => {
+    if (values.length !== headers.length) fail(`CSV 第 ${rowIndex + 2} 行字段数量不一致`);
+    return Object.fromEntries(headers.map((header, index) => [header, values[index]]));
+  });
+}
+
+function loadSourceInputFile(filePath, options = {}) {
+  const absolutePath = path.resolve(filePath);
+  let raw;
+  try {
+    raw = fs.readFileSync(absolutePath, 'utf8');
+  } catch (error) {
+    throw new Error(`无法读取内容源输入：${absolutePath}；${error.message}`);
+  }
+  const extension = path.extname(absolutePath).toLowerCase();
+  if (extension === '.csv') {
+    const sourceVersion = requireText(options.sourceVersion, 'sourceVersion');
+    return normalizeSourceInput({
+      schemaVersion: SCHEMA_VERSION,
+      sourceVersion,
+      entities: parseCsv(raw),
+      aliases: [],
+    });
+  }
+  if (extension === '.json') {
+    let input;
+    try {
+      input = JSON.parse(raw);
+    } catch (error) {
+      throw new Error(`内容源 JSON 解析失败：${error.message}`);
+    }
+    if (Array.isArray(input)) {
+      input = {
+        schemaVersion: SCHEMA_VERSION,
+        sourceVersion: options.sourceVersion || 'imported-input',
+        entities: input,
+        aliases: [],
+      };
+    } else if (options.sourceVersion && input && typeof input === 'object' && !input.sourceVersion) {
+      input = { ...input, sourceVersion: options.sourceVersion };
+    }
+    return normalizeSourceInput(input);
+  }
+  throw new Error(`内容源输入只支持 .json 或 .csv：${absolutePath}`);
+}
+
 module.exports = {
   SCHEMA_VERSION,
   BODY_FIELDS: [...BODY_FIELDS],
+  loadSourceInputFile,
   normalizeSourceInput,
+  parseCsv,
   checkSourceInput,
 };
