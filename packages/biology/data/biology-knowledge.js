@@ -20,7 +20,7 @@ function defineKnowledge(definition) {
     pitfalls: [definition.pitfall],
     examples,
     templateIds: definition.templateIds || [],
-    coverImage: `/assets/figures/generated/biology/topics/${definition.topicId}/cover.png`,
+    coverImage: `/assets/figures/generated/subjects/biology/topics/${definition.topicId}/cover.png`,
   });
 }
 

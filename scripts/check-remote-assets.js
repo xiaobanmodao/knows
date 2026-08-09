@@ -36,11 +36,12 @@ expected.forEach((source) => {
   const width = buffer.readUInt32BE(16);
   const height = buffer.readUInt32BE(20);
   const hash = crypto.createHash('sha256').update(buffer).digest('hex');
-  const isChemistryCover = source.includes('/chemistry/topics/') && source.endsWith('/cover.png');
+  const isUnitCover = (source.includes('/chemistry/topics/') || source.includes('/subjects/biology/topics/'))
+    && source.endsWith('/cover.png');
 
   if (buffer.length > sizeLimit) issues.push(`${source}: ${buffer.length} bytes 超过 200KB`);
-  if (isChemistryCover) {
-    if (width !== 1280 || height !== 900) issues.push(`${source}: 化学封面压缩后必须保持 1280x900，实际 ${width}x${height}`);
+  if (isUnitCover) {
+    if (width !== 1280 || height !== 900) issues.push(`${source}: 单元封面压缩后必须保持 1280x900，实际 ${width}x${height}`);
   } else if (!width || !height || width > 960 || height > 675) {
     issues.push(`${source}: 压缩尺寸异常 ${width}x${height}`);
   }

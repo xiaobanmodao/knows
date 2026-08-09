@@ -23,10 +23,10 @@ def save_under_limit(src, out):
     os.makedirs(os.path.dirname(out), exist_ok=True)
     image = Image.open(src).convert('RGB')
     normalized = src.replace(os.sep, '/')
-    is_chemistry_cover = '/chemistry/topics/' in '/' + normalized and normalized.endswith('/cover.png')
-    if is_chemistry_cover:
+    is_unit_cover = (('/chemistry/topics/' in '/' + normalized) or ('/subjects/biology/topics/' in '/' + normalized)) and normalized.endswith('/cover.png')
+    if is_unit_cover:
         if image.size != (1280, 900):
-            raise ValueError(f'chemistry cover must be 1280x900: {src} is {image.size[0]}x{image.size[1]}')
+            raise ValueError(f'unit cover must be 1280x900: {src} is {image.size[0]}x{image.size[1]}')
         last = None
         for color_count in [256, 192, 160, 128, 96, 64, 48, 32, 24, 16, 12, 8]:
             quantized = image.quantize(colors=color_count, method=Image.Quantize.MEDIANCUT)

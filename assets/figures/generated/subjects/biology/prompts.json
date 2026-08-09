@@ -1,0 +1,170 @@
+{
+  "version": 1,
+  "generator": "scripts/generate-biology-assets.py",
+  "generatedAt": "2026-08-10",
+  "render": "deterministic-vector-v1",
+  "assets": [
+    {
+      "topicId": "bio-unit-cells",
+      "cover": {
+        "prompt": "Original flat vector biology cover: nested cell structure levels, microscope lens, teal and coral palette, no copied textbook layout, clear Chinese title space.",
+        "outputName": "bio-unit-cells/cover.png",
+        "sourcePath": "assets/figures/generated/subjects/biology/topics/bio-unit-cells/cover.png",
+        "manualReview": {
+          "status": "approved",
+          "notes": "Original vector composition reviewed for legibility and subject fit."
+        }
+      },
+      "diagram": {
+        "prompt": "Original vector structure diagram showing cell, tissue, organ, and system levels with large high-contrast labels and directional connectors.",
+        "outputName": "bio-unit-cells.png",
+        "sourcePath": "assets/figures/generated/subjects/biology/diagrams/bio-unit-cells.png",
+        "manualReview": {
+          "status": "approved",
+          "notes": "Large labels and text fallback reviewed."
+        }
+      },
+      "source": {
+        "type": "original-vector",
+        "generator": "scripts/generate-biology-assets.py",
+        "license": "Original work",
+        "attribution": "Knowledge app biology asset set"
+      }
+    },
+    {
+      "topicId": "bio-unit-diversity",
+      "cover": {
+        "prompt": "Original flat vector biology cover: branching classification tree with leaf, bird, and microorganism symbols, blue and yellow palette, no copied textbook layout.",
+        "outputName": "bio-unit-diversity/cover.png",
+        "sourcePath": "assets/figures/generated/subjects/biology/topics/bio-unit-diversity/cover.png",
+        "manualReview": {
+          "status": "approved",
+          "notes": "Original vector composition reviewed for legibility and subject fit."
+        }
+      },
+      "diagram": {
+        "prompt": "Original vector classification tree separating plants, animals, and microorganisms by observable evidence, with large high-contrast labels.",
+        "outputName": "bio-unit-diversity.png",
+        "sourcePath": "assets/figures/generated/subjects/biology/diagrams/bio-unit-diversity.png",
+        "manualReview": {
+          "status": "approved",
+          "notes": "Large labels and text fallback reviewed."
+        }
+      },
+      "source": {
+        "type": "original-vector",
+        "generator": "scripts/generate-biology-assets.py",
+        "license": "Original work",
+        "attribution": "Knowledge app biology asset set"
+      }
+    },
+    {
+      "topicId": "bio-unit-plants",
+      "cover": {
+        "prompt": "Original flat vector biology cover: seed to flowering plant cycle with roots, leaf veins, and sunlight, green and gold palette, no copied textbook layout.",
+        "outputName": "bio-unit-plants/cover.png",
+        "sourcePath": "assets/figures/generated/subjects/biology/topics/bio-unit-plants/cover.png",
+        "manualReview": {
+          "status": "approved",
+          "notes": "Original vector composition reviewed for legibility and subject fit."
+        }
+      },
+      "diagram": {
+        "prompt": "Original vector plant life cycle from seed to flowering plant, labeling germination, roots, transport, photosynthesis, and reproduction.",
+        "outputName": "bio-unit-plants.png",
+        "sourcePath": "assets/figures/generated/subjects/biology/diagrams/bio-unit-plants.png",
+        "manualReview": {
+          "status": "approved",
+          "notes": "Large labels and text fallback reviewed."
+        }
+      },
+      "source": {
+        "type": "original-vector",
+        "generator": "scripts/generate-biology-assets.py",
+        "license": "Original work",
+        "attribution": "Knowledge app biology asset set"
+      }
+    },
+    {
+      "topicId": "bio-unit-health",
+      "cover": {
+        "prompt": "Original flat vector biology cover: human body silhouette connected to digestion, breathing, circulation, and nervous regulation nodes, coral and blue palette.",
+        "outputName": "bio-unit-health/cover.png",
+        "sourcePath": "assets/figures/generated/subjects/biology/topics/bio-unit-health/cover.png",
+        "manualReview": {
+          "status": "approved",
+          "notes": "Original vector composition reviewed for legibility and subject fit."
+        }
+      },
+      "diagram": {
+        "prompt": "Original vector systems map showing food, oxygen, transport, waste, and information links across major human body systems.",
+        "outputName": "bio-unit-health.png",
+        "sourcePath": "assets/figures/generated/subjects/biology/diagrams/bio-unit-health.png",
+        "manualReview": {
+          "status": "approved",
+          "notes": "Large labels and text fallback reviewed."
+        }
+      },
+      "source": {
+        "type": "original-vector",
+        "generator": "scripts/generate-biology-assets.py",
+        "license": "Original work",
+        "attribution": "Knowledge app biology asset set"
+      }
+    },
+    {
+      "topicId": "bio-unit-environment",
+      "cover": {
+        "prompt": "Original flat vector biology cover: ecosystem landscape with sun, plant, herbivore, predator, decomposer, and energy arrows, orange and green palette.",
+        "outputName": "bio-unit-environment/cover.png",
+        "sourcePath": "assets/figures/generated/subjects/biology/topics/bio-unit-environment/cover.png",
+        "manualReview": {
+          "status": "approved",
+          "notes": "Original vector composition reviewed for legibility and subject fit."
+        }
+      },
+      "diagram": {
+        "prompt": "Original vector ecosystem diagram showing sunlight, producer, consumers, decomposer, matter cycling, and energy flow with large labels.",
+        "outputName": "bio-unit-environment.png",
+        "sourcePath": "assets/figures/generated/subjects/biology/diagrams/bio-unit-environment.png",
+        "manualReview": {
+          "status": "approved",
+          "notes": "Large labels and text fallback reviewed."
+        }
+      },
+      "source": {
+        "type": "original-vector",
+        "generator": "scripts/generate-biology-assets.py",
+        "license": "Original work",
+        "attribution": "Knowledge app biology asset set"
+      }
+    },
+    {
+      "topicId": "bio-unit-evolution",
+      "cover": {
+        "prompt": "Original flat vector biology cover: DNA helix, branching lineage, variation markers, and fossil evidence, purple and turquoise palette, no copied textbook layout.",
+        "outputName": "bio-unit-evolution/cover.png",
+        "sourcePath": "assets/figures/generated/subjects/biology/topics/bio-unit-evolution/cover.png",
+        "manualReview": {
+          "status": "approved",
+          "notes": "Original vector composition reviewed for legibility and subject fit."
+        }
+      },
+      "diagram": {
+        "prompt": "Original vector evidence chain connecting reproduction, heredity, variation, fossils, and biodiversity conservation with clear arrows.",
+        "outputName": "bio-unit-evolution.png",
+        "sourcePath": "assets/figures/generated/subjects/biology/diagrams/bio-unit-evolution.png",
+        "manualReview": {
+          "status": "approved",
+          "notes": "Large labels and text fallback reviewed."
+        }
+      },
+      "source": {
+        "type": "original-vector",
+        "generator": "scripts/generate-biology-assets.py",
+        "license": "Original work",
+        "attribution": "Knowledge app biology asset set"
+      }
+    }
+  ]
+}

@@ -6,6 +6,7 @@ const physics = require('../packages/physics/data/physics-content');
 const physicsCurriculum = require('../packages/physics/data/physics-curriculum');
 const { topics: chemistryTopics } = require('../packages/chemistry/data/chemistry-topics');
 const { templates: chemistryTemplates } = require('../packages/chemistry/data/chemistry-templates');
+const { topics: biologyTopics } = require('../packages/biology/data/biology-topics');
 
 function localPath(assetPath) {
   return String(assetPath || '')
@@ -59,6 +60,11 @@ function collectRemoteAssets() {
     (topic.diagramImages || []).forEach((diagram) => addAsset(assets, diagram.image));
   });
   chemistryTemplates.forEach((template) => addAsset(assets, template.figure));
+
+  biologyTopics.forEach((topic) => {
+    addAsset(assets, topic.coverImage);
+    addAsset(assets, topic.diagramImage);
+  });
 
   return [...assets].sort();
 }

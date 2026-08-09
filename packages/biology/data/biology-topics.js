@@ -18,7 +18,8 @@ const topics = topicDefinitions.map(([id, unitLabel, title, summary, keywords, k
   keywords,
   knowledgeIds,
   templateIds: [templateId],
-  coverImage: `/assets/figures/generated/biology/topics/${id}/cover.png`,
+  coverImage: `/assets/figures/generated/subjects/biology/topics/${id}/cover.png`,
+  diagramImage: `/assets/figures/generated/subjects/biology/diagrams/${id}.png`,
 }));
 
 module.exports = { topics };

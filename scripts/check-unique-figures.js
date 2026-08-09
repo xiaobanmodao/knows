@@ -7,12 +7,14 @@ const physics = require('../packages/physics/data/physics-content');
 const physicsCurriculum = require('../packages/physics/data/physics-curriculum');
 const { topics: chemistryTopics } = require('../packages/chemistry/data/chemistry-topics');
 const { templates: chemistryTemplates } = require('../packages/chemistry/data/chemistry-templates');
+const { topics: biologyTopics } = require('../packages/biology/data/biology-topics');
 
 const chapters = math.getAllChapters();
 const studyMap = math.getMathStudyMap();
 const issues = [];
 const ownerByImage = new Map();
 const ownerByHash = new Map();
+let externalImagesSkipped = 0;
 const EXPECTED_WIDTH = 1280;
 const EXPECTED_HEIGHT = 900;
 
@@ -48,6 +50,10 @@ function assertImage(owner, image, expectedWidth = EXPECTED_WIDTH, expectedHeigh
     .replace(/^\//, '')
     .split('?')[0];
   if (!fs.existsSync(localPath)) {
+    if (/^cloud:\/\//.test(image)) {
+      externalImagesSkipped += 1;
+      return;
+    }
     issues.push(`${owner}: 图片文件不存在 -> ${image}`);
   } else {
     const buffer = fs.readFileSync(localPath);
@@ -122,10 +128,18 @@ chemistryTemplates.forEach((template) => {
   assertImage(`化学方法图 ${template.name}`, template.figure, 960, 600);
 });
 
+biologyTopics.forEach((topic) => {
+  assertImage(`生物专题封面 ${topic.title}`, topic.coverImage);
+  assertImage(`生物专题图示 ${topic.title}`, topic.diagramImage, 1200, 760);
+});
+
 if (issues.length) {
   console.log('FOUND_FIGURE_ISSUES');
   issues.forEach((issue) => console.log(issue));
   process.exit(1);
 }
 
-console.log(`OK ${ownerByImage.size} unique knowledge/problem figures checked`);
+const suffix = externalImagesSkipped
+  ? `; ${externalImagesSkipped} existing cloud-only images skipped`
+  : '';
+console.log(`OK ${ownerByImage.size} unique knowledge/problem figures checked${suffix}`);
