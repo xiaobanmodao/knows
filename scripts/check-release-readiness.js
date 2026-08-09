@@ -449,6 +449,52 @@ function checkPhysicsTemplateReviewTooling() {
   }
 }
 
+function checkReleaseRegressionEvidenceTooling() {
+  const reviewScript = 'scripts/check-release-regression-evidence.js';
+  const templatePath = process.env.RELEASE_REGRESSION_EVIDENCE
+    || 'docs/release-regression/v1.10.0-evidence.template.json';
+  assertFile(reviewScript, '发布回归证据工具');
+  assertFile(templatePath, '发布回归证据模板');
+
+  if (!fileExists(reviewScript) || !fileExists(templatePath)) {
+    return;
+  }
+
+  const args = [path.join(root, reviewScript), templatePath];
+  if (process.argv.includes('--require-device-evidence')) {
+    args.push('--require-device-evidence');
+  }
+
+  try {
+    execFileSync(process.execPath, args, {
+      cwd: root,
+      encoding: 'utf8',
+      stdio: 'pipe',
+    });
+  } catch (error) {
+    const output = String(error.stdout || error.stderr || error.message).trim().split('\n').slice(-3).join(' | ');
+    issues.push(`发布回归证据工具: 执行失败 -> ${output}`);
+  }
+}
+
+function checkRuntimePackageDependencyTooling() {
+  const dependencyScript = 'scripts/check-runtime-package-dependencies.js';
+  assertFile(dependencyScript, '运行时分包依赖工具');
+
+  if (fileExists(dependencyScript)) {
+    try {
+      execFileSync(process.execPath, [path.join(root, dependencyScript)], {
+        cwd: root,
+        encoding: 'utf8',
+        stdio: 'pipe',
+      });
+    } catch (error) {
+      const output = String(error.stdout || error.stderr || error.message).trim().split('\n').slice(-3).join(' | ');
+      issues.push(`运行时分包依赖工具: 执行失败 -> ${output}`);
+    }
+  }
+}
+
 function checkAssetConfig() {
   const assetConfigPath = 'utils/asset-config.js';
   assertFile(assetConfigPath, '云图片配置');
@@ -510,6 +556,8 @@ checkEnglishTopicReviewTooling();
 checkPhysicsTopicReviewTooling();
 checkEnglishTemplateReviewTooling();
 checkPhysicsTemplateReviewTooling();
+checkReleaseRegressionEvidenceTooling();
+checkRuntimePackageDependencyTooling();
 checkAssetConfig();
 checkReleaseInfo();
 

@@ -1,5 +1,3 @@
-const crypto = require('crypto');
-
 const { getContentReviewMeta } = require('./content-review-meta');
 
 const REVIEWED_MATH_TOPIC_IDS = [
@@ -86,6 +84,8 @@ const TOPIC_REVIEW_RECORDS = {
 };
 
 function buildTopicReviewSnapshot(topic) {
+  // 复核快照只在构建/校验脚本中执行，避免小程序包加载 Node 内置模块。
+  const crypto = require('crypto');
   const value = {
     title: topic.title,
     gradeId: topic.gradeId,

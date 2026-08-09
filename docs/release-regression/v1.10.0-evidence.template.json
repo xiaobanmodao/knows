@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "releaseRef": "codex/release-regression-v1.10.1",
+  "buildRef": "replace-with-final-commit",
+  "checkedAt": "2026-08-10T00:00:00+08:00",
+  "devices": [
+    {
+      "id": "iphone-physical",
+      "kind": "physical",
+      "platform": "ios",
+      "model": "",
+      "osVersion": "",
+      "wechatVersion": "",
+      "checkedAt": null,
+      "buildRef": "replace-with-final-commit",
+      "status": "pending",
+      "consoleErrors": null,
+      "screenshotPaths": [],
+      "cases": [
+        { "id": "cold-start-home", "status": "pending", "note": "" },
+        { "id": "subject-math", "status": "pending", "note": "" },
+        { "id": "subject-english", "status": "pending", "note": "" },
+        { "id": "subject-physics", "status": "pending", "note": "" },
+        { "id": "subject-chemistry", "status": "pending", "note": "" },
+        { "id": "subject-biology", "status": "pending", "note": "" },
+        { "id": "global-search", "status": "pending", "note": "" },
+        { "id": "legacy-route", "status": "pending", "note": "" },
+        { "id": "package-reentry", "status": "pending", "note": "" },
+        { "id": "favorites-recent-notes", "status": "pending", "note": "" },
+        { "id": "reading-settings", "status": "pending", "note": "" },
+        { "id": "cloud-image-fallback", "status": "pending", "note": "" },
+        { "id": "weak-network-recovery", "status": "pending", "note": "" },
+        { "id": "return-stack", "status": "pending", "note": "" },
+        { "id": "console-clean", "status": "pending", "note": "" }
+      ]
+    },
+    {
+      "id": "android-physical",
+      "kind": "physical",
+      "platform": "android",
+      "model": "",
+      "osVersion": "",
+      "wechatVersion": "",
+      "checkedAt": null,
+      "buildRef": "replace-with-final-commit",
+      "status": "pending",
+      "consoleErrors": null,
+      "screenshotPaths": [],
+      "cases": [
+        { "id": "cold-start-home", "status": "pending", "note": "" },
+        { "id": "subject-math", "status": "pending", "note": "" },
+        { "id": "subject-english", "status": "pending", "note": "" },
+        { "id": "subject-physics", "status": "pending", "note": "" },
+        { "id": "subject-chemistry", "status": "pending", "note": "" },
+        { "id": "subject-biology", "status": "pending", "note": "" },
+        { "id": "global-search", "status": "pending", "note": "" },
+        { "id": "legacy-route", "status": "pending", "note": "" },
+        { "id": "package-reentry", "status": "pending", "note": "" },
+        { "id": "favorites-recent-notes", "status": "pending", "note": "" },
+        { "id": "reading-settings", "status": "pending", "note": "" },
+        { "id": "cloud-image-fallback", "status": "pending", "note": "" },
+        { "id": "weak-network-recovery", "status": "pending", "note": "" },
+        { "id": "return-stack", "status": "pending", "note": "" },
+        { "id": "console-clean", "status": "pending", "note": "" }
+      ]
+    }
+  ]
+}

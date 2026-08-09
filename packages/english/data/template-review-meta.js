@@ -1,5 +1,3 @@
-const crypto = require('crypto');
-
 const { getContentReviewMeta } = require('./content-review-meta');
 
 const REVIEWED_ENGLISH_TEMPLATE_IDS = [
@@ -82,6 +80,8 @@ const TEMPLATE_REVIEW_RECORDS = {
 };
 
 function buildEnglishTemplateReviewSnapshot(template, runtimeTemplate) {
+  // 复核快照只在构建/校验脚本中执行，避免小程序包加载 Node 内置模块。
+  const crypto = require('crypto');
   const value = {
     id: template.id,
     name: template.name,
