@@ -7,6 +7,7 @@ const { getMathLessonDepth } = require('./data/details/math-lesson-depth');
 const { getContentReviewMeta } = require('./data/content-review-meta');
 const { getChapterReviewMeta } = require('./data/chapter-review-meta');
 const { getTopicReviewMeta } = require('./data/topic-review-meta');
+const { getTemplateReviewMeta } = require('./data/template-review-meta');
 const { topicPackages } = require('./data/math-topic-guides');
 const { resolveAssetUrl } = require('../../utils/asset-config');
 const { getStableLessonId, resolveKnowledgeId } = require('../../utils/content-ids');
@@ -2404,8 +2405,11 @@ function getTemplateExamples(template) {
 }
 
 function enrichTemplate(template) {
+  const contentMeta = getTemplateReviewMeta(template.id);
+
   return {
     ...template,
+    ...(contentMeta ? { contentMeta } : {}),
     figure: resolveAssetUrl(getTemplateFigurePath(template.id)),
     examples: getTemplateExamples(template),
   };
