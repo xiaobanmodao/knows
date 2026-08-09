@@ -298,6 +298,29 @@ function checkContentReviewQueueTooling() {
   }
 }
 
+function checkPureKnowledgeRuntimeTooling() {
+  const runtimeScripts = [
+    'scripts/check-pure-knowledge-runtime.test.js',
+    'scripts/check-pure-knowledge-runtime.js',
+  ];
+  runtimeScripts.forEach((file) => assertFile(file, '纯知识运行层文案工具'));
+
+  if (runtimeScripts.every(fileExists)) {
+    runtimeScripts.forEach((script) => {
+      try {
+        execFileSync(process.execPath, [path.join(root, script)], {
+          cwd: root,
+          encoding: 'utf8',
+          stdio: 'pipe',
+        });
+      } catch (error) {
+        const output = String(error.stdout || error.stderr || error.message).trim().split('\n').slice(-3).join(' | ');
+        issues.push(`纯知识运行层文案工具 ${script}: 执行失败 -> ${output}`);
+      }
+    });
+  }
+}
+
 function checkMathCurriculumAuditTooling() {
   const auditScripts = [
     'packages/math/data/math-curriculum-baseline.js',
@@ -601,6 +624,7 @@ checkProjectConfig();
 checkSitemap(appConfig);
 checkCloudFunction();
 checkContentAuditTooling();
+checkPureKnowledgeRuntimeTooling();
 checkContentReviewQueueTooling();
 checkMathCurriculumAuditTooling();
 checkMathContainerReviewTooling();
