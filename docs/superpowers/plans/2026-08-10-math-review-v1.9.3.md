@@ -30,7 +30,7 @@
 - Export `getChapterReviewMeta(chapterId)` returning a cloned `contentMeta` object for reviewed IDs and `null` for all other IDs.
 - Export `checkMathContainerReview()` returning `true` or throwing an actionable error.
 
-- [ ] **Step 1: Write the failing checker first**
+- [x] **Step 1: Write the failing checker first**
 
 Require the exact 10 stable IDs, a record for every ID, and a repository match for title and `officialSections`:
 
@@ -68,13 +68,13 @@ checkMathContainerReview();
 console.log(`OK math container review: ${expectedIds.length} chapters`);
 ```
 
-- [ ] **Step 2: Run the checker and confirm the intended failure**
+- [x] **Step 2: Run the checker and confirm the intended failure**
 
 Run `node scripts/check-math-container-review.js`.
 
 Expected: FAIL because `chapter-review-meta.js` does not exist yet.
 
-- [ ] **Step 3: Implement the 10 review records and cloned lookup**
+- [x] **Step 3: Implement the 10 review records and cloned lookup**
 
 Use the exact chapter data already present in `packages/math/data/math-curriculum.js`; each record must include these source records:
 
@@ -87,15 +87,15 @@ sourceRefs: [
 
 Use `getContentReviewMeta('math', ...)` as the base, add `reviewScope: 'stable-container'`, `checkedTitle`, `checkedSections`, and three evidence strings, and return a fresh copy from `getChapterReviewMeta()` so callers cannot mutate the source records.
 
-- [ ] **Step 4: Expand the checker beyond the red contract**
+- [x] **Step 4: Expand the checker beyond the red contract**
 
 Reject missing dates, non-official hosts, duplicate source keys, missing evidence, unknown IDs, mismatched title/sections, and a non-null lookup for an unreviewed chapter. Confirm the 10 hydrated chapters expose `contentMeta.status === 'verified'` and all other 19 chapters do not expose chapter-level review metadata.
 
-- [ ] **Step 5: Run the focused checker**
+- [x] **Step 5: Run the focused checker**
 
 Run `node scripts/check-math-container-review.js`; expected: PASS with 10 chapters.
 
-- [ ] **Step 6: Commit the record and checker**
+- [x] **Step 6: Commit the record and checker**
 
 ```bash
 git add packages/math/data/chapter-review-meta.js scripts/check-math-container-review.js
@@ -114,19 +114,19 @@ git commit -m "feat(math): review first ten chapter containers"
 - `scripts/check-release-readiness.js` executes `scripts/check-math-container-review.js` and reports the last three failure lines.
 - `scripts/content-audit.js` recognizes `pep-math-new-textbook-2024` as an allowed official source key.
 
-- [ ] **Step 1: Add the failing runtime assertions**
+- [x] **Step 1: Add the failing runtime assertions**
 
 Extend the checker to assert that the first 10 hydrated chapters are verified and `ch11-triangle` remains untracked at the chapter level. Run it and observe failure before repository integration.
 
-- [ ] **Step 2: Attach the lookup at the chapter boundary**
+- [x] **Step 2: Attach the lookup at the chapter boundary**
 
 Import `getChapterReviewMeta` and add the conditional `contentMeta` field to the object returned by `getChapterById()`. Do not change `buildLessonKnowledge()`; lesson metadata is already independently verified.
 
-- [ ] **Step 3: Add the source key and release gate**
+- [x] **Step 3: Add the source key and release gate**
 
 Register `pep-math-new-textbook-2024` in `KNOWN_SOURCE_KEYS`, require the checker script in release readiness, and run it as a child process like the existing audit tools.
 
-- [ ] **Step 4: Run focused runtime and audit checks**
+- [x] **Step 4: Run focused runtime and audit checks**
 
 Run:
 
@@ -138,7 +138,7 @@ node scripts/check-content-audit.js
 
 Expected: 10 math chapter entities become `verified`; all remaining untracked entities stay in the report.
 
-- [ ] **Step 5: Commit the runtime gate**
+- [x] **Step 5: Commit the runtime gate**
 
 ```bash
 git add packages/math/repository.js scripts/content-audit.js scripts/check-release-readiness.js
@@ -157,15 +157,15 @@ git commit -m "chore(audit): gate reviewed math containers"
 - The generated queue reports 130 remaining entities, with the first 10 math chapters removed and all other untracked entities preserved.
 - Documentation records the exact 10 IDs, source links, report change, and the fact that the v1.9.2 curriculum audit remains open for volume mapping.
 
-- [ ] **Step 1: Run queue generation before documentation**
+- [x] **Step 1: Run queue generation before documentation**
 
 Run `node scripts/build-content-review-queue.js` and record the generated counts and source hash; do not hand-edit generated JSON.
 
-- [ ] **Step 2: Add concise release commands and route section**
+- [x] **Step 2: Add concise release commands and route section**
 
 Document `node scripts/check-math-container-review.js`, explain the 10/130 split, and add v1.9.3 to the development route. Keep the v1.8 physical gate and v1.9.2 `needs-official-volume-map` boundary visible.
 
-- [ ] **Step 3: Run documentation and queue checks**
+- [x] **Step 3: Run documentation and queue checks**
 
 Run:
 
@@ -176,7 +176,7 @@ node scripts/check-release-readiness.js
 git diff --check
 ```
 
-- [ ] **Step 4: Commit the handoff**
+- [x] **Step 4: Commit the handoff**
 
 ```bash
 git add README.md docs/后续开发与发布路线.md docs/新版教材目录对照与迁移规则.md docs/v1.9.3数学章节容器复核实施记录.md
@@ -188,19 +188,19 @@ git commit -m "docs(v1.9.3): record math container review batch"
 **Files:**
 - Modify: `docs/superpowers/plans/2026-08-10-math-review-v1.9.3.md`
 
-- [ ] **Step 1: Run the complete check matrix**
+- [x] **Step 1: Run the complete check matrix**
 
 Run every `scripts/check-*.js`, excluding only the package-size checker’s legacy default input, then run `node scripts/check-package-sizes.js .codex-output/v1.9.2-math-audit-packages-preview.json`, `git diff --check`, and the developer-tools preview if the package report is missing.
 
-- [ ] **Step 2: Confirm queue determinism**
+- [x] **Step 2: Confirm queue determinism**
 
 Run `node scripts/build-content-review-queue.js` twice and compare the generated file SHA-256 values.
 
-- [ ] **Step 3: Review the final diff**
+- [x] **Step 3: Review the final diff**
 
 Confirm no math content IDs changed, no non-target chapter became verified, no task/measurement field was introduced, and no main package source imports the review queue JSON.
 
-- [ ] **Step 4: Commit the completed plan and push**
+- [x] **Step 4: Commit the completed plan and push**
 
 ```bash
 git add docs/superpowers/plans/2026-08-10-math-review-v1.9.3.md
