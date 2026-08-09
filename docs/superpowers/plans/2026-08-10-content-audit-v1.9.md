@@ -31,7 +31,7 @@
 
 - [ ] **Step 1: Write the failing contract assertions**
 
-Add assertions for five subjects, deterministic `schemaVersion: 1`, required subject keys, total counts, and the absence of `objective`, `practiceFlow`, `finishCriteria`, `outputTask`, `selfCheck` and `learningPath` in audited entities.
+Add assertions for five subjects, deterministic `schemaVersion: 1`, required subject keys, total counts, and the absence of task fields `practiceFlow`, `finishCriteria`, `outputTask`, `selfCheck` and `learningPath` in audited entities. Keep legitimate content-boundary fields such as chemistry topic `objective` auditable but allowed.
 
 - [ ] **Step 2: Run the checker before implementation**
 
