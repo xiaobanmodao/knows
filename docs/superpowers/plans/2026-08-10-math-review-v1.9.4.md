@@ -28,7 +28,7 @@
 - `CHAPTER_REVIEW_RECORDS` retains the first 10 v1.9.3 records and adds 19 v1.9.4 records.
 - `getChapterReviewMeta(chapterId)` continues returning cloned metadata and `null` for unknown IDs.
 
-- [ ] **Step 1: Write the failing all-29 assertion**
+- [x] **Step 1: Write the failing all-29 assertion**
 
 Update the checker’s expected list to include these IDs before adding records:
 
@@ -47,7 +47,7 @@ const EXPECTED_IDS = [
 
 Run `node scripts/check-math-container-review.js`; expected: FAIL because the record module still contains only the first 10 IDs.
 
-- [ ] **Step 2: Add the 19 exact repository snapshots**
+- [x] **Step 2: Add the 19 exact repository snapshots**
 
 Add records with these titles and section arrays, copied from the current math repository and not inferred from a third-party chapter list:
 
@@ -77,15 +77,15 @@ Add records with these titles and section arrays, copied from the current math r
 
 Each record uses `reviewBatch: 'v1.9.4'`; `ch19` and `ch20` additionally use `scopeNote: '仅复核稳定容器，不替代新版逐册目录映射'`.
 
-- [ ] **Step 3: Expand the checker for batch and boundary assertions**
+- [x] **Step 3: Expand the checker for batch and boundary assertions**
 
 Require 29 records, exactly 10 records with `reviewBatch === 'v1.9.3'`, exactly 19 records with `reviewBatch === 'v1.9.4'`, and the special scope note on `ch19`/`ch20`. Keep all source, date, title, section, clone-isolation, official-host and unreviewed-ID checks.
 
-- [ ] **Step 4: Run the focused checker**
+- [x] **Step 4: Run the focused checker**
 
 Run `node scripts/check-math-container-review.js`; expected: PASS with 29 chapters and 19 v1.9.4 records.
 
-- [ ] **Step 5: Commit the data batch**
+- [x] **Step 5: Commit the data batch**
 
 ```bash
 git add packages/math/data/chapter-review-meta.js scripts/check-math-container-review.js
@@ -105,19 +105,19 @@ git commit -m "feat(math): review remaining chapter containers"
 - The queue becomes 111 items: math 65, English 12, physics 34; no `math:chapter` items remain.
 - The v1.9.2 curriculum audit output remains unchanged and continues to report its open volume-map question.
 
-- [ ] **Step 1: Add the failing queue expectation**
+- [x] **Step 1: Add the failing queue expectation**
 
 Update the queue checker to expect `queued === 111`, `bySubject === { english: 12, math: 65, physics: 34 }`, `byType.math:chapter === 0`, and priority totals `{ 1: 41, 2: 70 }`. Run it before rebuilding and confirm the old generated queue fails the new contract.
 
-- [ ] **Step 2: Rebuild and validate the queue**
+- [x] **Step 2: Rebuild and validate the queue**
 
 Run `node scripts/build-content-audit.js`, `node scripts/build-content-review-queue.js`, and both checkers. Confirm the 19 math chapter keys are absent and the first remaining queue item is `math:topic:g7-topic-basic-geometry`.
 
-- [ ] **Step 3: Record the new current state**
+- [x] **Step 3: Record the new current state**
 
 Document the 29/29 reviewed math chapters, 111 remaining queue items, queue SHA-256, package size, and the fact that topics/templates still remain untracked. Add a v1.9.4 route section without rewriting historical v1.9.1/v1.9.3 statistics.
 
-- [ ] **Step 4: Run documentation and release checks**
+- [x] **Step 4: Run documentation and release checks**
 
 Run:
 
@@ -129,7 +129,7 @@ node scripts/check-release-readiness.js
 git diff --check
 ```
 
-- [ ] **Step 5: Commit the queue and handoff**
+- [x] **Step 5: Commit the queue and handoff**
 
 ```bash
 git add scripts/check-content-review-queue.js README.md docs/后续开发与发布路线.md docs/新版教材目录对照与迁移规则.md docs/v1.9.4数学章节容器复核实施记录.md
@@ -141,19 +141,19 @@ git commit -m "docs(v1.9.4): close math chapter container review"
 **Files:**
 - Modify: `docs/superpowers/plans/2026-08-10-math-review-v1.9.4.md`
 
-- [ ] **Step 1: Run the complete check matrix**
+- [x] **Step 1: Run the complete check matrix**
 
 Run every `scripts/check-*.js`, the current developer-tools package-size checker with this worktree’s preview report, `node scripts/prepare-remote-assets.js`, `git diff --check`, and the existing content/audit builders. Expected: no runtime content IDs change and the math package remains below 1MB.
 
-- [ ] **Step 2: Confirm queue determinism**
+- [x] **Step 2: Confirm queue determinism**
 
 Run `node scripts/build-content-review-queue.js` twice and compare the generated file SHA-256 values; both must be identical.
 
-- [ ] **Step 3: Review the final scope**
+- [x] **Step 3: Review the final scope**
 
 Confirm only the remaining chapter review records, queue expectations, docs and plan changed; no topics, templates, knowledge bodies, figures, storage schemas or release versions changed.
 
-- [ ] **Step 4: Commit the completed plan and push**
+- [x] **Step 4: Commit the completed plan and push**
 
 ```bash
 git add docs/superpowers/plans/2026-08-10-math-review-v1.9.4.md
