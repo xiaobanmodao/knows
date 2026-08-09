@@ -37,6 +37,8 @@ const KNOWN_SOURCE_KEYS = new Set([
   'oxford-learners-dictionaries',
   'cambridge-grammar',
   'british-council-grammar',
+  'moe-english-curriculum-2022',
+  'pep-english-new-textbook-2025',
 ]);
 
 function sha256(value) {

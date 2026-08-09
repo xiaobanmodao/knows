@@ -2,10 +2,14 @@ const content = require('./data/english-content');
 const units = require('./data/english-units');
 const { getSubjectMeta, SUBJECT_LABELS } = require('../../data/subject-manifest');
 const { resolveAssetUrl } = require('../../utils/asset-config');
+const { getEnglishTopicReviewMeta } = require('./data/topic-review-meta');
 
 function hydrateTopic(topic) {
+  const contentMeta = getEnglishTopicReviewMeta(topic.id);
+
   return {
     ...topic,
+    ...(contentMeta ? { contentMeta } : {}),
     coverImage: resolveAssetUrl(topic.coverImage),
     diagramImage: resolveAssetUrl(topic.diagramImage),
   };

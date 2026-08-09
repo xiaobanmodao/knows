@@ -377,6 +377,24 @@ function checkMathTemplateReviewTooling() {
   }
 }
 
+function checkEnglishTopicReviewTooling() {
+  const reviewScript = 'scripts/check-english-topic-review.js';
+  assertFile(reviewScript, '英语专题复核工具');
+
+  if (fileExists(reviewScript)) {
+    try {
+      execFileSync(process.execPath, [path.join(root, reviewScript)], {
+        cwd: root,
+        encoding: 'utf8',
+        stdio: 'pipe',
+      });
+    } catch (error) {
+      const output = String(error.stdout || error.stderr || error.message).trim().split('\n').slice(-3).join(' | ');
+      issues.push(`英语专题复核工具: 执行失败 -> ${output}`);
+    }
+  }
+}
+
 function checkAssetConfig() {
   const assetConfigPath = 'utils/asset-config.js';
   assertFile(assetConfigPath, '云图片配置');
@@ -434,6 +452,7 @@ checkMathCurriculumAuditTooling();
 checkMathContainerReviewTooling();
 checkMathTopicReviewTooling();
 checkMathTemplateReviewTooling();
+checkEnglishTopicReviewTooling();
 checkAssetConfig();
 checkReleaseInfo();
 

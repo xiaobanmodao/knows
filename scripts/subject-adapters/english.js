@@ -1,5 +1,6 @@
 const englishContent = require('../../packages/english/data/english-content');
 const englishUnits = require('../../packages/english/data/english-units');
+const englishRepository = require('../../packages/english/repository');
 
 const subjectId = 'english';
 
@@ -8,7 +9,7 @@ function getManifestEntities() {
     { type: 'unit', entities: englishUnits.units },
     { type: 'word', entities: englishUnits.vocabulary },
     { type: 'grammar', entities: englishUnits.grammarPoints },
-    { type: 'topic', entities: englishContent.topics },
+    { type: 'topic', entities: englishContent.topics.map((topic) => englishRepository.getTopicById('english', topic.id)) },
     { type: 'knowledge', entities: englishContent.knowledgeItems },
     { type: 'template', entities: englishContent.templates },
   ];
