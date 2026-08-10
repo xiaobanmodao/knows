@@ -26,6 +26,19 @@ function deepFreeze(value) {
   return Object.freeze(value);
 }
 
+function isContainer(value) {
+  return Array.isArray(value) || (value && Object.getPrototypeOf(value) === Object.prototype);
+}
+
+function assertNoSharedContainers(source, prepared, path = 'guide') {
+  if (!isContainer(source)) return;
+  assert(isContainer(prepared), `${path} 必须保留对象或数组结构`);
+  assert.notStrictEqual(prepared, source, `${path} 不能与输入共享引用`);
+  Object.keys(source).forEach((key) => {
+    assertNoSharedContainers(source[key], prepared[key], `${path}.${key}`);
+  });
+}
+
 function createGuide(type, items) {
   return {
     type,
@@ -187,20 +200,31 @@ function assertPrepareVisualGuide(prepareVisualGuide) {
       label: '起点',
       note: '第一项',
       tone: 'blue',
-      meta: { labels: ['原始'], details: { source: '输入' } },
+      meta: { labels: ['原始'], details: { source: '原始' } },
     },
     { label: '终点', note: '第二项', tone: 'green' },
   ]));
   const snapshot = JSON.stringify(source);
   const prepared = prepareVisualGuide(source);
+  const aliasedPrepared = prepareVisualGuide(source);
+  aliasedPrepared.items[0].meta.details = source.items[0].meta.details;
   assert.strictEqual(JSON.stringify(source), snapshot, '预处理不得改动冻结输入');
   assert.notStrictEqual(prepared, source, '图解必须返回新对象');
   assert.notStrictEqual(prepared.items, source.items, '节点数组必须深拷贝');
   assert.notStrictEqual(prepared.items[0], source.items[0], '节点对象必须深拷贝');
   assert.notStrictEqual(prepared.items[0].meta, source.items[0].meta, '节点嵌套对象必须深拷贝');
   assert.notStrictEqual(prepared.items[0].meta.labels, source.items[0].meta.labels, '节点嵌套数组必须深拷贝');
+  assert.notStrictEqual(prepared.items[0].meta.details, source.items[0].meta.details, '节点深层对象必须深拷贝');
+  assertNoSharedContainers(source, prepared);
+  assert.throws(
+    () => assertNoSharedContainers(source, aliasedPrepared),
+    /guide\.items\.0\.meta\.details 不能与输入共享引用/,
+    '深层对象别名必须被检查器拒绝',
+  );
   prepared.items[0].meta.labels.push('输出');
   prepared.items[0].meta.details.source = '输出';
+  assert.strictEqual(prepared.items[0].meta.details.source, '输出', '输出深层值必须可以被修改');
+  assert.strictEqual(source.items[0].meta.details.source, '原始', '源 guide 的深层值必须保持原始');
   assert.strictEqual(JSON.stringify(source), snapshot, '修改输出深层值不得改动冻结输入');
   assert.deepStrictEqual(prepared.items.map((item) => [item.displayIndex, item.isLast]), [[1, false], [2, true]]);
   assert.strictEqual(prepared.isSequential, true, 'flow 必须启用相邻连接符');
