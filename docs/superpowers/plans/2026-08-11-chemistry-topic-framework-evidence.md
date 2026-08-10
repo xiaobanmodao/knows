@@ -196,7 +196,7 @@ git diff --check
 
 Expected: matrix reports `OK v1.11 quality matrix: 118 checks`; content audit and release readiness pass; diff check has no output.
 
-- [ ] **Step 5: Commit and push the integrated batch**
+- [x] **Step 5: Commit and push the integrated batch**
 
 ```bash
 git add scripts/check-v1.11-quality-matrix.js scripts/check-v1.11-quality-matrix.test.js docs/v1.11五科学科高风险字段复核记录.md docs/v1.11后续开发路线.md docs/superpowers/specs/2026-08-11-chemistry-topic-framework-evidence-design.md docs/superpowers/plans/2026-08-11-chemistry-topic-framework-evidence.md
