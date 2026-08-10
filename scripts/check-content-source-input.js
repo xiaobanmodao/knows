@@ -1,4 +1,6 @@
 const assert = require('assert');
+const fs = require('fs');
+const path = require('path');
 
 const {
   buildContentSourceCatalog,
@@ -11,6 +13,7 @@ const {
   getContentSourceBatch,
 } = require('./check-content-source-batches');
 const { loadSourceInputFile } = require('./content-source-input');
+const { buildContentSourceInputAuditReport } = require('./content-source-input-audit');
 
 const inputPath = process.argv[2];
 
@@ -21,7 +24,7 @@ function getOption(name) {
 
 function main() {
   if (!inputPath || inputPath.startsWith('--')) {
-    throw new Error('用法：node scripts/check-content-source-input.js <input.json|input.csv> [--source-version <version>] [--subject <subjectId>] [--type <type>] [--batch <batchId>] [--require-no-diff]');
+    throw new Error('用法：node scripts/check-content-source-input.js <input.json|input.csv> [--source-version <version>] [--subject <subjectId>] [--type <type>] [--batch <batchId>] [--report <report.json>] [--require-no-diff]');
   }
   const batchId = getOption('--batch');
   const batch = batchId ? getContentSourceBatch(batchId) : null;
@@ -48,6 +51,23 @@ function main() {
     assert.deepStrictEqual(metrics, expected.metrics, `${batch.id} 导入统计不符`);
   }
   const diff = diffContentSourceCatalog(currentCatalog, importedCatalog);
+  const report = buildContentSourceInputAuditReport({
+    input,
+    importedCatalog,
+    currentCatalog,
+    batch,
+    scope: {
+      subjectId: getOption('--subject'),
+      type: getOption('--type'),
+    },
+  });
+  const reportPath = getOption('--report');
+  if (reportPath) {
+    const absoluteReportPath = path.resolve(reportPath);
+    fs.mkdirSync(path.dirname(absoluteReportPath), { recursive: true });
+    fs.writeFileSync(absoluteReportPath, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
+    console.log(`Report: ${absoluteReportPath}`);
+  }
   if (process.argv.includes('--require-no-diff')) {
     assert.deepStrictEqual(diff.counts, { added: 0, modified: 0, removed: 0 }, '导入内容与当前内容源存在差异');
   }

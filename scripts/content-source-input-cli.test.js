@@ -107,6 +107,21 @@ try {
   assert.ok(batchData.entities.every((entity) => entity.subjectId === 'english' && entity.type === 'unit'));
   const batchCheck = runChecker(batchOutput, ['--batch', 'english-units-v1.11', '--require-no-diff']);
   assert.strictEqual(batchCheck.status, 0, batchCheck.stderr || batchCheck.stdout);
+  const batchReportPath = path.join(directory, 'english-units-audit-report.json');
+  const batchReportCheck = runChecker(batchOutput, [
+    '--batch',
+    'english-units-v1.11',
+    '--report',
+    batchReportPath,
+    '--require-no-diff',
+  ]);
+  assert.strictEqual(batchReportCheck.status, 0, batchReportCheck.stderr || batchReportCheck.stdout);
+  const batchAuditReport = JSON.parse(fs.readFileSync(batchReportPath, 'utf8'));
+  assert.strictEqual(batchAuditReport.status, 'passed');
+  assert.strictEqual(batchAuditReport.batchId, 'english-units-v1.11');
+  assert.deepStrictEqual(batchAuditReport.diff.counts, { added: 0, modified: 0, removed: 0 });
+  assert.match(batchAuditReport.inputHash, /^[a-f0-9]{64}$/);
+  assert.match(batchAuditReport.currentSourceHash, /^[a-f0-9]{64}$/);
   const unknownBatchResult = runCurrentBuilder(path.join(directory, 'unknown-batch.json'), ['--batch', 'unknown-batch']);
   assert.notStrictEqual(unknownBatchResult.status, 0);
   assert.match(`${unknownBatchResult.stdout}\n${unknownBatchResult.stderr}`, /批次|batch/i);
