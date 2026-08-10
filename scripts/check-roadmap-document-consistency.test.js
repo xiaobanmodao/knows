@@ -33,7 +33,9 @@ function assertEnglishSourceContract(source) {
   assert.doesNotMatch(source, /Same or Different\s*[?？]/, '不得保留带任意空格问号的 Same or Different 旧标题');
   assert.doesNotMatch(source, /The Wonder of Nature\b/, '不得保留 The Wonder of Nature 旧标题');
   // Source-evidence JSON gates ranges; this contract pins only the declared documentation status.
-  assertExactLine(source, grade9UpperDirectoryStatus, '九年级上册目录证据状态必须保持 partial、Unit 1-2 已核对和 Unit 3-8 待复核边界');
+  const grade9UpperDirectoryStatusLines = source.split(/\r?\n/).filter((line) => line.startsWith('目录证据状态：'));
+  assert.strictEqual(grade9UpperDirectoryStatusLines.length, 1, '九年级上册目录证据状态必须恰有一行');
+  assert.strictEqual(grade9UpperDirectoryStatusLines[0], grade9UpperDirectoryStatus, '九年级上册目录证据状态必须保持 partial、Unit 1-2 已核对和 Unit 3-8 待复核边界');
   assertExactLine(source, directoryImportBoundary, '独立官方目录证据必须明确不是外部内容导入');
 }
 
@@ -94,6 +96,11 @@ assert.throws(
   )),
   assert.AssertionError,
   '将九年级上册范围误改为 Unit 1-8 已核对必须失败',
+);
+assert.throws(
+  () => assertEnglishSourceContract(`${englishSource}\n目录证据状态：verified；当前公开页已核对 Unit 1-8；既有 Unit 3-8 保持可查阅的项目原创讲解，待完整官方目录复核。`),
+  assert.AssertionError,
+  '追加冲突的九年级上册目录证据状态必须失败',
 );
 assert.throws(
   () => assertEnglishSourceContract(`${englishSource}\nSame or Different ?`),
