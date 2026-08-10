@@ -96,6 +96,8 @@ const DEFAULT_CHECKS = [
   { script: 'scripts/check-detail-page-fallbacks.test.js', label: '详情页失败兜底契约' },
   { script: 'scripts/check-catalog-page-fallbacks.test.js', label: '目录页失败兜底契约' },
   { script: 'scripts/check-package-manifest.js', label: '包注册表' },
+  { script: 'scripts/check-package-source-estimate.test.js', label: '源码包体估算契约' },
+  { script: 'scripts/check-package-source-estimate.js', label: '源码包体估算' },
   { script: 'scripts/check-package-boundaries.js', label: '分包边界' },
   { script: 'scripts/check-subject-adapters.js', label: '学科适配器' },
   { script: 'scripts/check-runtime-package-dependencies.js', label: '运行时分包依赖' },
