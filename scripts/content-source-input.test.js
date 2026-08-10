@@ -9,6 +9,7 @@ const {
   buildContentSourceCatalogFromInput,
   checkContentSourceCatalog,
   diffContentSourceCatalog,
+  filterContentSourceCatalog,
 } = require('./content-source-catalog');
 
 const baseRecord = {
@@ -48,6 +49,10 @@ assert.deepStrictEqual(diffContentSourceCatalog(importedCatalog, importedCatalog
   modified: 0,
   removed: 0,
 });
+const englishUnits = filterContentSourceCatalog(buildContentSourceCatalog(), { subjectId: 'english', type: 'unit' });
+checkContentSourceCatalog(englishUnits, { allowAnySourceVersion: true });
+assert.strictEqual(englishUnits.entityCount, 42);
+assert.ok(englishUnits.entities.every((entity) => entity.subjectId === 'english' && entity.type === 'unit'));
 
 const tampered = JSON.parse(JSON.stringify(normalized));
 tampered.entities[0].title = 'Tampered title';

@@ -4,6 +4,7 @@ const {
   buildContentSourceCatalog,
   buildContentSourceCatalogFromInput,
   diffContentSourceCatalog,
+  filterContentSourceCatalog,
 } = require('./content-source-catalog');
 const { loadSourceInputFile } = require('./content-source-input');
 
@@ -16,16 +17,20 @@ function getOption(name) {
 
 function main() {
   if (!inputPath || inputPath.startsWith('--')) {
-    throw new Error('用法：node scripts/check-content-source-input.js <input.json|input.csv> [--source-version <version>] [--require-no-diff]');
+    throw new Error('用法：node scripts/check-content-source-input.js <input.json|input.csv> [--source-version <version>] [--subject <subjectId>] [--type <type>] [--require-no-diff]');
   }
   const input = loadSourceInputFile(inputPath, { sourceVersion: getOption('--source-version') });
   const importedCatalog = buildContentSourceCatalogFromInput(input);
-  const currentCatalog = buildContentSourceCatalog();
+  const currentCatalog = filterContentSourceCatalog(buildContentSourceCatalog(), {
+    subjectId: getOption('--subject'),
+    type: getOption('--type'),
+  });
   const diff = diffContentSourceCatalog(currentCatalog, importedCatalog);
   if (process.argv.includes('--require-no-diff')) {
     assert.deepStrictEqual(diff.counts, { added: 0, modified: 0, removed: 0 }, '导入内容与当前内容源存在差异');
   }
-  console.log(`OK content source input: ${input.entityCount} entities, ${input.aliasCount} aliases, diff +${diff.counts.added} ~${diff.counts.modified} -${diff.counts.removed}`);
+  const scope = [getOption('--subject'), getOption('--type')].filter(Boolean).join('/');
+  console.log(`OK content source input${scope ? ` (${scope})` : ''}: ${input.entityCount} entities, ${input.aliasCount} aliases, diff +${diff.counts.added} ~${diff.counts.modified} -${diff.counts.removed}`);
 }
 
 try {

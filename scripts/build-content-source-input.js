@@ -6,7 +6,10 @@ const {
   loadSourceInputFile,
   normalizeSourceInput,
 } = require('./content-source-input');
-const { buildContentSourceCatalog } = require('./content-source-catalog');
+const {
+  buildContentSourceCatalog,
+  filterContentSourceCatalog,
+} = require('./content-source-catalog');
 
 const root = path.resolve(__dirname, '..');
 const args = process.argv.slice(2);
@@ -20,11 +23,14 @@ function getOption(name) {
 
 function main() {
   if ((!inputPath || inputPath.startsWith('--')) && !fromCurrent) {
-    throw new Error('用法：node scripts/build-content-source-input.js <input.json|input.csv> [--output <output.json>] [--source-version <version>] 或 --from-current');
+    throw new Error('用法：node scripts/build-content-source-input.js <input.json|input.csv> [--output <output.json>] [--source-version <version>] 或 --from-current [--subject <subjectId>] [--type <type>]');
   }
   const outputPath = path.resolve(getOption('--output') || 'dist/content-audit/content-source-input.json');
   const report = fromCurrent
-    ? normalizeSourceInput(buildContentSourceCatalog())
+    ? normalizeSourceInput(filterContentSourceCatalog(buildContentSourceCatalog(), {
+      subjectId: getOption('--subject'),
+      type: getOption('--type'),
+    }))
     : loadSourceInputFile(inputPath, { sourceVersion: getOption('--source-version') });
   checkSourceInput(report);
   fs.mkdirSync(path.dirname(outputPath), { recursive: true });

@@ -16,8 +16,8 @@ function runBuilder(inputPath, outputPath, extraArgs = []) {
   });
 }
 
-function runCurrentBuilder(outputPath) {
-  return spawnSync(process.execPath, [builder, '--from-current', '--output', outputPath], {
+function runCurrentBuilder(outputPath, extraArgs = []) {
+  return spawnSync(process.execPath, [builder, '--from-current', '--output', outputPath, ...extraArgs], {
     cwd: root,
     encoding: 'utf8',
   });
@@ -89,6 +89,15 @@ try {
   assert.match(currentInputData.inputHash, /^[a-f0-9]{64}$/);
   const generatedCurrentCheck = runChecker(currentInputOutput, ['--require-no-diff']);
   assert.strictEqual(generatedCurrentCheck.status, 0, generatedCurrentCheck.stderr || generatedCurrentCheck.stdout);
+
+  const englishUnitsOutput = path.join(directory, 'english-units-input.json');
+  const englishUnitsResult = runCurrentBuilder(englishUnitsOutput, ['--subject', 'english', '--type', 'unit']);
+  assert.strictEqual(englishUnitsResult.status, 0, englishUnitsResult.stderr || englishUnitsResult.stdout);
+  const englishUnitsData = JSON.parse(fs.readFileSync(englishUnitsOutput, 'utf8'));
+  assert.strictEqual(englishUnitsData.entityCount, 42);
+  assert.ok(englishUnitsData.entities.every((entity) => entity.subjectId === 'english' && entity.type === 'unit'));
+  const englishUnitsCheck = runChecker(englishUnitsOutput, ['--subject', 'english', '--type', 'unit', '--require-no-diff']);
+  assert.strictEqual(englishUnitsCheck.status, 0, englishUnitsCheck.stderr || englishUnitsCheck.stdout);
 
   const changedCatalogInput = path.join(directory, 'changed-catalog.json');
   const changedCatalog = buildContentSourceCatalog();

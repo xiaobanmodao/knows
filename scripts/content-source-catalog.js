@@ -103,6 +103,31 @@ function buildContentSourceCatalogFromInput(input) {
   };
 }
 
+function filterContentSourceCatalog(report, options = {}) {
+  checkContentSourceCatalog(report, { allowAnySourceVersion: true });
+  const { subjectId, type } = options;
+  const entities = report.entities.filter((entity) => (
+    (!subjectId || entity.subjectId === subjectId)
+    && (!type || entity.type === type)
+  ));
+  const aliases = report.aliases.filter((alias) => (
+    (!subjectId || alias.subjectId === subjectId)
+    && (!type || type === 'knowledge-alias')
+  ));
+  const filtered = {
+    schemaVersion: SCHEMA_VERSION,
+    sourceVersion: report.sourceVersion,
+    entityCount: entities.length,
+    aliasCount: aliases.length,
+    entities,
+    aliases,
+  };
+  return {
+    ...filtered,
+    sourceHash: hashCatalog(filtered),
+  };
+}
+
 function checkContentSourceCatalog(report, options = {}) {
   checkSourceInput(report);
   if (!report || report.schemaVersion !== SCHEMA_VERSION) {
@@ -239,6 +264,7 @@ module.exports = {
   buildContentSourceCatalogFromInput,
   checkContentSourceCatalog,
   diffContentSourceCatalog,
+  filterContentSourceCatalog,
   hashCatalog,
   sha256,
 };
