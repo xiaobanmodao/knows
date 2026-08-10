@@ -6,45 +6,43 @@ const {
   getContentSourceBatch,
 } = require('./check-content-source-batches');
 
-assert.deepStrictEqual(SOURCE_BATCHES.map((batch) => batch.id), [
-  'english-units-v1.11',
-  'english-words-v1.11',
-  'english-grammar-v1.11',
-  'physics-knowledge-v1.11',
-  'physics-structured-knowledge-v1.11',
-]);
+const expectedBatches = [
+  ['english-units-v1.11', 'english', 'unit', 42, { examples: 0, experiments: 0, assets: 42 }],
+  ['english-words-v1.11', 'english', 'word', 336, { examples: 672, experiments: 0, assets: 0 }],
+  ['english-grammar-v1.11', 'english', 'grammar', 84, { examples: 252, experiments: 0, assets: 0 }],
+  ['english-knowledge-v1.11', 'english', 'knowledge', 18, { examples: 54, experiments: 0, assets: 18 }],
+  ['english-topics-v1.11', 'english', 'topic', 6, { examples: 0, experiments: 0, assets: 18 }],
+  ['english-templates-v1.11', 'english', 'template', 6, { examples: 18, experiments: 0, assets: 6 }],
+  ['physics-knowledge-v1.11', 'physics', 'knowledge', 84, { examples: 252, experiments: 29, assets: 84 }],
+  ['physics-structured-knowledge-v1.11', 'physics', 'structured-knowledge', 18, { examples: 54, experiments: 6, assets: 18 }],
+  ['physics-chapters-v1.11', 'physics', 'chapter', 22, { examples: 0, experiments: 0, assets: 128 }],
+  ['physics-topics-v1.11', 'physics', 'topic', 6, { examples: 0, experiments: 0, assets: 18 }],
+  ['physics-templates-v1.11', 'physics', 'template', 22, { examples: 66, experiments: 0, assets: 22 }],
+  ['physics-structured-templates-v1.11', 'physics', 'structured-template', 6, { examples: 18, experiments: 0, assets: 6 }],
+  ['math-chapters-v1.11', 'math', 'chapter', 29, { examples: 0, experiments: 0, assets: 657 }],
+  ['math-knowledge-v1.11', 'math', 'knowledge', 89, { examples: 445, experiments: 0, assets: 623 }],
+  ['math-topics-v1.11', 'math', 'topic', 29, { examples: 0, experiments: 0, assets: 67 }],
+  ['math-templates-v1.11', 'math', 'template', 36, { examples: 36, experiments: 0, assets: 49 }],
+  ['chemistry-themes-v1.11', 'chemistry', 'theme', 5, { examples: 0, experiments: 0, assets: 0 }],
+  ['chemistry-topics-v1.11', 'chemistry', 'topic', 10, { examples: 0, experiments: 0, assets: 23 }],
+  ['chemistry-knowledge-v1.11', 'chemistry', 'knowledge', 40, { examples: 0, experiments: 8, assets: 40 }],
+  ['chemistry-templates-v1.11', 'chemistry', 'template', 12, { examples: 12, experiments: 0, assets: 12 }],
+  ['biology-topics-v1.11', 'biology', 'topic', 6, { examples: 0, experiments: 0, assets: 12 }],
+  ['biology-knowledge-v1.11', 'biology', 'knowledge', 36, { examples: 108, experiments: 6, assets: 36 }],
+  ['biology-templates-v1.11', 'biology', 'template', 6, { examples: 0, experiments: 0, assets: 6 }],
+];
+
+assert.deepStrictEqual(SOURCE_BATCHES.map((batch) => batch.id), expectedBatches.map(([id]) => id));
 assert.deepStrictEqual(getContentSourceBatch('english-units-v1.11'), SOURCE_BATCHES[0]);
 assert.strictEqual(getContentSourceBatch('unknown-batch'), null);
 
-const unitResult = auditContentSourceBatch(getContentSourceBatch('english-units-v1.11'));
-assert.deepStrictEqual(unitResult.counts, { entities: 42, aliases: 0 });
-assert.deepStrictEqual(unitResult.metrics, { examples: 0, experiments: 0, assets: 42 });
-assert.deepStrictEqual(unitResult.diff, { added: 0, modified: 0, removed: 0 });
-assert.ok(unitResult.entities.every((entity) => entity.subjectId === 'english' && entity.type === 'unit'));
-
-const wordResult = auditContentSourceBatch(getContentSourceBatch('english-words-v1.11'));
-assert.deepStrictEqual(wordResult.counts, { entities: 336, aliases: 0 });
-assert.deepStrictEqual(wordResult.metrics, { examples: 672, experiments: 0, assets: 0 });
-assert.deepStrictEqual(wordResult.diff, { added: 0, modified: 0, removed: 0 });
-assert.ok(wordResult.entities.every((entity) => entity.subjectId === 'english' && entity.type === 'word'));
-
-const grammarResult = auditContentSourceBatch(getContentSourceBatch('english-grammar-v1.11'));
-assert.deepStrictEqual(grammarResult.counts, { entities: 84, aliases: 0 });
-assert.deepStrictEqual(grammarResult.metrics, { examples: 252, experiments: 0, assets: 0 });
-assert.deepStrictEqual(grammarResult.diff, { added: 0, modified: 0, removed: 0 });
-assert.ok(grammarResult.entities.every((entity) => entity.subjectId === 'english' && entity.type === 'grammar'));
-
-const physicsResult = auditContentSourceBatch(getContentSourceBatch('physics-knowledge-v1.11'));
-assert.deepStrictEqual(physicsResult.counts, { entities: 84, aliases: 0 });
-assert.deepStrictEqual(physicsResult.metrics, { examples: 252, experiments: 29, assets: 84 });
-assert.deepStrictEqual(physicsResult.diff, { added: 0, modified: 0, removed: 0 });
-assert.ok(physicsResult.entities.every((entity) => entity.subjectId === 'physics' && entity.type === 'knowledge'));
-
-const structuredPhysicsResult = auditContentSourceBatch(getContentSourceBatch('physics-structured-knowledge-v1.11'));
-assert.deepStrictEqual(structuredPhysicsResult.counts, { entities: 18, aliases: 0 });
-assert.deepStrictEqual(structuredPhysicsResult.metrics, { examples: 54, experiments: 6, assets: 18 });
-assert.deepStrictEqual(structuredPhysicsResult.diff, { added: 0, modified: 0, removed: 0 });
-assert.ok(structuredPhysicsResult.entities.every((entity) => entity.subjectId === 'physics' && entity.type === 'structured-knowledge'));
+expectedBatches.forEach(([id, subjectId, type, entityCount, metrics]) => {
+  const result = auditContentSourceBatch(getContentSourceBatch(id));
+  assert.deepStrictEqual(result.counts, { entities: entityCount, aliases: 0 }, id);
+  assert.deepStrictEqual(result.metrics, metrics, id);
+  assert.deepStrictEqual(result.diff, { added: 0, modified: 0, removed: 0 }, id);
+  assert.ok(result.entities.every((entity) => entity.subjectId === subjectId && entity.type === type), id);
+});
 
 assert.throws(() => auditContentSourceBatch({
   id: 'invalid',
