@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 
@@ -110,6 +111,21 @@ function assertUniqueKeys(records, label) {
   return keys;
 }
 
+function sourceInputHashInput(source) {
+  return {
+    schemaVersion: source.schemaVersion,
+    sourceVersion: source.sourceVersion,
+    entityCount: source.entityCount,
+    aliasCount: source.aliasCount,
+    entities: source.entities,
+    aliases: source.aliases,
+  };
+}
+
+function hashSourceInput(source) {
+  return crypto.createHash('sha256').update(JSON.stringify(sourceInputHashInput(source))).digest('hex');
+}
+
 function normalizeSourceInput(input) {
   const source = Array.isArray(input)
     ? { schemaVersion: SCHEMA_VERSION, sourceVersion: 'imported-input', entities: input, aliases: [] }
@@ -151,6 +167,8 @@ function normalizeSourceInput(input) {
   };
   if (hasOwn(source, 'entityCount') && source.entityCount !== normalized.entityCount) fail('entityCount 与 entities 不一致');
   if (hasOwn(source, 'aliasCount') && source.aliasCount !== normalized.aliasCount) fail('aliasCount 与 aliases 不一致');
+  normalized.inputHash = hashSourceInput(normalized);
+  if (hasOwn(source, 'inputHash') && source.inputHash !== normalized.inputHash) fail('inputHash 与输入内容不一致');
   return normalized;
 }
 
@@ -255,6 +273,7 @@ function loadSourceInputFile(filePath, options = {}) {
 module.exports = {
   SCHEMA_VERSION,
   BODY_FIELDS: [...BODY_FIELDS],
+  hashSourceInput,
   loadSourceInputFile,
   normalizeSourceInput,
   parseCsv,

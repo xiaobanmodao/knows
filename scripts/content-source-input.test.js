@@ -34,7 +34,12 @@ checkSourceInput(normalized);
 assert.deepStrictEqual(normalized.entities[0].review.sourceKeys, ['moe-standard', 'pep-math']);
 assert.strictEqual(normalized.entityCount, 1);
 assert.strictEqual(normalized.aliasCount, 0);
+assert.ok(/^[a-f0-9]{64}$/.test(normalized.inputHash));
 checkSourceInput(buildContentSourceCatalog());
+
+const tampered = JSON.parse(JSON.stringify(normalized));
+tampered.entities[0].title = 'Tampered title';
+assert.throws(() => checkSourceInput(tampered), /inputHash|哈希/);
 
 assert.throws(
   () => normalizeSourceInput({

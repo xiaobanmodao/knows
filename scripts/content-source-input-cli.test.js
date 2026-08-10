@@ -41,6 +41,7 @@ try {
   const jsonOutputData = JSON.parse(fs.readFileSync(jsonOutput, 'utf8'));
   assert.strictEqual(jsonOutputData.sourceVersion, 'fixture-json-v1');
   assert.deepStrictEqual(jsonOutputData.entities[0].review.sourceKeys, ['source-a', 'source-b']);
+  assert.match(jsonOutputData.inputHash, /^[a-f0-9]{64}$/);
 
   const csvInput = path.join(directory, 'source.csv');
   const csvOutput = path.join(directory, 'source-csv-output.json');
@@ -55,6 +56,7 @@ try {
   assert.strictEqual(csvOutputData.entities[0].title, 'A, CSV fixture');
   assert.deepStrictEqual(csvOutputData.entities[0].review.sourceKeys, ['moe', 'pep']);
   assert.strictEqual(csvOutputData.entities[0].exampleCount, 2);
+  assert.match(csvOutputData.inputHash, /^[a-f0-9]{64}$/);
 
   const invalidInput = path.join(directory, 'invalid.csv');
   const invalidOutput = path.join(directory, 'invalid-output.json');
