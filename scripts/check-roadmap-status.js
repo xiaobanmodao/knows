@@ -2,9 +2,11 @@ const fs = require('fs');
 const path = require('path');
 
 const { buildRoadmapStatus, formatRoadmapStatus } = require('./roadmap-status');
+const { buildContentSourceFollowUpReport } = require('./content-source-follow-up');
 
 const DEFAULT_TOOL_STATE_PATH = '.codex-output/release-regression-v1.10.1/tool-state.json';
 const DEFAULT_CONTENT_REPORT_PATH = 'dist/content-audit/content-source-follow-up.json';
+const DEFAULT_CONTENT_MANIFEST_PATH = 'dist/content-audit/content-source-input-batches/manifest.json';
 
 function getOption(name) {
   const index = process.argv.indexOf(name);
@@ -27,6 +29,22 @@ function writeReport(report, filePath) {
   return absolutePath;
 }
 
+function loadContentSourceState(manifestPath, reportPath) {
+  const actualReport = readOptionalJson(reportPath, '内容源跟进报告');
+  const manifest = readOptionalJson(manifestPath, '内容源输入 manifest');
+  if (!manifest) {
+    return { report: actualReport, reportFresh: true };
+  }
+  const expectedReport = buildContentSourceFollowUpReport({
+    manifest,
+    baseDirectory: path.dirname(path.resolve(manifestPath)),
+  });
+  return {
+    report: expectedReport,
+    reportFresh: Boolean(actualReport) && JSON.stringify(actualReport) === JSON.stringify(expectedReport),
+  };
+}
+
 function main() {
   const toolStatePath = getOption('--tool-state')
     || process.env.RELEASE_TOOL_STATE
@@ -34,11 +52,16 @@ function main() {
   const contentReportPath = getOption('--content-report')
     || process.env.CONTENT_SOURCE_FOLLOW_UP
     || DEFAULT_CONTENT_REPORT_PATH;
+  const contentManifestPath = getOption('--manifest')
+    || process.env.CONTENT_SOURCE_MANIFEST
+    || DEFAULT_CONTENT_MANIFEST_PATH;
+  const contentState = loadContentSourceState(contentManifestPath, contentReportPath);
   const report = buildRoadmapStatus({
     releaseToolState: readOptionalJson(toolStatePath, '开发者工具状态报告'),
     releaseToolStatePath: toolStatePath,
-    contentSourceFollowUp: readOptionalJson(contentReportPath, '内容源跟进报告'),
+    contentSourceFollowUp: contentState.report,
     contentSourceReportPath: contentReportPath,
+    contentSourceReportFresh: contentState.reportFresh,
   });
   const reportPath = getOption('--report');
   if (reportPath) console.log(`Report: ${writeReport(report, reportPath)}`);

@@ -36,7 +36,7 @@ function buildReleaseBlocker(report, reportPath) {
   };
 }
 
-function buildContentSourceBlocker(report, reportPath) {
+function buildContentSourceBlocker(report, reportPath, reportFresh) {
   if (!report) {
     return {
       id: 'content-source-follow-up',
@@ -45,6 +45,17 @@ function buildContentSourceBlocker(report, reportPath) {
       nextActions: [{
         id: 'build-content-source-follow-up',
         instruction: '先生成内容源跟进报告，再处理报告中的首个批次。',
+      }],
+    };
+  }
+  if (reportFresh === false) {
+    return {
+      id: 'content-source-follow-up',
+      priority: 'P1',
+      message: `内容源跟进报告已过期：${reportPath || '(未指定)'}；请根据 manifest 重新生成`,
+      nextActions: [{
+        id: 'rebuild-content-source-follow-up',
+        instruction: '重新运行 build-content-source-follow-up.js，再执行状态检查。',
       }],
     };
   }
@@ -67,6 +78,7 @@ function buildRoadmapStatus({
   releaseToolStatePath = null,
   contentSourceFollowUp = null,
   contentSourceReportPath = null,
+  contentSourceReportFresh = true,
 } = {}) {
   const releaseCheck = releaseToolState
     ? validateReleaseToolStateEvidence(releaseToolState)
@@ -87,12 +99,13 @@ function buildRoadmapStatus({
       ? 'missing'
       : contentSourceFollowUp.status === 'ready' ? 'ready' : 'blocked',
     path: contentSourceReportPath,
+    reportFresh: contentSourceReportFresh !== false,
     nextBatchId: contentSummary ? contentSummary.nextBatchId || null : null,
     summary: contentSummary,
   };
   const blockers = [
     buildReleaseBlocker(releaseToolState, releaseToolStatePath),
-    buildContentSourceBlocker(contentSourceFollowUp, contentSourceReportPath),
+    buildContentSourceBlocker(contentSourceFollowUp, contentSourceReportPath, contentSourceReportFresh),
   ].filter(Boolean);
 
   return {

@@ -39,6 +39,15 @@ assert.deepStrictEqual(ready.blockers, []);
 assert.strictEqual(ready.release.status, 'ready');
 assert.strictEqual(ready.contentSource.status, 'ready');
 
+const stale = buildRoadmapStatus({
+  releaseToolState: readyToolState,
+  contentSourceFollowUp: readyContentSource,
+  contentSourceReportFresh: false,
+});
+assert.strictEqual(stale.status, 'blocked');
+assert.strictEqual(stale.blockers.length, 1);
+assert.match(stale.blockers[0].message, /过期/);
+
 const blockedToolState = buildToolStateReport({
   projectRoot: '/tmp/knows',
   appid,
@@ -80,6 +89,7 @@ try {
     path.join(__dirname, 'check-roadmap-status.js'),
     '--tool-state', toolStatePath,
     '--content-report', contentReportPath,
+    '--manifest', path.join(tempDirectory, 'missing-manifest.json'),
   ], { cwd: path.resolve(__dirname, '..'), encoding: 'utf8' });
   assert.strictEqual(cli.status, 0, cli.stderr || cli.stdout);
   assert.match(cli.stdout, /OK roadmap status/);
