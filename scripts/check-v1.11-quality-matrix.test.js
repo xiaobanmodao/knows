@@ -45,6 +45,9 @@ assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-runtime-
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-remote-assets.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-release-tool-state.test.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-release-tool-state-evidence.test.js'));
+assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-release-package-evidence.test.js'));
+assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-release-regression-evidence.test.js'));
+assert.ok(defaultCommands.some((item) => item.script === 'scripts/run-release-preview.test.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-roadmap-status.test.js'));
 [
   'scripts/check-package-manifest.js',
