@@ -70,6 +70,7 @@ const DEFAULT_CHECKS = [
   { script: 'scripts/content-source-intake-guide.test.js', label: '内容源接入清单契约' },
   { script: 'scripts/build-content-source-intake-guide.js', args: ['dist/content-audit/content-source-follow-up.json', '--output', 'dist/content-audit/content-source-intake-guide.md'], label: '内容源接入清单产物' },
   { script: 'scripts/content-source-url-access.test.js', label: '内容源 URL 可访问性契约' },
+  { script: 'scripts/content-source-registry-url-access.test.js', label: '内容源注册表 URL 可访问性契约' },
   { script: 'scripts/check-content-source-batches.test.js', label: '内容源批次审计' },
   { script: 'scripts/check-content-source-batches.js', args: ['--report', 'dist/content-audit/content-source-batches.json'], label: '内容源批次报告' },
   { script: 'scripts/content-source-catalog.test.js', label: '内容源目录契约' },

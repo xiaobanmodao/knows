@@ -29,7 +29,7 @@ const SOURCE_DEFINITIONS = {
   },
   'moe-textbook-catalog-2024': {
     title: '2024年义务教育国家课程教学用书目录（根据2022年版课程标准修订）',
-    url: 'https://www.moe.gov.cn/srcsite/A26/s8001/202408/W020250418502592948423.pdf',
+    url: 'https://www.moe.gov.cn/srcsite/A26/s8001/202408/W020240805496325238752.pdf',
     kind: 'official',
   },
   'pep-chemistry-training-2024': {
@@ -94,7 +94,7 @@ const SOURCE_DEFINITIONS = {
   },
   'british-council-grammar': {
     title: 'British Council LearnEnglish Grammar',
-    url: 'https://learnenglish.britishcouncil.org/grammar',
+    url: 'https://learnenglish.britishcouncil.org/free-resources/grammar',
     kind: 'reference',
   },
   'moe-english-curriculum-2022': {

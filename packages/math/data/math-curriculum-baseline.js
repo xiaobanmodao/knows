@@ -48,7 +48,7 @@ const MATH_CURRICULUM_BASELINE = {
     {
       id: 'moe-textbook-catalog-2024',
       title: '2024年义务教育国家课程教学用书目录（根据2022年版课程标准修订）',
-      url: 'https://www.moe.gov.cn/srcsite/A26/s8001/202408/W020250418502592948423.pdf',
+      url: 'https://www.moe.gov.cn/srcsite/A26/s8001/202408/W020240805496325238752.pdf',
       role: '国家课程教材版本与册次范围',
       evidence: {
         reviewedAt: '2026-08-10',
