@@ -1,4 +1,6 @@
 const assert = require('assert');
+const fs = require('fs');
+const path = require('path');
 
 const {
   buildContentSourceCatalog,
@@ -151,12 +153,70 @@ function auditContentSourceBatch(batch, catalog = buildContentSourceCatalog()) {
   };
 }
 
+function buildContentSourceBatchReport(catalog = buildContentSourceCatalog()) {
+  const coverage = checkContentSourceBatchCoverage(catalog);
+  const results = SOURCE_BATCHES.map((batch) => auditContentSourceBatch(batch, catalog));
+  const metrics = results.reduce((totals, result) => ({
+    examples: totals.examples + result.metrics.examples,
+    experiments: totals.experiments + result.metrics.experiments,
+    assets: totals.assets + result.metrics.assets,
+  }), { examples: 0, experiments: 0, assets: 0 });
+  const review = catalog.entities.reduce((counts, entity) => ({
+    ...counts,
+    [entity.review.status]: counts[entity.review.status] + 1,
+  }), { verified: 0, reviewed: 0, untracked: 0 });
+
+  return {
+    schemaVersion: 1,
+    sourceVersion: catalog.sourceVersion,
+    sourceHash: catalog.sourceHash,
+    coverage,
+    totals: {
+      entities: catalog.entityCount,
+      aliases: catalog.aliasCount,
+      ...metrics,
+      review,
+    },
+    batches: results.map((result) => ({
+      id: result.batch.id,
+      subjectId: result.batch.subjectId,
+      type: result.batch.type,
+      status: 'passed',
+      counts: result.counts,
+      metrics: result.metrics,
+      review: result.entities.reduce((counts, entity) => ({
+        ...counts,
+        [entity.review.status]: counts[entity.review.status] + 1,
+      }), { verified: 0, reviewed: 0, untracked: 0 }),
+      diff: result.diff,
+    })),
+  };
+}
+
+function writeContentSourceBatchReport(report, outputPath) {
+  assert(report && report.schemaVersion === 1, '内容源批次报告无效');
+  const absolutePath = path.resolve(outputPath);
+  fs.mkdirSync(path.dirname(absolutePath), { recursive: true });
+  fs.writeFileSync(absolutePath, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
+  return absolutePath;
+}
+
+function getOption(name) {
+  const index = process.argv.indexOf(name);
+  return index >= 0 ? process.argv[index + 1] : undefined;
+}
+
 function main() {
-  checkContentSourceBatchCoverage();
-  SOURCE_BATCHES.forEach((batch) => {
-    const result = auditContentSourceBatch(batch);
-    console.log(`OK content source batch ${batch.id}: ${result.counts.entities} entities, ${result.metrics.examples} examples, ${result.metrics.experiments} experiments, ${result.metrics.assets} assets, diff +0 ~0 -0`);
+  const report = buildContentSourceBatchReport();
+  const outputPath = getOption('--report');
+  if (outputPath) {
+    writeContentSourceBatchReport(report, outputPath);
+    console.log(`Report: ${path.resolve(outputPath)}`);
+  }
+  report.batches.forEach((batch) => {
+    console.log(`OK content source batch ${batch.id}: ${batch.counts.entities} entities, ${batch.metrics.examples} examples, ${batch.metrics.experiments} experiments, ${batch.metrics.assets} assets, diff +${batch.diff.added} ~${batch.diff.modified} -${batch.diff.removed}`);
   });
+  console.log(`OK content source batch report: ${report.totals.entities} entities, ${report.totals.aliases} aliases`);
 }
 
 if (require.main === module) main();
@@ -164,6 +224,8 @@ if (require.main === module) main();
 module.exports = {
   SOURCE_BATCHES,
   auditContentSourceBatch,
+  buildContentSourceBatchReport,
   checkContentSourceBatchCoverage,
   getContentSourceBatch,
+  writeContentSourceBatchReport,
 };

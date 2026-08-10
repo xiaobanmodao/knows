@@ -1,10 +1,16 @@
 const assert = require('assert');
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
+const { buildContentSourceCatalog } = require('./content-source-catalog');
 
 const {
   SOURCE_BATCHES,
   auditContentSourceBatch,
+  buildContentSourceBatchReport,
   checkContentSourceBatchCoverage,
   getContentSourceBatch,
+  writeContentSourceBatchReport,
 } = require('./check-content-source-batches');
 
 const expectedBatches = [
@@ -41,6 +47,44 @@ assert.deepStrictEqual(checkContentSourceBatchCoverage(), {
 });
 assert.deepStrictEqual(getContentSourceBatch('english-units-v1.11'), SOURCE_BATCHES[0]);
 assert.strictEqual(getContentSourceBatch('unknown-batch'), null);
+
+const batchReport = buildContentSourceBatchReport();
+assert.strictEqual(batchReport.schemaVersion, 1);
+assert.strictEqual(batchReport.sourceVersion, 'v1.11-current');
+assert.deepStrictEqual(batchReport.coverage, {
+  batchCount: 23,
+  entityCount: 948,
+  scopes: 23,
+});
+assert.deepStrictEqual(batchReport.totals, {
+  entities: 948,
+  aliases: 89,
+  examples: 1987,
+  experiments: 49,
+  assets: 1885,
+  review: { verified: 900, reviewed: 48, untracked: 0 },
+});
+assert.strictEqual(batchReport.sourceHash, buildContentSourceCatalog().sourceHash);
+assert.strictEqual(batchReport.batches.length, 23);
+assert.deepStrictEqual(batchReport.batches[6], {
+  id: 'physics-knowledge-v1.11',
+  subjectId: 'physics',
+  type: 'knowledge',
+  status: 'passed',
+  counts: { entities: 84, aliases: 0 },
+  metrics: { examples: 252, experiments: 29, assets: 84 },
+  review: { verified: 84, reviewed: 0, untracked: 0 },
+  diff: { added: 0, modified: 0, removed: 0 },
+});
+
+const tempDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'knows-source-batches-'));
+const reportPath = path.join(tempDirectory, 'batch-report.json');
+try {
+  writeContentSourceBatchReport(batchReport, reportPath);
+  assert.deepStrictEqual(JSON.parse(fs.readFileSync(reportPath, 'utf8')), batchReport);
+} finally {
+  fs.rmSync(tempDirectory, { recursive: true, force: true });
+}
 
 expectedBatches.forEach(([id, subjectId, type, entityCount, metrics]) => {
   const result = auditContentSourceBatch(getContentSourceBatch(id));
