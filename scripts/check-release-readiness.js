@@ -2,13 +2,14 @@ const { execFileSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const { getPackageRegistry } = require('../data/package-manifest');
+const { validateReleaseToolStateEvidence } = require('./release-tool-state-evidence');
 
 const root = path.resolve(__dirname, '..');
 const issues = [];
 const warnings = [];
 
 function readJson(file) {
-  const absolutePath = path.join(root, file);
+  const absolutePath = resolveRepoPath(file);
 
   try {
     return JSON.parse(fs.readFileSync(absolutePath, 'utf8'));
@@ -19,7 +20,11 @@ function readJson(file) {
 }
 
 function fileExists(file) {
-  return fs.existsSync(path.join(root, file));
+  return fs.existsSync(resolveRepoPath(file));
+}
+
+function resolveRepoPath(file) {
+  return path.isAbsolute(file) ? file : path.join(root, file);
 }
 
 function assertFile(file, owner) {
@@ -579,6 +584,23 @@ function checkReleasePackageEvidenceTooling() {
   }
 }
 
+function checkReleaseToolStateEvidence() {
+  if (!process.argv.includes('--require-device-evidence')) {
+    return;
+  }
+
+  const reportPath = process.env.RELEASE_TOOL_STATE
+    || '.codex-output/release-regression-v1.10.1/tool-state.json';
+  assertFile(reportPath, '开发者工具状态报告');
+  if (!fileExists(reportPath)) return;
+
+  const report = readJson(reportPath);
+  if (!report) return;
+  validateReleaseToolStateEvidence(report).issues.forEach((issue) => {
+    issues.push(`开发者工具状态报告: ${issue}`);
+  });
+}
+
 function checkAssetConfig() {
   const assetConfigPath = 'utils/asset-config.js';
   assertFile(assetConfigPath, '云图片配置');
@@ -653,6 +675,7 @@ checkPhysicsTemplateReviewTooling();
 checkReleaseRegressionEvidenceTooling();
 checkRuntimePackageDependencyTooling();
 checkReleasePackageEvidenceTooling();
+checkReleaseToolStateEvidence();
 checkAssetConfig();
 checkReleaseInfo();
 
