@@ -167,13 +167,16 @@ function buildContentSourceInputBatchAudit({
       if (!registeredIds.has(batch.id)) entries.push({ id: batch.id, path: null, sourceKind: 'unknown' });
     });
   }
-  if (requireExternalSource) {
-    const nonExternal = entries.filter((entry) => entry.sourceKind !== 'external-source');
-    if (nonExternal.length > 0) {
-      const ids = nonExternal.map((entry) => `${entry.id}:${entry.sourceKind}`).join(', ');
-      throw new Error(`内容源输入批次 manifest 含非外部批次：${ids}`);
-    }
-  }
+  const externalSourceIssues = requireExternalSource
+    ? entries
+      .filter((entry) => entry.sourceKind !== 'external-source')
+      .map((entry) => ({
+        id: entry.id,
+        path: entry.path || null,
+        sourceKind: entry.sourceKind || 'unknown',
+        reason: 'source-kind-not-external',
+      }))
+    : [];
 
   const batches = entries.map((entry) => (
     entry.path
@@ -186,7 +189,9 @@ function buildContentSourceInputBatchAudit({
   }), { total: batches.length, passed: 0, changed: 0, pending: 0, failed: 0 });
   const status = summary.failed > 0
     ? 'failed'
-    : summary.pending > 0
+    : externalSourceIssues.length > 0
+      ? 'blocked'
+      : summary.pending > 0
       ? 'pending'
       : summary.changed > 0
         ? 'changed'
@@ -198,6 +203,10 @@ function buildContentSourceInputBatchAudit({
     sourceVersion: normalized.sourceVersion,
     sourceKind: normalized.sourceKind,
     requireAllBatches,
+    requirements: {
+      requireExternalSource,
+      externalSourceIssues,
+    },
     summary,
     batches,
   };

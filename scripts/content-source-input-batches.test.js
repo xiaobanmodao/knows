@@ -114,6 +114,40 @@ try {
   ], { cwd: root, encoding: 'utf8' });
   assert.notStrictEqual(strictCliResult.status, 0);
 
+  const currentFixtureManifest = {
+    schemaVersion: 1,
+    sourceVersion: 'current-fixture-v1',
+    sourceKind: 'current-fixture',
+    batches: [{ id: 'english-units-v1.11', path: 'english-units.json' }],
+  };
+  const externalGateReport = buildContentSourceInputBatchAudit({
+    manifest: normalizeBatchManifest(currentFixtureManifest),
+    baseDirectory: tempDirectory,
+    currentCatalog: source,
+    requireExternalSource: true,
+  });
+  assert.strictEqual(externalGateReport.status, 'blocked');
+  assert.deepStrictEqual(externalGateReport.requirements.externalSourceIssues, [{
+    id: 'english-units-v1.11',
+    path: 'english-units.json',
+    sourceKind: 'current-fixture',
+    reason: 'source-kind-not-external',
+  }]);
+  const currentFixtureManifestPath = path.join(tempDirectory, 'current-fixture-manifest.json');
+  const externalGateReportPath = path.join(tempDirectory, 'external-gate-report.json');
+  fs.writeFileSync(currentFixtureManifestPath, `${JSON.stringify(currentFixtureManifest, null, 2)}\n`, 'utf8');
+  const externalGateCliResult = spawnSync(process.execPath, [
+    checker,
+    currentFixtureManifestPath,
+    '--report',
+    externalGateReportPath,
+    '--require-external-source',
+  ], { cwd: root, encoding: 'utf8' });
+  assert.notStrictEqual(externalGateCliResult.status, 0);
+  const externalGateCliReport = JSON.parse(fs.readFileSync(externalGateReportPath, 'utf8'));
+  assert.strictEqual(externalGateCliReport.status, 'blocked');
+  assert.match(externalGateCliResult.stdout, /External source blockers/);
+
   const changedInput = {
     ...englishUnits,
     entities: englishUnits.entities.map((entity, index) => (

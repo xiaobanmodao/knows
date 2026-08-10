@@ -51,6 +51,10 @@ function main() {
       : `, reason ${batch.reason}`;
     console.log(`${batch.status.toUpperCase()} content source input batch ${batch.id}${suffix}`);
   });
+  if (report.requirements.externalSourceIssues.length) {
+    const ids = report.requirements.externalSourceIssues.map((item) => `${item.id}:${item.sourceKind}`).join(', ');
+    console.log(`External source blockers: ${ids}`);
+  }
   console.log(`Status: ${report.status}; batches ${report.summary.passed}/${report.summary.total} passed`);
 
   if (process.argv.includes('--require-all-batches')) {
@@ -58,6 +62,9 @@ function main() {
   }
   if (process.argv.includes('--require-no-diff')) {
     assert.strictEqual(report.status, 'passed', '外部内容源输入存在差异或未完成');
+  }
+  if (process.argv.includes('--require-external-source')) {
+    assert.strictEqual(report.requirements.externalSourceIssues.length, 0, '内容源输入 manifest 未满足外部来源证据要求');
   }
 }
 
