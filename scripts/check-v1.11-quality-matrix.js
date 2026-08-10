@@ -2,6 +2,11 @@ const { execFileSync } = require('child_process');
 const path = require('path');
 
 const root = path.resolve(__dirname, '..');
+const RELEASE_ENV_KEYS = Object.freeze([
+  'RELEASE_TOOL_STATE',
+  'RELEASE_REGRESSION_EVIDENCE',
+  'RELEASE_PREVIEW_REPORT',
+]);
 
 const DEFAULT_CHECKS = [
   { script: 'scripts/check-v1.11-quality-matrix.test.js', label: '质量矩阵契约' },
@@ -115,6 +120,14 @@ function getCheckCommands(requireReleaseEvidence = false) {
   return [...base, ...RELEASE_CHECKS].map((item) => ({ ...item, args: [...(item.args || [])] }));
 }
 
+function getCheckEnvironment(item, baseEnvironment = process.env) {
+  const environment = { ...baseEnvironment };
+  if (item && /\.test\.js$/.test(item.script || '')) {
+    RELEASE_ENV_KEYS.forEach((key) => delete environment[key]);
+  }
+  return environment;
+}
+
 function runCheck(item, index, total) {
   const args = item.args || [];
   console.log(`[${index}/${total}] ${item.label}`);
@@ -122,6 +135,7 @@ function runCheck(item, index, total) {
     cwd: root,
     encoding: 'utf8',
     stdio: 'inherit',
+    env: getCheckEnvironment(item),
   });
 }
 
@@ -138,6 +152,7 @@ if (require.main === module) {
 module.exports = {
   DEFAULT_CHECKS,
   RELEASE_CHECKS,
+  getCheckEnvironment,
   getCheckCommands,
   main,
 };

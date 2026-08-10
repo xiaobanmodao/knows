@@ -6,6 +6,7 @@ const {
   DEFAULT_CHECKS,
   RELEASE_CHECKS,
   getCheckCommands,
+  getCheckEnvironment,
 } = require('./check-v1.11-quality-matrix');
 
 const defaultCommands = getCheckCommands(false);
@@ -87,6 +88,26 @@ assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-privacy-
 assert.ok(!defaultCommands.some((item) => item.script === 'scripts/check-package-sizes.js'));
 assert.ok(strictCommands.some((item) => item.script === 'scripts/check-release-readiness.js'));
 assert.ok(strictCommands.some((item) => item.args.includes('--require-device-evidence')));
+
+const inheritedReleaseEnvironment = {
+  RELEASE_TOOL_STATE: '/tmp/tool-state.json',
+  RELEASE_REGRESSION_EVIDENCE: '/tmp/evidence.json',
+  RELEASE_PREVIEW_REPORT: '/tmp/packages-preview.json',
+};
+const contractEnvironment = getCheckEnvironment(
+  { script: 'scripts/check-roadmap-status.test.js' },
+  inheritedReleaseEnvironment,
+);
+Object.keys(inheritedReleaseEnvironment).forEach((key) => {
+  assert.strictEqual(contractEnvironment[key], undefined, `契约测试不得继承 ${key}`);
+});
+const releaseEnvironment = getCheckEnvironment(
+  { script: 'scripts/check-release-readiness.js' },
+  inheritedReleaseEnvironment,
+);
+Object.entries(inheritedReleaseEnvironment).forEach(([key, value]) => {
+  assert.strictEqual(releaseEnvironment[key], value, `发布检查必须保留 ${key}`);
+});
 
 const matrixScripts = new Set(defaultCommands.map((item) => item.script));
 const testScripts = fs.readdirSync(__dirname)
