@@ -32,7 +32,7 @@
 - Consumes: `scripts/check-release-readiness.js` 的 CLI 参数。
 - Preserves: `validateReleaseHotfixScope(changedFiles)`、`ALLOWED_HOTFIX_FILES`、`--base` 和 `RELEASE_HOTFIX_BASE` 的现有热修复行为。
 
-- [ ] **Step 1: 为显式模式写入失败断言**
+- [x] **Step 1: 为显式模式写入失败断言**
 
 在 `scripts/check-release-hotfix-scope.test.js` 的导入中加入 `shouldRequireHotfixScope`，并在现有 allowlist fixture 之前写入：
 
@@ -48,13 +48,13 @@ assert.strictEqual(
 
 同时读取 `scripts/check-release-readiness.js`，断言 `checkReleaseHotfixScopeTooling` 含有 `shouldRequireHotfixScope(process.argv.slice(2))`，且该函数在 false 时直接返回。
 
-- [ ] **Step 2: 运行失败测试**
+- [x] **Step 2: 运行失败测试**
 
 Run: `node scripts/check-release-hotfix-scope.test.js`
 
 Expected: 失败并指出 `shouldRequireHotfixScope is not a function` 或缺少显式模式源码标记；不得因为 allowlist fixture 变化失败。
 
-- [ ] **Step 3: 实现唯一的选项解析函数和运行时门控**
+- [x] **Step 3: 实现唯一的选项解析函数和运行时门控**
 
 在 `scripts/check-release-hotfix-scope.js` 的 `readBaseRef` 之前添加并导出：
 
@@ -88,7 +88,7 @@ function checkReleaseHotfixScopeTooling() {
 
 不要把 `--require-device-evidence` 当成热修复模式，不要更改 allowlist，也不要删除独立热修复检查脚本。
 
-- [ ] **Step 4: 验证默认与显式分支行为**
+- [x] **Step 4: 验证默认与显式分支行为**
 
 Run:
 
@@ -100,7 +100,7 @@ node scripts/check-release-hotfix-scope.js --base HEAD
 
 Expected: 三条均通过；第一个契约测试证明显式参数会启用范围门禁，默认发布检查不执行范围白名单，最后一条直接检查脚本在零差异范围内保持可用。当前集成分支已经含有规格与计划文件，不在此分支执行 `check-release-readiness.js --require-hotfix-scope` 并期待通过；该严格命令只在独立热修复分支运行。
 
-- [ ] **Step 5: 提交热修复模式边界**
+- [x] **Step 5: 提交热修复模式边界**
 
 ```bash
 git add scripts/check-release-hotfix-scope.js scripts/check-release-hotfix-scope.test.js scripts/check-release-readiness.js
