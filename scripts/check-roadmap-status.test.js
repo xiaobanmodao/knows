@@ -5,7 +5,7 @@ const path = require('path');
 const { spawnSync } = require('child_process');
 
 const { buildToolStateReport } = require('./check-release-tool-state');
-const { buildRoadmapStatus, formatRoadmapStatus } = require('./roadmap-status');
+const { buildRoadmapStatus, buildContentSourceReadiness, formatRoadmapStatus } = require('./roadmap-status');
 
 const appid = 'wxb10a8a067e2709e9';
 const readyToolState = buildToolStateReport({
@@ -47,6 +47,28 @@ assert.strictEqual(ready.release.status, 'ready');
 assert.strictEqual(ready.contentSource.status, 'ready');
 assert.strictEqual(ready.contentSourceUrlAccess.status, 'ready');
 assert.strictEqual(ready.contentSourceUrlAccess.summary.failed, 0);
+assert.strictEqual(ready.contentSource.readiness, null);
+
+const currentOnlyContentSource = {
+  status: 'blocked',
+  summary: { total: 1, ready: 0, blocked: 1, pending: 0, changed: 0, failed: 0, externalSourceMissing: 1, nextBatchId: 'math-chapters-v1.11' },
+  batches: [{
+    id: 'math-chapters-v1.11',
+    status: 'passed',
+    sourceKind: 'current-fixture',
+    review: { untracked: 0 },
+  }],
+};
+const readiness = buildContentSourceReadiness(currentOnlyContentSource);
+assert.deepStrictEqual(readiness.current, { total: 1, ready: 1, pending: 0, failed: 0, status: 'ready' });
+assert.deepStrictEqual(readiness.external, { total: 1, ready: 0, pending: 0, failed: 0, missing: 1, status: 'blocked' });
+const splitStatus = buildRoadmapStatus({
+  releaseToolState: readyToolState,
+  contentSourceFollowUp: currentOnlyContentSource,
+});
+assert.strictEqual(splitStatus.contentSource.readiness.current.status, 'ready');
+assert.strictEqual(splitStatus.contentSource.readiness.external.status, 'blocked');
+assert.match(formatRoadmapStatus(splitStatus), /当前源：ready；外部资料：blocked/);
 
 const stale = buildRoadmapStatus({
   releaseToolState: readyToolState,

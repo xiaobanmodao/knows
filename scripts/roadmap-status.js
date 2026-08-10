@@ -116,6 +116,42 @@ function buildContentSourceUrlAccessBlocker(report, reportPath, reportFresh) {
   };
 }
 
+function buildContentSourceReadiness(report) {
+  if (!report || !Array.isArray(report.batches) || !report.batches.length) return null;
+  const current = { total: report.batches.length, ready: 0, pending: 0, failed: 0 };
+  const external = { total: report.batches.length, ready: 0, pending: 0, failed: 0, missing: 0 };
+
+  report.batches.forEach((batch) => {
+    const reviewPending = batch.review && Number(batch.review.untracked) > 0;
+    const failed = batch.status === 'failed';
+    const pending = !failed && (batch.status !== 'passed' || reviewPending);
+    if (failed) current.failed += 1;
+    else if (pending) current.pending += 1;
+    else current.ready += 1;
+
+    if (batch.sourceKind !== 'external-source') {
+      external.missing += 1;
+    } else if (failed) {
+      external.failed += 1;
+    } else if (pending) {
+      external.pending += 1;
+    } else {
+      external.ready += 1;
+    }
+  });
+
+  return {
+    current: {
+      ...current,
+      status: current.failed ? 'blocked' : current.pending ? 'needs-review' : 'ready',
+    },
+    external: {
+      ...external,
+      status: external.missing || external.failed ? 'blocked' : external.pending ? 'needs-review' : 'ready',
+    },
+  };
+}
+
 function buildRoadmapStatus({
   releaseToolState = null,
   releaseToolStatePath = null,
@@ -148,6 +184,7 @@ function buildRoadmapStatus({
     reportFresh: contentSourceReportFresh !== false,
     nextBatchId: contentSummary ? contentSummary.nextBatchId || null : null,
     summary: contentSummary,
+    readiness: buildContentSourceReadiness(contentSourceFollowUp),
   };
   const contentSourceUrlAccessSummary = contentSourceUrlAccess && contentSourceUrlAccess.summary
     ? { ...contentSourceUrlAccess.summary }
@@ -184,6 +221,9 @@ function formatRoadmapStatus(report) {
   const lines = [`${report.status === 'ready' ? 'OK' : 'BLOCKED'} roadmap status`];
   lines.push(`发布工具：${report.release.status}${report.release.errorCode ? ` (${report.release.errorCode})` : ''}`);
   lines.push(`内容源：${report.contentSource.status}${report.contentSource.nextBatchId ? `；下一批次 ${report.contentSource.nextBatchId}` : ''}`);
+  if (report.contentSource.readiness) {
+    lines.push(`内容源当前源：${report.contentSource.readiness.current.status}；外部资料：${report.contentSource.readiness.external.status}`);
+  }
   const urlAccessSummary = report.contentSourceUrlAccess.summary;
   const urlFailureSuffix = urlAccessSummary && urlAccessSummary.failed
     ? `；失败 ${urlAccessSummary.failed}`
@@ -199,5 +239,6 @@ function formatRoadmapStatus(report) {
 module.exports = {
   STATUS_SCHEMA_VERSION,
   buildRoadmapStatus,
+  buildContentSourceReadiness,
   formatRoadmapStatus,
 };
