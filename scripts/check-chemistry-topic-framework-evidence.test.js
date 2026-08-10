@@ -1,5 +1,6 @@
 const assert = require('assert');
 const { spawnSync } = require('child_process');
+const fs = require('fs');
 const os = require('os');
 const path = require('path');
 
@@ -27,5 +28,16 @@ const defaultRun = spawnSync(process.execPath, [path.join(__dirname, 'check-chem
 });
 assert.strictEqual(defaultRun.status, 1, 'default checker must fail before evidence is added');
 assert.match(defaultRun.stderr, /化学专题官方框架佐证记录读取失败/);
+
+const prohibitedEvidencePath = path.join(
+  os.tmpdir(),
+  `knows-chemistry-topic-framework-prohibited-${process.pid}-${Date.now()}.json`,
+);
+fs.writeFileSync(prohibitedEvidencePath, JSON.stringify({ chapterOrder: 1 }));
+assert.throws(
+  () => checkChemistryTopicFrameworkEvidence({ evidencePath: prohibitedEvidencePath }),
+  /不得包含教材映射、内容输入或外部来源字段/,
+);
+fs.rmSync(prohibitedEvidencePath, { force: true });
 
 console.log('OK chemistry topic framework evidence contract');
