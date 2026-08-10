@@ -116,6 +116,24 @@ function buildContentSourceUrlAccessBlocker(report, reportPath, reportFresh) {
   };
 }
 
+function buildContentSourceRegistryUrlAccessState(report, reportPath, reportFresh) {
+  let status = 'not-run';
+  if (reportFresh === false) status = 'stale';
+  else if (report) {
+    status = report.status === 'passed'
+      ? 'ready'
+      : report.status === 'no-sources'
+        ? 'not-applicable'
+        : 'blocked';
+  }
+  return {
+    status,
+    path: reportPath,
+    reportFresh: reportFresh !== false,
+    summary: report && report.summary ? { ...report.summary } : null,
+  };
+}
+
 function buildContentSourceReadiness(report) {
   if (!report || !Array.isArray(report.batches) || !report.batches.length) return null;
   const current = { total: report.batches.length, ready: 0, pending: 0, failed: 0 };
@@ -161,6 +179,9 @@ function buildRoadmapStatus({
   contentSourceUrlAccess = null,
   contentSourceUrlAccessPath = null,
   contentSourceUrlAccessReportFresh = true,
+  contentSourceRegistryUrlAccess = null,
+  contentSourceRegistryUrlAccessPath = null,
+  contentSourceRegistryUrlAccessReportFresh = true,
 } = {}) {
   const releaseCheck = releaseToolState
     ? validateReleaseToolStateEvidence(releaseToolState)
@@ -201,6 +222,11 @@ function buildRoadmapStatus({
     reportFresh: contentSourceUrlAccessReportFresh !== false,
     summary: contentSourceUrlAccessSummary,
   };
+  const contentSourceRegistryUrlAccessState = buildContentSourceRegistryUrlAccessState(
+    contentSourceRegistryUrlAccess,
+    contentSourceRegistryUrlAccessPath,
+    contentSourceRegistryUrlAccessReportFresh,
+  );
   const blockers = [
     buildReleaseBlocker(releaseToolState, releaseToolStatePath),
     buildContentSourceBlocker(contentSourceFollowUp, contentSourceReportPath, contentSourceReportFresh),
@@ -213,6 +239,7 @@ function buildRoadmapStatus({
     release,
     contentSource,
     contentSourceUrlAccess: contentSourceUrlAccessState,
+    contentSourceRegistryUrlAccess: contentSourceRegistryUrlAccessState,
     blockers,
   };
 }
@@ -229,6 +256,11 @@ function formatRoadmapStatus(report) {
     ? `；失败 ${urlAccessSummary.failed}`
     : '';
   lines.push(`内容源 URL：${report.contentSourceUrlAccess.status}${urlFailureSuffix}`);
+  const registryUrlAccessSummary = report.contentSourceRegistryUrlAccess.summary;
+  const registryUrlFailureSuffix = registryUrlAccessSummary && registryUrlAccessSummary.failed
+    ? `；失败 ${registryUrlAccessSummary.failed}`
+    : '';
+  lines.push(`来源注册表 URL：${report.contentSourceRegistryUrlAccess.status}${registryUrlFailureSuffix}`);
   report.blockers.forEach((blocker) => {
     lines.push(`[${blocker.priority}] ${blocker.message}`);
     blocker.nextActions.forEach((action) => lines.push(`  -> ${action.instruction}`));

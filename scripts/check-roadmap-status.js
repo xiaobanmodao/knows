@@ -4,6 +4,8 @@ const path = require('path');
 const { buildRoadmapStatus, formatRoadmapStatus } = require('./roadmap-status');
 const { buildContentSourceFollowUpReport } = require('./content-source-follow-up');
 const { getSourceUrlAccessManifestHash } = require('./content-source-url-access');
+const { CONTENT_SOURCE_REGISTRY } = require('../data/content-source-registry');
+const { hashRegistrySources } = require('./content-source-registry-url-access');
 
 const DEFAULT_TOOL_STATE_PATH = '.codex-output/release-regression-v1.10.1/tool-state.json';
 const DEFAULT_CONTENT_REPORT_PATH = 'dist/content-audit/content-source-follow-up.json';
@@ -58,6 +60,18 @@ function loadContentSourceUrlAccessState(reportPath, manifestPath) {
   };
 }
 
+function loadContentSourceRegistryUrlAccessState(reportPath) {
+  const report = readOptionalJson(reportPath, '内容源注册表 URL 可访问性报告');
+  if (!report) return { report, reportFresh: true };
+  const sources = Object.values(CONTENT_SOURCE_REGISTRY)
+    .filter((source) => source.kind === 'official' || source.kind === 'reference');
+  return {
+    report,
+    reportFresh: Boolean(report.generatedFrom)
+      && report.generatedFrom.registryHash === hashRegistrySources(sources),
+  };
+}
+
 function main() {
   const releaseProject = getOption('--release-project')
     || process.env.RELEASE_PROJECT_ROOT;
@@ -77,8 +91,12 @@ function main() {
   const urlAccessManifestPath = getOption('--url-access-manifest')
     || process.env.CONTENT_SOURCE_URL_ACCESS_MANIFEST
     || (urlAccessReportPath ? contentManifestPath : null);
+  const registryUrlAccessReportPath = getOption('--registry-url-access-report')
+    || process.env.CONTENT_SOURCE_REGISTRY_URL_ACCESS
+    || null;
   const contentState = loadContentSourceState(contentManifestPath, contentReportPath);
   const urlAccessState = loadContentSourceUrlAccessState(urlAccessReportPath, urlAccessManifestPath);
+  const registryUrlAccessState = loadContentSourceRegistryUrlAccessState(registryUrlAccessReportPath);
   const report = buildRoadmapStatus({
     releaseToolState: readOptionalJson(toolStatePath, '开发者工具状态报告'),
     releaseToolStatePath: toolStatePath,
@@ -88,6 +106,9 @@ function main() {
     contentSourceUrlAccess: urlAccessState.report,
     contentSourceUrlAccessPath: urlAccessReportPath,
     contentSourceUrlAccessReportFresh: urlAccessState.reportFresh,
+    contentSourceRegistryUrlAccess: registryUrlAccessState.report,
+    contentSourceRegistryUrlAccessPath: registryUrlAccessReportPath,
+    contentSourceRegistryUrlAccessReportFresh: registryUrlAccessState.reportFresh,
   });
   const reportPath = getOption('--report');
   if (reportPath) console.log(`Report: ${writeReport(report, reportPath)}`);

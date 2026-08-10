@@ -6,6 +6,8 @@ const { spawnSync } = require('child_process');
 
 const { buildToolStateReport } = require('./check-release-tool-state');
 const { buildRoadmapStatus, buildContentSourceReadiness, formatRoadmapStatus } = require('./roadmap-status');
+const { CONTENT_SOURCE_REGISTRY } = require('../data/content-source-registry');
+const { hashRegistrySources } = require('./content-source-registry-url-access');
 
 const appid = 'wxb10a8a067e2709e9';
 const readyToolState = buildToolStateReport({
@@ -32,6 +34,15 @@ const readyUrlAccess = {
   status: 'passed',
   summary: { total: 2, checked: 2, passed: 2, failed: 0 },
 };
+const registeredSources = Object.values(CONTENT_SOURCE_REGISTRY)
+  .filter((source) => source.kind === 'official' || source.kind === 'reference');
+const readyRegistryUrlAccess = {
+  schemaVersion: 1,
+  auditKind: 'content-source-registry',
+  status: 'passed',
+  generatedFrom: { registryHash: hashRegistrySources(registeredSources) },
+  summary: { total: 15, checked: 15, passed: 15, failed: 0 },
+};
 
 const ready = buildRoadmapStatus({
   releaseToolState: readyToolState,
@@ -40,6 +51,8 @@ const ready = buildRoadmapStatus({
   contentSourceReportPath: '/tmp/content-source-follow-up.json',
   contentSourceUrlAccess: readyUrlAccess,
   contentSourceUrlAccessPath: '/tmp/content-source-url-access.json',
+  contentSourceRegistryUrlAccess: readyRegistryUrlAccess,
+  contentSourceRegistryUrlAccessPath: '/tmp/content-source-registry-url-access.json',
 });
 assert.strictEqual(ready.status, 'ready');
 assert.deepStrictEqual(ready.blockers, []);
@@ -47,6 +60,8 @@ assert.strictEqual(ready.release.status, 'ready');
 assert.strictEqual(ready.contentSource.status, 'ready');
 assert.strictEqual(ready.contentSourceUrlAccess.status, 'ready');
 assert.strictEqual(ready.contentSourceUrlAccess.summary.failed, 0);
+assert.strictEqual(ready.contentSourceRegistryUrlAccess.status, 'ready');
+assert.strictEqual(ready.contentSourceRegistryUrlAccess.summary.failed, 0);
 assert.strictEqual(ready.contentSource.readiness, null);
 
 const currentOnlyContentSource = {
@@ -133,6 +148,18 @@ assert.strictEqual(staleUrlAccess.status, 'blocked');
 assert.deepStrictEqual(staleUrlAccess.blockers.map((item) => item.id), ['content-source-url-access']);
 assert.match(staleUrlAccess.blockers[0].message, /过期/);
 
+const staleRegistryUrlAccess = buildRoadmapStatus({
+  releaseToolState: readyToolState,
+  contentSourceFollowUp: readyContentSource,
+  contentSourceRegistryUrlAccess: readyRegistryUrlAccess,
+  contentSourceRegistryUrlAccessPath: '/tmp/content-source-registry-url-access.json',
+  contentSourceRegistryUrlAccessReportFresh: false,
+});
+assert.strictEqual(staleRegistryUrlAccess.status, 'ready');
+assert.strictEqual(staleRegistryUrlAccess.contentSourceRegistryUrlAccess.status, 'stale');
+assert.strictEqual(staleRegistryUrlAccess.blockers.length, 0);
+assert.match(formatRoadmapStatus(staleRegistryUrlAccess), /来源注册表 URL：stale/);
+
 const missing = buildRoadmapStatus({
   releaseToolStatePath: '/tmp/missing-tool-state.json',
   contentSourceReportPath: '/tmp/missing-content-source-follow-up.json',
@@ -146,15 +173,18 @@ try {
   const toolStatePath = path.join(tempDirectory, 'tool-state.json');
   const contentReportPath = path.join(tempDirectory, 'content-source-follow-up.json');
   const urlAccessReportPath = path.join(tempDirectory, 'content-source-url-access.json');
+  const registryUrlAccessReportPath = path.join(tempDirectory, 'content-source-registry-url-access.json');
   fs.writeFileSync(toolStatePath, `${JSON.stringify(readyToolState)}\n`);
   fs.writeFileSync(contentReportPath, `${JSON.stringify(readyContentSource)}\n`);
   fs.writeFileSync(urlAccessReportPath, `${JSON.stringify(readyUrlAccess)}\n`);
+  fs.writeFileSync(registryUrlAccessReportPath, `${JSON.stringify(readyRegistryUrlAccess)}\n`);
   const cli = spawnSync(process.execPath, [
     path.join(__dirname, 'check-roadmap-status.js'),
     '--tool-state', toolStatePath,
     '--content-report', contentReportPath,
     '--manifest', path.join(tempDirectory, 'missing-manifest.json'),
     '--url-access-report', urlAccessReportPath,
+    '--registry-url-access-report', registryUrlAccessReportPath,
   ], { cwd: path.resolve(__dirname, '..'), encoding: 'utf8' });
   assert.strictEqual(cli.status, 0, cli.stderr || cli.stdout);
   assert.match(cli.stdout, /OK roadmap status/);
@@ -168,12 +198,14 @@ try {
     '--release-project', releaseProject,
     '--content-report', contentReportPath,
     '--manifest', path.join(tempDirectory, 'missing-manifest.json'),
+    '--registry-url-access-report', registryUrlAccessReportPath,
     '--json',
   ], { cwd: path.resolve(__dirname, '..'), encoding: 'utf8' });
   assert.strictEqual(releaseProjectCli.status, 0, releaseProjectCli.stderr || releaseProjectCli.stdout);
   const releaseProjectReport = JSON.parse(releaseProjectCli.stdout);
   assert.strictEqual(releaseProjectReport.release.status, 'ready');
   assert.strictEqual(releaseProjectReport.release.path, releaseToolStatePath);
+  assert.strictEqual(releaseProjectReport.contentSourceRegistryUrlAccess.status, 'ready');
 } finally {
   fs.rmSync(tempDirectory, { recursive: true, force: true });
 }
