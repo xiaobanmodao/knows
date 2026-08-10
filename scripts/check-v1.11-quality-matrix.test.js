@@ -64,6 +64,7 @@ assert.ok(defaultCommands.some((item) => item.script === 'scripts/run-release-pr
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-roadmap-status.test.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-subject-index-fallbacks.test.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-detail-page-fallbacks.test.js'));
+assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-catalog-page-fallbacks.test.js'));
 [
   'scripts/check-package-manifest.js',
   'scripts/check-student-copy.js',

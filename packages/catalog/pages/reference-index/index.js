@@ -30,6 +30,8 @@ function sortEntries(kind, entries) {
 
 Page({
   data: {
+    loading: true,
+    notFound: '',
     kinds: REFERENCE_KINDS,
     referenceTotal: REFERENCE_TOTAL,
     selectedKind: 'formula',
@@ -42,15 +44,24 @@ Page({
     hasMore: false,
   },
 
-  onLoad(options) {
-    const selectedKind = VALID_KINDS.has(options.kind) ? options.kind : 'formula';
-    this.visibleLimit = PAGE_SIZE;
-    this.setData({
-      selectedKind,
-      subjectFilters: buildSubjectFilters(selectedKind),
-      selectedSubjectId: 'all',
-    });
-    this.refreshEntries();
+  onLoad(options = {}) {
+    this.pageActive = true;
+    this.setData({ loading: true, notFound: '' });
+    try {
+      const selectedKind = VALID_KINDS.has(options.kind) ? options.kind : 'formula';
+      const subjectFilters = buildSubjectFilters(selectedKind);
+      const selectedSubjectId = subjectFilters.some((item) => item.id === options.subjectId) ? options.subjectId : 'all';
+      this.visibleLimit = PAGE_SIZE;
+      this.setData({
+        selectedKind,
+        subjectFilters,
+        selectedSubjectId,
+        query: options.q || '',
+      });
+      this.refreshEntries();
+    } catch (error) {
+      this.showFailure();
+    }
   },
 
   selectKind(event) {
@@ -90,18 +101,43 @@ Page({
   },
 
   refreshEntries() {
-    const { selectedKind, selectedSubjectId, query } = this.data;
-    const results = sortEntries(selectedKind, filterReferenceEntries({
-      kind: selectedKind,
-      subjectId: selectedSubjectId,
-      keyword: query,
-    })).map((entry) => ({
-      ...entry,
-      subjectLabel: SUBJECT_LABELS[entry.subjectId],
-      tags: (entry.tags || []).slice(0, 3),
-    }));
-    this.allEntries = results;
-    this.applyVisibleEntries();
+    try {
+      const { selectedKind, selectedSubjectId, query } = this.data;
+      const results = sortEntries(selectedKind, filterReferenceEntries({
+        kind: selectedKind,
+        subjectId: selectedSubjectId,
+        keyword: query,
+      })).map((entry) => ({
+        ...entry,
+        subjectLabel: SUBJECT_LABELS[entry.subjectId],
+        tags: (entry.tags || []).slice(0, 3),
+      }));
+      this.allEntries = results;
+      this.applyVisibleEntries();
+      this.setData({ loading: false, notFound: '' });
+    } catch (error) {
+      this.showFailure();
+    }
+  },
+
+  showFailure() {
+    this.allEntries = [];
+    this.setData({
+      loading: false,
+      notFound: '索引暂未打开，请重试。',
+      entries: [],
+      totalCount: 0,
+      visibleCount: 0,
+      hasMore: false,
+    });
+  },
+
+  reopen() {
+    this.onLoad({
+      kind: this.data.selectedKind,
+      q: this.data.query,
+      subjectId: this.data.selectedSubjectId === 'all' ? '' : this.data.selectedSubjectId,
+    });
   },
 
   applyVisibleEntries() {
@@ -142,6 +178,7 @@ Page({
   },
 
   onUnload() {
+    this.pageActive = false;
     clearTimeout(this.queryTimer);
   },
 });

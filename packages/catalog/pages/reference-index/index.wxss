@@ -217,3 +217,32 @@
   font-weight: 700;
   text-align: center;
 }
+
+.error-state {
+  min-height: 60vh;
+  padding-top: 180rpx;
+  text-align: center;
+}
+
+.error-state__title {
+  color: #1a2643;
+  font-size: 32rpx;
+  font-weight: 800;
+}
+
+.error-state__message {
+  margin-top: 16rpx;
+  color: #69748a;
+  font-size: 24rpx;
+  line-height: 1.7;
+}
+
+.error-state__retry {
+  width: 260rpx;
+  margin: 32rpx auto 0;
+  border-radius: 8rpx;
+  background: #195dd6;
+  color: #ffffff;
+  font-size: 25rpx;
+  line-height: 76rpx;
+}

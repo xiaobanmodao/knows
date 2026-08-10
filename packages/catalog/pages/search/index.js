@@ -87,6 +87,8 @@ function decodeQueryValue(value) {
 
 Page({
   data: {
+    loading: true,
+    notFound: '',
     query: '',
     results: [],
     groupedResults: [],
@@ -99,20 +101,31 @@ Page({
     selectedType: 'all',
   },
 
-  onLoad(options) {
-    const app = getApp();
-    app.refreshSession();
-    const initialQuery = decodeQueryValue(options.q);
-    const selectedSubjectId = SUBJECT_FILTERS.some((item) => item.id === options.subjectId) ? options.subjectId : 'all';
+  onLoad(options = {}) {
+    this.pageActive = true;
+    this.setData({ loading: true, notFound: '' });
 
-    this.setData({
-      query: initialQuery,
-      searchHistory: app.globalData.searchHistory || [],
-      selectedSubjectId,
-    });
+    try {
+      const app = getApp();
+      app.refreshSession();
+      const initialQuery = decodeQueryValue(options.q);
+      const selectedSubjectId = SUBJECT_FILTERS.some((item) => item.id === options.subjectId) ? options.subjectId : 'all';
+      this.initialSearchQuery = initialQuery;
+      this.initialSubjectId = selectedSubjectId;
 
-    if (initialQuery) {
-      this.executeSearch(initialQuery);
+      this.setData({
+        query: initialQuery,
+        searchHistory: app.globalData.searchHistory || [],
+        selectedSubjectId,
+      });
+
+      if (initialQuery) {
+        this.executeSearch(initialQuery);
+      } else {
+        this.setData({ loading: false, notFound: '' });
+      }
+    } catch (error) {
+      this.showFailure();
     }
   },
 
@@ -140,6 +153,7 @@ Page({
   executeSearch(rawKeyword, options = {}) {
     const { silentEmpty = false, saveHistory = false } = options;
     const keyword = (rawKeyword || '').trim();
+    this.lastSearchKeyword = keyword;
 
     if (!keyword) {
       this.setData({
@@ -149,6 +163,8 @@ Page({
         hasSearched: false,
         typeFilters: [],
         selectedType: 'all',
+        loading: false,
+        notFound: '',
       });
       if (!silentEmpty) {
         wx.showToast({
@@ -159,25 +175,52 @@ Page({
       return;
     }
 
-    const results = searchAllSubjects(keyword, this.data.selectedSubjectId);
-    const selectedType = this.data.selectedType !== 'all' && results.some((item) => item.type === this.data.selectedType)
-      ? this.data.selectedType
-      : 'all';
-    const visibleResults = selectedType === 'all'
-      ? results
-      : results.filter((item) => item.type === selectedType);
-    if (saveHistory) {
-      const app = getApp();
-      app.addSearchKeyword(keyword);
-    }
+    this.setData({ loading: true, notFound: '' });
 
+    try {
+      const results = searchAllSubjects(keyword, this.data.selectedSubjectId);
+      const selectedType = this.data.selectedType !== 'all' && results.some((item) => item.type === this.data.selectedType)
+        ? this.data.selectedType
+        : 'all';
+      const visibleResults = selectedType === 'all'
+        ? results
+        : results.filter((item) => item.type === selectedType);
+      if (saveHistory) {
+        const app = getApp();
+        app.addSearchKeyword(keyword);
+      }
+
+      this.setData({
+        loading: false,
+        notFound: '',
+        query: keyword,
+        results,
+        groupedResults: groupSearchResults(visibleResults),
+        typeFilters: buildTypeFilters(results),
+        selectedType,
+        hasSearched: true,
+      });
+    } catch (error) {
+      this.showFailure();
+    }
+  },
+
+  showFailure() {
     this.setData({
-      query: keyword,
-      results,
-      groupedResults: groupSearchResults(visibleResults),
-      typeFilters: buildTypeFilters(results),
-      selectedType,
-      hasSearched: true,
+      loading: false,
+      notFound: '搜索暂未打开，请重试。',
+      results: [],
+      groupedResults: [],
+      hasSearched: false,
+      typeFilters: [],
+      selectedType: 'all',
+    });
+  },
+
+  reopen() {
+    this.onLoad({
+      q: this.lastSearchKeyword || this.data.query || this.initialSearchQuery || '',
+      subjectId: this.data.selectedSubjectId === 'all' ? '' : this.data.selectedSubjectId,
     });
   },
 
@@ -213,6 +256,7 @@ Page({
   },
 
   onUnload() {
+    this.pageActive = false;
     clearTimeout(this.searchTimer);
   },
 });
