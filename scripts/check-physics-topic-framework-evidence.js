@@ -23,6 +23,10 @@ const NOT_VERIFIED = [
   '教材册次映射',
   '教材正文与原始插图',
 ];
+const EXPECTED_SUPPORTS = [
+  '现有原创物理专题与官方公开课程框架的宏观领域相容。',
+  '专题稳定标识、标题与内部复核快照可追溯。',
+];
 const ROOT_FIELDS = new Set(['schemaVersion', 'reviewId', 'reviewedAt', 'evidenceKind', 'scope', 'sources', 'topics']);
 const SCOPE_FIELDS = new Set(['supports', 'notVerified']);
 const SOURCE_FIELDS = new Set(['key', 'title', 'url', 'role', 'observation']);
@@ -155,7 +159,7 @@ function checkPhysicsTopicFrameworkEvidence({ evidencePath = DEFAULT_EVIDENCE_PA
   assert.ok(evidence.scope && typeof evidence.scope === 'object' && !Array.isArray(evidence.scope), 'scope 必须为对象');
   assertAllowedFields(evidence.scope, SCOPE_FIELDS, 'scope');
   assert.ok(Array.isArray(evidence.scope.supports), 'scope.supports 必须为数组');
-  assert.ok(evidence.scope.supports.length > 0 && evidence.scope.supports.every((item) => typeof item === 'string' && item.trim()), 'scope.supports 必须只包含非空文本');
+  assert.deepStrictEqual(evidence.scope.supports, EXPECTED_SUPPORTS, 'scope.supports 不匹配');
   assert.deepStrictEqual(evidence.scope.notVerified, NOT_VERIFIED, 'scope.notVerified 不匹配');
 
   const sourceKeys = assertSources(evidence.sources);

@@ -22,7 +22,7 @@ function assertRejectedFixture(label, mutate) {
   try {
     assert.throws(
       () => checkPhysicsTopicFrameworkEvidence({ evidencePath: fixturePath }),
-      /物理专题官方框架佐证记录|不得包含|不支持字段|role|observation/,
+      /物理专题官方框架佐证记录|不得包含|不支持字段|role|observation|supports/,
       `${label} 必须被拒绝`,
     );
   } finally {
@@ -78,6 +78,13 @@ assertRejectedFixture('out-of-bound-source-observation', (fixture) => {
 
 assertRejectedFixture('external-source-field', (fixture) => {
   fixture.sources[0]['external-source'] = '不应接受';
+});
+
+assertRejectedFixture('out-of-bound-supports', (fixture) => {
+  fixture.scope.supports = [
+    '已完成教材逐章标题、章节顺序和教材册次映射。',
+    '属于 external-source 内容导入。',
+  ];
 });
 
 console.log('OK physics topic framework evidence contract');
