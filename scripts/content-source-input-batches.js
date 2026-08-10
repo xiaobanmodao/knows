@@ -312,6 +312,19 @@ function buildContentSourceInputBatchAudit({
       ? auditBatchInput(entry, baseDirectory, currentCatalog, normalized.sourceVersion)
       : buildPendingResult(entry, 'manifest-missing')
   ));
+  if (requireExternalSource && currentCatalog.sourceVersion) {
+    const issueIds = new Set(externalSourceIssues.map((issue) => issue.id));
+    batches.forEach((batch) => {
+      if (issueIds.has(batch.id) || batch.inputSourceVersion !== currentCatalog.sourceVersion) return;
+      externalSourceIssues.push({
+        id: batch.id,
+        path: batch.path || null,
+        sourceKind: batch.sourceKind || 'unknown',
+        reason: 'input-source-version-current',
+      });
+      issueIds.add(batch.id);
+    });
+  }
   const reviewIssues = requireReviewed
     ? batches
       .filter((batch) => batch.review && batch.review.untracked > 0)

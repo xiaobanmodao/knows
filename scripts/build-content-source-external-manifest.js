@@ -5,6 +5,7 @@ const {
   isPlaceholderSourceUrl,
   normalizeBatchManifest,
 } = require('./content-source-input-batches');
+const { SOURCE_VERSION: CURRENT_SOURCE_VERSION } = require('./content-source-catalog');
 const { loadSourceInputFile } = require('./content-source-input');
 
 const DEFAULT_SOURCE_VERSION = 'external-source-v1';
@@ -43,6 +44,9 @@ function buildExternalSourceManifest({
     throw new Error('外部内容源 manifest 不得使用占位 sourceUrls 来源 URL');
   }
   const input = loadSourceInputFile(sourceFile, { sourceVersion: normalizedSourceVersion });
+  if (input.sourceVersion === CURRENT_SOURCE_VERSION || normalizedSourceVersion === CURRENT_SOURCE_VERSION) {
+    throw new Error(`外部内容源 manifest 不得使用当前内容源版本：${CURRENT_SOURCE_VERSION}`);
+  }
   const relativeInputPath = path.relative(path.dirname(outputPath), sourceFile).split(path.sep).join('/');
   const manifest = normalizeBatchManifest({
     schemaVersion: 1,

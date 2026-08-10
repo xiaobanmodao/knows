@@ -85,14 +85,22 @@ try {
       sourceEvidence,
     })),
   }, null, 2)}\n`, 'utf8');
+  const externalAuditReportPath = path.join(tempDirectory, 'external-audit.json');
   const externalAuditResult = spawnSync(process.execPath, [
     checker,
     externalManifestPath,
+    '--report', externalAuditReportPath,
     '--require-all-batches',
     '--require-no-diff',
     '--require-external-source',
   ], { cwd: root, encoding: 'utf8' });
-  assert.strictEqual(externalAuditResult.status, 0, externalAuditResult.stderr || externalAuditResult.stdout);
+  assert.notStrictEqual(externalAuditResult.status, 0);
+  const externalAudit = JSON.parse(fs.readFileSync(externalAuditReportPath, 'utf8'));
+  assert.strictEqual(externalAudit.status, 'blocked');
+  assert.deepStrictEqual(
+    [...new Set(externalAudit.requirements.externalSourceIssues.map((item) => item.reason))],
+    ['input-source-version-current'],
+  );
 
   const fixtureStrictResult = spawnSync(process.execPath, [
     checker,

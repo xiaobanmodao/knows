@@ -134,6 +134,35 @@ try {
     reason: 'source-kind-not-external',
   }]);
 
+  const relabeledCurrentSourceReport = buildContentSourceInputBatchAudit({
+    manifest: normalizeBatchManifest({
+      schemaVersion: 1,
+      sourceVersion: 'v1.11-current',
+      sourceKind: 'external-source',
+      batches: [{
+        id: 'english-units-v1.11',
+        path: 'english-units.json',
+        sourceKind: 'external-source',
+        sourceEvidence: {
+          sourceKeys: ['pep-english-external-contract'],
+          sourceUrls: ['https://www.pep.com.cn/xw/zt/hd/12/xjcjs/cz/202510/t20251024_2004130.html'],
+          reviewedAt: '2026-08-10',
+          note: '不能把当前内容源导出文件冒充外部资料',
+        },
+      }],
+    }),
+    baseDirectory: tempDirectory,
+    currentCatalog: source,
+    requireExternalSource: true,
+  });
+  assert.strictEqual(relabeledCurrentSourceReport.status, 'blocked');
+  assert.deepStrictEqual(relabeledCurrentSourceReport.requirements.externalSourceIssues, [{
+    id: 'english-units-v1.11',
+    path: 'english-units.json',
+    sourceKind: 'external-source',
+    reason: 'input-source-version-current',
+  }]);
+
   const missingEvidenceReport = buildContentSourceInputBatchAudit({
     manifest: normalizeBatchManifest({
       schemaVersion: 1,

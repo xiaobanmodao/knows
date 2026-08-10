@@ -18,10 +18,12 @@ const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'knows-external-manifest
 try {
   const catalog = buildContentSourceCatalog();
   const inputPath = path.join(directory, 'english-units.json');
-  fs.writeFileSync(inputPath, `${JSON.stringify(filterContentSourceCatalog(catalog, {
+  const externalInput = filterContentSourceCatalog(catalog, {
     subjectId: 'english',
     type: 'unit',
-  }), null, 2)}\n`, 'utf8');
+  });
+  externalInput.sourceVersion = 'external-english-units-v1';
+  fs.writeFileSync(inputPath, `${JSON.stringify(externalInput, null, 2)}\n`, 'utf8');
 
   const manifestPath = path.join(directory, 'external-manifest.json');
   const result = buildExternalSourceManifest({
@@ -65,6 +67,19 @@ try {
       note: 'missing source key',
     }),
     /sourceEvidence|sourceUrls|来源凭证/i,
+  );
+  assert.throws(
+    () => buildExternalSourceManifest({
+      batchId: 'english-units-v1.11',
+      inputPath,
+      manifestPath,
+      sourceVersion: 'v1.11-current',
+      sourceKeys: ['current-source-version'],
+      sourceUrls: ['https://www.pep.com.cn/xw/zt/hd/12/xjcjs/cz/202510/t20251024_2004130.html'],
+      reviewedAt: '2026-08-10',
+      note: '不得使用当前内容源版本',
+    }),
+    /当前内容源版本|sourceVersion/i,
   );
   assert.throws(
     () => buildExternalSourceManifest({
