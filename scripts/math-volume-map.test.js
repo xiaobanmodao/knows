@@ -35,6 +35,7 @@ assert.deepStrictEqual(report.sourceMap.requiredEvidenceFields, [
   'officialTitle',
   'officialSections',
   'sourceIds',
+  'sourceEvidence',
   'reviewedAt',
   'changeReason',
   'legacyAliasImpact',

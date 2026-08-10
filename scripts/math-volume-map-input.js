@@ -22,6 +22,7 @@ const ENTRY_FIELDS = new Set([
   'stableChapterId',
   'official',
   'sourceIds',
+  'sourceEvidence',
   'reviewedAt',
   'changeReason',
   'legacyAliasImpact',
@@ -33,6 +34,7 @@ const OFFICIAL_FIELDS = new Set([
   'officialTitle',
   'officialSections',
 ]);
+const SOURCE_EVIDENCE_FIELDS = new Set(['sourceId', 'locator', 'scope']);
 const LEGACY_IMPACT_FIELDS = new Set(['stableChapterId', 'lessonIds', 'legacyAliases', 'notes']);
 const PLACEHOLDER_TEXT = new Set(['待核对', '待补充', 'unknown', 'tbd', 'todo', 'n/a']);
 
@@ -94,6 +96,35 @@ function normalizeOfficial(official, index) {
   };
 }
 
+function normalizeSourceEvidence(value, sourceIds, index) {
+  if (!Array.isArray(value) || !value.length) {
+    fail('sourceEvidence 必须为非空数组', index);
+  }
+  const evidence = value.map((item, evidenceIndex) => {
+    if (!item || typeof item !== 'object' || Array.isArray(item)) {
+      fail(`sourceEvidence 第 ${evidenceIndex + 1} 项必须为对象`, index);
+    }
+    rejectUnexpectedFields(item, SOURCE_EVIDENCE_FIELDS, `sourceEvidence 第 ${evidenceIndex + 1} 项`, index);
+    const sourceId = requireText(item.sourceId, 'sourceEvidence.sourceId', index);
+    if (!sourceIds.includes(sourceId)) {
+      fail(`sourceEvidence.sourceId 必须是条目 sourceIds 的子集：${sourceId}`, index);
+    }
+    return {
+      sourceId,
+      locator: requireText(item.locator, 'sourceEvidence.locator', index),
+      scope: requireText(item.scope, 'sourceEvidence.scope', index),
+    };
+  });
+  const evidenceIds = evidence.map((item) => item.sourceId);
+  if (new Set(evidenceIds).size !== evidenceIds.length) {
+    fail('sourceEvidence.sourceId 不得重复', index);
+  }
+  if (JSON.stringify([...evidenceIds].sort()) !== JSON.stringify([...sourceIds].sort())) {
+    fail('sourceEvidence 必须逐一覆盖条目 sourceIds', index);
+  }
+  return evidence.sort((left, right) => left.sourceId.localeCompare(right.sourceId));
+}
+
 function normalizeLegacyAliasImpact(value, index) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     fail('legacyAliasImpact 必须为对象', index);
@@ -128,6 +159,7 @@ function normalizeEntry(entry, rootSourceIds, index) {
     stableChapterId,
     official: normalizeOfficial(entry.official, index),
     sourceIds,
+    sourceEvidence: normalizeSourceEvidence(entry.sourceEvidence, sourceIds, index),
     reviewedAt: requireDate(entry.reviewedAt, 'reviewedAt', index),
     changeReason: requireText(entry.changeReason, 'changeReason', index),
     legacyAliasImpact: normalizeLegacyAliasImpact(entry.legacyAliasImpact, index),

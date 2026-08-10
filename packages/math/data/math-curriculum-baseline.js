@@ -119,6 +119,7 @@ const MATH_CURRICULUM_BASELINE = {
         'officialTitle',
         'officialSections',
         'sourceIds',
+        'sourceEvidence',
         'reviewedAt',
         'changeReason',
         'legacyAliasImpact',

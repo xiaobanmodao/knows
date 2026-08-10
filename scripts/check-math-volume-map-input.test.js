@@ -35,6 +35,11 @@ function buildValidInput(overrides = {}) {
         officialSections: [`官方小节 ${index + 1}.1`],
       },
       sourceIds: [...SOURCE_IDS],
+      sourceEvidence: SOURCE_IDS.map((sourceId) => ({
+        sourceId,
+        locator: `第 ${index + 1} 章目录定位`,
+        scope: '用于核对官方册次、章号、标题和小节，不改变稳定容器。',
+      })),
       reviewedAt: '2026-08-10',
       changeReason: '外部官方目录与稳定容器建立证据映射。',
       legacyAliasImpact: {
@@ -93,6 +98,22 @@ const changedAliases = buildValidInput({
   )),
 });
 assert.throws(() => normalizeMathVolumeMapInput(changedAliases), /旧别名|legacyAliases|preserved/);
+
+const missingEvidence = buildValidInput({
+  entries: buildValidInput().entries.map((entry, index) => (
+    index === 0 ? { ...entry, sourceEvidence: [] } : entry
+  )),
+});
+assert.throws(() => normalizeMathVolumeMapInput(missingEvidence), /sourceEvidence|证据/);
+
+const mismatchedEvidence = buildValidInput({
+  entries: buildValidInput().entries.map((entry, index) => (
+    index === 0
+      ? { ...entry, sourceEvidence: [entry.sourceEvidence[0]] }
+      : entry
+  )),
+});
+assert.throws(() => normalizeMathVolumeMapInput(mismatchedEvidence), /sourceEvidence|sourceIds|证据/);
 
 const tempDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'knows-math-volume-map-'));
 try {

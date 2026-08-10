@@ -304,6 +304,7 @@ function checkBaselineContract() {
     'officialTitle',
     'officialSections',
     'sourceIds',
+    'sourceEvidence',
     'reviewedAt',
     'changeReason',
     'legacyAliasImpact',
