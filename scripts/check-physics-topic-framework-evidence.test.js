@@ -1,4 +1,5 @@
 const assert = require('assert');
+const childProcess = require('child_process');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -23,5 +24,19 @@ try {
 } finally {
   fs.rmSync(invalidEvidencePath, { force: true });
 }
+
+const defaultRun = childProcess.spawnSync(
+  process.execPath,
+  [path.join(__dirname, 'check-physics-topic-framework-evidence.js')],
+  { encoding: 'utf8' },
+);
+assert.strictEqual(defaultRun.status, 0, defaultRun.stderr);
+assert.match(defaultRun.stdout, /OK physics topic framework evidence: 6 topics/);
+
+assert.deepStrictEqual(checkPhysicsTopicFrameworkEvidence(), {
+  topicCount: 6,
+  evidenceKind: 'official-framework-support',
+  sourceKeys: ['moe-physics-2022', 'pep-physics-public'],
+});
 
 console.log('OK physics topic framework evidence contract');

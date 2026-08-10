@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "reviewId": "physics-topic-framework-support-2026-v1",
+  "reviewedAt": "2026-08-10",
+  "evidenceKind": "official-framework-support",
+  "scope": {
+    "supports": [
+      "现有原创物理专题与官方公开课程框架的宏观领域相容。",
+      "专题稳定标识、标题与内部复核快照可追溯。"
+    ],
+    "notVerified": [
+      "教材逐章标题",
+      "教材章节顺序",
+      "教材册次映射",
+      "教材正文与原始插图"
+    ]
+  },
+  "sources": [
+    {
+      "key": "moe-physics-2022",
+      "title": "义务教育物理课程标准（2022年版）",
+      "url": "https://www.moe.gov.cn/srcsite/A26/s8001/202204/t20220420_619921.html",
+      "observation": "作为义务教育物理课程标准的官方基线，用于宏观课程框架观察。"
+    },
+    {
+      "key": "pep-physics-public",
+      "title": "人教版初中物理新教材介绍",
+      "url": "https://www.pep.com.cn/xw/zt/hd/12/xjcjs/cz/202409/t20240925_1995627.html",
+      "observation": "公开介绍提及全套共 22 章，并概述声光热、力学、能量与电磁等宏观进程。"
+    }
+  ],
+  "topics": [
+    {
+      "id": "phy-topic-motion-sound",
+      "title": "运动与声音",
+      "reviewSnapshotHash": "acb1f99a8a0a9b7b7b142ca761cf479bb756469cf69edb716afc8d5db2d7a9dc",
+      "frameworkDomains": ["movement/sound"]
+    },
+    {
+      "id": "phy-topic-light",
+      "title": "光现象与成像",
+      "reviewSnapshotHash": "a573a2ebe432e0c22c2a7fe9c7d867e6cd273537d238a560d4704908dce4b6aa",
+      "frameworkDomains": ["light/imaging"]
+    },
+    {
+      "id": "phy-topic-matter",
+      "title": "热现象与物质测量",
+      "reviewSnapshotHash": "4656e035da0add1681fa90c5a5a7c30bbeb2268ceeaee02c63b1f5cc31d44cf1",
+      "frameworkDomains": ["heat/matter measurement"]
+    },
+    {
+      "id": "phy-topic-force",
+      "title": "力与流体",
+      "reviewSnapshotHash": "081bde27a83fa1e8bb4aae3695a692419b5866919d19f6bee52d729ba72595b3",
+      "frameworkDomains": ["force/fluid"]
+    },
+    {
+      "id": "phy-topic-energy",
+      "title": "功与能量",
+      "reviewSnapshotHash": "65f56f16b74729357cdd02056c6995c044b5fe3c458e5b880d565346388dd6c8",
+      "frameworkDomains": ["work/energy"]
+    },
+    {
+      "id": "phy-topic-electricity",
+      "title": "电学与电磁现象",
+      "reviewSnapshotHash": "fc6c93d1091a552704f1f8158fb15e70b0c1e16054624dc1566a6f2ab989ddb1",
+      "frameworkDomains": ["electricity/electromagnetism"]
+    }
+  ]
+}

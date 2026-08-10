@@ -12,16 +12,27 @@ const { getContentSource, isAllowedContentSourceUrl } = require('../data/content
 
 const ROOT = path.resolve(__dirname, '..');
 const DEFAULT_EVIDENCE_PATH = path.join(ROOT, 'docs/evidence/physics-topic-framework-review-2026.json');
-const REVIEW_ID = 'physics-topic-framework-review-2026';
+const SCHEMA_VERSION = 1;
+const REVIEW_ID = 'physics-topic-framework-support-2026-v1';
+const REVIEWED_AT = '2026-08-10';
 const EVIDENCE_KIND = 'official-framework-support';
 const EXPECTED_SOURCE_KEYS = ['moe-physics-2022', 'pep-physics-public'];
-const EXPLICIT_EXCLUSIONS = [
-  'chapter-title',
-  'chapter-order',
-  'volume-mapping',
-  'edition-specific-textbook-mapping',
+const NOT_VERIFIED = [
+  '教材逐章标题',
+  '教材章节顺序',
+  '教材册次映射',
+  '教材正文与原始插图',
 ];
-const PROHIBITED_CLAIM_FIELDS = new Set(['chaptertitle', 'chapterorder', 'volumemapping']);
+const PROHIBITED_FIELD_TOKENS = ['chapter', 'volume', 'lesson', 'body', 'sourceinput', 'externalsource'];
+const RETIRED_FIELDS = new Set(['explicitexclusions', 'topicid', 'snapshothash']);
+const EXPECTED_FRAMEWORK_DOMAINS = new Map([
+  ['phy-topic-motion-sound', ['movement/sound']],
+  ['phy-topic-light', ['light/imaging']],
+  ['phy-topic-matter', ['heat/matter measurement']],
+  ['phy-topic-force', ['force/fluid']],
+  ['phy-topic-energy', ['work/energy']],
+  ['phy-topic-electricity', ['electricity/electromagnetism']],
+]);
 
 function readEvidence(evidencePath) {
   let input;
@@ -38,13 +49,15 @@ function readEvidence(evidencePath) {
   }
 }
 
-function assertNoProhibitedClaims(value, location = 'record') {
+function assertNoProhibitedFields(value, location = 'record') {
   if (!value || typeof value !== 'object') return;
 
   Object.entries(value).forEach(([key, child]) => {
     const normalized = key.replace(/[^a-zA-Z]/g, '').toLowerCase();
-    assert.ok(!PROHIBITED_CLAIM_FIELDS.has(normalized), `${location}: 不得声明教材章节标题、章节顺序或册次映射：${key}`);
-    assertNoProhibitedClaims(child, `${location}.${key}`);
+    const isProhibited = RETIRED_FIELDS.has(normalized)
+      || PROHIBITED_FIELD_TOKENS.some((token) => normalized.includes(token));
+    assert.ok(!isProhibited, `${location}: 不得包含教材映射、内容输入或外部来源字段：${key}`);
+    assertNoProhibitedFields(child, `${location}.${key}`);
   });
 }
 
@@ -61,6 +74,8 @@ function assertSources(sources) {
     assert.strictEqual(source.title, registered.title, `${source.key}: 来源标题漂移`);
     assert.strictEqual(source.url, registered.url, `${source.key}: 来源 URL 漂移`);
     assert.ok(isAllowedContentSourceUrl(registered, source.url), `${source.key}: 来源域名不受信任`);
+    assert.ok(typeof source.observation === 'string' && source.observation.trim(), `${source.key}: observation 必须为非空文本`);
+    assert.ok(source.observation.trim().length <= 240, `${source.key}: observation 必须为简短文本`);
   });
 
   return sourceKeys;
@@ -76,20 +91,21 @@ function assertTopics(topicEvidence) {
   const seen = new Set();
   topicEvidence.forEach((item) => {
     assert.ok(item && typeof item === 'object', 'topics 条目必须为对象');
-    assert.ok(!seen.has(item.topicId), `${item.topicId}: 专题佐证重复`);
-    seen.add(item.topicId);
+    assert.ok(!seen.has(item.id), `${item.id}: 专题佐证重复`);
+    seen.add(item.id);
 
-    const topic = currentTopics.get(item.topicId);
-    assert.ok(topic, `${item.topicId}: 不是当前物理专题`);
-    assert.strictEqual(item.title, topic.title, `${item.topicId}: 专题标题漂移`);
-    assert.ok(Array.isArray(item.frameworkDomains) && item.frameworkDomains.length > 0, `${item.topicId}: frameworkDomains 必须为非空数组`);
-    assert.ok(item.frameworkDomains.every((domain) => typeof domain === 'string' && domain.trim()), `${item.topicId}: frameworkDomains 必须只包含非空文本`);
+    const topic = currentTopics.get(item.id);
+    assert.ok(topic, `${item.id}: 不是当前物理专题`);
+    assert.strictEqual(item.title, topic.title, `${item.id}: 专题标题漂移`);
+    assert.ok(Array.isArray(item.frameworkDomains) && item.frameworkDomains.length > 0, `${item.id}: frameworkDomains 必须为非空数组`);
+    assert.ok(item.frameworkDomains.every((domain) => typeof domain === 'string' && domain.trim()), `${item.id}: frameworkDomains 必须只包含非空文本`);
+    assert.deepStrictEqual(item.frameworkDomains, EXPECTED_FRAMEWORK_DOMAINS.get(item.id), `${item.id}: frameworkDomains 不匹配`);
 
-    const reviewMeta = getPhysicsTopicReviewMeta(item.topicId);
-    assert.ok(reviewMeta, `${item.topicId}: 当前专题复核元数据缺失`);
+    const reviewMeta = getPhysicsTopicReviewMeta(item.id);
+    assert.ok(reviewMeta, `${item.id}: 当前专题复核元数据缺失`);
     const currentHash = buildPhysicsTopicReviewSnapshot(topic).hash;
-    assert.strictEqual(reviewMeta.snapshotHash, currentHash, `${item.topicId}: 当前专题复核快照漂移`);
-    assert.strictEqual(item.snapshotHash, currentHash, `${item.topicId}: 佐证快照与当前专题不一致`);
+    assert.strictEqual(reviewMeta.snapshotHash, currentHash, `${item.id}: 当前专题复核快照漂移`);
+    assert.strictEqual(item.reviewSnapshotHash, currentHash, `${item.id}: 佐证快照与当前专题不一致`);
   });
 
   assert.strictEqual(seen.size, currentTopics.size, '专题佐证覆盖不完整');
@@ -98,10 +114,15 @@ function assertTopics(topicEvidence) {
 function checkPhysicsTopicFrameworkEvidence({ evidencePath = DEFAULT_EVIDENCE_PATH } = {}) {
   const evidence = readEvidence(path.resolve(evidencePath));
   assert.ok(evidence && typeof evidence === 'object' && !Array.isArray(evidence), '佐证记录必须为对象');
+  assert.strictEqual(evidence.schemaVersion, SCHEMA_VERSION, 'schemaVersion 不匹配');
   assert.strictEqual(evidence.reviewId, REVIEW_ID, 'reviewId 不匹配');
+  assert.strictEqual(evidence.reviewedAt, REVIEWED_AT, 'reviewedAt 不匹配');
   assert.strictEqual(evidence.evidenceKind, EVIDENCE_KIND, 'evidenceKind 不匹配');
-  assert.deepStrictEqual(evidence.explicitExclusions, EXPLICIT_EXCLUSIONS, 'explicitExclusions 不匹配');
-  assertNoProhibitedClaims(evidence);
+  assert.ok(evidence.scope && typeof evidence.scope === 'object' && !Array.isArray(evidence.scope), 'scope 必须为对象');
+  assert.ok(Array.isArray(evidence.scope.supports), 'scope.supports 必须为数组');
+  assert.ok(evidence.scope.supports.length > 0 && evidence.scope.supports.every((item) => typeof item === 'string' && item.trim()), 'scope.supports 必须只包含非空文本');
+  assert.deepStrictEqual(evidence.scope.notVerified, NOT_VERIFIED, 'scope.notVerified 不匹配');
+  assertNoProhibitedFields(evidence);
 
   const sourceKeys = assertSources(evidence.sources);
   assertTopics(evidence.topics);
@@ -126,7 +147,7 @@ if (require.main === module) {
 module.exports = {
   DEFAULT_EVIDENCE_PATH,
   EVIDENCE_KIND,
-  EXPLICIT_EXCLUSIONS,
+  NOT_VERIFIED,
   REVIEW_ID,
   checkPhysicsTopicFrameworkEvidence,
 };
