@@ -21,6 +21,7 @@ const DEFAULT_CHECKS = [
   { script: 'scripts/check-physics-formula-contract.test.js', label: '物理公式契约' },
   { script: 'scripts/check-physics-topic-review.js', label: '物理专题复核' },
   { script: 'scripts/check-physics-template-review.js', label: '物理方法复核' },
+  { script: 'scripts/check-subject-high-risk-batches.test.js', label: '英语物理高风险批次契约' },
   { script: 'scripts/check-chemistry-content.js', label: '化学内容' },
   { script: 'scripts/check-chemistry-accuracy.js', label: '化学准确性' },
   { script: 'scripts/check-chemistry-build-contract.test.js', label: '化学构建契约' },
@@ -58,6 +59,7 @@ const DEFAULT_CHECKS = [
   { script: 'scripts/check-release-readiness.js', label: '发布准备' },
   { script: 'scripts/check-release-tool-state.test.js', label: '开发者工具状态诊断契约' },
   { script: 'scripts/check-content-source-catalog.js', label: '内容源目录产物' },
+  { script: 'scripts/check-subject-high-risk-batches.js', args: ['--report', 'dist/content-audit/subject-high-risk-batches.json'], label: '英语物理高风险批次报告' },
 ];
 
 const RELEASE_CHECKS = [
