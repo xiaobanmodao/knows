@@ -44,6 +44,7 @@ assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-runtime-
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-remote-assets.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-release-tool-state.test.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-release-tool-state-evidence.test.js'));
+assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-roadmap-status.test.js'));
 [
   'scripts/check-package-manifest.js',
   'scripts/check-student-copy.js',
