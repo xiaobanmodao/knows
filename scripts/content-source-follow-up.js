@@ -6,6 +6,7 @@ const {
 } = require('./content-source-input-batches');
 const { buildContentSourceCatalog } = require('./content-source-catalog');
 const { getContentSourceBatch } = require('./check-content-source-batches');
+const { getContentSourceCandidates } = require('../data/content-source-registry');
 
 const SUBJECT_ORDER = ['math', 'english', 'physics', 'chemistry', 'biology'];
 const TYPE_ORDER = [
@@ -20,29 +21,12 @@ const STATUS_ORDER = {
   passed: 4,
 };
 
-const SOURCE_CANDIDATES = Object.freeze({
-  math: [
-    { key: 'moe-math-curriculum-2022', title: '义务教育数学课程标准（2022年版）', url: 'https://www.moe.gov.cn/srcsite/A26/s8001/202204/W020220420582346895190.pdf' },
-    { key: 'moe-textbook-catalog-2024', title: '2024年义务教育国家课程教学用书目录（根据2022年版课程标准修订）', url: 'https://www.moe.gov.cn/srcsite/A26/s8001/202408/W020250418502592948423.pdf' },
-    { key: 'pep-math-new-textbook-2024', title: '人教版义务教育数学（七至九年级）新教材介绍', url: 'https://www.pep.com.cn/xw/zt/hd/12/xjcjs/cz/202408/t20240826_1994351.html' },
-  ],
-  english: [
-    { key: 'moe-english-curriculum-2022', title: '义务教育英语课程标准（2022年版）', url: 'https://www.moe.gov.cn/srcsite/A26/s8001/202204/t20220420_619921.html' },
-    { key: 'pep-english-new-textbook-2025', title: '人教版义务教育英语（七至九年级）新教材介绍', url: 'https://www.pep.com.cn/xw/zt/hd/12/xjcjs/cz/202510/t20251024_2004130.html' },
-  ],
-  physics: [
-    { key: 'moe-physics-2022', title: '义务教育物理课程标准（2022年版）', url: 'https://www.moe.gov.cn/srcsite/A26/s8001/202204/t20220420_619921.html' },
-    { key: 'pep-physics-public', title: '人教版初中物理新教材介绍', url: 'https://www.pep.com.cn/xw/zt/hd/12/xjcjs/cz/202409/t20240925_1995627.html' },
-  ],
-  chemistry: [
-    { key: 'moe-chemistry-2022', title: '义务教育化学课程标准（2022年版）', url: 'https://www.moe.gov.cn/srcsite/A26/s8001/202204/t20220420_619921.html' },
-    { key: 'moe-textbook-catalog-2024', title: '2024年义务教育国家课程教学用书目录（根据2022年版课程标准修订）', url: 'https://www.moe.gov.cn/srcsite/A26/s8001/202408/W020250418502592948423.pdf' },
-    { key: 'pep-chemistry-training-2024', title: '人教版义务教育化学新教材培训通知', url: 'https://www.pep.com.cn/rjdt/rjdt/202405/t20240517_1992181.shtml' },
-  ],
-  biology: [
-    { key: 'moe-biology-curriculum-2022', title: '义务教育生物学课程标准（2022年版）', url: 'https://www.moe.gov.cn/srcsite/A26/s8001/202204/W020220420582359998122.pdf' },
-    { key: 'pep-compulsory-biology-textbook', title: '人教版义务教育生物学（七至八年级）新教材介绍', url: 'https://www.pep.com.cn/xw/zt/hd/12/xjcjs/cz/202409/t20240914_1995532.html' },
-  ],
+const SOURCE_CANDIDATE_KEYS = Object.freeze({
+  math: ['moe-math-curriculum-2022', 'moe-textbook-catalog-2024', 'pep-math-new-textbook-2024'],
+  english: ['moe-english-curriculum-2022', 'pep-english-new-textbook-2025'],
+  physics: ['moe-physics-2022', 'pep-physics-public'],
+  chemistry: ['moe-chemistry-2022', 'moe-textbook-catalog-2024', 'pep-chemistry-training-2024'],
+  biology: ['moe-biology-curriculum-2022', 'pep-compulsory-biology-textbook'],
 });
 
 const REQUIRED_FIELDS_BY_TYPE = Object.freeze({
@@ -68,7 +52,7 @@ function getSourceRequirements(subjectId, type) {
   const special = subjectId === 'math' && type === 'chapter' ? MATH_CHAPTER_REQUIREMENT : null;
   return {
     evidenceStatus: special ? special.evidenceStatus : 'source-evidence-required',
-    sourceCandidates: (SOURCE_CANDIDATES[subjectId] || []).map((source) => ({ ...source })),
+    sourceCandidates: getContentSourceCandidates(SOURCE_CANDIDATE_KEYS[subjectId] || []),
     requiredFields: [...(REQUIRED_FIELDS_BY_TYPE[type] || ['批次范围、来源定位与复核日期'])],
     note: special ? special.note : '接入前需保留与本批范围一致的官方来源、字段定位和人工复核日期。',
     blockedActions: special ? [...special.blockedActions] : [],

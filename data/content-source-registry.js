@@ -115,6 +115,21 @@ function getContentSourceKeys() {
   return Object.keys(CONTENT_SOURCE_REGISTRY).sort();
 }
 
+function getContentSourceCandidates(keys) {
+  if (!Array.isArray(keys)) throw new Error('内容来源候选键必须为数组');
+  return keys.map((key) => {
+    const source = getContentSource(key);
+    if (!source || source.kind !== 'official' || !source.url) {
+      throw new Error(`内容来源候选必须是已登记的官方来源：${key}`);
+    }
+    return {
+      key: source.key,
+      title: source.title,
+      url: source.url,
+    };
+  });
+}
+
 function isAllowedContentSourceUrl(source, url) {
   if (!source || !url) return false;
   const hostname = new URL(url).hostname;
@@ -149,6 +164,7 @@ module.exports = {
   CONTENT_SOURCE_REGISTRY,
   getContentSource,
   getContentSourceKeys,
+  getContentSourceCandidates,
   isAllowedContentSourceUrl,
   checkContentSourceRegistry,
 };

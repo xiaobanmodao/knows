@@ -4,6 +4,7 @@ const { collectAuditEntities, validateSourceReference } = require('./content-aud
 const {
   CONTENT_SOURCE_REGISTRY,
   getContentSource,
+  getContentSourceCandidates,
   getContentSourceKeys,
   checkContentSourceRegistry,
 } = require('../data/content-source-registry');
@@ -26,6 +27,23 @@ const canonical = getContentSource('pep-english-new-textbook-2025');
 assert.strictEqual(canonical.url, 'https://www.pep.com.cn/xw/zt/hd/12/xjcjs/cz/202510/t20251024_2004130.html');
 assert.strictEqual(canonical.kind, 'official');
 assert.strictEqual(getContentSource('not-registered'), null);
+assert.deepStrictEqual(
+  getContentSourceCandidates(['moe-math-curriculum-2022', 'pep-math-new-textbook-2024']),
+  [
+    {
+      key: 'moe-math-curriculum-2022',
+      title: '义务教育数学课程标准（2022年版）',
+      url: 'https://www.moe.gov.cn/srcsite/A26/s8001/202204/W020220420582346895190.pdf',
+    },
+    {
+      key: 'pep-math-new-textbook-2024',
+      title: '人教版义务教育数学（七至九年级）新教材介绍',
+      url: 'https://www.pep.com.cn/xw/zt/hd/12/xjcjs/cz/202408/t20240826_1994351.html',
+    },
+  ],
+);
+assert.throws(() => getContentSourceCandidates(['not-registered']), /官方来源/);
+assert.throws(() => getContentSourceCandidates(['pep-math-current-catalog']), /官方来源/);
 assert.throws(
   () => validateSourceReference({ key: 'not-registered', title: 'x', url: 'https://example.org' }, 'fixture/entity'),
   /未登记/,
