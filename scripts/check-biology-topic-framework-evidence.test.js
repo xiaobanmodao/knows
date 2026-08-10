@@ -41,8 +41,13 @@ assert.throws(
 const defaultRun = spawnSync(process.execPath, [path.join(__dirname, 'check-biology-topic-framework-evidence.js')], {
   encoding: 'utf8',
 });
-assert.strictEqual(defaultRun.status, 1);
-assert.match(defaultRun.stderr, /FOUND_BIOLOGY_TOPIC_FRAMEWORK_EVIDENCE_ISSUE: 生物专题官方框架佐证记录读取失败/);
+assert.strictEqual(defaultRun.status, 0);
+assert.match(defaultRun.stdout, /OK biology topic framework evidence/);
+assert.deepStrictEqual(checkBiologyTopicFrameworkEvidence(), {
+  topicCount: 6,
+  sourceKeys: ['moe-biology-curriculum-2022', 'pep-compulsory-biology-textbook'],
+  evidenceKind: 'official-framework-support',
+});
 
 function buildSnapshotHash(topic) {
   return crypto.createHash('sha256').update(JSON.stringify({
@@ -127,7 +132,20 @@ const completeEvidencePath = path.join(
   os.tmpdir(),
   `knows-biology-topic-framework-complete-${process.pid}-${Date.now()}.json`,
 );
-fs.writeFileSync(completeEvidencePath, JSON.stringify(createCompleteEvidence()));
+const completeEvidence = createCompleteEvidence();
+fs.writeFileSync(completeEvidencePath, JSON.stringify(completeEvidence));
+const reorderedEvidencePath = path.join(
+  os.tmpdir(),
+  `knows-biology-topic-framework-reordered-${process.pid}-${Date.now()}.json`,
+);
+fs.writeFileSync(reorderedEvidencePath, JSON.stringify({
+  ...completeEvidence,
+  topics: [completeEvidence.topics[1], completeEvidence.topics[0], ...completeEvidence.topics.slice(2)],
+}));
+assert.throws(
+  () => checkBiologyTopicFrameworkEvidence({ evidencePath: reorderedEvidencePath }),
+  /专题佐证 ID 或顺序漂移/,
+);
 const originalReview = getBiologyReview;
 const biologyReviewModule = require('../packages/biology/data/content-review-meta');
 try {
@@ -173,6 +191,7 @@ try {
 } finally {
   biologyReviewModule.getBiologyReview = originalReview;
   fs.rmSync(completeEvidencePath, { force: true });
+  fs.rmSync(reorderedEvidencePath, { force: true });
 }
 
 console.log('OK biology topic framework evidence contract');

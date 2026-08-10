@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "reviewId": "biology-topic-framework-support-2026-v1",
+  "reviewedAt": "2026-08-11",
+  "evidenceKind": "official-framework-support",
+  "scope": {
+    "supports": [
+      "现有原创生物专题与官方公开课程、教材单元框架的宏观领域相容。",
+      "专题稳定标识、标题与内部复核快照可追溯。"
+    ],
+    "notVerified": [
+      "教材逐章标题",
+      "教材章节顺序",
+      "教材册次映射",
+      "教材正文与原始插图"
+    ]
+  },
+  "sources": [
+    {
+      "key": "moe-biology-curriculum-2022",
+      "title": "义务教育生物学课程标准（2022年版）",
+      "url": "https://www.moe.gov.cn/srcsite/A26/s8001/202204/W020220420582359998122.pdf",
+      "role": "curriculum-baseline",
+      "observation": "作为义务教育生物学课程标准的官方基线，用于宏观课程框架观察。"
+    },
+    {
+      "key": "pep-compulsory-biology-textbook",
+      "title": "人教版义务教育生物学（七～八年级）新教材介绍",
+      "url": "https://www.pep.com.cn/xw/zt/hd/12/xjcjs/cz/202409/t20240914_1995532.html",
+      "role": "textbook-unit-framework-summary",
+      "observation": "公开介绍说明教材包括六个单元、对应课程标准前六个学习主题，并概述六个单元的宏观内容。"
+    }
+  ],
+  "topics": [
+    {
+      "id": "bio-unit-cells",
+      "title": "生物和细胞",
+      "reviewSnapshotHash": "799dd2317c340df4a93834162bf1afd863ee483e7860ce29f4d3d4eef6d7a5fa",
+      "frameworkDomains": ["life/cells"]
+    },
+    {
+      "id": "bio-unit-diversity",
+      "title": "多种多样的生物",
+      "reviewSnapshotHash": "40cd4f457537610c329b66d81a510b547a8c338edb03e7f9fdf229acba443373",
+      "frameworkDomains": ["organism diversity/classification"]
+    },
+    {
+      "id": "bio-unit-plants",
+      "title": "植物的生活",
+      "reviewSnapshotHash": "c632f0d3e673c8337f2e15c3213fce6dd7a8b85dc2e7049cab0bd64900f118e3",
+      "frameworkDomains": ["plant life/processes"]
+    },
+    {
+      "id": "bio-unit-health",
+      "title": "人体生理与健康",
+      "reviewSnapshotHash": "f7a2a8aee3179e5ce720f62248ec87ea3950ff951b70453613100a7c77cded46",
+      "frameworkDomains": ["human physiology/health"]
+    },
+    {
+      "id": "bio-unit-environment",
+      "title": "生物与环境",
+      "reviewSnapshotHash": "8bae4cd4301a70106ae245cb199482d28e60847e47a81c7505c94d76f10978d1",
+      "frameworkDomains": ["organism/environment"]
+    },
+    {
+      "id": "bio-unit-evolution",
+      "title": "生命的延续和发展",
+      "reviewSnapshotHash": "da9a7d8b129ec932b45dfc9de094b54e3632c7ba1e48a03a03eaed7b47b601ac",
+      "frameworkDomains": ["continuity/evolution"]
+    }
+  ]
+}
