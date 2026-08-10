@@ -63,9 +63,13 @@ function createUnit(config) {
     id: `${config.id}-grammar-${item.id}`,
     contentMeta: getContentReviewMeta('english'),
   }));
+  const legacyTitles = [...new Set((config.legacyTitles || [])
+    .map((title) => String(title || '').trim())
+    .filter((title) => title && title !== config.title))];
 
   return {
     ...config,
+    legacyTitles,
     subjectId: 'english',
     type: 'unit',
     unitLabel: config.isStarter ? `Starter Unit ${config.number}` : `Unit ${config.number}`,
@@ -78,6 +82,7 @@ function createUnit(config) {
     grammarCount: grammarPoints.length,
     keywords: [
       config.title,
+      legacyTitles,
       config.theme,
       ...vocabulary.flatMap((item) => [item.word, item.meaning, ...item.collocations]),
       ...grammarPoints.map((item) => item.title),

@@ -25,7 +25,7 @@ function buildSearchEntries(makeEntry) {
     subtitle: `英语 · ${unit.bookLabel}`,
     description: unit.theme,
     tags: [unit.theme, `${unit.vocabularyCount} 词`, `${unit.grammarCount} 语法`],
-    tokens: [unit.title, unit.unitLabel, unit.expressions],
+    tokens: [unit.title, unit.legacyTitles, unit.unitLabel, unit.expressions],
   }));
   const wordEntries = englishUnits.vocabulary.map((word) => makeEntry({
     refId: word.unitId,
