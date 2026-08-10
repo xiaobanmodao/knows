@@ -37,6 +37,8 @@ assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-math-con
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-math-confirmed-changes.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/math-pep-product-index-evidence.test.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-math-pep-product-index-evidence.js'));
+assert.ok(defaultCommands.some((item) => item.script === 'scripts/math-moe-catalog-mirror-evidence.test.js'));
+assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-math-moe-catalog-mirror-evidence.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-chemistry-build-contract.test.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-biology-build-contract.test.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/content-source-input.test.js'));

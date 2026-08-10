@@ -34,12 +34,16 @@ assert.strictEqual(smartEducation.kind, 'official');
 const mathProductIndex = getContentSource('pep-math-product-index-2026');
 assert.strictEqual(mathProductIndex.url, 'https://www.pep.com.cn/rjyc/kcjc/gjkc/rjbjc/');
 assert.strictEqual(mathProductIndex.kind, 'official');
+const mathCatalogMirror = getContentSource('moe-textbook-catalog-2024-mirror-shanghai');
+assert.strictEqual(mathCatalogMirror.url, 'https://edu.sh.gov.cn/mbjy_fgwx_qt/20240821/bb17bd928d244286b599eaa826ee5167.html');
+assert.strictEqual(mathCatalogMirror.kind, 'official');
 assert.strictEqual(getContentSource('not-registered'), null);
 assert.deepStrictEqual(
   getContentSourceCandidateKeys('math'),
   [
     'moe-math-curriculum-2022',
     'moe-textbook-catalog-2024',
+    'moe-textbook-catalog-2024-mirror-shanghai',
     'pep-math-new-textbook-2024',
     'pep-math-product-index-2026',
     'smartedu-math-textbook-catalog-2026',

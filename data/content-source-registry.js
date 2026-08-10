@@ -4,6 +4,7 @@ const OFFICIAL_HOSTS = new Set([
   'www.pep.com.cn',
   'pep.com.cn',
   'basic.smartedu.cn',
+  'edu.sh.gov.cn',
 ]);
 const REFERENCE_HOSTS = new Set([
   'dictionary.cambridge.org',
@@ -30,6 +31,11 @@ const SOURCE_DEFINITIONS = {
   'moe-textbook-catalog-2024': {
     title: '2024年义务教育国家课程教学用书目录（根据2022年版课程标准修订）',
     url: 'https://www.moe.gov.cn/srcsite/A26/s8001/202408/W020250418502592948423.pdf',
+    kind: 'official',
+  },
+  'moe-textbook-catalog-2024-mirror-shanghai': {
+    title: '上海市教委转载教育部 2024 年义务教育国家课程教学用书目录通知',
+    url: 'https://edu.sh.gov.cn/mbjy_fgwx_qt/20240821/bb17bd928d244286b599eaa826ee5167.html',
     kind: 'official',
   },
   'pep-chemistry-training-2024': {
@@ -128,6 +134,7 @@ const CONTENT_SOURCE_CANDIDATE_KEYS_BY_SUBJECT = Object.freeze(
     math: [
       'moe-math-curriculum-2022',
       'moe-textbook-catalog-2024',
+      'moe-textbook-catalog-2024-mirror-shanghai',
       'pep-math-new-textbook-2024',
       'pep-math-product-index-2026',
       'smartedu-math-textbook-catalog-2026',

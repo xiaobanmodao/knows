@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "sourceId": "moe-textbook-catalog-2024-mirror-shanghai",
+  "sourceUrl": "https://edu.sh.gov.cn/mbjy_fgwx_qt/20240821/bb17bd928d244286b599eaa826ee5167.html",
+  "attachmentUrl": "https://edu.sh.gov.cn/cmsres/01/01986684fade49c686fcdda5df80cc19/55ec0fda59666ffb41a32c54c646f01b.pdf",
+  "checkedAt": "2026-08-10",
+  "result": "version-scope-only",
+  "chapterDirectoryIncluded": false,
+  "volumeMapAction": "keep-volume-map-blocked",
+  "notice": {
+    "issuingBody": "教育部办公厅",
+    "documentNumber": "教材厅函〔2024〕7号",
+    "publishedAt": "2024-07-25",
+    "title": "教育部办公厅关于印发《2024年义务教育国家课程教学用书目录（根据2022年版课程标准修订）》的通知",
+    "scope": "官方目录通知和附件确认国家课程教材版本与册次范围，不提供人教版数学逐册章/节目录。"
+  },
+  "mathRows": [
+    {
+      "author": "王长平",
+      "publisher": "人民教育出版社",
+      "title": "义务教育教科书•数学",
+      "volumeRange": "七年级上册至九年级下册",
+      "gradeRange": "七年级至九年级",
+      "page": 3,
+      "textbookKind": "普通学校"
+    }
+  ],
+  "contentBoundary": "仅记录官方目录通知、附件页码和人教版数学出版社/册次范围；不复制教材正文、题目、解析或插图，也不确认 29 个稳定章节的新版逐册章序。"
+}
