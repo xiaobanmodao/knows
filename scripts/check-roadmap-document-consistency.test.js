@@ -18,8 +18,8 @@ assert.match(
 );
 assert.match(
   roadmap,
-  new RegExp('当前质量矩阵 `'+expectedCount+'/'+expectedCount+'`'),
-  `路线文档的质量矩阵结果应为 ${expectedCount}/${expectedCount}`,
+  new RegExp(`默认质量矩阵现登记 ${expectedCount} 项`),
+  `路线文档应准确说明默认质量矩阵登记了 ${expectedCount} 项`,
 );
 assert.match(
   productRoadmap,
