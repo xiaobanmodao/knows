@@ -1,0 +1,95 @@
+{
+  "schemaVersion": 1,
+  "sourceId": "pep-math-product-index-2026",
+  "sourceUrl": "https://www.pep.com.cn/rjyc/kcjc/gjkc/rjbjc/",
+  "checkedAt": "2026-08-10",
+  "contentBoundary": "仅记录人教社域名下数学册次产品页的存在性、索引列出情况和页面是否提供章节目录，不复制教材正文、题目、解析或插图。",
+  "result": "product-index-only",
+  "volumeMapAction": "keep-volume-map-blocked",
+  "indexSummary": {
+    "sourceUrl": "https://www.pep.com.cn/rjyc/kcjc/gjkc/rjbjc/",
+    "listedVolumeCount": 5,
+    "listedVolumeKeys": [
+      "七年级/上册",
+      "七年级/下册",
+      "八年级/上册",
+      "八年级/下册",
+      "九年级/下册"
+    ],
+    "omittedFromIndex": ["九年级/上册"]
+  },
+  "entries": [
+    {
+      "key": "七年级/上册",
+      "grade": "七年级",
+      "volume": "上册",
+      "path": "sx7s",
+      "pageUrl": "https://www.pep.com.cn/rjyc/kcjc/gjkc/rjbjc/sx7s/",
+      "pageStatus": 200,
+      "pageTitle": "数学 七年级上册_人教玉成公司",
+      "listedInIndex": true,
+      "hasChapterDirectory": false,
+      "detailLinkState": "legacy-or-missing"
+    },
+    {
+      "key": "七年级/下册",
+      "grade": "七年级",
+      "volume": "下册",
+      "path": "sx7x",
+      "pageUrl": "https://www.pep.com.cn/rjyc/kcjc/gjkc/rjbjc/sx7x/",
+      "pageStatus": 200,
+      "pageTitle": "数学 七年级下册_人教玉成公司",
+      "listedInIndex": true,
+      "hasChapterDirectory": false,
+      "detailLinkState": "legacy-or-missing"
+    },
+    {
+      "key": "八年级/上册",
+      "grade": "八年级",
+      "volume": "上册",
+      "path": "sx8s",
+      "pageUrl": "https://www.pep.com.cn/rjyc/kcjc/gjkc/rjbjc/sx8s/",
+      "pageStatus": 200,
+      "pageTitle": "数学 八年级上册_人教玉成公司",
+      "listedInIndex": true,
+      "hasChapterDirectory": false,
+      "detailLinkState": "legacy-or-missing"
+    },
+    {
+      "key": "八年级/下册",
+      "grade": "八年级",
+      "volume": "下册",
+      "path": "sx8x",
+      "pageUrl": "https://www.pep.com.cn/rjyc/kcjc/gjkc/rjbjc/sx8x/",
+      "pageStatus": 200,
+      "pageTitle": "数学 八年级下册_人教玉成公司",
+      "listedInIndex": true,
+      "hasChapterDirectory": false,
+      "detailLinkState": "legacy-or-missing"
+    },
+    {
+      "key": "九年级/上册",
+      "grade": "九年级",
+      "volume": "上册",
+      "path": "sx9s",
+      "pageUrl": "https://www.pep.com.cn/rjyc/kcjc/gjkc/rjbjc/sx9s/",
+      "pageStatus": 200,
+      "pageTitle": "数学 九年级上册_人民教育出版社西北课程教材研究培训中心",
+      "listedInIndex": false,
+      "hasChapterDirectory": false,
+      "detailLinkState": "legacy-or-missing"
+    },
+    {
+      "key": "九年级/下册",
+      "grade": "九年级",
+      "volume": "下册",
+      "path": "sx9x",
+      "pageUrl": "https://www.pep.com.cn/rjyc/kcjc/gjkc/rjbjc/sx9x/",
+      "pageStatus": 200,
+      "pageTitle": "数学 九年级下册_人教玉成公司",
+      "listedInIndex": true,
+      "hasChapterDirectory": false,
+      "detailLinkState": "legacy-or-missing"
+    }
+  ]
+}

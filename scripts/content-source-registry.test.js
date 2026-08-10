@@ -31,6 +31,9 @@ assert.strictEqual(canonical.kind, 'official');
 const smartEducation = getContentSource('smartedu-math-textbook-catalog-2026');
 assert.strictEqual(smartEducation.url, 'https://basic.smartedu.cn/tchMaterial');
 assert.strictEqual(smartEducation.kind, 'official');
+const mathProductIndex = getContentSource('pep-math-product-index-2026');
+assert.strictEqual(mathProductIndex.url, 'https://www.pep.com.cn/rjyc/kcjc/gjkc/rjbjc/');
+assert.strictEqual(mathProductIndex.kind, 'official');
 assert.strictEqual(getContentSource('not-registered'), null);
 assert.deepStrictEqual(
   getContentSourceCandidateKeys('math'),
@@ -38,6 +41,7 @@ assert.deepStrictEqual(
     'moe-math-curriculum-2022',
     'moe-textbook-catalog-2024',
     'pep-math-new-textbook-2024',
+    'pep-math-product-index-2026',
     'smartedu-math-textbook-catalog-2026',
   ],
 );

@@ -29,6 +29,8 @@ const DEFAULT_CHECKS = [
   { script: 'scripts/check-math-smartedu-edition-evidence.js', args: ['docs/evidence/math-smartedu-edition-evidence-2026.json', 'docs/evidence/math-smartedu-catalog-2026.json'], label: '数学官方平台版本预览证据' },
   { script: 'scripts/check-math-confirmed-changes.test.js', label: '数学官方结构变化覆盖契约' },
   { script: 'scripts/check-math-confirmed-changes.js', label: '数学官方结构变化覆盖' },
+  { script: 'scripts/math-pep-product-index-evidence.test.js', label: '数学人教社产品索引证据契约' },
+  { script: 'scripts/check-math-pep-product-index-evidence.js', label: '数学人教社产品索引证据' },
   { script: 'scripts/build-math-curriculum-audit.js', label: '数学目录审计产物' },
   { script: 'scripts/check-math-curriculum-audit.js', label: '数学目录审计校验' },
   { script: 'scripts/check-english-units.js', label: '英语单元' },

@@ -52,6 +52,11 @@ const SOURCE_DEFINITIONS = {
     url: 'https://www.pep.com.cn/xw/zt/hd/12/xjcjs/cz/202408/t20240826_1994351.html',
     kind: 'official',
   },
+  'pep-math-product-index-2026': {
+    title: '人教版教材数学册次产品索引',
+    url: 'https://www.pep.com.cn/rjyc/kcjc/gjkc/rjbjc/',
+    kind: 'official',
+  },
   'smartedu-math-textbook-catalog-2026': {
     title: '国家中小学智慧教育平台人教版初中数学教材资源清单与公开预览',
     url: 'https://basic.smartedu.cn/tchMaterial',
@@ -124,6 +129,7 @@ const CONTENT_SOURCE_CANDIDATE_KEYS_BY_SUBJECT = Object.freeze(
       'moe-math-curriculum-2022',
       'moe-textbook-catalog-2024',
       'pep-math-new-textbook-2024',
+      'pep-math-product-index-2026',
       'smartedu-math-textbook-catalog-2026',
     ],
     english: ['moe-english-curriculum-2022', 'pep-english-new-textbook-2025'],
