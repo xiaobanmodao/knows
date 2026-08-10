@@ -103,12 +103,11 @@ function scanWxmlTags(source) {
 
 function assertStructuredVisualGuideMarkup(markup) {
   const tags = scanWxmlTags(markup);
-  const guideNodes = tags.filter((tag) => (
-    tag.name === 'structured-visual-guide' && tag.selfClosing
-  ));
-  assert.strictEqual(guideNodes.length, 1, '化学页必须恰有一个真实的自闭合图解组件');
+  const guideNodes = tags.filter((tag) => tag.name === 'structured-visual-guide');
+  assert.strictEqual(guideNodes.length, 1, '化学页必须恰有一个真实图解组件');
 
   const [guideNode] = guideNodes;
+  assert(guideNode.selfClosing, '化学图解组件必须使用自闭合标签');
   assert.strictEqual(guideNode.attributes.guide, '{{knowledge.visualGuide}}', '化学页必须传入预处理图解');
   assert.strictEqual(guideNode.attributes['reading-preferences'], '{{readingPreferences}}', '化学图解必须承接阅读设置');
 
@@ -142,15 +141,44 @@ const SINGLE_QUOTED_COVER_MISPLACED_WXML = `
 <structured-visual-guide guide="{{knowledge.visualGuide}}" reading-preferences="{{readingPreferences}}" />
 <view class="knowledge-figure"></view>
 `;
+const PAIRED_AND_SELF_CLOSING_GUIDES_WXML = `
+<structured-visual-guide guide="{{wrong}}" reading-preferences="{{wrong}}"></structured-visual-guide>
+<structured-visual-guide guide="{{knowledge.visualGuide}}" reading-preferences="{{readingPreferences}}" />
+<view wx:if="{{knowledge.hasCoverImage}}" class="knowledge-figure"></view>
+`;
+const PAIRED_GUIDE_WXML = `
+<structured-visual-guide guide="{{knowledge.visualGuide}}" reading-preferences="{{readingPreferences}}"></structured-visual-guide>
+<view wx:if="{{knowledge.hasCoverImage}}" class="knowledge-figure"></view>
+`;
+const MULTIPLE_SELF_CLOSING_GUIDES_WXML = `
+<structured-visual-guide guide="{{knowledge.visualGuide}}" reading-preferences="{{readingPreferences}}" />
+<structured-visual-guide guide="{{knowledge.visualGuide}}" reading-preferences="{{readingPreferences}}" />
+<view wx:if="{{knowledge.hasCoverImage}}" class="knowledge-figure"></view>
+`;
 
 try {
   assert(pageJs.includes("require('../../../../utils/structured-visual-guide')"), '化学页必须预处理图解');
   assert(pageJs.includes('prepareStructuredVisualGuide(knowledge.visualGuide)'), '化学页必须生成渲染副本');
   assert(pageJson.includes('structured-visual-guide'), '化学页必须注册公共图解组件');
   assert.throws(
+    () => assertStructuredVisualGuideMarkup(PAIRED_AND_SELF_CLOSING_GUIDES_WXML),
+    /化学页必须恰有一个真实图解组件/,
+    '配对节点不能与合规自闭合图解共同出现',
+  );
+  assert.throws(
     () => assertStructuredVisualGuideMarkup(MISSING_GUIDE_WXML),
-    /化学页必须恰有一个真实的自闭合图解组件/,
+    /化学页必须恰有一个真实图解组件/,
     '缺失真实图解节点必须被拒绝',
+  );
+  assert.throws(
+    () => assertStructuredVisualGuideMarkup(PAIRED_GUIDE_WXML),
+    /化学图解组件必须使用自闭合标签/,
+    '单个配对图解节点必须被拒绝',
+  );
+  assert.throws(
+    () => assertStructuredVisualGuideMarkup(MULTIPLE_SELF_CLOSING_GUIDES_WXML),
+    /化学页必须恰有一个真实图解组件/,
+    '多个自闭合图解节点必须被拒绝',
   );
   assert.throws(
     () => assertStructuredVisualGuideMarkup(COMMENT_SPOOFED_MISPLACED_WXML),
