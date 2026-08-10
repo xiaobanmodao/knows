@@ -80,7 +80,6 @@
       "bookId": "eng-book-g9a-2025",
       "status": "partial",
       "resourceUrl": "https://www.pep.com.cn/zslth/yyptzy/czyy/9s/",
-      "sourceNote": "当前人教社公开目录页已核对 Unit 1-2；其余现有单元保留原创讲解，等待完整官方目录复核。词汇用法、语法讲解和例句由本项目按单元主题原创整理，不作为教材逐页词表。",
       "unitEvidence": [
         { "unitId": "eng-unit-g9a-changing-world", "number": 1, "title": "The Changing World", "isStarter": false },
         { "unitId": "eng-unit-g9a-inspiring-people", "number": 2, "title": "Inspiring People", "isStarter": false }

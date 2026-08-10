@@ -16,6 +16,7 @@ const bindingQualityCheckCount = 117;
 const grade8UpperUnitList = 'Unit 1 Happy Holiday；Unit 2 Home Sweet Home；Unit 3 Same or Different；Unit 4 Amazing Plants and Animals；Unit 5 What a Delicious Meal!；Unit 6 Plan for Yourself；Unit 7 When Tomorrow Comes；Unit 8 Let\'s Communicate!。';
 const grade8LowerUnitList = 'Unit 1 Time to Relax；Unit 2 Stay Healthy；Unit 3 Growing Up；Unit 4 The Wonders of Nature；Unit 5 Nature\'s Temper；Unit 6 Crossing Cultures；Unit 7 A Good Read；Unit 8 Making a Difference。';
 const grade9UpperDirectoryStatus = '目录证据状态：partial；当前公开页已核对 Unit 1-2；既有 Unit 3-8 保持可查阅的项目原创讲解，待完整官方目录复核。';
+const englishStatusNamespaces = '`book.status` 表示运行时册次可用性，目录证据状态 `verified`、`partial`、`pending` 表示官方目录核对进度；两者属于不同的状态命名空间。九年级上册的运行时 `book.status` 为 `verified`，目录证据状态为 `partial`。';
 const directoryImportBoundary = '这份独立官方目录证据记录只核对目录元数据，不核对教材正文、音频、题目、词表、图片或项目知识讲解，不是外部内容导入。';
 const roadmapDirectoryBoundary = '英语目录门禁已加强为独立官方目录证据：四册具有完整当期目录页证据，九年级上册当前页面只核对 Unit 1-2，其余既有 Unit 3-8 等待完整官方目录复核；该记录只验证目录元数据，不是外部内容来源接入，不解除全局外部资料阻断。真实外部内容来源接入的下一批阻断仍为 `math-chapters-v1.11`，它要求完整官方逐册目录。';
 
@@ -36,6 +37,7 @@ function assertEnglishSourceContract(source) {
   const grade9UpperDirectoryStatusLines = source.split(/\r?\n/).filter((line) => line.startsWith('目录证据状态：'));
   assert.strictEqual(grade9UpperDirectoryStatusLines.length, 1, '九年级上册目录证据状态必须恰有一行');
   assert.strictEqual(grade9UpperDirectoryStatusLines[0], grade9UpperDirectoryStatus, '九年级上册目录证据状态必须保持 partial、Unit 1-2 已核对和 Unit 3-8 待复核边界');
+  assertExactLine(source, englishStatusNamespaces, '运行时可用性与目录证据核对进度必须使用不同状态命名空间');
   assertExactLine(source, directoryImportBoundary, '独立官方目录证据必须明确不是外部内容导入');
 }
 

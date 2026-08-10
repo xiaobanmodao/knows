@@ -22,6 +22,14 @@ const REVIEW_FIELDS = Object.freeze([
 ]);
 const REVIEW_SCOPE_FIELDS = Object.freeze(['notVerified', 'supports']);
 const BOOK_FIELDS = Object.freeze(['bookId', 'resourceUrl', 'status', 'unitEvidence', 'unverifiedUnitIds']);
+const OFFICIAL_DIRECTORY_URL_BY_BOOK_ID = Object.freeze({
+  'eng-book-g7a-2024': 'https://www.pep.com.cn/zslth/yyptzy/czyy/7s/',
+  'eng-book-g7b-2024': 'https://www.pep.com.cn/zslth/yyptzy/czyy/7x/',
+  'eng-book-g8a-2024': 'https://www.pep.com.cn/zslth/yyptzy/czyy/8s/',
+  'eng-book-g8b-2024': 'https://www.pep.com.cn/zslth/yyptzy/czyy/8x/',
+  'eng-book-g9a-2025': 'https://www.pep.com.cn/zslth/yyptzy/czyy/9s/',
+  'eng-book-g9b-pending': DIGITAL_RESOURCES_INDEX_URL,
+});
 const G9A_PARTIAL_BOOK_ID = 'eng-book-g9a-2025';
 const G9A_OBSERVED_UNIT_IDS = Object.freeze([
   'eng-unit-g9a-changing-world',
@@ -139,12 +147,10 @@ function validateBookCoverage(reviewBooks, localBooks) {
 function validateBookRecords(reviewBooks, localBooks) {
   reviewBooks.forEach((record, index) => {
     const book = localBooks[index];
-    const allowedFields = record && record.bookId === G9A_PARTIAL_BOOK_ID && record.status === 'partial'
-      ? [...BOOK_FIELDS, 'sourceNote']
-      : BOOK_FIELDS;
-    requireExactFields(record, allowedFields, `英语教材证据册次字段无效：${record && record.bookId}`);
+    requireExactFields(record, BOOK_FIELDS, `英语教材证据册次字段无效：${record && record.bookId}`);
     const urlKind = getDirectoryUrlKind(record.resourceUrl);
-    if (!record || !book || !urlKind) {
+    if (!record || !book || !urlKind
+      || record.resourceUrl !== OFFICIAL_DIRECTORY_URL_BY_BOOK_ID[record.bookId]) {
       throw new Error(`英语教材证据 URL 无效：${record && record.bookId}`);
     }
     if (!Array.isArray(record.unitEvidence) || !Array.isArray(record.unverifiedUnitIds)) {
@@ -182,8 +188,8 @@ function validateBookRecords(reviewBooks, localBooks) {
         `英语部分目录证据未核对单元不完整：${record.bookId}`,
       );
       if (record.bookId === G9A_PARTIAL_BOOK_ID
-        && (!/公开目录页已核对 Unit 1-2/.test(record.sourceNote || '')
-          || !/等待完整官方目录复核/.test(record.sourceNote || ''))) {
+        && (!/公开目录页已核对 Unit 1-2/.test(book.sourceNote || '')
+          || !/等待完整官方目录复核/.test(book.sourceNote || ''))) {
         throw new Error('英语九年级上册部分目录证据必须说明 Unit 1-2 已核对且其余等待完整官方目录复核');
       }
       return;

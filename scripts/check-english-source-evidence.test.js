@@ -6,12 +6,20 @@ const {
   checkEnglishSourceEvidence,
   getEnglishSourceEvidence,
 } = require('../packages/english/data/english-source-evidence');
+const { books } = require('../packages/english/data/english-units');
 
 function cloneReview() {
   return JSON.parse(JSON.stringify(DIRECTORY_REVIEW));
 }
 
 assert.strictEqual(DIRECTORY_REVIEW.evidenceKind, 'official-unit-directory');
+DIRECTORY_REVIEW.books.forEach((book) => {
+  assert.deepStrictEqual(
+    Object.keys(book).sort(),
+    ['bookId', 'resourceUrl', 'status', 'unitEvidence', 'unverifiedUnitIds'].sort(),
+    `英语目录证据册次必须仅含元数据字段：${book.bookId}`,
+  );
+});
 assert.deepStrictEqual(
   DIRECTORY_REVIEW.books.find((book) => book.bookId === 'eng-book-g9a-2025').unverifiedUnitIds,
   [
@@ -25,6 +33,23 @@ assert.deepStrictEqual(
 );
 
 assert.strictEqual(checkEnglishSourceEvidence(), true);
+
+const falselyFullyVerifiedBooks = books.map((book) => (book.id === 'eng-book-g9a-2025'
+  ? { ...book, sourceNote: '当前人教社公开目录页已核对 Unit 1-2；完整官方目录复核已经完成。' }
+  : book));
+assert.throws(
+  () => checkEnglishSourceEvidence({ localBooks: falselyFullyVerifiedBooks }),
+  /Unit 1-2.*等待完整官方目录复核/,
+);
+
+const unboundedPartialBooks = books.map((book) => (book.id === 'eng-book-g9a-2025'
+  ? { ...book, sourceNote: '其余现有单元保留原创讲解，等待完整官方目录复核。' }
+  : book));
+assert.throws(
+  () => checkEnglishSourceEvidence({ localBooks: unboundedPartialBooks }),
+  /Unit 1-2.*等待完整官方目录复核/,
+);
+
 assert.strictEqual(ENGLISH_SOURCE_EVIDENCE.length, 6);
 assert.strictEqual(ENGLISH_SOURCE_EVIDENCE.filter((item) => item.status === 'verified').length, 4);
 assert.strictEqual(ENGLISH_SOURCE_EVIDENCE.filter((item) => item.status === 'partial').length, 1);
@@ -44,6 +69,14 @@ legacyUrlReview.books.find((book) => book.bookId === 'eng-book-g8a-2024')
   .resourceUrl = 'https://www.pep.com.cn/zslth/yyptypzj/czyy/8s/';
 assert.throws(
   () => checkEnglishSourceEvidence({ review: legacyUrlReview }),
+  /URL/,
+);
+
+const mismatchedBookUrlReview = cloneReview();
+mismatchedBookUrlReview.books.find((book) => book.bookId === 'eng-book-g8a-2024')
+  .resourceUrl = 'https://www.pep.com.cn/zslth/yyptzy/czyy/8x/';
+assert.throws(
+  () => checkEnglishSourceEvidence({ review: mismatchedBookUrlReview }),
   /URL/,
 );
 
