@@ -77,6 +77,8 @@ const DEFAULT_CHECKS = [
   { script: 'scripts/check-runtime-package-dependencies.js', label: '运行时分包依赖' },
   { script: 'scripts/check-pure-knowledge-runtime.test.js', label: '纯知识运行层契约' },
   { script: 'scripts/check-pure-knowledge-runtime.js', label: '纯知识运行层文案' },
+  { script: 'scripts/check-privacy-interfaces.test.js', label: '隐私接口契约' },
+  { script: 'scripts/check-privacy-interfaces.js', label: '隐私接口审计' },
   { script: 'scripts/check-student-copy.js', label: '学生可见文案' },
   { script: 'scripts/check-content-migration.js', label: '本地内容迁移' },
   { script: 'scripts/check-note-filters.js', label: '笔记筛选' },
