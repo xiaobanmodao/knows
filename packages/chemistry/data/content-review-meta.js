@@ -1,7 +1,7 @@
 const CHEMISTRY_SOURCES = {
   'moe-chemistry-2022': {
     title: '义务教育化学课程标准（2022年版）',
-    url: 'https://www.pep.com.cn/ebook/2022yjkcbz/hx/mobile/index.html',
+    url: 'https://www.moe.gov.cn/srcsite/A26/s8001/202204/t20220420_619921.html',
   },
   'moe-textbook-catalog-2024': {
     title: '2024年义务教育国家课程教学用书目录',
