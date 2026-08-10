@@ -149,7 +149,7 @@ try {
         path: 'english-units.json',
         sourceKind: 'external-source',
         sourceEvidence: {
-          sourceKeys: ['pep-english-external-contract'],
+          sourceKeys: ['pep-english-new-textbook-2025'],
           sourceUrls: ['https://www.pep.com.cn/xw/zt/hd/12/xjcjs/cz/202510/t20251024_2004130.html'],
           reviewedAt: '2026-08-10',
           note: '不能把当前内容源导出文件冒充外部资料',
@@ -178,7 +178,7 @@ try {
         path: 'english-units-external.json',
         sourceKind: 'external-source',
         sourceEvidence: {
-          sourceKeys: ['unlinked-source-key'],
+          sourceKeys: ['pep-physics-public'],
           sourceUrls: ['https://www.pep.com.cn/xw/zt/hd/12/xjcjs/cz/202510/t20251024_2004130.html'],
           reviewedAt: '2026-08-10',
           note: '来源键未被实体复核记录引用',
@@ -195,7 +195,7 @@ try {
     path: 'english-units-external.json',
     sourceKind: 'external-source',
     reason: 'source-evidence-key-unreferenced',
-    sourceKeys: ['unlinked-source-key'],
+    sourceKeys: ['pep-physics-public'],
   }]);
 
   const missingEvidenceReport = buildContentSourceInputBatchAudit({

@@ -10,6 +10,7 @@ const {
 const { getContentSourceBatch, SOURCE_BATCHES } = require('./check-content-source-batches');
 const { collectInputSourceKeys, loadSourceInputFile } = require('./content-source-input');
 const { buildContentSourceInputAuditReport } = require('./content-source-input-audit');
+const { getContentSource, isAllowedContentSourceUrl } = require('../data/content-source-registry');
 
 const MANIFEST_SCHEMA_VERSION = 1;
 const SOURCE_KINDS = new Set(['unknown', 'current-fixture', 'external-source']);
@@ -31,6 +32,24 @@ function isPlaceholderSourceUrl(value) {
   } catch (error) {
     return false;
   }
+}
+
+function findSourceEvidenceIssue(sourceEvidence) {
+  if (!sourceEvidence || !Array.isArray(sourceEvidence.sourceKeys)) return null;
+  const sourceUrls = Array.isArray(sourceEvidence.sourceUrls) ? sourceEvidence.sourceUrls : [];
+  for (const sourceKey of sourceEvidence.sourceKeys) {
+    const source = getContentSource(sourceKey);
+    if (!source) {
+      return { reason: 'source-evidence-source-key-unregistered', sourceKey };
+    }
+    if (source.kind === 'internal') {
+      return { reason: 'source-evidence-internal-source-key', sourceKey };
+    }
+    if (!sourceUrls.some((sourceUrl) => isAllowedContentSourceUrl(source, sourceUrl))) {
+      return { reason: 'source-evidence-url-source-mismatch', sourceKey };
+    }
+  }
+  return null;
 }
 
 function requireText(value, field) {
@@ -327,6 +346,18 @@ function buildContentSourceInputBatchAudit({
         issueIds.add(batch.id);
         return;
       }
+      const manifestEntry = entries.find((entry) => entry.id === batch.id);
+      const sourceEvidenceIssue = findSourceEvidenceIssue(manifestEntry && manifestEntry.sourceEvidence);
+      if (sourceEvidenceIssue) {
+        externalSourceIssues.push({
+          id: batch.id,
+          path: batch.path || null,
+          sourceKind: batch.sourceKind || 'unknown',
+          ...sourceEvidenceIssue,
+        });
+        issueIds.add(batch.id);
+        return;
+      }
       if (!batch.sourceEvidence || !Array.isArray(batch.inputSourceKeys)) return;
       const unreferencedSourceKeys = batch.sourceEvidence.sourceKeys
         .filter((sourceKey) => !batch.inputSourceKeys.includes(sourceKey));
@@ -387,6 +418,7 @@ function buildContentSourceInputBatchAudit({
 module.exports = {
   MANIFEST_SCHEMA_VERSION,
   SOURCE_KINDS,
+  findSourceEvidenceIssue,
   isPlaceholderSourceUrl,
   normalizeBatchManifest,
   buildContentSourceInputBatchAudit,

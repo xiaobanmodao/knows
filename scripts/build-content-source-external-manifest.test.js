@@ -138,12 +138,49 @@ try {
       inputPath,
       manifestPath,
       sourceVersion: 'external-english-units-v2',
-      sourceKeys: ['unlinked-source-key'],
+      sourceKeys: ['pep-physics-public'],
       sourceUrls: ['https://www.pep.com.cn/xw/zt/hd/12/xjcjs/cz/202510/t20251024_2004130.html'],
       reviewedAt: '2026-08-10',
       note: '来源键必须被输入实体引用',
     }),
     /未被输入实体引用|sourceKeys/i,
+  );
+
+  const unregisteredSourceInputPath = path.join(directory, 'english-units-unregistered-source.json');
+  fs.writeFileSync(unregisteredSourceInputPath, `${JSON.stringify({
+    ...externalInput,
+    entities: externalInput.entities.map((entity, index) => (
+      index === 0
+        ? { ...entity, review: { ...entity.review, sourceKeys: ['unregistered-source-key'] } }
+        : entity
+    )),
+    sourceVersion: 'external-english-units-unregistered-source-v1',
+  }, null, 2)}\n`, 'utf8');
+  assert.throws(
+    () => buildExternalSourceManifest({
+      batchId: 'english-units-v1.11',
+      inputPath: unregisteredSourceInputPath,
+      manifestPath,
+      sourceVersion: 'external-english-units-unregistered-source-v1',
+      sourceKeys: ['unregistered-source-key'],
+      sourceUrls: ['https://www.pep.com.cn/xw/zt/hd/12/xjcjs/cz/202510/t20251024_2004130.html'],
+      reviewedAt: '2026-08-10',
+      note: '来源键必须来自注册表',
+    }),
+    /来源键未登记|source registry|unregistered/i,
+  );
+  assert.throws(
+    () => buildExternalSourceManifest({
+      batchId: 'english-units-v1.11',
+      inputPath,
+      manifestPath,
+      sourceVersion: 'external-english-units-domain-mismatch-v1',
+      sourceKeys: ['pep-english-new-textbook-2025'],
+      sourceUrls: ['https://dictionary.cambridge.org/pronunciation/'],
+      reviewedAt: '2026-08-10',
+      note: '来源 URL 域名必须与来源键匹配',
+    }),
+    /source-evidence-url-source-mismatch|域名|mismatch/i,
   );
 
   const originalInput = JSON.parse(fs.readFileSync(inputPath, 'utf8'));

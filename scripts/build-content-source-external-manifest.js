@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const {
+  findSourceEvidenceIssue,
   isPlaceholderSourceUrl,
   normalizeBatchManifest,
 } = require('./content-source-input-batches');
@@ -65,6 +66,10 @@ function buildExternalSourceManifest({
       },
     }],
   });
+  const sourceEvidenceIssue = findSourceEvidenceIssue(manifest.batches[0].sourceEvidence);
+  if (sourceEvidenceIssue) {
+    throw new Error(`外部内容源 manifest 来源凭证无效：${sourceEvidenceIssue.reason}：${sourceEvidenceIssue.sourceKey}`);
+  }
   const inputSourceKeys = collectInputSourceKeys(input);
   const unreferencedSourceKeys = manifest.batches[0].sourceEvidence.sourceKeys
     .filter((sourceKey) => !inputSourceKeys.includes(sourceKey));
