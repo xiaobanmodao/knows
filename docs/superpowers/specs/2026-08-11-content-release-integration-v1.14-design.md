@@ -12,10 +12,10 @@
 
 ### 目标
 
-1. 保留 v1.13 的内容生产工具、来源审计、五科学习内容、结构化图解和 123 项质量矩阵。
+1. 保留 v1.13 的内容生产工具、来源审计、五科学习内容、结构化图解和原有 123 项质量矩阵。
 2. 保留 v1.10.1 的隐私、纯知识、云资源、catalog 搜索别名和发布证据热修复。
 3. 用一个明确的 merge commit 记录集成关系，避免把 219 个提交逐个 rebase 到发布线上。
-4. 在不上传、不预览、不提审的前提下，通过静态发布门禁、内容门禁和分包门禁。
+4. 将发布侧的云用户追踪契约与实际检查加入默认矩阵，使集成后的默认矩阵为 125 项；在不上传、不预览、不提审的前提下，通过静态发布门禁、内容门禁和分包门禁。
 
 ### 非目标
 
@@ -62,6 +62,8 @@ git merge --no-commit --no-ff codex/chemistry-visual-guides-v1.13
 
 这不是降低热修复约束：在 v1.10.x 热修复分支仍显式运行 `--require-hotfix-scope`，而通用内容分支只运行产品、隐私、分包和内容门禁。所有分支都继续运行云用户追踪与纯知识文案检查。
 
+云用户追踪的 `scripts/check-cloud-user-trace.test.js` 与 `scripts/check-cloud-user-trace.js` 恢复为默认质量矩阵项目，因此默认总数从 v1.13 的 123 项增加到 125 项。`scripts/check-release-hotfix-scope.test.js` 是只属于显式热修复模式的契约测试，必须在质量矩阵的“所有测试脚本覆盖”断言中被具名排除；它仍由 `--require-hotfix-scope` 调用，不能静默删除或忽略。当前路线文档的实时门禁数量更新为 125，已有 v1.13 验证记录中的历史 123 项结论保持原样。
+
 ## 4. 数据、路由与包体不变量
 
 1. 所有内容实体稳定 ID、旧别名、收藏键、笔记键和阅读位置继续基于 `subjectId:type:id`，存储 schema 保持兼容。
@@ -102,7 +104,7 @@ node scripts/check-release-readiness.js --require-hotfix-scope
 
 ### 5.2 结果判定
 
-- 默认质量矩阵必须输出 `OK v1.11 quality matrix: 123 checks`。
+- 默认质量矩阵必须输出 `OK v1.11 quality matrix: 125 checks`。
 - 发布就绪检查必须输出 `OK release readiness checked`，默认模式不启用仅适用于热修复分支的白名单；这不等同于拥有实体机和预览包证据。
 - 内容来源跟进报告可以且应继续显示 `blocked: math-chapters-v1.11`；这不阻止本次代码集成，但阻止把其描述成正式发布完成。
 - `git status --short` 只能留下被明确说明的开发者工具配置格式化变化；集成提交不得包含 `dist/`、`.codex-output/`、本地设备日志或临时资源。
