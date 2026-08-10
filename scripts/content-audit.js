@@ -279,6 +279,7 @@ function checkAuditReport(report, { requireReviewed = false } = {}) {
   const entities = collectEntities();
   const ids = new Set();
   const scopedIds = new Set();
+  const sourceUrlsByKey = new Map();
   entities.forEach((entity) => {
     const key = `${entity.subjectId}:${entity.type}:${entity.id}`;
     if (!entity.id || !entity.title) throw new Error(`审计实体缺少 ID 或标题：${key}`);
@@ -301,10 +302,19 @@ function checkAuditReport(report, { requireReviewed = false } = {}) {
     }
     entity.reviewed.sourceRefs.forEach((source) => {
       if (!source.key && !source.url) throw new Error(`审计实体来源缺少 key 或 URL：${key}`);
+      if (source.url && !source.key) {
+        throw new Error(`审计实体 URL 来源缺少稳定 key：${key}/${source.url}`);
+      }
       if (source.key && !KNOWN_SOURCE_KEYS.has(source.key)) {
         throw new Error(`审计实体来源 key 未登记：${key}/${source.key}`);
       }
       if (!source.url) return;
+      const urls = sourceUrlsByKey.get(source.key) || new Set();
+      if (urls.size > 0 && !urls.has(source.url)) {
+        throw new Error(`审计来源 key 对应多个 URL：${source.key}/${[...urls, source.url].join(',')}`);
+      }
+      urls.add(source.url);
+      sourceUrlsByKey.set(source.key, urls);
       const hostname = new URL(source.url).hostname;
       if (!OFFICIAL_HOSTS.has(hostname)) throw new Error(`审计实体来源域名不受信任：${key}/${hostname}`);
     });

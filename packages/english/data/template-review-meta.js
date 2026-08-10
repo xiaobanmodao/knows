@@ -12,10 +12,12 @@ const REVIEWED_ENGLISH_TEMPLATE_IDS = [
 const SOURCE_REFS = [
   {
     key: 'moe-english-curriculum-2022',
+    key: 'moe-english-curriculum-2022',
     title: '义务教育课程方案和课程标准（2022年版）',
     url: 'https://www.moe.gov.cn/srcsite/A26/s8001/202204/t20220420_619921.html',
   },
   {
+    key: 'pep-english-new-textbook-2025',
     key: 'pep-english-new-textbook-2025',
     title: '人教版初中英语新教材介绍',
     url: 'https://www.pep.com.cn/xw/zt/hd/12/xjcjs/cz/202510/t20251024_2004130.html',

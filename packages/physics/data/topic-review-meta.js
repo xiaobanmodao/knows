@@ -12,10 +12,12 @@ const REVIEWED_PHYSICS_TOPIC_IDS = [
 const SOURCE_REFS = [
   {
     key: 'moe-physics-2022',
+    key: 'moe-physics-2022',
     title: '义务教育物理课程标准（2022年版）',
     url: 'https://www.moe.gov.cn/srcsite/A26/s8001/202204/t20220420_619921.html',
   },
   {
+    key: 'pep-physics-public',
     key: 'pep-physics-public',
     title: '人教版初中物理新教材介绍',
     url: 'https://www.pep.com.cn/xw/zt/hd/12/xjcjs/cz/202409/t20240925_1995627.html',
