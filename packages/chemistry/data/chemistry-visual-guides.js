@@ -1,7 +1,15 @@
 const VISUAL_GUIDE_TYPES = Object.freeze(['flow', 'cycle', 'compare', 'hierarchy']);
 const VISUAL_GUIDE_TONES = Object.freeze(['green', 'blue', 'amber', 'slate']);
 
-const visualGuidesByKnowledgeId = Object.freeze({
+function deepFreeze(value) {
+  if (value && (Array.isArray(value) || Object.getPrototypeOf(value) === Object.prototype)) {
+    Object.values(value).forEach(deepFreeze);
+    Object.freeze(value);
+  }
+  return value;
+}
+
+const visualGuidesByKnowledgeId = deepFreeze({
   'chem-k-lab-object-change': {
     type: 'flow', title: '化学变化的观察', summary: '观察现象，依据证据提出有范围的解释。',
     items: [

@@ -19,6 +19,12 @@ const foundationIds = [
 assert.deepStrictEqual(Object.keys(visualGuidesByKnowledgeId).sort(), foundationIds);
 assert.strictEqual(getVisualGuideForKnowledge('chem-k-unknown'), null);
 
+const sourceOxygenGuide = visualGuidesByKnowledgeId['chem-k-oxygen-properties'];
+assert(Object.isFrozen(visualGuidesByKnowledgeId));
+assert(Object.isFrozen(sourceOxygenGuide));
+assert(Object.isFrozen(sourceOxygenGuide.items));
+assert(Object.isFrozen(sourceOxygenGuide.items[0]));
+
 const first = getVisualGuideForKnowledge('chem-k-oxygen-preparation');
 const second = getVisualGuideForKnowledge('chem-k-oxygen-preparation');
 assert.notStrictEqual(first, second);
