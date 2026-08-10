@@ -27,17 +27,26 @@ const readyContentSource = {
     nextBatchId: null,
   },
 };
+const readyUrlAccess = {
+  schemaVersion: 1,
+  status: 'passed',
+  summary: { total: 2, checked: 2, passed: 2, failed: 0 },
+};
 
 const ready = buildRoadmapStatus({
   releaseToolState: readyToolState,
   releaseToolStatePath: '/tmp/tool-state.json',
   contentSourceFollowUp: readyContentSource,
   contentSourceReportPath: '/tmp/content-source-follow-up.json',
+  contentSourceUrlAccess: readyUrlAccess,
+  contentSourceUrlAccessPath: '/tmp/content-source-url-access.json',
 });
 assert.strictEqual(ready.status, 'ready');
 assert.deepStrictEqual(ready.blockers, []);
 assert.strictEqual(ready.release.status, 'ready');
 assert.strictEqual(ready.contentSource.status, 'ready');
+assert.strictEqual(ready.contentSourceUrlAccess.status, 'ready');
+assert.strictEqual(ready.contentSourceUrlAccess.summary.failed, 0);
 
 const stale = buildRoadmapStatus({
   releaseToolState: readyToolState,
@@ -76,6 +85,32 @@ assert.match(formatRoadmapStatus(blocked), /41002/);
 assert.match(formatRoadmapStatus(blocked), /english-units-v1\.11/);
 assert.ok(blocked.blockers[1].nextActions.some((item) => /需要官方单元目录和来源定位/.test(item.instruction)));
 
+const blockedUrlAccess = buildRoadmapStatus({
+  releaseToolState: readyToolState,
+  contentSourceFollowUp: readyContentSource,
+  contentSourceUrlAccess: {
+    schemaVersion: 1,
+    status: 'blocked',
+    summary: { total: 2, checked: 2, passed: 1, failed: 1 },
+  },
+  contentSourceUrlAccessPath: '/tmp/content-source-url-access.json',
+});
+assert.strictEqual(blockedUrlAccess.status, 'blocked');
+assert.deepStrictEqual(blockedUrlAccess.blockers.map((item) => item.id), ['content-source-url-access']);
+assert.match(formatRoadmapStatus(blockedUrlAccess), /URL/);
+assert.ok(blockedUrlAccess.blockers[0].nextActions.some((item) => /可访问|重新检查/.test(item.instruction)));
+
+const staleUrlAccess = buildRoadmapStatus({
+  releaseToolState: readyToolState,
+  contentSourceFollowUp: readyContentSource,
+  contentSourceUrlAccess: readyUrlAccess,
+  contentSourceUrlAccessPath: '/tmp/content-source-url-access.json',
+  contentSourceUrlAccessReportFresh: false,
+});
+assert.strictEqual(staleUrlAccess.status, 'blocked');
+assert.deepStrictEqual(staleUrlAccess.blockers.map((item) => item.id), ['content-source-url-access']);
+assert.match(staleUrlAccess.blockers[0].message, /过期/);
+
 const missing = buildRoadmapStatus({
   releaseToolStatePath: '/tmp/missing-tool-state.json',
   contentSourceReportPath: '/tmp/missing-content-source-follow-up.json',
@@ -88,13 +123,16 @@ const tempDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'knows-roadmap-statu
 try {
   const toolStatePath = path.join(tempDirectory, 'tool-state.json');
   const contentReportPath = path.join(tempDirectory, 'content-source-follow-up.json');
+  const urlAccessReportPath = path.join(tempDirectory, 'content-source-url-access.json');
   fs.writeFileSync(toolStatePath, `${JSON.stringify(readyToolState)}\n`);
   fs.writeFileSync(contentReportPath, `${JSON.stringify(readyContentSource)}\n`);
+  fs.writeFileSync(urlAccessReportPath, `${JSON.stringify(readyUrlAccess)}\n`);
   const cli = spawnSync(process.execPath, [
     path.join(__dirname, 'check-roadmap-status.js'),
     '--tool-state', toolStatePath,
     '--content-report', contentReportPath,
     '--manifest', path.join(tempDirectory, 'missing-manifest.json'),
+    '--url-access-report', urlAccessReportPath,
   ], { cwd: path.resolve(__dirname, '..'), encoding: 'utf8' });
   assert.strictEqual(cli.status, 0, cli.stderr || cli.stdout);
   assert.match(cli.stdout, /OK roadmap status/);

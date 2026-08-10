@@ -11,6 +11,10 @@ function hashManifest(manifest) {
   return crypto.createHash('sha256').update(JSON.stringify(manifest)).digest('hex');
 }
 
+function getSourceUrlAccessManifestHash(manifest) {
+  return hashManifest(normalizeBatchManifest(manifest));
+}
+
 function collectSourceUrls(manifest) {
   const normalized = normalizeBatchManifest(manifest);
   const urls = new Set();
@@ -71,7 +75,7 @@ async function auditSourceUrls({ manifest, requestUrl } = {}) {
     generatedFrom: {
       sourceVersion: normalized.sourceVersion,
       sourceKind: normalized.sourceKind,
-      manifestHash: hashManifest(normalized),
+      manifestHash: getSourceUrlAccessManifestHash(normalized),
     },
     summary: {
       total: results.length,
@@ -115,5 +119,6 @@ module.exports = {
   ACCESS_AUDIT_SCHEMA_VERSION,
   auditSourceUrls,
   collectSourceUrls,
+  getSourceUrlAccessManifestHash,
   requestSourceUrl,
 };

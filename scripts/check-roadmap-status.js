@@ -3,6 +3,7 @@ const path = require('path');
 
 const { buildRoadmapStatus, formatRoadmapStatus } = require('./roadmap-status');
 const { buildContentSourceFollowUpReport } = require('./content-source-follow-up');
+const { getSourceUrlAccessManifestHash } = require('./content-source-url-access');
 
 const DEFAULT_TOOL_STATE_PATH = '.codex-output/release-regression-v1.10.1/tool-state.json';
 const DEFAULT_CONTENT_REPORT_PATH = 'dist/content-audit/content-source-follow-up.json';
@@ -45,6 +46,18 @@ function loadContentSourceState(manifestPath, reportPath) {
   };
 }
 
+function loadContentSourceUrlAccessState(reportPath, manifestPath) {
+  const report = readOptionalJson(reportPath, '内容源 URL 可访问性报告');
+  if (!report || !manifestPath) return { report, reportFresh: true };
+  const manifest = readOptionalJson(manifestPath, '内容源 URL 可访问性 manifest');
+  if (!manifest) return { report, reportFresh: true };
+  return {
+    report,
+    reportFresh: report.generatedFrom
+      && report.generatedFrom.manifestHash === getSourceUrlAccessManifestHash(manifest),
+  };
+}
+
 function main() {
   const toolStatePath = getOption('--tool-state')
     || process.env.RELEASE_TOOL_STATE
@@ -55,13 +68,23 @@ function main() {
   const contentManifestPath = getOption('--manifest')
     || process.env.CONTENT_SOURCE_MANIFEST
     || DEFAULT_CONTENT_MANIFEST_PATH;
+  const urlAccessReportPath = getOption('--url-access-report')
+    || process.env.CONTENT_SOURCE_URL_ACCESS
+    || null;
+  const urlAccessManifestPath = getOption('--url-access-manifest')
+    || process.env.CONTENT_SOURCE_URL_ACCESS_MANIFEST
+    || (urlAccessReportPath ? contentManifestPath : null);
   const contentState = loadContentSourceState(contentManifestPath, contentReportPath);
+  const urlAccessState = loadContentSourceUrlAccessState(urlAccessReportPath, urlAccessManifestPath);
   const report = buildRoadmapStatus({
     releaseToolState: readOptionalJson(toolStatePath, '开发者工具状态报告'),
     releaseToolStatePath: toolStatePath,
     contentSourceFollowUp: contentState.report,
     contentSourceReportPath: contentReportPath,
     contentSourceReportFresh: contentState.reportFresh,
+    contentSourceUrlAccess: urlAccessState.report,
+    contentSourceUrlAccessPath: urlAccessReportPath,
+    contentSourceUrlAccessReportFresh: urlAccessState.reportFresh,
   });
   const reportPath = getOption('--report');
   if (reportPath) console.log(`Report: ${writeReport(report, reportPath)}`);

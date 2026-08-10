@@ -79,12 +79,52 @@ function buildContentSourceBlocker(report, reportPath, reportFresh) {
   };
 }
 
+function buildContentSourceUrlAccessBlocker(report, reportPath, reportFresh) {
+  if (!report) return null;
+  if (reportFresh === false) {
+    return {
+      id: 'content-source-url-access',
+      priority: 'P1',
+      message: `内容源 URL 可访问性报告已过期：${reportPath || '(未指定)'}；请根据当前 manifest 重新生成`,
+      nextActions: [{
+        id: 'rebuild-content-source-url-access',
+        instruction: '重新运行 check-content-source-url-access.js，并使用当前外部 manifest 生成报告。',
+      }],
+    };
+  }
+  if (report.status === 'passed' || report.status === 'no-sources') return null;
+  const summary = report.summary || {};
+  if (report.status === 'blocked' || Number(summary.failed) > 0) {
+    return {
+      id: 'content-source-url-access',
+      priority: 'P1',
+      message: `内容源 URL 可访问性未通过：${summary.failed || 0} 个来源链接失败`,
+      nextActions: [{
+        id: 'check-content-source-url-access',
+        instruction: '重新检查来源 URL 的可访问性，确认官方页面可打开后再继续资料接入。',
+      }],
+    };
+  }
+  return {
+    id: 'content-source-url-access',
+    priority: 'P1',
+    message: `内容源 URL 可访问性报告状态无效：${report.status || 'unknown'}`,
+    nextActions: [{
+      id: 'rebuild-content-source-url-access',
+      instruction: '重新运行 check-content-source-url-access.js 生成有效报告。',
+    }],
+  };
+}
+
 function buildRoadmapStatus({
   releaseToolState = null,
   releaseToolStatePath = null,
   contentSourceFollowUp = null,
   contentSourceReportPath = null,
   contentSourceReportFresh = true,
+  contentSourceUrlAccess = null,
+  contentSourceUrlAccessPath = null,
+  contentSourceUrlAccessReportFresh = true,
 } = {}) {
   const releaseCheck = releaseToolState
     ? validateReleaseToolStateEvidence(releaseToolState)
@@ -109,9 +149,25 @@ function buildRoadmapStatus({
     nextBatchId: contentSummary ? contentSummary.nextBatchId || null : null,
     summary: contentSummary,
   };
+  const contentSourceUrlAccessSummary = contentSourceUrlAccess && contentSourceUrlAccess.summary
+    ? { ...contentSourceUrlAccess.summary }
+    : null;
+  const contentSourceUrlAccessState = {
+    status: !contentSourceUrlAccess
+      ? 'not-run'
+      : contentSourceUrlAccess.status === 'passed'
+        ? 'ready'
+        : contentSourceUrlAccess.status === 'no-sources'
+          ? 'not-applicable'
+          : 'blocked',
+    path: contentSourceUrlAccessPath,
+    reportFresh: contentSourceUrlAccessReportFresh !== false,
+    summary: contentSourceUrlAccessSummary,
+  };
   const blockers = [
     buildReleaseBlocker(releaseToolState, releaseToolStatePath),
     buildContentSourceBlocker(contentSourceFollowUp, contentSourceReportPath, contentSourceReportFresh),
+    buildContentSourceUrlAccessBlocker(contentSourceUrlAccess, contentSourceUrlAccessPath, contentSourceUrlAccessReportFresh),
   ].filter(Boolean);
 
   return {
@@ -119,6 +175,7 @@ function buildRoadmapStatus({
     status: blockers.length ? 'blocked' : 'ready',
     release,
     contentSource,
+    contentSourceUrlAccess: contentSourceUrlAccessState,
     blockers,
   };
 }
@@ -127,6 +184,11 @@ function formatRoadmapStatus(report) {
   const lines = [`${report.status === 'ready' ? 'OK' : 'BLOCKED'} roadmap status`];
   lines.push(`发布工具：${report.release.status}${report.release.errorCode ? ` (${report.release.errorCode})` : ''}`);
   lines.push(`内容源：${report.contentSource.status}${report.contentSource.nextBatchId ? `；下一批次 ${report.contentSource.nextBatchId}` : ''}`);
+  const urlAccessSummary = report.contentSourceUrlAccess.summary;
+  const urlFailureSuffix = urlAccessSummary && urlAccessSummary.failed
+    ? `；失败 ${urlAccessSummary.failed}`
+    : '';
+  lines.push(`内容源 URL：${report.contentSourceUrlAccess.status}${urlFailureSuffix}`);
   report.blockers.forEach((blocker) => {
     lines.push(`[${blocker.priority}] ${blocker.message}`);
     blocker.nextActions.forEach((action) => lines.push(`  -> ${action.instruction}`));
