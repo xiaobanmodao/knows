@@ -27,7 +27,7 @@
 - Consumes: `packages/chemistry/data/chemistry-topics.js`, `packages/chemistry/data/content-review-meta.js`, `data/content-source-registry.js`.
 - Produces: `checkChemistryTopicFrameworkEvidence({ evidencePath })`, `DEFAULT_EVIDENCE_PATH`, `EVIDENCE_KIND`, `REVIEW_ID`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create an assert test importing `checkChemistryTopicFrameworkEvidence`. Pass a unique missing file path and assert that it throws an error matching `化学专题官方框架佐证记录读取失败`. Also run the default CLI and assert that it initially exits nonzero because the default JSON has not been created.
 
@@ -38,13 +38,13 @@ assert.throws(
 );
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run: `node scripts/check-chemistry-topic-framework-evidence.test.js`
 
 Expected: Node fails because the checker module does not exist.
 
-- [ ] **Step 3: Write the minimal checker**
+- [x] **Step 3: Write the minimal checker**
 
 Implement only JSON reading, error wrapping and a public function. Use `fs.readFileSync` and `JSON.parse`; export the function and execute it in CLI mode. Do not add evidence data yet.
 
@@ -54,13 +54,13 @@ function checkChemistryTopicFrameworkEvidence({ evidencePath = DEFAULT_EVIDENCE_
 }
 ```
 
-- [ ] **Step 4: Run the test to verify the targeted failure behavior passes**
+- [x] **Step 4: Run the test to verify the targeted failure behavior passes**
 
 Run: `node scripts/check-chemistry-topic-framework-evidence.test.js`
 
 Expected: missing-file assertion passes; default CLI remains red until Task 2 supplies the record.
 
-- [ ] **Step 5: Commit the contract foundation**
+- [x] **Step 5: Commit the contract foundation**
 
 ```bash
 git add scripts/check-chemistry-topic-framework-evidence.js scripts/check-chemistry-topic-framework-evidence.test.js
@@ -77,7 +77,7 @@ git commit -m "test(chemistry): define framework evidence contract"
 - Consumes: `getContentSource`, `isAllowedContentSourceUrl`, `topics`, `getChemistryContentMeta`.
 - Produces: a return value `{ topicCount: 10, sourceKeys, evidenceKind: 'official-framework-support' }` and CLI success message `OK chemistry topic framework evidence: 10 topics`.
 
-- [ ] **Step 1: Extend the failing test with one invalid record**
+- [x] **Step 1: Extend the failing test with one invalid record**
 
 Write a temporary JSON record containing a prohibited `chapterOrder` field. Assert that the checker throws `不得包含教材映射、内容输入或外部来源字段`. Add an assertion that changing a record source URL away from the registry URL fails.
 
@@ -88,23 +88,23 @@ assert.throws(
 );
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run: `node scripts/check-chemistry-topic-framework-evidence.test.js`
 
 Expected: test fails because the checker does not yet reject prohibited fields or source drift.
 
-- [ ] **Step 3: Implement strict schema and snapshot validation**
+- [x] **Step 3: Implement strict schema and snapshot validation**
 
 Implement exact allowed field sets for root, scope, sources and topics. Require the three source keys, expected role/observation strings, four `notVerified` exclusions, 10 topics in existing data order, verified `contentMeta`, and SHA-256 snapshots of the approved container projection. Reject `chapter*`, `volume*`, `lesson*`, `sourceKind`, `input*`, `content*`, `body`, `resource*` and `asset*` keys recursively.
 
-- [ ] **Step 4: Run the test to verify it passes except for the still-missing default record**
+- [x] **Step 4: Run the test to verify it passes except for the still-missing default record**
 
 Run: `node scripts/check-chemistry-topic-framework-evidence.test.js`
 
 Expected: malformed-record assertions pass; default CLI assertion remains red until Task 3.
 
-- [ ] **Step 5: Commit the validator behavior**
+- [x] **Step 5: Commit the validator behavior**
 
 ```bash
 git add scripts/check-chemistry-topic-framework-evidence.js scripts/check-chemistry-topic-framework-evidence.test.js
@@ -121,21 +121,21 @@ git commit -m "feat(chemistry): validate topic framework evidence"
 - Consumes: the checker from Tasks 1-2 and the current 10-topic data order.
 - Produces: default evidence record that passes all schema, source and snapshot checks.
 
-- [ ] **Step 1: Extend the test to require a green default run**
+- [x] **Step 1: Extend the test to require a green default run**
 
 Spawn `node scripts/check-chemistry-topic-framework-evidence.js`, require exit status `0`, match `OK chemistry topic framework evidence: 10 topics`, and assert its returned values have the expected evidence kind and source-key list.
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run: `node scripts/check-chemistry-topic-framework-evidence.test.js`
 
 Expected: failure because `docs/evidence/chemistry-topic-framework-review-2026.json` does not exist.
 
-- [ ] **Step 3: Add the evidence record**
+- [x] **Step 3: Add the evidence record**
 
 Add the 2026-08-11 record with three official sources, exact scope text, the four exclusions and one `frameworkDomains` list per current chemistry topic. Compute each `reviewSnapshotHash` using the checker projection; do not insert textbook chapter numbers, chapter titles or source-content text.
 
-- [ ] **Step 4: Run focused checks**
+- [x] **Step 4: Run focused checks**
 
 Run:
 
@@ -148,7 +148,7 @@ node scripts/check-chemistry-biology-high-risk-batches.js --report dist/content-
 
 Expected: all commands exit 0, and the new CLI reports 10 topics.
 
-- [ ] **Step 5: Commit the evidence data**
+- [x] **Step 5: Commit the evidence data**
 
 ```bash
 git add docs/evidence/chemistry-topic-framework-review-2026.json scripts/check-chemistry-topic-framework-evidence.test.js
@@ -168,21 +168,21 @@ git commit -m "chore(chemistry): record topic framework evidence"
 - Consumes: `scripts/check-chemistry-topic-framework-evidence.test.js`.
 - Produces: default matrix length `118` and documentation that preserves the external-source and release blockers.
 
-- [ ] **Step 1: Extend the matrix contract test first**
+- [x] **Step 1: Extend the matrix contract test first**
 
 Require `scripts/check-chemistry-topic-framework-evidence.test.js` in `DEFAULT_CHECKS` and update the expected default count to `118`.
 
-- [ ] **Step 2: Run the matrix contract to verify it fails**
+- [x] **Step 2: Run the matrix contract to verify it fails**
 
 Run: `node scripts/check-v1.11-quality-matrix.test.js`
 
 Expected: assertion failure because the new command is absent from `DEFAULT_CHECKS`.
 
-- [ ] **Step 3: Register the command and update documentation**
+- [x] **Step 3: Register the command and update documentation**
 
 Add the chemistry evidence contract adjacent to the existing physics framework contract. Update both Chinese v1.11 records to say it is a supplementary framework check, not a chapter map, external source, or release-unblocking claim. Mark this plan’s checkboxes as complete with actual command results.
 
-- [ ] **Step 4: Run full verification**
+- [x] **Step 4: Run full verification**
 
 Run:
 
