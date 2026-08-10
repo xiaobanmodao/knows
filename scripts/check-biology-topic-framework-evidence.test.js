@@ -90,7 +90,7 @@ function createCompleteEvidence() {
   return {
     schemaVersion: 1,
     reviewId: REVIEW_ID,
-    reviewedAt: '2026-08-10',
+    reviewedAt: '2026-08-11',
     evidenceKind: EVIDENCE_KIND,
     scope: {
       supports: [
