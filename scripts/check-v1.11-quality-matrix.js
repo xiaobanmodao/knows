@@ -30,6 +30,8 @@ const DEFAULT_CHECKS = [
   { script: 'scripts/check-english-depth.js', label: '英语深度' },
   { script: 'scripts/check-english-depth-contract.test.js', label: '英语补深契约' },
   { script: 'scripts/english-curriculum-map.test.js', label: '英语目录映射' },
+  { script: 'scripts/check-english-source-evidence.js', label: '英语教材来源证据' },
+  { script: 'scripts/check-english-source-evidence.test.js', label: '英语教材来源证据契约' },
   { script: 'scripts/check-english-topic-review.js', label: '英语专题复核' },
   { script: 'scripts/check-english-template-review.js', label: '英语方法复核' },
   { script: 'scripts/check-physics-curriculum.js', label: '物理目录' },

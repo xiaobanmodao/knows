@@ -22,6 +22,8 @@ assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-pure-kno
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-pure-knowledge-runtime.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-physics-formula-contract.test.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-english-depth-contract.test.js'));
+assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-english-source-evidence.js'));
+assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-english-source-evidence.test.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/build-math-curriculum-audit.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-math-curriculum-audit.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-math-volume-map-input.test.js'));
