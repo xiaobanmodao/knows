@@ -35,6 +35,7 @@ function normalizeCount(value, field, index) {
 }
 
 function normalizeSourceKeys(value, index) {
+  if (typeof value === 'string' && !value.trim()) return [];
   const sourceKeys = Array.isArray(value)
     ? value
     : typeof value === 'string'

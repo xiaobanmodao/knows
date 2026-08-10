@@ -42,6 +42,7 @@ const DEFAULT_CHECKS = [
   { script: 'scripts/content-source-input.test.js', label: '内容源输入契约' },
   { script: 'scripts/content-source-input-audit.test.js', label: '内容源输入审计报告' },
   { script: 'scripts/content-source-input-cli.test.js', label: '内容源输入构建' },
+  { script: 'scripts/content-source-input-batches.test.js', label: '内容源多批输入契约' },
   { script: 'scripts/check-content-source-batches.test.js', label: '内容源批次审计' },
   { script: 'scripts/check-content-source-batches.js', args: ['--report', 'dist/content-audit/content-source-batches.json'], label: '内容源批次报告' },
   { script: 'scripts/content-source-catalog.test.js', label: '内容源目录契约' },
