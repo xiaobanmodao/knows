@@ -95,10 +95,10 @@ Run:
 ```bash
 node scripts/check-release-hotfix-scope.test.js
 node scripts/check-release-readiness.js
-node scripts/check-release-readiness.js --require-hotfix-scope
+node scripts/check-release-hotfix-scope.js --base HEAD
 ```
 
-Expected: 三条均通过；默认发布检查不执行范围白名单，显式命令仍执行并在发布基线自身的零差异下通过。
+Expected: 三条均通过；第一个契约测试证明显式参数会启用范围门禁，默认发布检查不执行范围白名单，最后一条直接检查脚本在零差异范围内保持可用。当前集成分支已经含有规格与计划文件，不在此分支执行 `check-release-readiness.js --require-hotfix-scope` 并期待通过；该严格命令只在独立热修复分支运行。
 
 - [ ] **Step 5: 提交热修复模式边界**
 
