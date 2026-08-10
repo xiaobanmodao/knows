@@ -28,49 +28,63 @@
 - `checkPhysicsTopicFrameworkEvidence(options?)` returns `{ topicCount, sourceKeys, evidenceKind }` when the record is valid.
 - The executable checker prints `OK physics topic framework evidence: 6 topics`.
 - The checker consumes `docs/evidence/physics-topic-framework-review-2026.json`, current `physics-content`, `topic-review-meta` and the source registry only.
+- `options.evidencePath` may provide a test-only alternate JSON path; a missing file must throw a clear record-read error.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
-Create a Node `assert` test that spawns the checker, requires exit status `0`, and asserts the six-topic success line. Add a direct assertion that `checkPhysicsTopicFrameworkEvidence()` returns `topicCount: 6`, `evidenceKind: 'official-framework-support'`, and sorted keys `['moe-physics-2022', 'pep-physics-public']`.
+Create a Node `assert` test that imports the checker and passes a unique nonexistent `evidencePath`. Assert that it throws `物理专题官方框架佐证记录读取失败`. This exercises the public checker boundary without creating Task 2 data.
 
-- [ ] **Step 2: Run the test before implementation**
-
-Run: `node scripts/check-physics-topic-framework-evidence.test.js`
-
-Expected: FAIL because the checker and the evidence record do not exist.
-
-- [ ] **Step 3: Implement the minimal checker**
-
-Read the JSON with `fs.readFileSync`/`JSON.parse`. Use `topics` from `packages/physics/data/physics-content`, `getPhysicsTopicReviewMeta` from `packages/physics/data/topic-review-meta`, and `getContentSource`/`isAllowedContentSourceUrl` from `data/content-source-registry`. Require the exact review ID and evidence kind, two registered official sources, four explicit exclusions, six matching topic IDs/titles, one nonempty domain list per topic and identical current review snapshot hashes. Reject fields that claim chapter title, chapter order or volume mapping.
-
-- [ ] **Step 4: Run the focused test again**
+- [x] **Step 2: Run the test before implementation**
 
 Run: `node scripts/check-physics-topic-framework-evidence.test.js`
 
-Expected: it remains red until Task 2 creates a valid record; do not weaken the checker to accept absent evidence.
+Expected: FAIL because the checker module does not exist.
+
+- [x] **Step 3: Implement the minimal checker**
+
+Read the JSON with `fs.readFileSync`/`JSON.parse`, using `options.evidencePath` or the fixed default path. Wrap missing/invalid JSON in `物理专题官方框架佐证记录读取失败`. Use `topics` from `packages/physics/data/physics-content`, `getPhysicsTopicReviewMeta` from `packages/physics/data/topic-review-meta`, and `getContentSource`/`isAllowedContentSourceUrl` from `data/content-source-registry`. Require the exact review ID and evidence kind, two registered official sources, four explicit exclusions, six matching topic IDs/titles, one nonempty domain list per topic and identical current review snapshot hashes. Reject fields that claim chapter title, chapter order or volume mapping.
+
+- [x] **Step 4: Run the focused test again**
+
+Run: `node scripts/check-physics-topic-framework-evidence.test.js`
+
+Expected: PASS because the missing-record error is now explicit and testable. The success-path assertion is added only after Task 2 supplies valid evidence.
 
 ### Task 2: Create the bounded official framework record
 
 **Files:**
 - Create: `docs/evidence/physics-topic-framework-review-2026.json`
+- Modify: `scripts/check-physics-topic-framework-evidence.js`
+- Modify: `scripts/check-physics-topic-framework-evidence.test.js`
 
 **Interfaces:**
 - The record exposes `schemaVersion`, `reviewId`, `reviewedAt`, `evidenceKind`, `scope`, `sources` and `topics`.
-- Each topic record is `{ id, title, reviewSnapshotHash, frameworkDomains }`; no chapter, volume, lesson, body or source-input fields are allowed.
+- `schemaVersion` is `1`; `reviewId` is `physics-topic-framework-support-2026-v1`; `reviewedAt` is `2026-08-10`; `evidenceKind` is `official-framework-support`.
+- `scope` is `{ supports: string[], notVerified: string[] }`, where `notVerified` is the exact four Chinese exclusions below.
+- Each topic record is `{ id, title, reviewSnapshotHash, frameworkDomains }`; no chapter, volume, lesson, body, source-input or external-source fields are allowed.
+- The checker must validate these structured fields rather than the retired shorthand names `explicitExclusions`, `topicId` and `snapshotHash`.
 
-- [ ] **Step 1: Record the source boundary**
+- [x] **Step 1: Add the failing default success-path assertions**
+
+Extend `scripts/check-physics-topic-framework-evidence.test.js` to spawn the default checker, require exit status `0`, match `OK physics topic framework evidence: 6 topics`, and assert that `checkPhysicsTopicFrameworkEvidence()` returns `topicCount: 6`, `evidenceKind: 'official-framework-support'`, and source keys `['moe-physics-2022', 'pep-physics-public']`. Run it before adding the record; expect a red failure because the default record is absent.
+
+- [x] **Step 2: Record the source boundary**
 
 Set `reviewId` to `physics-topic-framework-support-2026-v1`, `reviewedAt` to `2026-08-10`, and `evidenceKind` to `official-framework-support`. Set `scope.notVerified` to the exact four exclusions: `教材逐章标题`, `教材章节顺序`, `教材册次映射`, `教材正文与原始插图`.
 
-- [ ] **Step 2: Record official observations without overclaiming**
+- [x] **Step 3: Record official observations without overclaiming**
 
 Use the registered Ministry of Education course-standard notice as the curriculum baseline. Use the registered PEP new-textbook introduction for the observation that the edition has 22 chapters and uses the broad progression of sound/light/heat, force/mechanics, and energy/electromagnetism. Do not record a textbook chapter number, title, order or volume assignment for any topic.
 
-- [ ] **Step 3: Record six topic mappings**
+- [x] **Step 4: Record six topic mappings**
 
 Copy the current six topic IDs, titles and `snapshotHash` values from `topic-review-meta`. Use only broad domain labels derived from the original topic grouping: movement/sound, light/imaging, heat/matter measurement, force/fluid, work/energy and electricity/electromagnetism.
 
-- [ ] **Step 4: Verify the green cycle**
+- [x] **Step 5: Align the checker to the structured record and verify the green cycle**
+
+Replace the retired shorthand checks with the structured record contract from this task. Keep the Task 1 missing/invalid JSON error-boundary tests green. Enforce exact field allowlists: record only `schemaVersion/reviewId/reviewedAt/evidenceKind/scope/sources/topics`; scope only `supports/notVerified`; sources only `key/title/url/role/observation`; topics only `id/title/reviewSnapshotHash/frameworkDomains`. Require `moe-physics-2022` role `curriculum-baseline` with a concise curriculum-baseline observation, and `pep-physics-public` role `textbook-framework-summary` with the 22-chapter plus sound/light/heat, force/mechanics and energy/electromagnetism summary. Reject unknown fields (including Chinese mapping/external-source keys), swapped roles and any source-input/external-source semantics at any depth.
+
+Before changing the checker, extend the focused test with independent cloned-record fixtures that demonstrate: a Chinese unknown mapping field fails, a source role swap fails, and an external-source field fails. Run the test to observe red failures, then implement the minimal validation until all existing and new cases pass.
 
 Run:
 
@@ -88,25 +102,26 @@ Expected: both commands pass and the checker reports six topics.
 - Modify: `scripts/check-v1.11-quality-matrix.test.js`
 - Modify: `docs/v1.11五科学科高风险字段复核记录.md`
 - Modify: `docs/v1.11后续开发路线.md`
+- Modify: `docs/后续开发与发布路线.md` (仅质量矩阵数量同步)
 
 **Interfaces:**
 - The default matrix runs `scripts/check-physics-topic-framework-evidence.test.js`.
 - The matrix contract test proves that command is registered.
 - Documentation explains that this is supplementary framework evidence and does not change the 23-batch external intake state or `math-chapters-v1.11` blocker.
 
-- [ ] **Step 1: Add the matrix assertion first**
+- [x] **Step 1: Add the matrix assertion first**
 
 Extend `check-v1.11-quality-matrix.test.js` to require a command whose script is `scripts/check-physics-topic-framework-evidence.test.js`. Run it before the matrix list changes; expect a clear assertion failure about the missing command.
 
-- [ ] **Step 2: Register the checker**
+- [x] **Step 2: Register the checker**
 
 Add the test checker beside existing physics review checks. Do not add it to runtime routing, package manifests or release tool state.
 
-- [ ] **Step 3: Update the source review record**
+- [x] **Step 3: Update the source review record**
 
 Document that the physics topic framework record is an official-reference supplement, not an `external-source` batch. State that global follow-up still has no real external batch and `math-chapters-v1.11` remains blocked pending a complete current official directory.
 
-- [ ] **Step 4: Run focused checks**
+- [x] **Step 4: Run focused checks**
 
 Run:
 
@@ -123,7 +138,7 @@ Expected: all pass.
 **Files:**
 - Modify: `docs/superpowers/plans/2026-08-10-physics-topic-framework-evidence.md`
 
-- [ ] **Step 1: Run full validation**
+- [x] **Step 1: Run full validation**
 
 Run:
 
@@ -133,11 +148,13 @@ node scripts/check-physics-topic-framework-evidence.js
 git diff --check
 ```
 
-- [ ] **Step 2: Review final scope**
+Completed on 2026-08-10: `node scripts/check-v1.11-quality-matrix.js` exited 0 after all 117 checks; the standalone physics framework evidence checker also passed.
 
-Confirm `git diff --name-only` contains only the evidence record, checker/test, matrix registration and related documentation. Confirm no `packages/*/data`, `pages/`, `app.*`, source runtime modules, images, global input manifest, follow-up report or release version files changed.
+- [x] **Step 2: Review final scope**
 
-- [ ] **Step 3: Mark plan steps complete and commit**
+Confirm `git diff --name-only` contains only the evidence record, checker/test, matrix registration and related documentation. Confirm no `packages/*/data`, `pages/`, `app.*`, source runtime modules, images, global input manifest, follow-up report, release version files or `.superpowers/sdd/**` task reports changed. If this plan's generated task reports were accidentally committed, first demonstrate their presence with that scope command, delete only those generated reports, and rerun the same command until no SDD task report remains in the final diff.
+
+- [x] **Step 3: Mark plan steps complete and commit**
 
 Update every completed checkbox in this plan, then commit the focused change:
 
@@ -146,3 +163,5 @@ git add docs/evidence scripts/check-physics-topic-framework-evidence.js scripts/
 git commit -m "chore(physics): verify topic framework evidence"
 git push origin codex/roadmap-v1.11
 ```
+
+Completed on 2026-08-10: the bounded evidence record, checker, matrix registration and final support-statement guard were committed in focused commits through `04a1f0c`; the plan close-out is committed separately so generated SDD task reports remain untracked.
