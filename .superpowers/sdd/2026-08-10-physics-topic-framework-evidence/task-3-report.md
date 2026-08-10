@@ -44,3 +44,43 @@ exit 0
 ## SHA
 
 Implementation commit: `b32079be47f5652687c445f2343b4d26c527ca87` (`test(quality): register physics framework evidence`).
+
+## Fix Round 1/5
+
+### Review Scope and Text Check
+
+The existing roadmap consistency contract checked both the matrix count and the wording `当前质量矩阵 \`117/117\``. It did not independently distinguish a registered command from a fully executed matrix, so the contract was adjusted before the document correction.
+
+| Location | Before | After |
+|---|---|---|
+| `docs/后续开发与发布路线.md` | A separate physics `official-framework-support` bullet appeared in the general roadmap. | The bullet is removed. The only Task 3 synchronization in this document is the required `117` matrix-count update. |
+| `docs/v1.11后续开发路线.md` | `当前质量矩阵 \`117/117\` 通过` | `默认质量矩阵现登记 117 项` |
+| `scripts/check-roadmap-document-consistency.test.js` | Required the `117/117` result wording. | Requires `默认质量矩阵现登记 117 项`, matching the factual registration state. |
+
+### RED and GREEN
+
+After changing the contract first, `node scripts/check-roadmap-document-consistency.test.js` failed with:
+
+```text
+AssertionError [ERR_ASSERTION]: 路线文档应准确说明默认质量矩阵登记了 117 项
+```
+
+After the two document edits, the focused commands produced:
+
+```text
+node scripts/check-v1.11-quality-matrix.test.js
+OK v1.11 quality matrix contract
+
+node scripts/check-physics-topic-framework-evidence.test.js
+OK physics topic framework evidence contract
+
+node scripts/check-roadmap-document-consistency.test.js
+OK roadmap document consistency contract
+
+git diff --check
+exit 0
+```
+
+### Fix SHA
+
+`e6766663a525dade492bc66e0d0f9033fb9d5946` (`docs(roadmap): correct matrix registration status`)
