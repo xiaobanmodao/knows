@@ -11,9 +11,28 @@ const PRIVACY_INTERFACE_POLICY = Object.freeze({
   'packages/biology/pages/knowledge/index.js': { purpose: '复制生物核心知识', writes: 1 },
 });
 
+const FILE_INTERFACE_POLICY = Object.freeze({
+  'wx.chooseMessageFile': {
+    file: 'utils/local-backup-file.js',
+    purpose: '用户主动选择备份文件并在本机恢复',
+    calls: 1,
+  },
+  'wx.shareFileMessage': {
+    file: 'utils/local-backup-file.js',
+    purpose: '用户主动转发本地备份文件',
+    calls: 1,
+  },
+});
+
 const RUNTIME_ROOTS = ['pages', 'packages', 'components', 'utils'];
 const CLIPBOARD_READ_PATTERN = /\bwx\.getClipboardData\s*\(/g;
 const CLIPBOARD_WRITE_PATTERN = /\bwx\.setClipboardData\s*\(/g;
+const FILE_INTERFACE_PATTERNS = Object.freeze([
+  ['wx.chooseMessageFile', /\bwx\.chooseMessageFile\s*\(/g],
+  ['wx.shareFileMessage', /\bwx\.shareFileMessage\s*\(/g],
+  ['wx.saveFile', /\bwx\.saveFile\s*\(/g],
+  ['wx.openDocument', /\bwx\.openDocument\s*\(/g],
+]);
 
 function shouldSkip(relativePath) {
   const normalized = relativePath.split(path.sep).join('/');
@@ -48,12 +67,21 @@ function countMatches(source, pattern) {
   return [...source.matchAll(pattern)].length;
 }
 
+function sortRecord(record) {
+  return Object.fromEntries(
+    Object.entries(record).sort(([left], [right]) => left.localeCompare(right)),
+  );
+}
+
 function scanPrivacyInterfaces(rootDir, options = {}) {
   const files = options.files ? [...options.files].sort() : getRuntimeFiles(rootDir);
   const writesByFile = {};
+  const callsByApi = {};
+  const callsByFile = {};
   const errors = new Set();
   let readCalls = 0;
   let writeCalls = 0;
+  let fileCalls = 0;
 
   files.forEach((relativePath) => {
     const absolutePath = path.join(rootDir, relativePath);
@@ -70,11 +98,32 @@ function scanPrivacyInterfaces(rootDir, options = {}) {
         errors.add('clipboard-write-file-not-registered');
       }
     }
+
+    let fileCallsInFile = 0;
+    FILE_INTERFACE_PATTERNS.forEach(([api, pattern]) => {
+      const apiCalls = countMatches(source, pattern);
+      if (!apiCalls) return;
+      callsByApi[api] = (callsByApi[api] || 0) + apiCalls;
+      fileCallsInFile += apiCalls;
+      const policy = FILE_INTERFACE_POLICY[api];
+      if (!policy) {
+        errors.add('file-api-not-registered');
+      } else if (policy.file !== relativePath) {
+        errors.add('file-api-file-not-registered');
+      }
+    });
+    if (fileCallsInFile) callsByFile[relativePath] = fileCallsInFile;
+    fileCalls += fileCallsInFile;
   });
 
   Object.entries(PRIVACY_INTERFACE_POLICY).forEach(([relativePath, policy]) => {
     const actualWrites = writesByFile[relativePath] || 0;
     if (actualWrites !== policy.writes) errors.add('registered-file-call-count-mismatch');
+  });
+
+  Object.entries(FILE_INTERFACE_POLICY).forEach(([api, policy]) => {
+    const actualCalls = callsByApi[api] || 0;
+    if (actualCalls !== policy.calls) errors.add('file-api-call-count-mismatch');
   });
 
   return {
@@ -85,6 +134,12 @@ function scanPrivacyInterfaces(rootDir, options = {}) {
       writesByFile,
       allowedFiles: Object.keys(PRIVACY_INTERFACE_POLICY).sort(),
     },
+    file: {
+      calls: fileCalls,
+      callsByApi: sortRecord(callsByApi),
+      callsByFile: sortRecord(callsByFile),
+      allowedFiles: [...new Set(Object.values(FILE_INTERFACE_POLICY).map((policy) => policy.file))].sort(),
+    },
     errors: [...errors].sort(),
   };
 }
@@ -92,7 +147,7 @@ function scanPrivacyInterfaces(rootDir, options = {}) {
 function main() {
   const report = scanPrivacyInterfaces(path.resolve(__dirname, '..'));
   if (report.status === 'passed') {
-    console.log(`OK privacy interfaces: Clipboard write-only, ${report.clipboard.writeCalls} writes, ${report.clipboard.readCalls} reads`);
+    console.log(`OK privacy interfaces: Clipboard write-only, ${report.clipboard.writeCalls} writes, ${report.clipboard.readCalls} reads; ${report.file.calls} file interface calls`);
     return;
   }
   console.error(`BLOCKED privacy interfaces: ${report.errors.join(', ')}`);
@@ -102,6 +157,7 @@ function main() {
 if (require.main === module) main();
 
 module.exports = {
+  FILE_INTERFACE_POLICY,
   PRIVACY_INTERFACE_POLICY,
   getRuntimeFiles,
   scanPrivacyInterfaces,

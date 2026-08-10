@@ -22,6 +22,15 @@ const report = scanPrivacyInterfaces(repoRoot);
 assert.strictEqual(report.status, 'passed');
 assert.strictEqual(report.clipboard.readCalls, 0);
 assert.strictEqual(report.clipboard.writeCalls, 8);
+assert.strictEqual(report.file.calls, 2);
+assert.deepStrictEqual(report.file.callsByApi, {
+  'wx.chooseMessageFile': 1,
+  'wx.shareFileMessage': 1,
+});
+assert.deepStrictEqual(report.file.callsByFile, {
+  'utils/local-backup-file.js': 2,
+});
+assert.deepStrictEqual(report.file.allowedFiles, ['utils/local-backup-file.js']);
 assert.strictEqual(report.errors.length, 0);
 
 {
@@ -49,6 +58,36 @@ assert.strictEqual(report.errors.length, 0);
   try {
     const fixtureReport = scanPrivacyInterfaces(fixture.fixtureRoot, { files: [fixture.relativeFile] });
     assert.ok(fixtureReport.errors.includes('registered-file-call-count-mismatch'));
+  } finally {
+    removeFixture(fixture.fixtureRoot);
+  }
+}
+
+{
+  const fixture = makeFixture('pages/unregistered.js', 'wx.chooseMessageFile({});');
+  try {
+    const fixtureReport = scanPrivacyInterfaces(fixture.fixtureRoot, { files: [fixture.relativeFile] });
+    assert.ok(fixtureReport.errors.includes('file-api-file-not-registered'));
+  } finally {
+    removeFixture(fixture.fixtureRoot);
+  }
+}
+
+{
+  const fixture = makeFixture('utils/local-backup-file.js', '');
+  try {
+    const fixtureReport = scanPrivacyInterfaces(fixture.fixtureRoot, { files: [fixture.relativeFile] });
+    assert.ok(fixtureReport.errors.includes('file-api-call-count-mismatch'));
+  } finally {
+    removeFixture(fixture.fixtureRoot);
+  }
+}
+
+{
+  const fixture = makeFixture('pages/unregistered.js', 'wx.saveFile({});');
+  try {
+    const fixtureReport = scanPrivacyInterfaces(fixture.fixtureRoot, { files: [fixture.relativeFile] });
+    assert.ok(fixtureReport.errors.includes('file-api-not-registered'));
   } finally {
     removeFixture(fixture.fixtureRoot);
   }
