@@ -28,6 +28,8 @@ try {
     currentCatalog,
   });
   assert.strictEqual(report.status, 'blocked');
+  assert.match(report.manifestHash, /^[a-f0-9]{64}$/);
+  assert.strictEqual(report.currentSourceHash, currentCatalog.sourceHash);
   assert.strictEqual(report.summary.total, 23);
   assert.strictEqual(report.summary.ready, 0);
   assert.strictEqual(report.summary.blocked, 23);
@@ -38,8 +40,11 @@ try {
   assert.strictEqual(englishUnitsBatch.status, 'passed');
   assert.strictEqual(englishUnitsBatch.priority, 'P1');
   assert.strictEqual(englishUnitsBatch.counts.entities, 42);
+  assert.match(englishUnitsBatch.inputHash, /^[a-f0-9]{64}$/);
+  assert.strictEqual(englishUnitsBatch.currentSourceHash, englishUnits.sourceHash);
   const englishWordsBatch = report.batches.find((batch) => batch.id === 'english-words-v1.11');
   assert.strictEqual(englishWordsBatch.reason, 'manifest-missing');
+  assert.strictEqual(englishWordsBatch.inputHash, null);
 
   const allowFixtureReport = buildContentSourceFollowUpReport({
     manifest: normalizeBatchManifest(manifest),

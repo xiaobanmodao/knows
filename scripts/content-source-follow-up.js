@@ -1,3 +1,5 @@
+const crypto = require('crypto');
+
 const {
   buildContentSourceInputBatchAudit,
   normalizeBatchManifest,
@@ -17,6 +19,16 @@ const STATUS_ORDER = {
   pending: 3,
   passed: 4,
 };
+
+function hashManifest(manifest) {
+  return crypto.createHash('sha256').update(JSON.stringify({
+    schemaVersion: manifest.schemaVersion,
+    sourceVersion: manifest.sourceVersion,
+    sourceKind: manifest.sourceKind,
+    batches: manifest.batches,
+})).digest('hex');
+}
+
 const ACTION_ORDER = {
   'fix-input': 0,
   'provide-external-source': 1,
@@ -79,6 +91,9 @@ function buildContentSourceFollowUpReport({
       counts: batch.counts || null,
       metrics: batch.metrics || null,
       diff: batch.diff || null,
+      inputHash: batch.inputHash || null,
+      importedSourceHash: batch.importedSourceHash || null,
+      currentSourceHash: batch.currentSourceHash || null,
       expected: definition ? {
         entities: definition.expectedCount,
         examples: definition.expectedExampleCount,
@@ -123,6 +138,8 @@ function buildContentSourceFollowUpReport({
     schemaVersion: 1,
     sourceVersion: normalized.sourceVersion,
     sourceKind: normalized.sourceKind,
+    manifestHash: hashManifest(normalized),
+    currentSourceHash: currentCatalog.sourceHash,
     status,
     requirements: {
       requireExternalSource,
