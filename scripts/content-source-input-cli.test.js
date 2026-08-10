@@ -16,6 +16,13 @@ function runBuilder(inputPath, outputPath, extraArgs = []) {
   });
 }
 
+function runCurrentBuilder(outputPath) {
+  return spawnSync(process.execPath, [builder, '--from-current', '--output', outputPath], {
+    cwd: root,
+    encoding: 'utf8',
+  });
+}
+
 function runChecker(inputPath, extraArgs = []) {
   return spawnSync(process.execPath, [checker, inputPath, ...extraArgs], {
     cwd: root,
@@ -72,6 +79,16 @@ try {
   const noDiffResult = runChecker(currentCatalogInput, ['--require-no-diff']);
   assert.strictEqual(noDiffResult.status, 0, noDiffResult.stderr || noDiffResult.stdout);
   assert.match(noDiffResult.stdout, /diff \+0 ~0 -0/);
+
+  const currentInputOutput = path.join(directory, 'current-input-output.json');
+  const currentBuilderResult = runCurrentBuilder(currentInputOutput);
+  assert.strictEqual(currentBuilderResult.status, 0, currentBuilderResult.stderr || currentBuilderResult.stdout);
+  const currentInputData = JSON.parse(fs.readFileSync(currentInputOutput, 'utf8'));
+  assert.strictEqual(currentInputData.entityCount, 948);
+  assert.strictEqual(currentInputData.aliasCount, 89);
+  assert.match(currentInputData.inputHash, /^[a-f0-9]{64}$/);
+  const generatedCurrentCheck = runChecker(currentInputOutput, ['--require-no-diff']);
+  assert.strictEqual(generatedCurrentCheck.status, 0, generatedCurrentCheck.stderr || generatedCurrentCheck.stdout);
 
   const changedCatalogInput = path.join(directory, 'changed-catalog.json');
   const changedCatalog = buildContentSourceCatalog();

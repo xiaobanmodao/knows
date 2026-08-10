@@ -4,11 +4,14 @@ const path = require('path');
 const {
   checkSourceInput,
   loadSourceInputFile,
+  normalizeSourceInput,
 } = require('./content-source-input');
+const { buildContentSourceCatalog } = require('./content-source-catalog');
 
 const root = path.resolve(__dirname, '..');
 const args = process.argv.slice(2);
 const inputPath = args[0];
+const fromCurrent = args.includes('--from-current');
 
 function getOption(name) {
   const index = args.indexOf(name);
@@ -16,11 +19,13 @@ function getOption(name) {
 }
 
 function main() {
-  if (!inputPath || inputPath.startsWith('--')) {
-    throw new Error('用法：node scripts/build-content-source-input.js <input.json|input.csv> [--output <output.json>] [--source-version <version>]');
+  if ((!inputPath || inputPath.startsWith('--')) && !fromCurrent) {
+    throw new Error('用法：node scripts/build-content-source-input.js <input.json|input.csv> [--output <output.json>] [--source-version <version>] 或 --from-current');
   }
   const outputPath = path.resolve(getOption('--output') || 'dist/content-audit/content-source-input.json');
-  const report = loadSourceInputFile(inputPath, { sourceVersion: getOption('--source-version') });
+  const report = fromCurrent
+    ? normalizeSourceInput(buildContentSourceCatalog())
+    : loadSourceInputFile(inputPath, { sourceVersion: getOption('--source-version') });
   checkSourceInput(report);
   fs.mkdirSync(path.dirname(outputPath), { recursive: true });
   fs.writeFileSync(outputPath, `${JSON.stringify(report, null, 2)}\n`);
