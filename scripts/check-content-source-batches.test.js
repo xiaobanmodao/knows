@@ -18,26 +18,31 @@ assert.strictEqual(getContentSourceBatch('unknown-batch'), null);
 
 const unitResult = auditContentSourceBatch(getContentSourceBatch('english-units-v1.11'));
 assert.deepStrictEqual(unitResult.counts, { entities: 42, aliases: 0 });
+assert.deepStrictEqual(unitResult.metrics, { examples: 0, experiments: 0, assets: 42 });
 assert.deepStrictEqual(unitResult.diff, { added: 0, modified: 0, removed: 0 });
 assert.ok(unitResult.entities.every((entity) => entity.subjectId === 'english' && entity.type === 'unit'));
 
 const wordResult = auditContentSourceBatch(getContentSourceBatch('english-words-v1.11'));
 assert.deepStrictEqual(wordResult.counts, { entities: 336, aliases: 0 });
+assert.deepStrictEqual(wordResult.metrics, { examples: 672, experiments: 0, assets: 0 });
 assert.deepStrictEqual(wordResult.diff, { added: 0, modified: 0, removed: 0 });
 assert.ok(wordResult.entities.every((entity) => entity.subjectId === 'english' && entity.type === 'word'));
 
 const grammarResult = auditContentSourceBatch(getContentSourceBatch('english-grammar-v1.11'));
 assert.deepStrictEqual(grammarResult.counts, { entities: 84, aliases: 0 });
+assert.deepStrictEqual(grammarResult.metrics, { examples: 252, experiments: 0, assets: 0 });
 assert.deepStrictEqual(grammarResult.diff, { added: 0, modified: 0, removed: 0 });
 assert.ok(grammarResult.entities.every((entity) => entity.subjectId === 'english' && entity.type === 'grammar'));
 
 const physicsResult = auditContentSourceBatch(getContentSourceBatch('physics-knowledge-v1.11'));
 assert.deepStrictEqual(physicsResult.counts, { entities: 84, aliases: 0 });
+assert.deepStrictEqual(physicsResult.metrics, { examples: 252, experiments: 29, assets: 84 });
 assert.deepStrictEqual(physicsResult.diff, { added: 0, modified: 0, removed: 0 });
 assert.ok(physicsResult.entities.every((entity) => entity.subjectId === 'physics' && entity.type === 'knowledge'));
 
 const structuredPhysicsResult = auditContentSourceBatch(getContentSourceBatch('physics-structured-knowledge-v1.11'));
 assert.deepStrictEqual(structuredPhysicsResult.counts, { entities: 18, aliases: 0 });
+assert.deepStrictEqual(structuredPhysicsResult.metrics, { examples: 54, experiments: 6, assets: 18 });
 assert.deepStrictEqual(structuredPhysicsResult.diff, { added: 0, modified: 0, removed: 0 });
 assert.ok(structuredPhysicsResult.entities.every((entity) => entity.subjectId === 'physics' && entity.type === 'structured-knowledge'));
 
@@ -47,5 +52,9 @@ assert.throws(() => auditContentSourceBatch({
   type: 'unit',
   expectedCount: 41,
 }), /数量|expected/i);
+assert.throws(() => auditContentSourceBatch({
+  ...getContentSourceBatch('english-units-v1.11'),
+  expectedExampleCount: 1,
+}), /示例|example/i);
 
 console.log('OK content source batches contract');
