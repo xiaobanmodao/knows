@@ -58,7 +58,7 @@
 - Produces: `collectChemistryVisualGuideIssues({ sourceKnowledgeItems, runtimeLayers }): string[]`。
 - Preserves: `collectBiologyVisualGuideIssues({ sourceKnowledgeItems, runtimeLayers }): string[]`。
 
-- [ ] **Step 1: 写入化学契约的失败测试**
+- [x] **Step 1: 写入化学契约的失败测试**
 
 创建 `scripts/check-chemistry-visual-guides.test.js`，先只依赖尚不存在的化学包装模块：
 
@@ -101,13 +101,13 @@ assert.throws(
 );
 ```
 
-- [ ] **Step 2: 运行失败测试并确认失败原因**
+- [x] **Step 2: 运行失败测试并确认失败原因**
 
 Run: `node scripts/check-chemistry-visual-guides.test.js`
 
 Expected: 因 `chemistry-visual-guide-contract` 不存在而出现 `MODULE_NOT_FOUND`，而不是测试语法错误。
 
-- [ ] **Step 3: 实现最小通用 schema 校验与学科包装**
+- [x] **Step 3: 实现最小通用 schema 校验与学科包装**
 
 在 `scripts/structured-visual-guide-contract.js` 实现：
 
@@ -143,7 +143,7 @@ module.exports = { collectChemistryVisualGuideIssues };
 
 把 `scripts/biology-visual-guide-contract.js` 改成同样的兼容包装，固定 `subjectLabel: '生物'`，导出名保持不变。
 
-- [ ] **Step 4: 扩展失败测试覆盖模型边界**
+- [x] **Step 4: 扩展失败测试覆盖模型边界**
 
 在同一测试中为下列情况分别构造独立 fixture，并用中文错误片段断言：
 
@@ -179,7 +179,7 @@ const falseCycle = {
 
 同时断言普通 `flow` 节点含 `lane`、普通 `flow` 节点含 `depth`、重复标签、超过 `title` 长度、URL、runtime 摘要被单独篡改时都返回问题。
 
-- [ ] **Step 5: 运行契约与生物回归**
+- [x] **Step 5: 运行契约与生物回归**
 
 Run: `node scripts/check-chemistry-visual-guides.test.js`
 
@@ -189,7 +189,7 @@ Run: `node scripts/check-biology-visual-guides.test.js`
 
 Expected: 既有 36 条生物图解契约仍通过，兼容导出不变。
 
-- [ ] **Step 6: 提交契约底座**
+- [x] **Step 6: 提交契约底座**
 
 ```bash
 git add scripts/structured-visual-guide-contract.js scripts/chemistry-visual-guide-contract.js scripts/biology-visual-guide-contract.js scripts/check-chemistry-visual-guides.test.js
@@ -206,7 +206,7 @@ git commit -m "test(chemistry): define visual guide contract"
 - Produces: `visualGuidesByKnowledgeId`、`VISUAL_GUIDE_TYPES`、`VISUAL_GUIDE_TONES`、`getVisualGuideForKnowledge(knowledgeId)`。
 - Consumes: 已有 `chem-k-*` 稳定 ID；本任务不改动 `chemistry-knowledge.js`。
 
-- [ ] **Step 1: 写入前 20 条覆盖的失败断言**
+- [x] **Step 1: 写入前 20 条覆盖的失败断言**
 
 向 `scripts/check-chemistry-visual-guides.test.js` 增加：
 
@@ -231,13 +231,13 @@ assert.deepStrictEqual(Object.keys(visualGuidesByKnowledgeId).sort(), foundation
 assert.strictEqual(getVisualGuideForKnowledge('chem-k-unknown'), null);
 ```
 
-- [ ] **Step 2: 运行测试并确认数据模块尚不存在**
+- [x] **Step 2: 运行测试并确认数据模块尚不存在**
 
 Run: `node scripts/check-chemistry-visual-guides.test.js`
 
 Expected: 因 `packages/chemistry/data/chemistry-visual-guides.js` 不存在而失败。
 
-- [ ] **Step 3: 实现不可变映射与前 20 条原创图解**
+- [x] **Step 3: 实现不可变映射与前 20 条原创图解**
 
 模块的查询函数必须深拷贝：
 
@@ -276,7 +276,7 @@ function getVisualGuideForKnowledge(knowledgeId) {
 | `chem-k-equations` | flow / 方程式书写步骤 | 写出反应物和生成物；依据事实写出化学式；配平原子数；只改变化学计量数；标明条件和状态；按现有规范注明必要信息；检查守恒；元素种类和数目两侧一致 |
 | `chem-k-stoichiometry` | flow / 方程式计算路径 | 审清问题；确定求量和已知量；写正确方程式；先配平并确认条件；列质量比例；系数对应物质的量比例并转为质量关系；核对单位；结果与已知量和问法对应 |
 
-- [ ] **Step 4: 运行前半数据测试并验证克隆行为**
+- [x] **Step 4: 运行前半数据测试并验证克隆行为**
 
 在测试中追加：
 
@@ -293,7 +293,7 @@ Run: `node scripts/check-chemistry-visual-guides.test.js`
 
 Expected: 契约和 20 条前半数据均通过；此阶段测试不要求化学知识实体已合并图解。
 
-- [ ] **Step 5: 提交基础图解数据**
+- [x] **Step 5: 提交基础图解数据**
 
 ```bash
 git add packages/chemistry/data/chemistry-visual-guides.js scripts/check-chemistry-visual-guides.test.js
@@ -312,7 +312,7 @@ git commit -m "feat(chemistry): add foundation visual guides"
 - Consumes: Task 2 的 `getVisualGuideForKnowledge(knowledgeId)`。
 - Produces: `knowledgeItems` 和 `repository.getKnowledgeById(id)` 都拥有独立 `visualGuide` 深拷贝。
 
-- [ ] **Step 1: 写入全量 40/40 与运行时覆盖的失败测试**
+- [x] **Step 1: 写入全量 40/40 与运行时覆盖的失败测试**
 
 在 `scripts/check-chemistry-visual-guides.test.js` 引入：
 
@@ -342,13 +342,13 @@ assert.deepStrictEqual(
 );
 ```
 
-- [ ] **Step 2: 运行测试并确认后半数据和实体合并尚未完成**
+- [x] **Step 2: 运行测试并确认后半数据和实体合并尚未完成**
 
 Run: `node scripts/check-chemistry-visual-guides.test.js`
 
 Expected: 40 条覆盖率或 `knowledge.visualGuide` 断言失败；失败不能来自既有方程式或实验检查。
 
-- [ ] **Step 3: 补齐后 20 条原创图解**
+- [x] **Step 3: 补齐后 20 条原创图解**
 
 按下表填入 `chemistry-visual-guides.js`。每个分号后的短句分别是节点 `label` 与 `note`，色调继续在四种允许值之间循环。所有 `compare` 使用前两项 `left`、后两项 `right`；所有 `hierarchy` 使用第一个节点 `depth: 0`，其余节点使用 `depth: 1` 或 `depth: 2`。
 
@@ -375,7 +375,7 @@ Expected: 40 条覆盖率或 `knowledge.visualGuide` 断言失败；失败不能
 | `chem-k-chemical-health` | flow / 元素营养与健康 | 认识元素作用；人体需要多种元素维持生命活动；获取营养；食物提供不同营养元素；保持均衡；不能用单一食物替代合理膳食；科学判断；不以化学名词替代健康建议 |
 | `chem-k-resources-environment` | cycle / 绿色化学持续关系 | 资源利用；按需要节约使用原料和能源；污染预防；优先从源头减少有害排放；回收处理；分类回收并规范处置废弃物；改进选择；在设计和使用中持续降低环境负担 |
 
-- [ ] **Step 4: 在聚合层合并深拷贝图解**
+- [x] **Step 4: 在聚合层合并深拷贝图解**
 
 把 `packages/chemistry/data/chemistry-knowledge.js` 的知识数组改为：
 
@@ -391,7 +391,7 @@ const knowledgeItems = baseKnowledgeItems.map((knowledge) => ({
 
 保留 `foundationKnowledge`、`applicationKnowledge`、`getRawChemistrySections`、实验和方程式导出；不得修改知识点正文、示例、实验、方程式或 `contentMeta`。
 
-- [ ] **Step 5: 把图解覆盖写入化学内容门禁**
+- [x] **Step 5: 把图解覆盖写入化学内容门禁**
 
 在 `scripts/check-chemistry-content.js` 顶部引入：
 
@@ -423,7 +423,7 @@ assert.deepStrictEqual(
 
 在 `check-chemistry-visual-guides.test.js` 断言唯一 `cycle` ID 为 `chem-k-resources-environment`，并至少各有一条 `flow`、`compare`、`hierarchy`。
 
-- [ ] **Step 6: 运行完整化学数据与准确性检查**
+- [x] **Step 6: 运行完整化学数据与准确性检查**
 
 Run: `node scripts/check-chemistry-visual-guides.test.js`
 
@@ -437,7 +437,7 @@ Run: `node scripts/check-chemistry-accuracy.js`
 
 Expected: 方程式、条件、实验安全和既有准确性断言继续通过。
 
-- [ ] **Step 7: 提交全量化学图解数据**
+- [x] **Step 7: 提交全量化学图解数据**
 
 ```bash
 git add packages/chemistry/data/chemistry-visual-guides.js packages/chemistry/data/chemistry-knowledge.js scripts/check-chemistry-visual-guides.test.js scripts/check-chemistry-content.js
@@ -463,7 +463,7 @@ git commit -m "feat(chemistry): cover all knowledge with visual guides"
 - Produces: component properties `guide: Object` and `readingPreferences: Object`。
 - Preserves: `prepareVisualGuide(guide): object | null` from the biology page compatibility file.
 
-- [ ] **Step 1: 先把生物页面检查改为公共组件语义**
+- [x] **Step 1: 先把生物页面检查改为公共组件语义**
 
 在 `scripts/check-biology-visual-guides.js` 把视觉标记路径从生物页面 CSS/WXML 改为：
 
@@ -486,13 +486,13 @@ assert(componentWxml.includes('guide.isCycle'), '公共图解组件必须渲染�
 
 保留现有的深拷贝、两个 compare 列容器、无固定高度、无横向滚动、无文字截断、无渐变的断言，但将 CSS selector 从 `.visual-guide` 改为 `.structured-visual-guide`。
 
-- [ ] **Step 2: 运行检查并确认缺失公共组件导致失败**
+- [x] **Step 2: 运行检查并确认缺失公共组件导致失败**
 
 Run: `node scripts/check-biology-visual-guides.js`
 
 Expected: 因 `components/structured-visual-guide/index.js` 不存在或生物页面尚未注册组件而失败。
 
-- [ ] **Step 3: 实现纯预处理函数与生物兼容包装**
+- [x] **Step 3: 实现纯预处理函数与生物兼容包装**
 
 创建 `utils/structured-visual-guide.js`：
 
@@ -547,7 +547,7 @@ module.exports = { prepareVisualGuide };
 
 此函数在未通过构建期契约的 compare 数据上不得抛出；只处理完整的合法数据，异常数据由页面 `wx:if` 跳过和构建期门禁阻断。
 
-- [ ] **Step 4: 实现公共组件**
+- [x] **Step 4: 实现公共组件**
 
 创建 `components/structured-visual-guide/index.json`：
 
@@ -615,7 +615,7 @@ Component({
 
 不得使用 `height`、`min-height`、`max-height`、`overflow-x`、`text-overflow`、`-webkit-line-clamp` 或任何渐变。层级缩进最大为 36rpx，组件内部不创建卡片容器。
 
-- [ ] **Step 5: 迁移生物知识页**
+- [x] **Step 5: 迁移生物知识页**
 
 在 `packages/biology/pages/knowledge/index.json` 注册：
 
@@ -634,7 +634,7 @@ Component({
 
 从 `packages/biology/pages/knowledge/index.wxss` 删除只属于 `.visual-guide` 的规则；其他样式和概念说明、封面、示例、观察、安全、笔记区域不变。
 
-- [ ] **Step 6: 运行生物图解和阅读显示回归**
+- [x] **Step 6: 运行生物图解和阅读显示回归**
 
 Run: `node scripts/check-biology-visual-guides.test.js`
 
@@ -648,7 +648,7 @@ Run: `node scripts/check-reading-display.js`
 
 Expected: 原有阅读显示设置检查通过。
 
-- [ ] **Step 7: 提交公共渲染底座**
+- [x] **Step 7: 提交公共渲染底座**
 
 ```bash
 git add utils/structured-visual-guide.js components/structured-visual-guide packages/biology/pages/knowledge scripts/check-biology-visual-guides.js
@@ -669,7 +669,7 @@ git commit -m "refactor(content): share structured visual guide renderer"
 - Consumes: `prepareStructuredVisualGuide(knowledge.visualGuide)`、公共 `structured-visual-guide` 组件、40 条化学图解。
 - Produces: 化学页的 `knowledge.visualGuide` 预处理副本；默认矩阵新增两条化学图解检查。
 
-- [ ] **Step 1: 写入化学页面语义检查**
+- [x] **Step 1: 写入化学页面语义检查**
 
 创建 `scripts/check-chemistry-visual-guides.js`，先读取化学页面 JS、WXML、JSON 和公共组件，包含以下断言：
 
@@ -689,13 +689,13 @@ assert(componentWxml.includes('wx:if="{{guide}}"'), '公共图解组件必须提
 
 同时检查 `knowledge-figure__fallback` 文案仍存在，确保图像失败时的既有文字降级没有删除。
 
-- [ ] **Step 2: 运行页面检查并确认当前化学页未接入图解**
+- [x] **Step 2: 运行页面检查并确认当前化学页未接入图解**
 
 Run: `node scripts/check-chemistry-visual-guides.js`
 
 Expected: 因化学页没有导入预处理函数、没有组件注册或没有 WXML 区块而失败。
 
-- [ ] **Step 3: 接入化学页**
+- [x] **Step 3: 接入化学页**
 
 在 `packages/chemistry/pages/knowledge/index.js` 顶部引入：
 
@@ -726,7 +726,7 @@ visualGuide,
 
 不要改变封面获取、`coverImageLoadFailed`、实验/方程式 focus、收藏、笔记、相邻导航或详情展开状态。
 
-- [ ] **Step 4: 将两项新检查写入质量矩阵**
+- [x] **Step 4: 将两项新检查写入质量矩阵**
 
 先在 `scripts/check-v1.11-quality-matrix.test.js` 添加：
 
@@ -745,7 +745,7 @@ assert.strictEqual(defaultCommands.length, 123, '默认质量矩阵必须保持 
 
 不得移除、替换或重新排序现有检查。契约测试会自动被“scripts 目录所有 .test.js 均纳入矩阵”的断言覆盖。
 
-- [ ] **Step 5: 运行页面、矩阵契约和专项检查**
+- [x] **Step 5: 运行页面、矩阵契约和专项检查**
 
 Run: `node scripts/check-chemistry-visual-guides.js`
 
@@ -759,7 +759,7 @@ Run: `node scripts/check-chemistry-pages.js`
 
 Expected: 既有化学专题、知识页、模板页和内容块语义继续通过。
 
-- [ ] **Step 6: 提交页面和矩阵接入**
+- [x] **Step 6: 提交页面和矩阵接入**
 
 ```bash
 git add packages/chemistry/pages/knowledge scripts/check-chemistry-visual-guides.js scripts/check-v1.11-quality-matrix.js scripts/check-v1.11-quality-matrix.test.js
@@ -776,7 +776,7 @@ git commit -m "feat(chemistry): render structured visual guides"
 - Consumes: Tasks 1 至 5 的内容、组件与质量矩阵。
 - Produces: 可复现的验证证据和 v1.13 分支提交；不创建 RC、标签或正式发布申请。
 
-- [ ] **Step 1: 运行分层 Node 校验**
+- [x] **Step 1: 运行分层 Node 校验**
 
 Run in order:
 
@@ -798,7 +798,7 @@ node scripts/check-package-boundaries.js
 
 Expected: 40 条化学图解、36 条生物图解、既有 28 个方程式和 8 个实验均通过；严格内容审计、分包边界和阅读显示没有回归。
 
-- [ ] **Step 2: 构建内容差异并运行全量矩阵**
+- [x] **Step 2: 构建内容差异并运行全量矩阵**
 
 Run:
 
@@ -809,7 +809,7 @@ node scripts/check-v1.11-quality-matrix.js
 
 Expected: 内容差异只包含本批图解字段、公共组件和检查脚本的可解释修改；全量输出为 `OK v1.11 quality matrix: 123 checks`。若内容来源跟进检查报告数学外部目录仍被阻塞，保留该状态，不修改来源门禁或伪造证据。
 
-- [ ] **Step 3: 在微信开发者工具完成两种模拟器回归**
+- [x] **Step 3: 在微信开发者工具完成两种模拟器回归**
 
 打开本工作树项目 `/Users/hht/Desktop/knows/.worktrees/chemistry-visual-guides-v1.13`，分别切换至 iPhone 14 Pro Max 与 Nexus 5。两台都执行：
 
@@ -843,4 +843,22 @@ git push -u origin codex/chemistry-visual-guides-v1.13
 
 ## Verification Record
 
-在完成 Task 6 后写入实际命令输出摘要和模拟器结果。未执行的实体设备、体验版上传、审核或发布动作必须明确保留为未执行，不能以推断代替。
+### 2026-08-11
+
+**Node 与构建校验**
+
+- `node scripts/check-v1.11-quality-matrix.js` 以默认顺序完整通过，末行输出为 `OK v1.11 quality matrix: 123 checks`。
+- 矩阵中的化学专项检查确认 5 个主题、10 个专题、40 个知识点、12 个方法、8 个实验和 28 个方程式；化学图解契约与页面语义检查均通过。生物 36 个图解的兼容检查继续通过。
+- 严格内容审计、分包边界、阅读显示、内容路由、搜索索引、内容差异和图片降级检查均由同一轮矩阵通过。内容差异报告为 `+115 ~833 -0`，无删除项；内容来源跟进仍如实保持 `blocked`，下一批仍是 `math-chapters-v1.11`。
+- 路线文档一致性与矩阵契约均通过，确认默认门禁已从 121 项同步为 123 项并登记两项化学图解检查。
+
+**模拟器回归**
+
+- iPhone 14 Pro Max：从化学目录实际打开了 `chem-k-oxygen-preparation`、`chem-k-carbon-oxides`、`chem-k-substance-classification` 和 `chem-k-resources-environment`；流程、对照、层级、持续关系文案均可读。大字与舒展行距能够应用到图解；收藏开关和返回栈正常。已加载正确 AppID 的原始项目实例中未出现页面脚本错误，仅见开发者工具的预加载、性能和 `reportRealtimeAction` 提示。
+- Nexus 5：再次覆盖上述四类图解，确认流程节点、对照两侧、层级节点和固定提示“这些环节持续关联，不表示单一因果链。”均未裁切。大字与舒展行距可用；相邻知识点、收藏夹重新打开和取消收藏均正常。云封面未加载时显示“图示暂未加载，完整文字知识仍可继续阅读”，页面没有空白内容区。
+- Nexus 5 的“已有项目直接打开”入口没有把已有 AppID 传入开发者工具运行参数，控制台出现 `webapi_getwxaasyncsecinfo:fail appid missing`。`project.config.json` 中的 `wxb10a8a067e2709e9` 未被修改；这是一条开发者工具重新打开项目时的框架环境错误，不是页面源码异常。本次不把该实例记为“控制台零错误”证据。
+
+**未执行的动作**
+
+- 未进行 iPhone 或 Android 实体机回归、体验版预览、上传、RC/标签创建、审核提交或正式发布。
+- 因而 v1.10.1 的实体设备证据与严格发布门禁仍由独立发布分支负责，本分支不宣称可发布。
