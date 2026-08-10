@@ -18,13 +18,29 @@ const validGuide = {
   ],
 };
 
-const fixture = () => ({
-  sourceKnowledgeItems: [{ id: 'bio-k-fixture', visualGuide: validGuide }],
-  runtimeLayers: [{
-    label: '知识页',
-    knowledgeItems: [{ id: 'bio-k-fixture', visualGuide: JSON.parse(JSON.stringify(validGuide)) }],
-  }],
-});
+function clone(value) {
+  return JSON.parse(JSON.stringify(value));
+}
+
+function fixture() {
+  return {
+    sourceKnowledgeItems: [{ id: 'bio-k-fixture', visualGuide: clone(validGuide) }],
+    runtimeLayers: [{
+      label: '知识页',
+      knowledgeItems: [{ id: 'bio-k-fixture', visualGuide: clone(validGuide) }],
+    }],
+  };
+}
+
+function mutateFixtureGuide(data, mutator) {
+  mutator(data.sourceKnowledgeItems[0].visualGuide);
+  mutator(data.runtimeLayers[0].knowledgeItems[0].visualGuide);
+}
+
+function replaceFixtureGuide(data, guide) {
+  data.sourceKnowledgeItems[0].visualGuide = clone(guide);
+  data.runtimeLayers[0].knowledgeItems[0].visualGuide = clone(guide);
+}
 
 function expectIssue(mutator, message) {
   const data = fixture();
@@ -36,6 +52,17 @@ function expectIssue(mutator, message) {
 }
 
 assert.deepStrictEqual(collectBiologyVisualGuideIssues(fixture()), []);
+const independentFixture = fixture();
+assert.notStrictEqual(
+  independentFixture.sourceKnowledgeItems[0].visualGuide,
+  independentFixture.runtimeLayers[0].knowledgeItems[0].visualGuide,
+  'fixture source/runtime guides must be independent clones',
+);
+assert.notStrictEqual(
+  independentFixture.sourceKnowledgeItems[0].visualGuide.items,
+  independentFixture.runtimeLayers[0].knowledgeItems[0].visualGuide.items,
+  'fixture source/runtime guide items must be independent clones',
+);
 
 expectIssue((data) => {
   delete data.sourceKnowledgeItems[0].visualGuide;
@@ -76,6 +103,49 @@ expectIssue((data) => {
   data.sourceKnowledgeItems[0].visualGuide = hierarchyGuide;
   data.runtimeLayers[0].knowledgeItems[0].visualGuide = JSON.parse(JSON.stringify(hierarchyGuide));
 }, 'depth');
+
+expectIssue((data) => {
+  mutateFixtureGuide(data, (guide) => {
+    guide.items[0].lane = 'left';
+  });
+}, '不得包含 lane');
+
+expectIssue((data) => {
+  mutateFixtureGuide(data, (guide) => {
+    guide.items[0].depth = 0;
+  });
+}, '不得包含 depth');
+
+expectIssue((data) => {
+  mutateFixtureGuide(data, (guide) => {
+    guide.title = '长'.repeat(1200);
+  });
+}, '图解标题长度超出');
+
+expectIssue((data) => {
+  mutateFixtureGuide(data, (guide) => {
+    guide.summary = '长'.repeat(1200);
+  });
+}, '图解摘要长度超出');
+
+expectIssue((data) => {
+  mutateFixtureGuide(data, (guide) => {
+    guide.items[0].label = '长'.repeat(1200);
+  });
+}, '节点 1标签长度超出');
+
+expectIssue((data) => {
+  mutateFixtureGuide(data, (guide) => {
+    guide.items[0].note = '长'.repeat(1200);
+  });
+}, '节点 1说明长度超出');
+
+expectIssue((data) => {
+  const cycleGuide = clone(validGuide);
+  cycleGuide.type = 'cycle';
+  cycleGuide.summary = '最后一个环节直接导致第一个环节开始。';
+  replaceFixtureGuide(data, cycleGuide);
+}, 'cycle 图解不得声明末尾节点直接导致起点');
 
 expectIssue((data) => {
   data.runtimeLayers[0].knowledgeItems[0].visualGuide.summary = '被篡改的摘要';
@@ -184,9 +254,45 @@ assert.deepStrictEqual(
 assert.match(heredityGuide.items.at(-1).note, /基因是 DNA 上有遗传效应的片段/);
 assert.match(heredityGuide.items.at(-1).note, /参与遗传信息表达/);
 assert.match(heredityGuide.items.at(-1).note, /性状还受环境影响/);
+const structureLevelsGuide = getVisualGuideForKnowledge('bio-k-structure-levels');
+assert.strictEqual(structureLevelsGuide.type, 'flow');
 assert.deepStrictEqual(
-  getVisualGuideForKnowledge('bio-k-structure-levels').items.map((item) => [item.label, item.depth]),
-  [['细胞', 0], ['组织', 1], ['器官到系统/生物体', 2]],
+  structureLevelsGuide.items.map((item) => [item.label, item.note]),
+  [
+    ['细胞', '细胞是构成生物体的基本单位。'],
+    ['组织', '形态相似、功能相近的细胞构成组织。'],
+    ['器官', '多种组织按一定次序结合形成器官。'],
+    ['器官系统或生物体', '人体的器官系统协调活动；植物由器官构成整体。'],
+  ],
+);
+assert(structureLevelsGuide.items.every((item) => !Object.prototype.hasOwnProperty.call(item, 'depth')));
+
+const algaePlantsGuide = getVisualGuideForKnowledge('bio-k-algae-plants');
+assert.strictEqual(algaePlantsGuide.type, 'hierarchy');
+assert.deepStrictEqual(
+  algaePlantsGuide.items.map((item) => [item.label, item.depth]),
+  [['常见植物类群', 0], ['藻类', 1], ['苔藓', 1], ['蕨类', 1]],
+);
+assert(algaePlantsGuide.items.every((item) => !Object.prototype.hasOwnProperty.call(item, 'lane')));
+
+const microorganismsGuide = getVisualGuideForKnowledge('bio-k-microorganisms');
+assert.strictEqual(microorganismsGuide.type, 'hierarchy');
+assert.deepStrictEqual(
+  microorganismsGuide.items.map((item) => [item.label, item.depth]),
+  [['常见微生物与病毒', 0], ['细菌', 1], ['真菌', 1], ['病毒', 1]],
+);
+assert.strictEqual(microorganismsGuide.items[0].note, '包括细菌、真菌和病毒。');
+assert(microorganismsGuide.items.every((item) => !Object.prototype.hasOwnProperty.call(item, 'lane')));
+
+assert.deepStrictEqual(
+  collectBiologyVisualGuideIssues({
+    sourceKnowledgeItems: ['bio-k-circulation', 'bio-k-ecosystem-function', 'bio-k-respiration-growth'].map((id) => ({
+      id,
+      visualGuide: getVisualGuideForKnowledge(id),
+    })),
+  }),
+  [],
+  'existing cycle guides must remain valid',
 );
 assert.deepStrictEqual(
   getVisualGuideForKnowledge('bio-k-biological-classification').items.map((item) => [item.label, item.depth]),

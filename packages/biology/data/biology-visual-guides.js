@@ -59,13 +59,14 @@ const visualGuidesByKnowledgeId = Object.freeze({
     ],
   },
   'bio-k-structure-levels': {
-    type: 'hierarchy',
+    type: 'flow',
     title: '生物体结构层次',
-    summary: '多细胞生物的各层次分工协作。',
+    summary: '多细胞生物由细胞逐层构成。',
     items: [
-      { label: '细胞', note: '形态相似、功能相近的细胞可组成组织。', tone: 'blue', depth: 0 },
-      { label: '组织', note: '多种组织按次序组合成器官。', tone: 'green', depth: 1 },
-      { label: '器官到系统/生物体', note: '器官完成功能；人体成系统，植物器官构成整体。', tone: 'amber', depth: 2 },
+      { label: '细胞', note: '细胞是构成生物体的基本单位。', tone: 'blue' },
+      { label: '组织', note: '形态相似、功能相近的细胞构成组织。', tone: 'green' },
+      { label: '器官', note: '多种组织按一定次序结合形成器官。', tone: 'amber' },
+      { label: '器官系统或生物体', note: '人体的器官系统协调活动；植物由器官构成整体。', tone: 'slate' },
     ],
   },
 
@@ -81,14 +82,14 @@ const visualGuidesByKnowledgeId = Object.freeze({
     ],
   },
   'bio-k-algae-plants': {
-    type: 'compare',
-    title: '低等植物类群',
-    summary: '藻类、苔藓和蕨类的结构与环境不同。',
+    type: 'hierarchy',
+    title: '常见植物类群',
+    summary: '藻类、苔藓和蕨类各有不同特点。',
     items: [
-      { label: '藻类', note: '多生活在水中，结构较简单。', tone: 'blue', lane: 'left' },
-      { label: '苔藓', note: '一般矮小，常生长在阴湿环境。', tone: 'green', lane: 'left' },
-      { label: '蕨类结构', note: '有根、茎、叶的分化。', tone: 'amber', lane: 'right' },
-      { label: '蕨类繁殖', note: '蕨类植物不靠种子繁殖。', tone: 'slate', lane: 'right' },
+      { label: '常见植物类群', note: '本图比较藻类、苔藓和蕨类。', tone: 'slate', depth: 0 },
+      { label: '藻类', note: '多生活在水中，结构较简单。', tone: 'blue', depth: 1 },
+      { label: '苔藓', note: '一般矮小，常生长在阴湿环境。', tone: 'green', depth: 1 },
+      { label: '蕨类', note: '有根、茎、叶的分化，以孢子繁殖。', tone: 'amber', depth: 1 },
     ],
   },
   'bio-k-animal-groups': {
@@ -114,14 +115,14 @@ const visualGuidesByKnowledgeId = Object.freeze({
     ],
   },
   'bio-k-microorganisms': {
-    type: 'compare',
-    title: '常见微生物差异',
+    type: 'hierarchy',
+    title: '常见微生物与病毒',
     summary: '细菌、真菌和病毒的结构与增殖不同。',
     items: [
-      { label: '细菌', note: '多为单细胞，常通过分裂增殖。', tone: 'blue', lane: 'left' },
-      { label: '真菌', note: '有单细胞和多细胞类型。', tone: 'green', lane: 'left' },
-      { label: '病毒结构', note: '病毒没有完整细胞结构。', tone: 'amber', lane: 'right' },
-      { label: '病毒增殖', note: '必须在活细胞内才能增殖。', tone: 'slate', lane: 'right' },
+      { label: '常见微生物与病毒', note: '包括细菌、真菌和病毒。', tone: 'slate', depth: 0 },
+      { label: '细菌', note: '多为单细胞，常通过分裂增殖。', tone: 'blue', depth: 1 },
+      { label: '真菌', note: '有单细胞和多细胞类型。', tone: 'green', depth: 1 },
+      { label: '病毒', note: '没有完整细胞结构，需在活细胞内增殖。', tone: 'amber', depth: 1 },
     ],
   },
   'bio-k-biological-classification': {

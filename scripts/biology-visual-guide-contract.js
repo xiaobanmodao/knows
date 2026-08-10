@@ -2,15 +2,25 @@ const GUIDE_TYPES = new Set(['flow', 'cycle', 'compare', 'hierarchy']);
 const GUIDE_TONES = new Set(['green', 'blue', 'amber', 'slate']);
 const GUIDE_LANES = new Set(['left', 'right']);
 const FORBIDDEN_CONTENT = /(?:https?:\/\/|www\.|<[^>]+>)/i;
+const TEXT_LIMITS = Object.freeze({
+  title: 24,
+  summary: 72,
+  label: 32,
+  note: 96,
+});
+const FINAL_TO_FIRST_CAUSALITY = /(?:最后(?:一个)?(?:环节|节点|步骤)?|末尾|终点)[^。！？；]{0,48}(?:直接)?(?:导致|引起|造成|使得|促使)[^。！？；]{0,48}(?:第?(?:一|1)个?(?:环节|节点|步骤)?|起点)/;
 
 function isNonEmptyString(value) {
   return typeof value === 'string' && value.trim().length > 0;
 }
 
-function validateText(value, label, issues, knowledgeId) {
+function validateText(value, label, maximumLength, issues, knowledgeId) {
   if (!isNonEmptyString(value)) {
     issues.push(`${knowledgeId}: 图解${label}缺失`);
     return;
+  }
+  if (value.trim().length > maximumLength) {
+    issues.push(`${knowledgeId}: 图解${label}长度超出 ${maximumLength} 字符`);
   }
   if (FORBIDDEN_CONTENT.test(value)) {
     issues.push(`${knowledgeId}: 图解${label}包含 URL 或 HTML`);
@@ -32,8 +42,8 @@ function validateSourceGuides(sourceKnowledgeItems) {
     if (!GUIDE_TYPES.has(guide.type)) {
       issues.push(`${knowledgeId}: 图解类型不合法`);
     }
-    validateText(guide.title, '标题', issues, knowledgeId);
-    validateText(guide.summary, '摘要', issues, knowledgeId);
+    validateText(guide.title, '标题', TEXT_LIMITS.title, issues, knowledgeId);
+    validateText(guide.summary, '摘要', TEXT_LIMITS.summary, issues, knowledgeId);
 
     if (!Array.isArray(guide.items) || guide.items.length < 2 || guide.items.length > 5) {
       issues.push(`${knowledgeId}: 图解节点数量必须为 2 至 5 个`);
@@ -50,17 +60,13 @@ function validateSourceGuides(sourceKnowledgeItems) {
         return;
       }
 
-      if (!isNonEmptyString(item.label)) {
-        issues.push(`${knowledgeId}: ${itemLabel}标签缺失`);
-      } else if (labels.has(item.label)) {
+      validateText(item.label, `${itemLabel}标签`, TEXT_LIMITS.label, issues, knowledgeId);
+      if (isNonEmptyString(item.label) && labels.has(item.label)) {
         issues.push(`${knowledgeId}: 图解标签重复 ${item.label}`);
-      } else {
+      } else if (isNonEmptyString(item.label)) {
         labels.add(item.label);
       }
-      if (isNonEmptyString(item.label) && FORBIDDEN_CONTENT.test(item.label)) {
-        issues.push(`${knowledgeId}: ${itemLabel}标签包含 URL 或 HTML`);
-      }
-      validateText(item.note, `${itemLabel}说明`, issues, knowledgeId);
+      validateText(item.note, `${itemLabel}说明`, TEXT_LIMITS.note, issues, knowledgeId);
 
       if (!GUIDE_TONES.has(item.tone)) {
         issues.push(`${knowledgeId}: ${itemLabel}色调不合法`);
@@ -74,16 +80,16 @@ function validateSourceGuides(sourceKnowledgeItems) {
         } else {
           hasRightLane = true;
         }
-      } else if (Object.prototype.hasOwnProperty.call(item, 'lane') && typeof item.lane !== 'string') {
-        issues.push(`${knowledgeId}: 图解${itemLabel} lane 类型不合法`);
+      } else if (Object.prototype.hasOwnProperty.call(item, 'lane')) {
+        issues.push(`${knowledgeId}: ${guide.type} 图解${itemLabel}不得包含 lane`);
       }
 
       if (guide.type === 'hierarchy') {
         if (!Number.isInteger(item.depth) || item.depth < 0 || item.depth > 2) {
           issues.push(`${knowledgeId}: hierarchy 图解${itemLabel} depth 类型不合法`);
         }
-      } else if (Object.prototype.hasOwnProperty.call(item, 'depth') && !Number.isInteger(item.depth)) {
-        issues.push(`${knowledgeId}: 图解${itemLabel} depth 类型不合法`);
+      } else if (Object.prototype.hasOwnProperty.call(item, 'depth')) {
+        issues.push(`${knowledgeId}: ${guide.type} 图解${itemLabel}不得包含 depth`);
       }
     });
 
@@ -92,6 +98,15 @@ function validateSourceGuides(sourceKnowledgeItems) {
     }
     if (guide.type === 'compare' && !hasRightLane) {
       issues.push(`${knowledgeId}: compare 图解缺少右侧 lane`);
+    }
+    if (guide.type === 'cycle') {
+      const cycleText = [guide.title, guide.summary]
+        .concat(guide.items.flatMap((item) => (item && typeof item === 'object' ? [item.label, item.note] : [])))
+        .filter(isNonEmptyString)
+        .join(' ');
+      if (FINAL_TO_FIRST_CAUSALITY.test(cycleText)) {
+        issues.push(`${knowledgeId}: cycle 图解不得声明末尾节点直接导致起点`);
+      }
     }
   });
 

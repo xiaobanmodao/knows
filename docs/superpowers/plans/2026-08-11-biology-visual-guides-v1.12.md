@@ -16,8 +16,8 @@
 - 不改变知识点、专题、模板、云资源、路由或本地存储的稳定 ID 与版本。
 - 图解必须在云封面图片失败时继续完整可读；文字不可依赖图片内小字号传达。
 - type 仅为 flow、cycle、compare、hierarchy；色调仅为 green、blue、amber、slate。
-- 每个图解 2 至 5 个节点，节点 label、note 非空且 label 在本图解中唯一。
-- compare 中两侧都至少有一个 lane: 'left' 或 lane: 'right' 节点；hierarchy 的 depth 仅为 0、1、2。
+- 每个图解 2 至 5 个节点；title、summary、label、note 分别不超过 24、72、32、96 个字符，且 label 在本图解中唯一。
+- compare 中两侧都至少有一个 lane: 'left' 或 lane: 'right' 节点，其他类型不得包含 lane；hierarchy 的 depth 仅为 0、1、2，其他类型不得包含 depth。
 - 现有复核元数据保持 reviewed；本批不把宏观官方来源提升为逐条 verified 证据。
 
 ---
@@ -43,12 +43,12 @@
 | 生物与细胞 | bio-k-microscope-observation | flow | 低倍定位 → 目标居中 → 换高倍镜 → 细准焦观察 |
 | 生物与细胞 | bio-k-plant-animal-cells | compare | 植物细胞与动物细胞的共同基本结构、细胞壁/叶绿体/液泡差异 |
 | 生物与细胞 | bio-k-cell-life | flow | 物质交换 → 能量转换 → 遗传信息参与控制 → 生命活动 |
-| 生物与细胞 | bio-k-structure-levels | hierarchy | 细胞 → 组织 → 器官 → 系统/生物体 |
+| 生物与细胞 | bio-k-structure-levels | flow | 细胞 → 组织 → 器官 → 器官系统或生物体 |
 | 生物多样性 | bio-k-classification-basis | flow | 稳定特征 → 比较相同与不同 → 综合证据 → 分类线索 |
-| 生物多样性 | bio-k-algae-plants | compare | 藻类、苔藓、蕨类在环境、结构分化和繁殖上的差异 |
+| 生物多样性 | bio-k-algae-plants | hierarchy | 常见植物类群 → 藻类/苔藓/蕨类 |
 | 生物多样性 | bio-k-animal-groups | hierarchy | 动物 → 无脊椎/脊椎 → 常见脊椎动物类群 |
 | 生物多样性 | bio-k-animal-behavior | compare | 先天行为与学习行为的形成基础和可观察表现 |
-| 生物多样性 | bio-k-microorganisms | compare | 细菌、真菌、病毒的细胞结构和增殖依赖区别 |
+| 生物多样性 | bio-k-microorganisms | hierarchy | 常见微生物与病毒 → 细菌/真菌/病毒 |
 | 生物多样性 | bio-k-biological-classification | hierarchy | 大分类等级 → 小分类等级 → 种 |
 | 植物的生活 | bio-k-seed-germination | flow | 有活力的胚 + 水分/空气/适温 → 萌发 |
 | 植物的生活 | bio-k-root-absorption | flow | 土壤水和无机盐 → 根毛 → 根内运输 → 植物各部分 |
@@ -108,7 +108,7 @@
 
 - [ ] **Step 2: 运行测试，确认它因为缺少模块失败**
 
-Run: node scripts/check-biology-visual-guides.test.js  
+Run: node scripts/check-biology-visual-guides.test.js
 Expected: MODULE_NOT_FOUND，指向 biology-visual-guide-contract。
 
 - [ ] **Step 3: 实现最小纯契约函数**
@@ -126,7 +126,7 @@ validateSourceGuides() 逐项校验图解存在、类型、标题、摘要、2 �
 
 - [ ] **Step 4: 运行测试，确认契约通过**
 
-Run: node scripts/check-biology-visual-guides.test.js  
+Run: node scripts/check-biology-visual-guides.test.js
 Expected: 正常 fixture 通过；所有故意损坏 fixture 被捕获。
 
 - [ ] **Step 5: 提交契约和测试**
@@ -156,7 +156,7 @@ Expected: 正常 fixture 通过；所有故意损坏 fixture 被捕获。
 
 - [ ] **Step 2: 运行测试，确认数据导出尚不存在或覆盖不完整**
 
-Run: node scripts/check-biology-visual-guides.test.js  
+Run: node scripts/check-biology-visual-guides.test.js
 Expected: 因 biology-visual-guides 模块或 18 个稳定 ID 缺失而失败。
 
 - [ ] **Step 3: 实现只读数据模块和 18 条数据**
@@ -173,7 +173,7 @@ Expected: 因 biology-visual-guides 模块或 18 个稳定 ID 缺失而失败。
 
 - [ ] **Step 4: 运行测试，确认前 18 条已完整**
 
-Run: node scripts/check-biology-visual-guides.test.js  
+Run: node scripts/check-biology-visual-guides.test.js
 Expected: 前 18 条数据完整；测试尚不要求真实知识实体已有 visualGuide，完整实体覆盖留给 Task 3。
 
 - [ ] **Step 5: 提交前半内容**
@@ -202,7 +202,7 @@ Expected: 前 18 条数据完整；测试尚不要求真实知识实体已有 vi
 
 - [ ] **Step 2: 运行测试，确认后 18 条和实体图解尚未覆盖**
 
-Run: node scripts/check-biology-visual-guides.test.js  
+Run: node scripts/check-biology-visual-guides.test.js
 Expected: 36 覆盖率断言和 knowledge.visualGuide 断言失败。
 
 - [ ] **Step 3: 填入后 18 条并合并进知识数据**
@@ -220,9 +220,9 @@ Expected: 36 覆盖率断言和 knowledge.visualGuide 断言失败。
 
 - [ ] **Step 4: 运行图解、既有生物和 repository 检查**
 
-Run: node scripts/check-biology-visual-guides.test.js  
-Run: node scripts/check-biology-content.js  
-Run: node scripts/check-biology-build-contract.test.js  
+Run: node scripts/check-biology-visual-guides.test.js
+Run: node scripts/check-biology-content.js
+Run: node scripts/check-biology-build-contract.test.js
 Expected: 36 条图解完整；108 条例子和 6 个受控观察统计不变。
 
 - [ ] **Step 5: 提交后半内容和合并层**
@@ -252,7 +252,7 @@ Expected: 36 条图解完整；108 条例子和 6 个受控观察统计不变。
 
 - [ ] **Step 2: 运行检查，确认当前页面尚未提供图解结构**
 
-Run: node scripts/check-biology-visual-guides.js  
+Run: node scripts/check-biology-visual-guides.js
 Expected: 页面语义断言失败，但不会修改生产数据。
 
 - [ ] **Step 3: 实现页面预处理和 WXML 区块**
@@ -281,8 +281,8 @@ Expected: 页面语义断言失败，但不会修改生产数据。
 
 - [ ] **Step 5: 运行页面语义和 JavaScript 语法检查**
 
-Run: node scripts/check-biology-visual-guides.js  
-Run: node scripts/check-runtime-js-syntax.js  
+Run: node scripts/check-biology-visual-guides.js
+Run: node scripts/check-runtime-js-syntax.js
 Expected: 有图解和无图解路径均可解析，运行时 JS 语法通过。
 
 - [ ] **Step 6: 提交页面渲染**
@@ -321,12 +321,12 @@ Expected: 有图解和无图解路径均可解析，运行时 JS 语法通过。
 
 - [x] **Step 3: 运行目标检查和全量矩阵**
 
-Run: node scripts/check-biology-visual-guides.test.js  
-Run: node scripts/check-biology-visual-guides.js  
-Run: node scripts/check-biology-content.js  
-Run: node scripts/build-content-audit.js  
-Run: node scripts/check-content-audit.js --require-reviewed  
-Run: node scripts/check-v1.11-quality-matrix.js  
+Run: node scripts/check-biology-visual-guides.test.js
+Run: node scripts/check-biology-visual-guides.js
+Run: node scripts/check-biology-content.js
+Run: node scripts/build-content-audit.js
+Run: node scripts/check-content-audit.js --require-reviewed
+Run: node scripts/check-v1.11-quality-matrix.js
 Expected: 36 个图解，948 个现有实体不意外减少；全量矩阵全绿。若矩阵数字增加，记录真实数字。
 
 执行记录（2026-08-11）：前五条 Node 命令均已执行并通过；严格内容审计为 948 个实体，生物内容检查为 36 个图解。全量矩阵已实际运行并通过 121 项，输出为 `OK v1.11 quality matrix: 121 checks`。
@@ -339,8 +339,8 @@ Expected: 36 个图解，948 个现有实体不意外减少；全量矩阵全绿
 
 - [ ] **Step 5: 复核差异、提交并推送**
 
-Run: git diff --check  
-Run: git status --short --branch  
+Run: git diff --check
+Run: git status --short --branch
 Run: git log --oneline -5
 
     git add scripts/check-biology-content.js scripts/check-v1.11-quality-matrix.js docs/superpowers/specs/2026-08-11-biology-visual-guides-v1.12-design.md
