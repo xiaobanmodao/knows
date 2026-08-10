@@ -1,5 +1,30 @@
 const assert = require('assert');
 const { collectChemistryVisualGuideIssues } = require('./chemistry-visual-guide-contract');
+const {
+  getVisualGuideForKnowledge,
+  visualGuidesByKnowledgeId,
+} = require('../packages/chemistry/data/chemistry-visual-guides');
+
+const foundationIds = [
+  'chem-k-lab-object-change', 'chem-k-lab-instruments', 'chem-k-lab-operations',
+  'chem-k-lab-inquiry', 'chem-k-air-composition', 'chem-k-oxygen-properties',
+  'chem-k-oxygen-preparation', 'chem-k-combustion-catalyst', 'chem-k-water-composition',
+  'chem-k-water-purification', 'chem-k-dissolution-solubility',
+  'chem-k-solution-concentration', 'chem-k-particles', 'chem-k-atomic-structure',
+  'chem-k-elements-periodic-table', 'chem-k-formula-valence',
+  'chem-k-symbols-formulas', 'chem-k-mass-conservation', 'chem-k-equations',
+  'chem-k-stoichiometry',
+].sort();
+
+assert.deepStrictEqual(Object.keys(visualGuidesByKnowledgeId).sort(), foundationIds);
+assert.strictEqual(getVisualGuideForKnowledge('chem-k-unknown'), null);
+
+const first = getVisualGuideForKnowledge('chem-k-oxygen-preparation');
+const second = getVisualGuideForKnowledge('chem-k-oxygen-preparation');
+assert.notStrictEqual(first, second);
+assert.notStrictEqual(first.items, second.items);
+first.items[0].label = '篡改';
+assert.strictEqual(second.items[0].label, '选择反应和装置');
 
 const guide = {
   type: 'flow',
