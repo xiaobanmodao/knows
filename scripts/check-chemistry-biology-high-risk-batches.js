@@ -102,6 +102,14 @@ function assertUniqueIds(records, label) {
   assert.strictEqual(new Set(ids).size, ids.length, `${label}: ID 必须唯一`);
 }
 
+function assertRegistryCoverage(actualIds, expectedIds, label) {
+  const actual = [...new Set(actualIds)];
+  const expected = [...new Set(expectedIds)];
+  const missing = expected.filter((id) => !actual.includes(id));
+  const extra = actual.filter((id) => !expected.includes(id));
+  assert.deepStrictEqual({ missing, extra }, { missing: [], extra: [] }, `${label}: 批次登记覆盖不完整`);
+}
+
 function assertReview(owner, record) {
   const review = record && (record.review || record.contentMeta);
   assert.ok(review, `${owner}: 缺少复核元数据`);
@@ -270,6 +278,48 @@ function buildFoundationHighRiskBatchReport({ chemistryData = DEFAULT_CHEMISTRY_
   const allBiologyEntities = [...biologyData.topics, ...biologyData.templates, ...biologyData.knowledgeItems];
   assertUniqueIds(allChemistryEntities, '化学实体');
   assertUniqueIds(allBiologyEntities, '生物实体');
+  assertRegistryCoverage(
+    chemistryData.themes.map((theme) => theme.id),
+    CHEMISTRY_HIGH_RISK_BATCHES.map((batch) => batch.themeId),
+    '化学主题',
+  );
+  assertRegistryCoverage(
+    chemistryData.topics.map((topic) => topic.id),
+    chemistryData.themes.flatMap((theme) => theme.topicIds),
+    '化学专题',
+  );
+  assertRegistryCoverage(
+    chemistryData.knowledgeItems.map((item) => item.id),
+    chemistryData.topics.flatMap((topic) => topic.knowledgeIds),
+    '化学知识点',
+  );
+  assertRegistryCoverage(
+    chemistryData.templates.map((template) => template.id),
+    chemistryData.topics.flatMap((topic) => topic.templateIds),
+    '化学方法模板',
+  );
+  assertRegistryCoverage(
+    biologyData.topics.map((topic) => topic.id),
+    BIOLOGY_HIGH_RISK_BATCHES.map((batch) => batch.topicId),
+    '生物专题',
+  );
+  assertRegistryCoverage(
+    biologyData.knowledgeItems.map((item) => item.id),
+    biologyData.topics.flatMap((topic) => topic.knowledgeIds),
+    '生物知识点',
+  );
+  assertRegistryCoverage(
+    biologyData.templates.map((template) => template.id),
+    biologyData.topics.flatMap((topic) => topic.templateIds),
+    '生物方法模板',
+  );
+  const chemistrySections = chemistryData.knowledgeItems.flatMap((item) => item.sections || []);
+  const chemistryEquationIds = chemistrySections.filter((section) => section.type === 'equation').map((section) => section.equationId);
+  const chemistryExperimentIds = chemistrySections.filter((section) => section.type === 'experiment').map((section) => section.experimentId);
+  assert.strictEqual(new Set(chemistryEquationIds).size, 28, '化学方程式总量或唯一性不符');
+  assert.strictEqual(new Set(chemistryExperimentIds).size, 8, '化学实验总量或唯一性不符');
+  assert.strictEqual(biologyData.knowledgeItems.reduce((sum, item) => sum + item.examples.length, 0), 108, '生物例子总量不符');
+  assert.strictEqual(biologyData.knowledgeItems.filter((item) => item.safetyObservation).length, 6, '生物观察记录总量不符');
   const chemistryResults = CHEMISTRY_HIGH_RISK_BATCHES.map((batch) => validateChemistryBatch(batch, chemistryData));
   const biologyResults = BIOLOGY_HIGH_RISK_BATCHES.map((batch) => validateBiologyBatch(batch, biologyData));
   return {

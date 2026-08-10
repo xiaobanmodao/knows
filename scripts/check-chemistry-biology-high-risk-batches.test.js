@@ -84,4 +84,14 @@ assert.throws(
   /复核|review/,
 );
 
+const unregisteredBiologyTemplate = JSON.parse(JSON.stringify(biology));
+unregisteredBiologyTemplate.templates.push({
+  ...unregisteredBiologyTemplate.templates[0],
+  id: 'bio-tpl-unregistered',
+});
+assert.throws(
+  () => buildFoundationHighRiskBatchReport({ chemistryData: chemistry, biologyData: unregisteredBiologyTemplate }),
+  /未登记|覆盖|template|模板/,
+);
+
 console.log('OK chemistry biology high-risk batch contract');
