@@ -18,10 +18,10 @@ const visualGuidesByKnowledgeId = Object.freeze({
     title: '科学观察路径',
     summary: '观察记录、比较和结论都要遵循证据。',
     items: [
-      { label: '观察事实', note: '记录应区分直接事实与解释。', tone: 'blue' },
-      { label: '记录条件', note: '比较时保持无关条件一致。', tone: 'green' },
-      { label: '比较重复', note: '比较能支持有限的解释。', tone: 'amber' },
-      { label: '范围结论', note: '结论只说明证据支持的范围。', tone: 'slate' },
+      { label: '提出可观察问题', note: '围绕现象提出可记录的问题。', tone: 'blue' },
+      { label: '记录条件和事实', note: '记录应区分直接事实与解释。', tone: 'green' },
+      { label: '比较与重复', note: '比较时保持无关条件一致。', tone: 'amber' },
+      { label: '有范围的结论', note: '结论只说明证据支持的范围。', tone: 'slate' },
     ],
   },
   'bio-k-microscope-observation': {
@@ -53,9 +53,9 @@ const visualGuidesByKnowledgeId = Object.freeze({
     summary: '物质、能量和遗传信息参与细胞活动。',
     items: [
       { label: '物质交换', note: '细胞膜选择性地让物质进出。', tone: 'blue' },
-      { label: '生活物质', note: '细胞需要水、无机盐和有机物。', tone: 'green' },
-      { label: '能量转换', note: '线粒体等结构参与能量转换。', tone: 'amber' },
-      { label: '信息控制', note: '细胞核遗传信息参与控制活动。', tone: 'slate' },
+      { label: '能量转换', note: '线粒体等结构参与能量转换。', tone: 'green' },
+      { label: '遗传信息控制', note: '细胞核遗传信息参与控制活动。', tone: 'amber' },
+      { label: '生命活动', note: '物质、能量和信息共同维持活动。', tone: 'slate' },
     ],
   },
   'bio-k-structure-levels': {
@@ -65,8 +65,7 @@ const visualGuidesByKnowledgeId = Object.freeze({
     items: [
       { label: '细胞', note: '形态相似、功能相近的细胞可组成组织。', tone: 'blue', depth: 0 },
       { label: '组织', note: '多种组织按次序组合成器官。', tone: 'green', depth: 1 },
-      { label: '器官', note: '器官完成相对独立的功能。', tone: 'amber', depth: 2 },
-      { label: '系统与整体', note: '人体器官协作构成系统。', tone: 'slate', depth: 2 },
+      { label: '器官到系统/生物体', note: '器官完成功能；人体成系统，植物器官构成整体。', tone: 'amber', depth: 2 },
     ],
   },
 
@@ -130,10 +129,9 @@ const visualGuidesByKnowledgeId = Object.freeze({
     title: '生物分类等级',
     summary: '由大到小的等级组织生物信息。',
     items: [
-      { label: '分类等级', note: '分类系统按由大到小组织信息。', tone: 'blue', depth: 0 },
-      { label: '较大等级', note: '包含的生物范围较大。', tone: 'green', depth: 1 },
-      { label: '较小等级', note: '范围缩小，共同特征通常更多。', tone: 'amber', depth: 1 },
-      { label: '种', note: '种是最基本的分类单位之一。', tone: 'slate', depth: 2 },
+      { label: '大分类等级', note: '包含的生物范围较大。', tone: 'blue', depth: 0 },
+      { label: '小分类等级', note: '范围缩小，共同特征通常更多。', tone: 'green', depth: 1 },
+      { label: '种', note: '种是最基本的分类单位之一。', tone: 'amber', depth: 2 },
     ],
   },
 
@@ -144,8 +142,8 @@ const visualGuidesByKnowledgeId = Object.freeze({
     items: [
       { label: '有活力的胚', note: '完整且有活力的胚是内部条件。', tone: 'blue' },
       { label: '水分', note: '吸水膨胀并启动代谢活动。', tone: 'green' },
-      { label: '空气', note: '空气支持呼吸和相关生理过程。', tone: 'amber' },
-      { label: '适宜温度', note: '适宜温度支持相关生理过程。', tone: 'slate' },
+      { label: '空气和适宜温度', note: '支持呼吸和相关生理过程。', tone: 'amber' },
+      { label: '萌发', note: '内部和外部条件适宜时能够萌发。', tone: 'slate' },
     ],
   },
   'bio-k-root-absorption': {
@@ -175,11 +173,11 @@ const visualGuidesByKnowledgeId = Object.freeze({
     title: '叶的结构与功能',
     summary: '叶片不同结构分别支持光合、交换和运输。',
     items: [
-      { label: '叶片', note: '叶由多种结构共同发挥作用。', tone: 'blue', depth: 0 },
-      { label: '表皮', note: '通常透明，利于光线进入。', tone: 'green', depth: 1 },
+      { label: '叶片', note: '由表皮、叶肉和叶脉等结构组成。', tone: 'blue', depth: 0 },
+      { label: '表皮与气孔', note: '表皮透明；气孔是气体进出的门户。', tone: 'green', depth: 1 },
       { label: '叶肉', note: '常有较多叶绿体，是光合重要部位。', tone: 'amber', depth: 1 },
-      { label: '叶脉', note: '承担运输和支持作用。', tone: 'slate', depth: 2 },
-      { label: '气孔', note: '是气体进出的门户。', tone: 'blue', depth: 2 },
+      { label: '叶脉', note: '承担运输和支持作用。', tone: 'slate', depth: 1 },
+      { label: '各自功能', note: '分别支持进光、光合、气体交换和运输。', tone: 'blue', depth: 2 },
     ],
   },
   'bio-k-photosynthesis': {
@@ -198,10 +196,10 @@ const visualGuidesByKnowledgeId = Object.freeze({
     title: '呼吸与植物生长',
     summary: '光合作用和呼吸作用共同参与物质能量变化。',
     items: [
-      { label: '光合作用', note: '光合作用制造有机物。', tone: 'green' },
-      { label: '有机物', note: '呼吸作用分解有机物。', tone: 'amber' },
-      { label: '呼吸作用', note: '利用氧气并释放能量。', tone: 'blue' },
-      { label: '植物生长', note: '根、茎、叶和花等活细胞需要能量。', tone: 'slate' },
+      { label: '光合作用制造有机物', note: '光合作用制造有机物。', tone: 'green' },
+      { label: '呼吸作用分解释放能量', note: '利用氧气分解有机物并释放能量。', tone: 'amber' },
+      { label: '细胞活动与生长', note: '根、茎、叶和花等活细胞需要能量。', tone: 'blue' },
+      { label: '物质和能量变化', note: '两过程持续参与物质和能量变化。', tone: 'slate' },
     ],
   },
 });

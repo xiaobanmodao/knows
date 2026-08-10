@@ -2,7 +2,10 @@ const assert = require('assert');
 
 const { collectBiologyVisualGuideIssues } = require('./biology-visual-guide-contract');
 const { knowledgeItems } = require('../packages/biology/data/biology-knowledge');
-const { visualGuidesByKnowledgeId } = require('../packages/biology/data/biology-visual-guides');
+const {
+  getVisualGuideForKnowledge,
+  visualGuidesByKnowledgeId,
+} = require('../packages/biology/data/biology-visual-guides');
 
 const validGuide = {
   type: 'flow',
@@ -84,10 +87,55 @@ assert.strictEqual(JSON.stringify(untouched), snapshot);
 
 const firstHalfIds = knowledgeItems
   .filter((item) => ['bio-unit-cells', 'bio-unit-diversity', 'bio-unit-plants'].includes(item.topicId))
-  .map((item) => item.id);
+  .map((item) => item.id)
+  .sort();
 assert.deepStrictEqual(
-  Object.keys(visualGuidesByKnowledgeId).filter((id) => firstHalfIds.includes(id)).sort(),
-  firstHalfIds.sort(),
+  Object.keys(visualGuidesByKnowledgeId).sort(),
+  firstHalfIds,
+);
+assert.deepStrictEqual(
+  collectBiologyVisualGuideIssues({
+    sourceKnowledgeItems: firstHalfIds.map((id) => ({
+      id,
+      visualGuide: visualGuidesByKnowledgeId[id],
+    })),
+  }),
+  [],
+);
+
+assert(Object.isFrozen(visualGuidesByKnowledgeId));
+assert.strictEqual(getVisualGuideForKnowledge('bio-k-unknown'), null);
+const firstPhotosynthesisGuide = getVisualGuideForKnowledge('bio-k-photosynthesis');
+const secondPhotosynthesisGuide = getVisualGuideForKnowledge('bio-k-photosynthesis');
+assert.notStrictEqual(firstPhotosynthesisGuide, secondPhotosynthesisGuide);
+assert.notStrictEqual(firstPhotosynthesisGuide.items, secondPhotosynthesisGuide.items);
+firstPhotosynthesisGuide.items[0].label = '篡改';
+assert.strictEqual(secondPhotosynthesisGuide.items[0].label, '作用条件');
+assert.strictEqual(visualGuidesByKnowledgeId['bio-k-photosynthesis'].items[0].label, '作用条件');
+
+function labelsFor(knowledgeId) {
+  return getVisualGuideForKnowledge(knowledgeId).items.map((item) => item.label);
+}
+
+assert.deepStrictEqual(labelsFor('bio-k-science-observation'), [
+  '提出可观察问题', '记录条件和事实', '比较与重复', '有范围的结论',
+]);
+assert.strictEqual(labelsFor('bio-k-cell-life').at(-1), '生命活动');
+assert.strictEqual(labelsFor('bio-k-seed-germination').at(-1), '萌发');
+assert.deepStrictEqual(labelsFor('bio-k-respiration-growth'), [
+  '光合作用制造有机物', '呼吸作用分解释放能量', '细胞活动与生长', '物质和能量变化',
+]);
+assert.deepStrictEqual(
+  getVisualGuideForKnowledge('bio-k-structure-levels').items.map((item) => [item.label, item.depth]),
+  [['细胞', 0], ['组织', 1], ['器官到系统/生物体', 2]],
+);
+assert.deepStrictEqual(
+  getVisualGuideForKnowledge('bio-k-biological-classification').items.map((item) => [item.label, item.depth]),
+  [['大分类等级', 0], ['小分类等级', 1], ['种', 2]],
+);
+assert.deepStrictEqual(
+  getVisualGuideForKnowledge('bio-k-leaf-structure').items.map((item) => [item.label, item.depth]),
+  [['叶片', 0], ['表皮与气孔', 1], ['叶肉', 1], ['叶脉', 1], ['各自功能', 2]],
 );
 
 console.log('OK biology visual guide contract test');
