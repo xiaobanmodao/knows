@@ -20,6 +20,12 @@ const ENGLISH_CURRICULUM_BASELINE = {
       url: 'https://www.pep.com.cn/xw/zt/hd/12/xjcjs/cz/202510/t20251024_2004130.html',
       role: '全套册数、正式单元数和选学戏剧结构',
     },
+    {
+      id: 'pep-english-digital-resources-2025',
+      title: '义务教育教科书英语教材数字配套资源',
+      url: 'https://www.pep.com.cn/zslth/yyptzy/',
+      role: '人教社公开配套资源入口核对；当前未提供九下具体单元标题',
+    },
   ],
   structure: {
     bookCount: 6,
@@ -40,9 +46,9 @@ const ENGLISH_CURRICULUM_BASELINE = {
       officialFormalUnitCount: 5,
       optionalDramaCount: 2,
       officialUnitTitles: null,
-      sourceIds: ['moe-english-curriculum-2022', 'moe-textbook-catalog-2024', 'pep-english-new-textbook-2025'],
+      sourceIds: ['moe-english-curriculum-2022', 'moe-textbook-catalog-2024', 'pep-english-new-textbook-2025', 'pep-english-digital-resources-2025'],
       reviewedAt: '2026-08-10',
-      notes: '已确认九年级下册的正式单元数量和选学戏剧数量；完整单元标题核对前不创建空单元、不猜测标题。',
+      notes: '已确认九年级下册的正式单元数量和选学戏剧数量；人教社公开配套资源入口当前列至九年级上册，仍未提供九下具体标题；完整单元标题核对前不创建空单元、不猜测标题。',
     },
   ],
 };

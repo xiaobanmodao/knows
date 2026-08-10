@@ -17,5 +17,6 @@ assert.strictEqual(pendingMapping.optionalDramaCount, 2);
 assert.strictEqual(pendingMapping.officialUnitTitles, null);
 assert.ok(pendingMapping.notes.includes('不创建空单元'));
 assert.ok(pendingMapping.sourceIds.includes('pep-english-new-textbook-2025'));
+assert.ok(pendingMapping.sourceIds.includes('pep-english-digital-resources-2025'));
 
 console.log('OK English curriculum map contract');
