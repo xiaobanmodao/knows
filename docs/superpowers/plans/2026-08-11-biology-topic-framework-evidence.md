@@ -28,7 +28,7 @@
 - Consumes: `packages/biology/data/biology-topics.js`, `packages/biology/data/content-review-meta.js`, `data/content-source-registry.js`.
 - Produces: `checkBiologyTopicFrameworkEvidence({ evidencePath })`, `DEFAULT_EVIDENCE_PATH`, `EVIDENCE_KIND`, `REVIEW_ID`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create an assert test importing `checkBiologyTopicFrameworkEvidence`. Pass a unique missing file path and assert it throws `生物专题官方框架佐证记录读取失败`. The default CLI must initially exit nonzero because the evidence JSON does not exist.
 
@@ -39,13 +39,13 @@ assert.throws(
 );
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run: `node scripts/check-biology-topic-framework-evidence.test.js`
 
 Expected: Node fails because the checker module does not exist.
 
-- [ ] **Step 3: Write the minimal checker**
+- [x] **Step 3: Write the minimal checker**
 
 Implement only safe JSON reading, error wrapping and a public function. Use `fs.readFileSync` and `JSON.parse`; export the function and execute it in CLI mode. Do not add evidence data yet.
 
@@ -55,13 +55,13 @@ function checkBiologyTopicFrameworkEvidence({ evidencePath = DEFAULT_EVIDENCE_PA
 }
 ```
 
-- [ ] **Step 4: Run the test to verify targeted behavior**
+- [x] **Step 4: Run the test to verify targeted behavior**
 
 Run: `node scripts/check-biology-topic-framework-evidence.test.js`
 
 Expected: missing-file assertion passes; default CLI remains red until Task 3 supplies the record.
 
-- [ ] **Step 5: Commit the contract foundation**
+- [x] **Step 5: Commit the contract foundation**
 
 ```bash
 git add scripts/check-biology-topic-framework-evidence.js scripts/check-biology-topic-framework-evidence.test.js
@@ -79,7 +79,7 @@ git commit -m "test(biology): define framework evidence contract"
 - Consumes: `getContentSource`, `isAllowedContentSourceUrl`, `topics`, `getBiologyReview`.
 - Produces: validation of the two exact source keys, title/URL/role/observation records, six ordered topic IDs, runtime review source refs and SHA-256 container snapshots.
 
-- [ ] **Step 1: Extend the failing test with boundary cases**
+- [x] **Step 1: Extend the failing test with boundary cases**
 
 Require public `EVIDENCE_KIND === 'official-framework-support'` and `REVIEW_ID === 'biology-topic-framework-support-2026-v1'`. Assert that the source registry canonical title is `人教版义务教育生物学（七～八年级）新教材介绍`. Add temporary evidence with a prohibited `chapterOrder` field and assert it fails. Add runtime mutations that replace one `review.sourceRefs` key with `moe-physics-2022`, and separately append `?drift=1` to a valid biology source URL; both must fail.
 
@@ -90,13 +90,13 @@ assert.throws(
 );
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run: `node scripts/check-biology-topic-framework-evidence.test.js`
 
 Expected: source title and strict validation assertions fail because the minimal checker does not implement them.
 
-- [ ] **Step 3: Implement strict schema and snapshot validation**
+- [x] **Step 3: Implement strict schema and snapshot validation**
 
 Update only `data/content-source-registry.js` so `pep-compulsory-biology-textbook` uses the official page title. Require exactly these source contracts:
 
@@ -111,13 +111,13 @@ Require root/scope/source/topic allowed fields, the four fixed `notVerified` exc
 
 Build the SHA-256 snapshot only from `id`, `unitLabel`, `title`, `summary`, `gradeBands`, `keywords`, `knowledgeIds`, `templateIds`, `coverImage` and `diagramImage`.
 
-- [ ] **Step 4: Run the test to verify malformed-record checks pass**
+- [x] **Step 4: Run the test to verify malformed-record checks pass**
 
 Run: `node scripts/check-biology-topic-framework-evidence.test.js`
 
 Expected: missing-file, runtime-review and malformed-record assertions pass; default CLI remains red until Task 3.
 
-- [ ] **Step 5: Commit validator behavior**
+- [x] **Step 5: Commit validator behavior**
 
 ```bash
 git add data/content-source-registry.js scripts/check-biology-topic-framework-evidence.js scripts/check-biology-topic-framework-evidence.test.js
@@ -134,7 +134,7 @@ git commit -m "feat(biology): validate topic framework evidence"
 - Consumes: current biology topics in data order and the checker from Tasks 1-2.
 - Produces: a passing default record for 6 topics and CLI success text `OK biology topic framework evidence: 6 topics`.
 
-- [ ] **Step 1: Extend the test for a green default record and order drift**
+- [x] **Step 1: Extend the test for a green default record and order drift**
 
 Spawn the default CLI, require status `0`, match its success message and assert its returned source keys. Create a complete temporary record from current topics, then swap its first two `topics` entries and require `专题佐证 ID 或顺序漂移`.
 
@@ -145,13 +145,13 @@ assert.throws(
 );
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run: `node scripts/check-biology-topic-framework-evidence.test.js`
 
 Expected: failure because `docs/evidence/biology-topic-framework-review-2026.json` does not exist.
 
-- [ ] **Step 3: Add the evidence record**
+- [x] **Step 3: Add the evidence record**
 
 Add the `2026-08-11` record with scope supports:
 
@@ -164,7 +164,7 @@ Add the `2026-08-11` record with scope supports:
 
 Use the two source contracts from Task 2 and current-topic order. Use the exact internal domains `life/cells`, `organism diversity/classification`, `plant life/processes`, `human physiology/health`, `organism/environment`, `continuity/evolution`. Compute each `reviewSnapshotHash` with the checker projection; do not store textbook chapter numbers, content text or asset paths.
 
-- [ ] **Step 4: Run focused checks**
+- [x] **Step 4: Run focused checks**
 
 Run:
 
@@ -180,7 +180,7 @@ node scripts/check-chemistry-biology-high-risk-batches.js --report dist/content-
 
 Expected: all commands exit `0`; the new CLI reports six topics and no runtime biology data changes appear in `git diff`.
 
-- [ ] **Step 5: Commit evidence data**
+- [x] **Step 5: Commit evidence data**
 
 ```bash
 git add docs/evidence/biology-topic-framework-review-2026.json scripts/check-biology-topic-framework-evidence.test.js
@@ -202,11 +202,11 @@ git commit -m "chore(biology): record topic framework evidence"
 - Consumes: `scripts/check-biology-topic-framework-evidence.test.js`.
 - Produces: default matrix length `119` and docs that retain external-source and release blockers.
 
-- [ ] **Step 1: Extend matrix and roadmap consistency tests first**
+- [x] **Step 1: Extend matrix and roadmap consistency tests first**
 
 Require `scripts/check-biology-topic-framework-evidence.test.js` in `DEFAULT_CHECKS`; set expected matrix count to `119`. Update route consistency test binding and its reverse fixtures so both documents must state `119` and a false `118` count fails.
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run:
 
@@ -217,11 +217,11 @@ node scripts/check-roadmap-document-consistency.test.js
 
 Expected: count/command assertions fail because the biology command and `119` documentation are absent.
 
-- [ ] **Step 3: Register the command and update documentation**
+- [x] **Step 3: Register the command and update documentation**
 
 Register the biology check adjacent to chemistry. State in both v1.11 records that six biology topics receive only supplementary `official-framework-support`, not chapter order, external input or release unblocking. Update current matrix totals to `119` in both route documents and preserve `content-source-follow-up: blocked` plus AppID/device evidence blockers.
 
-- [ ] **Step 4: Run full verification**
+- [x] **Step 4: Run full verification**
 
 Run:
 
@@ -236,12 +236,11 @@ git diff --check
 
 Expected: matrix reports `OK v1.11 quality matrix: 119 checks`; content audit and release readiness pass; diff check has no output.
 
-- [ ] **Step 5: Commit and push the integrated batch**
+- [x] **Step 5: Commit the integrated batch**
 
 ```bash
 git add scripts/check-v1.11-quality-matrix.js scripts/check-v1.11-quality-matrix.test.js scripts/check-roadmap-document-consistency.test.js docs/v1.11五科学科高风险字段复核记录.md docs/v1.11后续开发路线.md docs/后续开发与发布路线.md docs/superpowers/plans/2026-08-11-biology-topic-framework-evidence.md
 git commit -m "chore(quality): register biology framework evidence"
-git push -u origin codex/biology-topic-framework-evidence-v1.11
 ```
 
 ## Plan Self-Review

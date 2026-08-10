@@ -23,6 +23,7 @@ assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-pure-kno
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-physics-formula-contract.test.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-physics-topic-framework-evidence.test.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-chemistry-topic-framework-evidence.test.js'));
+assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-biology-topic-framework-evidence.test.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-english-depth-contract.test.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-english-source-evidence.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-english-source-evidence.test.js'));
@@ -105,7 +106,7 @@ assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-privacy-
   assert.ok(defaultCommands.some((item) => item.script === script), `质量矩阵缺少 ${script}`);
 });
 assert.ok(!defaultCommands.some((item) => item.script === 'scripts/check-package-sizes.js'));
-assert.strictEqual(defaultCommands.length, 118, '默认质量矩阵必须保持 118 项');
+assert.strictEqual(defaultCommands.length, 119, '默认质量矩阵必须保持 119 项');
 const strictContentAudit = defaultCommands.find((item) => item.script === 'scripts/check-content-audit.js');
 assert.strictEqual(strictContentAudit.before.length, 1, '严格内容审计必须恰有一个前置检查');
 assert.strictEqual(

@@ -50,6 +50,7 @@ const DEFAULT_CHECKS = [
   { script: 'scripts/check-physics-formula-contract.test.js', label: '物理公式契约' },
   { script: 'scripts/check-physics-topic-framework-evidence.test.js', label: '物理专题官方框架佐证契约' },
   { script: 'scripts/check-chemistry-topic-framework-evidence.test.js', label: '化学专题官方框架佐证契约' },
+  { script: 'scripts/check-biology-topic-framework-evidence.test.js', label: '生物专题官方框架佐证契约' },
   { script: 'scripts/check-physics-topic-review.js', label: '物理专题复核' },
   { script: 'scripts/check-physics-template-review.js', label: '物理方法复核' },
   { script: 'scripts/check-subject-high-risk-batches.test.js', label: '英语物理高风险批次契约' },
