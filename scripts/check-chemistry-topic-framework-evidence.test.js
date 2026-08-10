@@ -3,7 +3,14 @@ const { spawnSync } = require('child_process');
 const os = require('os');
 const path = require('path');
 
-const { checkChemistryTopicFrameworkEvidence } = require('./check-chemistry-topic-framework-evidence');
+const {
+  EVIDENCE_KIND,
+  REVIEW_ID,
+  checkChemistryTopicFrameworkEvidence,
+} = require('./check-chemistry-topic-framework-evidence');
+
+assert.strictEqual(EVIDENCE_KIND, 'official-framework-support');
+assert.strictEqual(REVIEW_ID, 'chemistry-topic-framework-support-2026-v1');
 
 const missingEvidencePath = path.join(
   os.tmpdir(),

@@ -3,6 +3,8 @@ const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
 const DEFAULT_EVIDENCE_PATH = path.join(ROOT, 'docs/evidence/chemistry-topic-framework-review-2026.json');
+const EVIDENCE_KIND = 'official-framework-support';
+const REVIEW_ID = 'chemistry-topic-framework-support-2026-v1';
 
 function readEvidence(evidencePath) {
   try {
@@ -28,5 +30,7 @@ if (require.main === module) {
 
 module.exports = {
   DEFAULT_EVIDENCE_PATH,
+  EVIDENCE_KIND,
+  REVIEW_ID,
   checkChemistryTopicFrameworkEvidence,
 };
