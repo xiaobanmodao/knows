@@ -17,13 +17,28 @@ const evidenceRecord = {
   resourceId: 'resource-7u',
   title: '（根据2022年版课程标准修订）义务教育教科书·数学七年级上册',
   revisionMarker: '2022-revised',
+  detailMetadata: {
+    globalTitle: '（根据2022年版课程标准修订）义务教育教科书·数学七年级上册',
+    versionVisible: 'RELEASE',
+    format: 'pdf',
+    previewAssetCount: 7,
+  },
   directoryPreviewPages: [5, 6, 7],
 };
 
 function buildLiveRecord(overrides = {}) {
+  const preview = Object.fromEntries(
+    Array.from({ length: evidenceRecord.detailMetadata.previewAssetCount }, (_, index) => {
+      const page = index + 1;
+      return [`Slide${page}`, `https://r${(index % 3) + 1}-ndr.ykt.cbern.com.cn/edu_product/esp/assets/demo/image/${page}.jpg`];
+    }),
+  );
   return {
     id: evidenceRecord.resourceId,
     title: evidenceRecord.title,
+    resource_container_cp: {
+      version_visible: 'RELEASE',
+    },
     tag_list: [
       { tag_name: '人教版' },
       { tag_name: '初中' },
@@ -32,11 +47,8 @@ function buildLiveRecord(overrides = {}) {
       { tag_name: evidenceRecord.volume },
     ],
     custom_properties: {
-      preview: {
-        Slide5: 'https://r1-ndr.ykt.cbern.com.cn/edu_product/esp/assets/demo/image/5.jpg',
-        Slide6: 'https://r2-ndr.ykt.cbern.com.cn/edu_product/esp/assets/demo/image/6.jpg',
-        Slide7: 'https://r3-ndr.ykt.cbern.com.cn/edu_product/esp/assets/demo/image/7.jpg',
-      },
+      format: 'pdf',
+      preview,
     },
     ...overrides,
   };
@@ -79,6 +91,25 @@ try {
     () => validateLiveRecord({ ...evidenceRecord, revisionMarker: 'unmarked-edition' }, buildLiveRecord()),
     /revision|版本|修订/i,
   );
+  assert.throws(
+    () => validateLiveRecord(evidenceRecord, buildLiveRecord({
+      resource_container_cp: { version_visible: 'DRAFT' },
+    })),
+    /detailMetadata|version_visible|RELEASE/i,
+  );
+  assert.throws(
+    () => validateLiveRecord(evidenceRecord, buildLiveRecord({
+      custom_properties: {
+        format: 'docx',
+        preview: {
+          Slide5: 'https://r1-ndr.ykt.cbern.com.cn/edu_product/esp/assets/demo/image/5.jpg',
+          Slide6: 'https://r2-ndr.ykt.cbern.com.cn/edu_product/esp/assets/demo/image/6.jpg',
+          Slide7: 'https://r3-ndr.ykt.cbern.com.cn/edu_product/esp/assets/demo/image/7.jpg',
+        },
+      },
+    })),
+    /detailMetadata|format|pdf/i,
+  );
 
   const tempDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'knows-smartedu-live-'));
   const evidencePath = path.join(tempDirectory, 'evidence.json');
@@ -91,6 +122,7 @@ try {
       ...validateLiveRecord(record, buildLiveRecord({
         id: record.resourceId,
         title: record.title,
+        resource_container_cp: { version_visible: 'RELEASE' },
         tag_list: [
           { tag_name: '人教版' },
           { tag_name: '初中' },
@@ -98,6 +130,15 @@ try {
           { tag_name: record.grade },
           { tag_name: record.volume },
         ],
+        custom_properties: {
+          format: 'pdf',
+          preview: Object.fromEntries(
+            Array.from({ length: record.detailMetadata.previewAssetCount }, (_, index) => {
+              const page = index + 1;
+              return [`Slide${page}`, `https://r${(index % 3) + 1}-ndr.ykt.cbern.com.cn/edu_product/esp/assets/demo/image/${page}.jpg`];
+            }),
+          ),
+        },
       })),
     })),
   };

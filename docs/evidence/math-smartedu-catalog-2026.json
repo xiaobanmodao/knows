@@ -23,6 +23,12 @@
       "resourceId": "540ac93d-67fc-4353-9e49-1ef20d02b5a4",
       "title": "（根据2022年版课程标准修订）义务教育教科书·数学七年级上册",
       "revisionMarker": "2022-revised",
+      "detailMetadata": {
+        "globalTitle": "（根据2022年版课程标准修订）义务教育教科书·数学七年级上册",
+        "versionVisible": "RELEASE",
+        "format": "pdf",
+        "previewAssetCount": 49
+      },
       "directoryChapterRange": "1-6",
       "directoryChapters": [
         { "number": 1, "title": "有理数", "sourcePages": [5] },
@@ -41,6 +47,12 @@
       "resourceId": "81d65033-4cb1-4cf0-ae27-8c367c537c30",
       "title": "（根据2022年版课程标准修订）义务教育教科书·数学七年级下册",
       "revisionMarker": "2022-revised",
+      "detailMetadata": {
+        "globalTitle": "（根据2022年版课程标准修订）义务教育教科书·数学七年级下册",
+        "versionVisible": "RELEASE",
+        "format": "pdf",
+        "previewAssetCount": 49
+      },
       "directoryChapterRange": "7-12",
       "directoryChapters": [
         { "number": 7, "title": "相交线与平行线", "sourcePages": [5] },
@@ -59,6 +71,12 @@
       "resourceId": "81264e9e-22bc-4289-8389-13b40433b5ba",
       "title": "义务教育教科书·数学八年级上册",
       "revisionMarker": "unmarked-edition",
+      "detailMetadata": {
+        "globalTitle": "义务教育教科书·数学八年级上册",
+        "versionVisible": "RELEASE",
+        "format": "pdf",
+        "previewAssetCount": 49
+      },
       "directoryChapterRange": "11-15",
       "directoryChapters": [
         { "number": 11, "title": "三角形", "sourcePages": [5] },
@@ -76,6 +94,12 @@
       "resourceId": "e91a6f80-2a9a-4452-a47e-b9ec164156ff",
       "title": "义务教育教科书·数学八年级下册",
       "revisionMarker": "unmarked-edition",
+      "detailMetadata": {
+        "globalTitle": "义务教育教科书·数学八年级下册",
+        "versionVisible": "RELEASE",
+        "format": "pdf",
+        "previewAssetCount": 49
+      },
       "directoryChapterRange": "16-20",
       "directoryChapters": [
         { "number": 16, "title": "二次根式", "sourcePages": [5] },
@@ -93,6 +117,12 @@
       "resourceId": "937a48c1-de81-4cc6-91b2-617cd859de4b",
       "title": "义务教育教科书·数学九年级上册",
       "revisionMarker": "unmarked-edition",
+      "detailMetadata": {
+        "globalTitle": "义务教育教科书·数学九年级上册",
+        "versionVisible": "RELEASE",
+        "format": "pdf",
+        "previewAssetCount": 49
+      },
       "directoryChapterRange": "21-25",
       "directoryChapters": [
         { "number": 21, "title": "一元二次方程", "sourcePages": [5] },
@@ -110,6 +140,12 @@
       "resourceId": "ab188631-292c-455e-8082-e09a0ab4001c",
       "title": "义务教育教科书·数学九年级下册",
       "revisionMarker": "unmarked-edition",
+      "detailMetadata": {
+        "globalTitle": "义务教育教科书·数学九年级下册",
+        "versionVisible": "RELEASE",
+        "format": "pdf",
+        "previewAssetCount": 49
+      },
       "directoryChapterRange": "26-29",
       "directoryChapters": [
         { "number": 26, "title": "反比例函数", "sourcePages": [5] },

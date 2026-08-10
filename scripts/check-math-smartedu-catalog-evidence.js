@@ -22,6 +22,13 @@ const ALLOWED_RECORD_FIELDS = new Set([
   'directoryChapters',
   'directoryPreviewPages',
   'previewPageUrlTemplate',
+  'detailMetadata',
+]);
+const DETAIL_METADATA_FIELDS = new Set([
+  'globalTitle',
+  'versionVisible',
+  'format',
+  'previewAssetCount',
 ]);
 const PLATFORM_ENDPOINT = /^https:\/\/bdcs-file-[12]\.ykt\.cbern\.com\.cn\//;
 const PREVIEW_ENDPOINT = /^https:\/\/r[123]-ndr\.ykt\.cbern\.com\.cn\//;
@@ -77,6 +84,27 @@ function checkDirectoryChapters(record, index, previewPages) {
   return record.directoryChapters.length;
 }
 
+function checkDetailMetadata(metadata, record, index) {
+  if (!metadata || typeof metadata !== 'object' || Array.isArray(metadata)) {
+    fail(`第 ${index + 1} 册 detailMetadata 必须为对象`);
+  }
+  const unknownFields = Object.keys(metadata).filter((key) => !DETAIL_METADATA_FIELDS.has(key));
+  if (unknownFields.length) fail(`第 ${index + 1} 册 detailMetadata 包含未知字段：${unknownFields.join(',')}`);
+  if (requireText(metadata.globalTitle, `第 ${index + 1} 册 detailMetadata.globalTitle`) !== record.title) {
+    fail(`第 ${index + 1} 册 detailMetadata.globalTitle 必须与 title 一致`);
+  }
+  if (requireText(metadata.versionVisible, `第 ${index + 1} 册 detailMetadata.versionVisible`) !== 'RELEASE') {
+    fail(`第 ${index + 1} 册 detailMetadata.versionVisible 必须为 RELEASE`);
+  }
+  if (requireText(metadata.format, `第 ${index + 1} 册 detailMetadata.format`) !== 'pdf') {
+    fail(`第 ${index + 1} 册 detailMetadata.format 必须为 pdf`);
+  }
+  if (!Number.isInteger(metadata.previewAssetCount) || metadata.previewAssetCount < Math.max(...record.directoryPreviewPages)) {
+    fail(`第 ${index + 1} 册 detailMetadata.previewAssetCount 必须覆盖目录预览页`);
+  }
+  return metadata;
+}
+
 function checkRecord(record, index) {
   if (!record || typeof record !== 'object' || Array.isArray(record)) fail(`第 ${index + 1} 册记录无效`);
   Object.keys(record).forEach((field) => {
@@ -96,6 +124,7 @@ function checkRecord(record, index) {
   if (record.directoryPreviewPages.some((page) => !Number.isInteger(page) || page < 1 || page > 49)) {
     fail(`第 ${index + 1} 册 directoryPreviewPages 必须是 1-49 的整数`);
   }
+  checkDetailMetadata(record.detailMetadata, record, index);
   const previewUrl = checkUrl(record.previewPageUrlTemplate, `第 ${index + 1} 册 previewPageUrlTemplate`, PREVIEW_ENDPOINT);
   if (!previewUrl.includes('{page}')) fail(`第 ${index + 1} 册预览 URL 缺少 {page} 占位符`);
   const directoryObservationCount = checkDirectoryChapters(record, index, record.directoryPreviewPages);

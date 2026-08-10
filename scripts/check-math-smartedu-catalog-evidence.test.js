@@ -23,6 +23,24 @@ try {
   assert.strictEqual(valid.status, 0, valid.stderr || valid.stdout);
   assert.match(valid.stdout, /OK math SmartEdu catalog evidence: 6 volumes, 31 directory observations/);
 
+  const sourceWithDetailMetadata = JSON.parse(fs.readFileSync(tempSource, 'utf8'));
+  sourceWithDetailMetadata.resourceRecords.forEach((record) => {
+    assert.ok(record.detailMetadata);
+    assert.strictEqual(record.detailMetadata.globalTitle, record.title);
+    assert.strictEqual(record.detailMetadata.versionVisible, 'RELEASE');
+    assert.strictEqual(record.detailMetadata.format, 'pdf');
+    assert.strictEqual(record.detailMetadata.previewAssetCount, 49);
+  });
+
+  const tamperedDetailMetadata = JSON.parse(fs.readFileSync(tempSource, 'utf8'));
+  tamperedDetailMetadata.resourceRecords[0].detailMetadata.globalTitle = '另一本教材';
+  fs.writeFileSync(tempSource, `${JSON.stringify(tamperedDetailMetadata, null, 2)}\n`, 'utf8');
+  const invalidDetailMetadata = run(tempSource);
+  assert.notStrictEqual(invalidDetailMetadata.status, 0);
+  assert.match(`${invalidDetailMetadata.stdout}\n${invalidDetailMetadata.stderr}`, /detailMetadata|globalTitle/);
+
+  fs.copyFileSync(source, tempSource);
+
   const missingDirectoryObservation = JSON.parse(fs.readFileSync(tempSource, 'utf8'));
   delete missingDirectoryObservation.resourceRecords[0].directoryChapters;
   fs.writeFileSync(tempSource, `${JSON.stringify(missingDirectoryObservation, null, 2)}\n`, 'utf8');

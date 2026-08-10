@@ -48,6 +48,18 @@ function getPreviewMap(liveRecord) {
   return preview;
 }
 
+function getVersionVisible(liveRecord) {
+  const container = liveRecord.resource_container_cp;
+  return container && typeof container.version_visible === 'string'
+    ? container.version_visible.trim()
+    : '';
+}
+
+function getFormat(liveRecord) {
+  const properties = liveRecord.custom_properties;
+  return properties && typeof properties.format === 'string' ? properties.format.trim() : '';
+}
+
 function getRevisionMarker(liveRecord) {
   const title = getLiveTitle(liveRecord);
   return title.includes('根据2022年版课程标准修订') ? '2022-revised' : 'unmarked-edition';
@@ -64,6 +76,24 @@ function validatePreviewUrl(url, page, field) {
   }
   if (!parsed.pathname.endsWith(`/${page}.jpg`)) fail(`${field} 未指向目录页 ${page}`);
   return previewUrl;
+}
+
+function validateDetailMetadata(evidenceRecord, liveRecord, preview) {
+  const expected = evidenceRecord.detailMetadata;
+  if (!expected) return;
+  const liveTitle = getLiveTitle(liveRecord);
+  if (liveTitle !== expected.globalTitle) {
+    fail(`${evidenceRecord.grade}/${evidenceRecord.volume} detailMetadata.globalTitle 不一致`);
+  }
+  if (getVersionVisible(liveRecord) !== expected.versionVisible) {
+    fail(`${evidenceRecord.grade}/${evidenceRecord.volume} detailMetadata.versionVisible 不一致`);
+  }
+  if (getFormat(liveRecord) !== expected.format) {
+    fail(`${evidenceRecord.grade}/${evidenceRecord.volume} detailMetadata.format 不一致`);
+  }
+  if (Object.keys(preview).length !== expected.previewAssetCount) {
+    fail(`${evidenceRecord.grade}/${evidenceRecord.volume} detailMetadata.previewAssetCount 不一致`);
+  }
 }
 
 function validateLiveRecord(evidenceRecord, liveRecord) {
@@ -91,6 +121,7 @@ function validateLiveRecord(evidenceRecord, liveRecord) {
     const key = `Slide${page}`;
     validatePreviewUrl(preview[key], page, `${evidenceRecord.grade}/${evidenceRecord.volume}.${key}`);
   });
+  validateDetailMetadata(evidenceRecord, liveRecord, preview);
   return {
     resourceId: evidenceRecord.resourceId,
     title: liveTitle,
