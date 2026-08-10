@@ -4,6 +4,7 @@ const OFFICIAL_HOSTS = new Set([
   'www.pep.com.cn',
   'pep.com.cn',
   'basic.smartedu.cn',
+  'bdcs-file-2.ykt.cbern.com.cn',
   'edu.sh.gov.cn',
 ]);
 const REFERENCE_HOSTS = new Set([
@@ -31,6 +32,7 @@ const SOURCE_DEFINITIONS = {
   'moe-textbook-catalog-2024': {
     title: '2024年义务教育国家课程教学用书目录（根据2022年版课程标准修订）',
     url: 'https://www.moe.gov.cn/srcsite/A26/s8001/202408/W020250418502592948423.pdf',
+    accessUrls: ['https://edu.sh.gov.cn/mbjy_fgwx_qt/20240821/bb17bd928d244286b599eaa826ee5167.html'],
     kind: 'official',
   },
   'moe-textbook-catalog-2024-mirror-shanghai': {
@@ -66,6 +68,7 @@ const SOURCE_DEFINITIONS = {
   'smartedu-math-textbook-catalog-2026': {
     title: '国家中小学智慧教育平台人教版初中数学教材资源清单与公开预览',
     url: 'https://basic.smartedu.cn/tchMaterial',
+    accessUrls: ['https://bdcs-file-2.ykt.cbern.com.cn/zxx_secondary/ndrs/tags/tch_material_tag.json'],
     kind: 'official',
   },
   'original-derivation-review': {
@@ -202,6 +205,17 @@ function checkContentSourceRegistry() {
     if (!isAllowedContentSourceUrl(source, source.url)) {
       const hostname = new URL(source.url).hostname;
       throw new Error(`来源域名与来源类型不匹配：${key}/${hostname}`);
+    }
+    if (source.accessUrls !== undefined) {
+      if (!Array.isArray(source.accessUrls) || source.accessUrls.some((url) => typeof url !== 'string' || !url.startsWith('https://'))) {
+        throw new Error(`来源备用访问 URL 无效：${key}`);
+      }
+      source.accessUrls.forEach((url) => {
+        if (!isAllowedContentSourceUrl(source, url)) {
+          const hostname = new URL(url).hostname;
+          throw new Error(`来源备用访问域名与来源类型不匹配：${key}/${hostname}`);
+        }
+      });
     }
   });
   Object.entries(CONTENT_SOURCE_CANDIDATE_KEYS_BY_SUBJECT).forEach(([subjectId, candidateKeys]) => {

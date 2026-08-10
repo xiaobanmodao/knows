@@ -27,6 +27,9 @@ async function main() {
   fs.writeFileSync(absoluteReportPath, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
   console.log(`${report.status.toUpperCase()} content source registry URL access`);
   console.log(`Checked: ${report.summary.checked}; passed: ${report.summary.passed}; failed: ${report.summary.failed}`);
+  if (Number.isInteger(report.summary.sourceCount)) {
+    console.log(`Sources resolved: ${report.summary.sourcesPassed}/${report.summary.sourceCount}; unresolved: ${report.summary.unresolved}`);
+  }
   console.log(`Report: ${absoluteReportPath}`);
   if (process.argv.includes('--require-accessible') && report.status !== 'passed') {
     throw new Error(`内容源注册表 URL 可访问性未通过：${report.status}`);

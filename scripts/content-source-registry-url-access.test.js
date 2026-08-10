@@ -55,6 +55,10 @@ assert.deepStrictEqual(collectRegisteredSourceUrls(sources), [
     checked: 2,
     passed: 1,
     failed: 1,
+    sourceCount: 3,
+    sourcesPassed: 1,
+    sourcesFailed: 2,
+    unresolved: 2,
   });
   assert.deepStrictEqual(report.urls[0], {
     url: 'https://www.moe.gov.cn/english',
@@ -62,10 +66,45 @@ assert.deepStrictEqual(collectRegisteredSourceUrls(sources), [
     status: 'failed',
     httpStatus: null,
     error: 'timeout',
+    role: 'canonical',
   });
   assert.strictEqual(report.urls[1].status, 'passed');
   assert.strictEqual(report.urls[1].httpStatus, 200);
+  assert.strictEqual(report.urls[1].role, 'canonical');
   assert.match(report.generatedFrom.registryHash, /^[a-f0-9]{64}$/);
+
+  const fallbackReport = await auditRegisteredSourceUrls({
+    sources: [{
+      key: 'moe-catalog',
+      title: '教育部教材目录',
+      kind: 'official',
+      url: 'https://www.moe.gov.cn/catalog',
+      accessUrls: ['https://edu.sh.gov.cn/catalog'],
+    }],
+    requestUrl: async (url) => {
+      if (url.includes('edu.sh.gov.cn')) return { statusCode: 200, finalUrl: url };
+      return { statusCode: 404, finalUrl: url };
+    },
+  });
+  assert.strictEqual(fallbackReport.schemaVersion, REGISTRY_ACCESS_AUDIT_SCHEMA_VERSION);
+  assert.strictEqual(fallbackReport.status, 'passed');
+  assert.deepStrictEqual(fallbackReport.summary, {
+    total: 2,
+    checked: 2,
+    passed: 1,
+    failed: 1,
+    sourceCount: 1,
+    sourcesPassed: 1,
+    sourcesFailed: 0,
+    unresolved: 0,
+  });
+  assert.strictEqual(fallbackReport.urls.find((item) => item.role === 'canonical').status, 'failed');
+  assert.strictEqual(fallbackReport.urls.find((item) => item.role === 'access').status, 'passed');
+  assert.deepStrictEqual(fallbackReport.sources, [{
+    sourceKey: 'moe-catalog',
+    status: 'passed',
+    resolvedUrl: 'https://edu.sh.gov.cn/catalog',
+  }]);
 
   assert.throws(
     () => collectRegisteredSourceUrls([{

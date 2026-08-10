@@ -1,6 +1,6 @@
 const crypto = require('crypto');
 
-const REGISTRY_ACCESS_AUDIT_SCHEMA_VERSION = 1;
+const REGISTRY_ACCESS_AUDIT_SCHEMA_VERSION = 2;
 const ALLOWED_SOURCE_KINDS = new Set(['official', 'reference']);
 
 function normalizeRegistrySources(sources) {
@@ -30,6 +30,7 @@ function normalizeRegistrySources(sources) {
         title: source.title,
         kind: source.kind,
         url: source.url,
+        accessUrls: [...(source.accessUrls || [])],
       };
     })
     .sort((left, right) => left.key.localeCompare(right.key));
@@ -55,6 +56,30 @@ function collectRegisteredSourceUrls(sources) {
     .sort((left, right) => left.url.localeCompare(right.url));
 }
 
+function collectRegisteredSourceAttempts(sources) {
+  const normalized = normalizeRegistrySources(sources);
+  const byUrl = new Map();
+  normalized.forEach((source) => {
+    const targets = [
+      { url: source.url, role: 'canonical' },
+      ...source.accessUrls.map((url) => ({ url, role: 'access' })),
+    ];
+    targets.forEach(({ url, role }) => {
+      const entry = byUrl.get(url) || { url, sourceKeys: [], roles: [] };
+      if (!entry.sourceKeys.includes(source.key)) entry.sourceKeys.push(source.key);
+      if (!entry.roles.includes(role)) entry.roles.push(role);
+      byUrl.set(url, entry);
+    });
+  });
+  return [...byUrl.values()]
+    .map((entry) => ({
+      ...entry,
+      sourceKeys: [...entry.sourceKeys].sort(),
+      roles: [...entry.roles].sort(),
+    }))
+    .sort((left, right) => left.url.localeCompare(right.url));
+}
+
 function normalizeRequestResult(url, response) {
   const statusCode = Number(response && response.statusCode);
   if (!Number.isInteger(statusCode) || statusCode < 200 || statusCode >= 400) {
@@ -76,17 +101,20 @@ function normalizeRequestResult(url, response) {
 async function auditRegisteredSourceUrls({ sources, requestUrl } = {}) {
   if (typeof requestUrl !== 'function') throw new Error('来源注册表 URL 审计必须提供 requestUrl 函数');
   const normalized = normalizeRegistrySources(sources);
-  const registryUrls = collectRegisteredSourceUrls(normalized);
+  const registryUrls = collectRegisteredSourceAttempts(normalized);
   const urls = [];
   for (const registryUrl of registryUrls) {
+    const { roles, ...registryUrlMeta } = registryUrl;
     try {
       urls.push({
-        ...registryUrl,
+        ...registryUrlMeta,
+        role: roles.length === 1 ? roles[0] : 'mixed',
         ...normalizeRequestResult(registryUrl.url, await requestUrl(registryUrl.url)),
       });
     } catch (error) {
       urls.push({
-        ...registryUrl,
+        ...registryUrlMeta,
+        role: roles.length === 1 ? roles[0] : 'mixed',
         status: 'failed',
         httpStatus: null,
         error: error.message || String(error),
@@ -95,6 +123,17 @@ async function auditRegisteredSourceUrls({ sources, requestUrl } = {}) {
   }
   const passed = urls.filter((entry) => entry.status === 'passed').length;
   const failed = urls.length - passed;
+  const sourceResults = normalized.map((source) => {
+    const sourceUrls = urls.filter((entry) => entry.sourceKeys.includes(source.key));
+    const resolved = sourceUrls.find((entry) => entry.status === 'passed');
+    return {
+      sourceKey: source.key,
+      status: resolved ? 'passed' : 'failed',
+      resolvedUrl: resolved ? resolved.url : null,
+    };
+  });
+  const sourcesPassed = sourceResults.filter((source) => source.status === 'passed').length;
+  const sourcesFailed = sourceResults.length - sourcesPassed;
   return {
     schemaVersion: REGISTRY_ACCESS_AUDIT_SCHEMA_VERSION,
     auditKind: 'content-source-registry',
@@ -102,14 +141,19 @@ async function auditRegisteredSourceUrls({ sources, requestUrl } = {}) {
       registryHash: hashRegistrySources(normalized),
       sourceCount: normalized.length,
     },
-    status: failed ? 'blocked' : urls.length ? 'passed' : 'no-sources',
+    status: sourcesFailed ? 'blocked' : urls.length ? 'passed' : 'no-sources',
     summary: {
       total: urls.length,
       checked: urls.length,
       passed,
       failed,
+      sourceCount: sources.length,
+      sourcesPassed,
+      sourcesFailed,
+      unresolved: sourcesFailed,
     },
     urls,
+    sources: sourceResults,
   };
 }
 
@@ -118,5 +162,6 @@ module.exports = {
   normalizeRegistrySources,
   hashRegistrySources,
   collectRegisteredSourceUrls,
+  collectRegisteredSourceAttempts,
   auditRegisteredSourceUrls,
 };
