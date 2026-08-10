@@ -202,6 +202,208 @@ const visualGuidesByKnowledgeId = Object.freeze({
       { label: '物质和能量变化', note: '两过程持续参与物质和能量变化。', tone: 'slate' },
     ],
   },
+
+  'bio-k-reproduction-development': {
+    type: 'flow',
+    title: '人的生殖和发育',
+    summary: '受精、胚胎发育、出生和成长构成连续阶段。',
+    items: [
+      { label: '生殖细胞结合', note: '新生命的开始与精子和卵细胞结合有关。', tone: 'blue' },
+      { label: '胚胎发育', note: '胚胎在母体内发育，孕期健康需要专业医疗支持。', tone: 'green' },
+      { label: '出生和成长', note: '人的发育经历出生和成长等阶段。', tone: 'amber' },
+      { label: '青春期变化', note: '尊重隐私并寻求可信成人和专业人士帮助很重要。', tone: 'slate' },
+    ],
+  },
+  'bio-k-digestion': {
+    type: 'flow',
+    title: '食物消化和吸收',
+    summary: '食物被分解为可吸收的小分子并进入体内。',
+    items: [
+      { label: '口腔、胃和小肠', note: '这些器官以不同方式参与食物消化。', tone: 'blue' },
+      { label: '食物分解', note: '消化系统将食物分解为可吸收的小分子。', tone: 'green' },
+      { label: '小肠吸收', note: '小肠长且内表面积大，是营养物质吸收的重要部位。', tone: 'amber' },
+      { label: '消化健康', note: '均衡饮食、规律进食和食品卫生有助于消化健康。', tone: 'slate' },
+    ],
+  },
+  'bio-k-breathing': {
+    type: 'flow',
+    title: '呼吸与气体交换',
+    summary: '空气进出和肺部气体交换为细胞提供氧气。',
+    items: [
+      { label: '空气进入呼吸道', note: '鼻、咽、喉、气管和支气管形成气体通道。', tone: 'blue' },
+      { label: '肺泡气体交换', note: '肺泡壁薄且周围毛细血管丰富，适于气体交换。', tone: 'green' },
+      { label: '氧气供应细胞', note: '呼吸系统为细胞生命活动提供氧气并排出二氧化碳。', tone: 'amber' },
+      { label: '呼吸健康', note: '远离烟草烟雾和保持空气清洁有助于呼吸健康。', tone: 'slate' },
+    ],
+  },
+  'bio-k-circulation': {
+    type: 'cycle',
+    title: '血液循环关系',
+    summary: '心脏、血管和血液持续联系身体各部分。',
+    items: [
+      { label: '心脏推动血液', note: '心脏有节律地收缩舒张，推动血液在血管中循环。', tone: 'blue' },
+      { label: '血管运输', note: '动脉、静脉和毛细血管在结构和功能上不同。', tone: 'green' },
+      { label: '血液运输物质', note: '血液运输氧气、营养物质和部分废物。', tone: 'amber' },
+      { label: '维持身体联系', note: '心脏、血管和血液共同维持身体各部分联系。', tone: 'slate' },
+    ],
+  },
+  'bio-k-urinary': {
+    type: 'flow',
+    title: '尿液形成和排出',
+    summary: '肾脏形成尿液并排出部分废物和多余水分。',
+    items: [
+      { label: '血液流经肾脏', note: '肾脏能过滤血液并重吸收部分有用物质。', tone: 'blue' },
+      { label: '形成尿液', note: '肾脏是形成尿液的重要器官。', tone: 'green' },
+      { label: '排出尿液', note: '排尿排出部分代谢废物和多余水分。', tone: 'amber' },
+      { label: '维持相对稳定', note: '泌尿系统帮助维持体内水和无机盐等相对稳定。', tone: 'slate' },
+    ],
+  },
+  'bio-k-nervous-immunity': {
+    type: 'compare',
+    title: '神经调节和免疫',
+    summary: '快速调节和防御识别共同维护健康。',
+    items: [
+      { label: '神经系统', note: '脑、脊髓和周围神经能接收信息并协调反应。', tone: 'blue', lane: 'left' },
+      { label: '反射', note: '反射是人体对刺激作出的有规律反应。', tone: 'green', lane: 'left' },
+      { label: '免疫防御', note: '免疫系统识别和防御部分病原体。', tone: 'amber', lane: 'right' },
+      { label: '专业健康建议', note: '接种疫苗等措施需遵循专业公共卫生建议。', tone: 'slate', lane: 'right' },
+    ],
+  },
+
+  'bio-k-environment-factors': {
+    type: 'flow',
+    title: '环境影响的观察',
+    summary: '环境因素影响生物的分布、生长和行为。',
+    items: [
+      { label: '环境因素', note: '光、温度、水和空气等属于常见非生物因素。', tone: 'blue' },
+      { label: '生物表现', note: '同种生物在不同环境中可能表现出不同生长状态。', tone: 'green' },
+      { label: '比较条件', note: '研究环境影响时要区分相关现象和能够支持因果的证据。', tone: 'amber' },
+      { label: '有限解释', note: '环境因素会影响生物的分布、生长和行为。', tone: 'slate' },
+    ],
+  },
+  'bio-k-species-relations': {
+    type: 'compare',
+    title: '生物之间的关系',
+    summary: '同种和不同种生物之间可形成多种关系。',
+    items: [
+      { label: '同种生物', note: '可能因食物、空间等资源发生竞争，也可能合作。', tone: 'blue', lane: 'left' },
+      { label: '资源利用', note: '食物和空间等资源会影响同种生物的关系。', tone: 'green', lane: 'left' },
+      { label: '不同种生物', note: '存在捕食、竞争、共生和寄生等多种关系。', tone: 'amber', lane: 'right' },
+      { label: '依据证据判断', note: '生态关系不能只凭是否接触判断。', tone: 'slate', lane: 'right' },
+    ],
+  },
+  'bio-k-ecosystem-structure': {
+    type: 'hierarchy',
+    title: '生态系统的组成',
+    summary: '生态系统由生物成分和非生物成分共同构成。',
+    items: [
+      { label: '生态系统', note: '由生物成分和非生物成分共同构成。', tone: 'blue', depth: 0 },
+      { label: '非生物成分', note: '生态系统中也包括非生物成分。', tone: 'green', depth: 1 },
+      { label: '生物成分', note: '生物成分包括生产者、消费者和分解者。', tone: 'amber', depth: 1 },
+      { label: '生产者、消费者和分解者', note: '生产者制造有机物，消费者取食，分解者分解有机物。', tone: 'slate', depth: 2 },
+    ],
+  },
+  'bio-k-ecosystem-function': {
+    type: 'cycle',
+    title: '生态系统的功能',
+    summary: '能量沿食物链流动，物质在生物与环境之间循环。',
+    items: [
+      { label: '生产者开始食物链', note: '食物链通常从生产者开始。', tone: 'blue' },
+      { label: '物质和能量流动', note: '箭头表示物质和能量流动方向。', tone: 'green' },
+      { label: '消费和分解', note: '物质可通过生产、消费和分解在生物与环境间循环。', tone: 'amber' },
+      { label: '物质回到环境', note: '物质在生物与环境之间循环。', tone: 'slate' },
+      { label: '能量逐级减少', note: '能量不能在生态系统中循环使用。', tone: 'blue' },
+    ],
+  },
+  'bio-k-biosphere': {
+    type: 'hierarchy',
+    title: '生物圈的范围',
+    summary: '生物圈是所有生物及其生活环境的整体。',
+    items: [
+      { label: '生物圈', note: '是地球上所有生物及其生活环境的整体。', tone: 'blue', depth: 0 },
+      { label: '适宜生存的范围', note: '包括适合生物生存的范围。', tone: 'green', depth: 1 },
+      { label: '大气圈下层、水圈和岩石圈表层', note: '这些范围构成生物圈的相关部分。', tone: 'amber', depth: 2 },
+      { label: '环境彼此关联', note: '不同环境通过水、空气和物质循环彼此关联。', tone: 'slate', depth: 2 },
+    ],
+  },
+  'bio-k-ecological-security': {
+    type: 'flow',
+    title: '生态安全维护',
+    summary: '预防污染、保护栖息地和合理利用资源有助于生态安全。',
+    items: [
+      { label: '识别生态压力', note: '污染、栖息地破碎化和过度利用会影响生态安全。', tone: 'blue' },
+      { label: '科学评估', note: '保护措施应基于监测、法律和科学评估。', tone: 'green' },
+      { label: '保护栖息地', note: '生态安全需要预防污染、保护栖息地和合理利用资源。', tone: 'amber' },
+      { label: '个人参与', note: '可通过节约资源、分类投放废弃物和尊重野生生物参与保护。', tone: 'slate' },
+    ],
+  },
+
+  'bio-k-biological-reproduction': {
+    type: 'compare',
+    title: '有性和无性生殖',
+    summary: '两种生殖方式的亲本和后代特点不同。',
+    items: [
+      { label: '有性生殖', note: '通常涉及两性生殖细胞结合。', tone: 'blue', lane: 'left' },
+      { label: '后代多样性', note: '后代遗传组成具有多样性。', tone: 'green', lane: 'left' },
+      { label: '无性生殖', note: '由一个亲本产生后代。', tone: 'amber', lane: 'right' },
+      { label: '后代相似性', note: '后代与亲本通常较相似。', tone: 'slate', lane: 'right' },
+    ],
+  },
+  'bio-k-heredity-basics': {
+    type: 'hierarchy',
+    title: '遗传信息的基础',
+    summary: '细胞核中的染色体、DNA和基因与性状形成有关。',
+    items: [
+      { label: '细胞核', note: '遗传信息主要位于细胞核的染色体上。', tone: 'blue', depth: 0 },
+      { label: '染色体', note: '由DNA和蛋白质等物质组成。', tone: 'green', depth: 1 },
+      { label: 'DNA', note: 'DNA上有许多具有遗传效应的片段。', tone: 'amber', depth: 2 },
+      { label: '基因与性状', note: '通常称为基因，且性状受遗传和环境共同影响。', tone: 'slate', depth: 2 },
+    ],
+  },
+  'bio-k-variation': {
+    type: 'compare',
+    title: '变异的不同来源',
+    summary: '个体差异有的可遗传，有的主要由环境引起。',
+    items: [
+      { label: '遗传物质改变', note: '引起的变异可能遗传给后代。', tone: 'blue', lane: 'left' },
+      { label: '可遗传变异', note: '为生物适应环境变化提供了差异基础。', tone: 'green', lane: 'left' },
+      { label: '环境因素', note: '营养、光照和锻炼等可造成差异。', tone: 'amber', lane: 'right' },
+      { label: '不一定遗传', note: '环境因素造成的差异不一定遗传。', tone: 'slate', lane: 'right' },
+    ],
+  },
+  'bio-k-origin-life': {
+    type: 'flow',
+    title: '生命起源的科学探索',
+    summary: '科学解释依靠证据、模型和结论边界持续发展。',
+    items: [
+      { label: '探索生命起源条件', note: '科学家通过化学、地质和天文等证据探索相关条件。', tone: 'blue' },
+      { label: '科学假说', note: '科学假说需要接受证据检验和同行讨论。', tone: 'green' },
+      { label: '可讨论的解释', note: '解释需要尊重证据、模型和结论边界。', tone: 'amber' },
+      { label: '保留未解问题', note: '不能把推测当作已被完全证实的事实。', tone: 'slate' },
+    ],
+  },
+  'bio-k-evolution-evidence': {
+    type: 'flow',
+    title: '生物进化的证据',
+    summary: '多种独立证据为进化提供相互印证的线索。',
+    items: [
+      { label: '化石等线索', note: '化石、比较解剖、胚胎发育和遗传信息等提供线索。', tone: 'blue' },
+      { label: '化石记录', note: '化石记录了古代生物的遗体、遗物或生活痕迹。', tone: 'green' },
+      { label: '地层中的变化', note: '不同地层中的化石可显示生物类群随时间的变化线索。', tone: 'amber' },
+      { label: '相互支持的解释', note: '多种独立证据相互支持时，进化解释更有说服力。', tone: 'slate' },
+    ],
+  },
+  'bio-k-biodiversity-conservation': {
+    type: 'flow',
+    title: '生物多样性保护',
+    summary: '保护多样性需要维护栖息地并依法合理利用资源。',
+    items: [
+      { label: '生物多样性', note: '遗传、物种和生态系统多样性共同构成生物多样性。', tone: 'blue' },
+      { label: '识别威胁', note: '栖息地丧失、污染和非法利用会威胁多样性。', tone: 'green' },
+      { label: '保护措施', note: '就地保护、迁地保护和公众参与可在不同情境下发挥作用。', tone: 'amber' },
+      { label: '合理利用资源', note: '保护需要维护栖息地并依法合理利用资源。', tone: 'slate' },
+    ],
+  },
 });
 
 function clone(value) {

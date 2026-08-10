@@ -2,6 +2,7 @@ const assert = require('assert');
 
 const { collectBiologyVisualGuideIssues } = require('./biology-visual-guide-contract');
 const { knowledgeItems } = require('../packages/biology/data/biology-knowledge');
+const repository = require('../packages/biology/repository');
 const {
   getVisualGuideForKnowledge,
   visualGuidesByKnowledgeId,
@@ -85,26 +86,63 @@ const snapshot = JSON.stringify(untouched);
 collectBiologyVisualGuideIssues(untouched);
 assert.strictEqual(JSON.stringify(untouched), snapshot);
 
-const firstHalfIds = knowledgeItems
-  .filter((item) => ['bio-unit-cells', 'bio-unit-diversity', 'bio-unit-plants'].includes(item.topicId))
-  .map((item) => item.id)
+const allKnowledgeIds = knowledgeItems.map((item) => item.id)
   .sort();
+assert.strictEqual(allKnowledgeIds.length, 36, 'biology visual guide coverage count');
 assert.deepStrictEqual(
   Object.keys(visualGuidesByKnowledgeId).sort(),
-  firstHalfIds,
+  allKnowledgeIds,
 );
 assert.deepStrictEqual(
   collectBiologyVisualGuideIssues({
-    sourceKnowledgeItems: firstHalfIds.map((id) => ({
+    sourceKnowledgeItems: allKnowledgeIds.map((id) => ({
       id,
       visualGuide: visualGuidesByKnowledgeId[id],
     })),
   }),
   [],
 );
+assert.deepStrictEqual(
+  collectBiologyVisualGuideIssues({
+    sourceKnowledgeItems: knowledgeItems,
+    runtimeLayers: [{
+      label: 'repository',
+      knowledgeItems: allKnowledgeIds.map((id) => repository.getKnowledgeById(id)),
+    }],
+  }),
+  [],
+);
+
+assert.deepStrictEqual(
+  Object.entries(visualGuidesByKnowledgeId)
+    .filter(([, guide]) => guide.type === 'cycle')
+    .map(([knowledgeId]) => knowledgeId)
+    .sort(),
+  ['bio-k-circulation', 'bio-k-ecosystem-function', 'bio-k-respiration-growth'],
+);
 
 assert(Object.isFrozen(visualGuidesByKnowledgeId));
 assert.strictEqual(getVisualGuideForKnowledge('bio-k-unknown'), null);
+knowledgeItems.forEach((knowledge) => {
+  assert(knowledge.visualGuide, `${knowledge.id} visual guide`);
+  assert.notStrictEqual(
+    knowledge.visualGuide,
+    getVisualGuideForKnowledge(knowledge.id),
+    `${knowledge.id} visual guide is an independent copy`,
+  );
+  const runtimeKnowledge = repository.getKnowledgeById(knowledge.id);
+  assert(runtimeKnowledge.visualGuide, `${knowledge.id} runtime visual guide`);
+  assert.notStrictEqual(
+    runtimeKnowledge.visualGuide,
+    knowledge.visualGuide,
+    `${knowledge.id} runtime visual guide is an independent copy`,
+  );
+  assert.notStrictEqual(
+    runtimeKnowledge.visualGuide.items,
+    knowledge.visualGuide.items,
+    `${knowledge.id} runtime visual guide items are an independent copy`,
+  );
+});
 const firstPhotosynthesisGuide = getVisualGuideForKnowledge('bio-k-photosynthesis');
 const secondPhotosynthesisGuide = getVisualGuideForKnowledge('bio-k-photosynthesis');
 assert.notStrictEqual(firstPhotosynthesisGuide, secondPhotosynthesisGuide);
@@ -112,6 +150,10 @@ assert.notStrictEqual(firstPhotosynthesisGuide.items, secondPhotosynthesisGuide.
 firstPhotosynthesisGuide.items[0].label = '篡改';
 assert.strictEqual(secondPhotosynthesisGuide.items[0].label, '作用条件');
 assert.strictEqual(visualGuidesByKnowledgeId['bio-k-photosynthesis'].items[0].label, '作用条件');
+const runtimePhotosynthesisGuide = repository.getKnowledgeById('bio-k-photosynthesis').visualGuide;
+runtimePhotosynthesisGuide.items[0].label = '篡改';
+assert.strictEqual(knowledgeItems.find((item) => item.id === 'bio-k-photosynthesis').visualGuide.items[0].label, '作用条件');
+assert.strictEqual(repository.getKnowledgeById('bio-k-photosynthesis').visualGuide.items[0].label, '作用条件');
 
 function labelsFor(knowledgeId) {
   return getVisualGuideForKnowledge(knowledgeId).items.map((item) => item.label);
