@@ -31,7 +31,7 @@ try {
     inputPath,
     manifestPath,
     sourceVersion: 'external-english-units-v1',
-    sourceKeys: ['pep-english-external-contract'],
+    sourceKeys: ['pep-english-new-textbook-2025'],
     sourceUrls: ['https://www.pep.com.cn/xw/zt/hd/12/xjcjs/cz/202510/t20251024_2004130.html'],
     reviewedAt: '2026-08-10',
     note: '契约测试外部来源凭证',
@@ -41,7 +41,7 @@ try {
   assert.strictEqual(result.manifest.batches[0].sourceKind, 'external-source');
   assert.match(result.manifest.batches[0].inputHash, /^[a-f0-9]{64}$/);
   assert.deepStrictEqual(result.manifest.batches[0].sourceEvidence, {
-    sourceKeys: ['pep-english-external-contract'],
+    sourceKeys: ['pep-english-new-textbook-2025'],
     sourceUrls: ['https://www.pep.com.cn/xw/zt/hd/12/xjcjs/cz/202510/t20251024_2004130.html'],
     reviewedAt: '2026-08-10',
     note: '契约测试外部来源凭证',
@@ -123,14 +123,28 @@ try {
     '--batch', 'english-units-v1.11',
     '--input', inputPath,
     '--manifest', cliManifestPath,
-    '--source-key', 'pep-english-external-cli',
+    '--source-key', 'pep-english-new-textbook-2025',
     '--source-url', 'https://www.pep.com.cn/xw/zt/hd/12/xjcjs/cz/202510/t20251024_2004130.html',
     '--reviewed-at', '2026-08-10',
     '--note', 'CLI contract evidence',
   ], { cwd: root, encoding: 'utf8' });
   assert.strictEqual(cli.status, 0, cli.stderr || cli.stdout);
   assert.match(cli.stdout, /OK external content source manifest/);
-  assert.strictEqual(JSON.parse(fs.readFileSync(cliManifestPath, 'utf8')).batches[0].sourceEvidence.sourceKeys[0], 'pep-english-external-cli');
+  assert.strictEqual(JSON.parse(fs.readFileSync(cliManifestPath, 'utf8')).batches[0].sourceEvidence.sourceKeys[0], 'pep-english-new-textbook-2025');
+
+  assert.throws(
+    () => buildExternalSourceManifest({
+      batchId: 'english-units-v1.11',
+      inputPath,
+      manifestPath,
+      sourceVersion: 'external-english-units-v2',
+      sourceKeys: ['unlinked-source-key'],
+      sourceUrls: ['https://www.pep.com.cn/xw/zt/hd/12/xjcjs/cz/202510/t20251024_2004130.html'],
+      reviewedAt: '2026-08-10',
+      note: '来源键必须被输入实体引用',
+    }),
+    /未被输入实体引用|sourceKeys/i,
+  );
 
   const originalInput = JSON.parse(fs.readFileSync(inputPath, 'utf8'));
   fs.writeFileSync(inputPath, `${JSON.stringify({

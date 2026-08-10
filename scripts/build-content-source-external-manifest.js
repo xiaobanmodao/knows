@@ -6,7 +6,7 @@ const {
   normalizeBatchManifest,
 } = require('./content-source-input-batches');
 const { SOURCE_VERSION: CURRENT_SOURCE_VERSION } = require('./content-source-catalog');
-const { loadSourceInputFile } = require('./content-source-input');
+const { collectInputSourceKeys, loadSourceInputFile } = require('./content-source-input');
 
 const DEFAULT_SOURCE_VERSION = 'external-source-v1';
 
@@ -65,6 +65,12 @@ function buildExternalSourceManifest({
       },
     }],
   });
+  const inputSourceKeys = collectInputSourceKeys(input);
+  const unreferencedSourceKeys = manifest.batches[0].sourceEvidence.sourceKeys
+    .filter((sourceKey) => !inputSourceKeys.includes(sourceKey));
+  if (unreferencedSourceKeys.length) {
+    throw new Error(`外部内容源 manifest 的 sourceKeys 未被输入实体引用：${unreferencedSourceKeys.join(', ')}`);
+  }
   fs.mkdirSync(path.dirname(outputPath), { recursive: true });
   fs.writeFileSync(outputPath, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
   return { manifest, manifestPath: outputPath, inputPath: sourceFile, inputHash: input.inputHash };

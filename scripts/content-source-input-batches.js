@@ -8,7 +8,7 @@ const {
   filterContentSourceCatalog,
 } = require('./content-source-catalog');
 const { getContentSourceBatch, SOURCE_BATCHES } = require('./check-content-source-batches');
-const { loadSourceInputFile } = require('./content-source-input');
+const { collectInputSourceKeys, loadSourceInputFile } = require('./content-source-input');
 const { buildContentSourceInputAuditReport } = require('./content-source-input-audit');
 
 const MANIFEST_SCHEMA_VERSION = 1;
@@ -233,6 +233,7 @@ function auditBatchInput(entry, baseDirectory, currentCatalog, sourceVersion) {
       inputHash: report.inputHash,
       currentSourceHash: report.currentSourceHash,
       importedSourceHash: report.importedSourceHash,
+      inputSourceKeys: collectInputSourceKeys(input),
       counts: report.counts,
       metrics: report.metrics,
       review: report.review,
@@ -315,12 +316,27 @@ function buildContentSourceInputBatchAudit({
   if (requireExternalSource && currentCatalog.sourceVersion) {
     const issueIds = new Set(externalSourceIssues.map((issue) => issue.id));
     batches.forEach((batch) => {
-      if (issueIds.has(batch.id) || batch.inputSourceVersion !== currentCatalog.sourceVersion) return;
+      if (issueIds.has(batch.id)) return;
+      if (batch.inputSourceVersion === currentCatalog.sourceVersion) {
+        externalSourceIssues.push({
+          id: batch.id,
+          path: batch.path || null,
+          sourceKind: batch.sourceKind || 'unknown',
+          reason: 'input-source-version-current',
+        });
+        issueIds.add(batch.id);
+        return;
+      }
+      if (!batch.sourceEvidence || !Array.isArray(batch.inputSourceKeys)) return;
+      const unreferencedSourceKeys = batch.sourceEvidence.sourceKeys
+        .filter((sourceKey) => !batch.inputSourceKeys.includes(sourceKey));
+      if (!unreferencedSourceKeys.length) return;
       externalSourceIssues.push({
         id: batch.id,
         path: batch.path || null,
         sourceKind: batch.sourceKind || 'unknown',
-        reason: 'input-source-version-current',
+        reason: 'source-evidence-key-unreferenced',
+        sourceKeys: unreferencedSourceKeys,
       });
       issueIds.add(batch.id);
     });

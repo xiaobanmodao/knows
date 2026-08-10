@@ -30,6 +30,11 @@ try {
   });
   const inputPath = path.join(tempDirectory, 'english-units.json');
   fs.writeFileSync(inputPath, `${JSON.stringify(englishUnits, null, 2)}\n`, 'utf8');
+  const externalInputPath = path.join(tempDirectory, 'english-units-external.json');
+  fs.writeFileSync(externalInputPath, `${JSON.stringify({
+    ...englishUnits,
+    sourceVersion: 'external-english-units-v1',
+  }, null, 2)}\n`, 'utf8');
 
   const manifest = normalizeBatchManifest({
     schemaVersion: 1,
@@ -161,6 +166,36 @@ try {
     path: 'english-units.json',
     sourceKind: 'external-source',
     reason: 'input-source-version-current',
+  }]);
+
+  const unreferencedEvidenceReport = buildContentSourceInputBatchAudit({
+    manifest: normalizeBatchManifest({
+      schemaVersion: 1,
+      sourceVersion: 'external-english-units-v1',
+      sourceKind: 'external-source',
+      batches: [{
+        id: 'english-units-v1.11',
+        path: 'english-units-external.json',
+        sourceKind: 'external-source',
+        sourceEvidence: {
+          sourceKeys: ['unlinked-source-key'],
+          sourceUrls: ['https://www.pep.com.cn/xw/zt/hd/12/xjcjs/cz/202510/t20251024_2004130.html'],
+          reviewedAt: '2026-08-10',
+          note: '来源键未被实体复核记录引用',
+        },
+      }],
+    }),
+    baseDirectory: tempDirectory,
+    currentCatalog: source,
+    requireExternalSource: true,
+  });
+  assert.strictEqual(unreferencedEvidenceReport.status, 'blocked');
+  assert.deepStrictEqual(unreferencedEvidenceReport.requirements.externalSourceIssues, [{
+    id: 'english-units-v1.11',
+    path: 'english-units-external.json',
+    sourceKind: 'external-source',
+    reason: 'source-evidence-key-unreferenced',
+    sourceKeys: ['unlinked-source-key'],
   }]);
 
   const missingEvidenceReport = buildContentSourceInputBatchAudit({

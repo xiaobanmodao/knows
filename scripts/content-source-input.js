@@ -44,6 +44,11 @@ function normalizeSourceKeys(value, index) {
   return [...new Set(sourceKeys.map((sourceKey) => requireText(sourceKey, 'sourceKeys', index)))].sort();
 }
 
+function collectInputSourceKeys(input) {
+  if (!input || !Array.isArray(input.entities)) return [];
+  return [...new Set(input.entities.flatMap((entity) => entity.review.sourceKeys))].sort();
+}
+
 function normalizeReview(record, index) {
   const review = record.review && typeof record.review === 'object'
     ? record.review
@@ -277,6 +282,7 @@ module.exports = {
   hashSourceInput,
   loadSourceInputFile,
   normalizeSourceInput,
+  collectInputSourceKeys,
   parseCsv,
   checkSourceInput,
 };
