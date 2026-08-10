@@ -80,9 +80,9 @@
 | `chem-k-lab-operations` | flow | 取用、连接、检查、加热与整理操作顺序 |
 | `chem-k-lab-inquiry` | flow | 问题、假设、方案、记录与结论边界 |
 | `chem-k-air-composition` | hierarchy | 空气、主要成分与空气质量关注点 |
-| `chem-k-oxygen-properties` | compare | 氧气的物理性质、化学性质与用途联系 |
+| `chem-k-oxygen-properties` | hierarchy | 氧气的物理性质、化学性质与用途安全联系 |
 | `chem-k-oxygen-preparation` | flow | 反应装置、气密性、收集、检验与记录 |
-| `chem-k-combustion-catalyst` | compare | 燃烧、缓慢氧化与催化剂作用条件 |
+| `chem-k-combustion-catalyst` | hierarchy | 氧化、燃烧、缓慢氧化与催化剂的关系 |
 | `chem-k-water-composition` | flow | 水的组成认识、实验现象与氢气检验 |
 | `chem-k-water-purification` | flow | 沉降、过滤、吸附、消毒和软化的作用边界 |
 | `chem-k-dissolution-solubility` | flow | 溶解、饱和、温度影响与溶解度读图 |
@@ -91,7 +91,7 @@
 | `chem-k-atomic-structure` | hierarchy | 原子核、质子、中子、核外电子与相对质量 |
 | `chem-k-elements-periodic-table` | hierarchy | 元素、元素符号、类别与周期表信息 |
 | `chem-k-formula-valence` | flow | 识别化合价、确定比值、书写与检查化学式 |
-| `chem-k-symbols-formulas` | compare | 元素符号、化学式、化学计量数和数字含义 |
+| `chem-k-symbols-formulas` | hierarchy | 化学用语中符号、式和数字的含义 |
 | `chem-k-mass-conservation` | flow | 反应前、反应中、反应后与守恒解释 |
 | `chem-k-equations` | flow | 写出反应、配平、标注条件、检查守恒 |
 | `chem-k-stoichiometry` | flow | 读题、写方程式、列比例、计算与单位核对 |
@@ -111,14 +111,14 @@
 | `chem-k-ion-reactions` | flow | 判断反应物、生成物条件、离子检验和结论 |
 | `chem-k-fertilizers` | hierarchy | 氮磷钾肥、复合肥、施用依据和环境影响 |
 | `chem-k-substance-classification` | hierarchy | 单质、化合物、氧化物、酸碱盐和转化线索 |
-| `chem-k-organic-basics` | compare | 有机物、无机物和有机高分子的基本特征 |
-| `chem-k-materials` | compare | 天然、合成和复合材料的性质选择 |
+| `chem-k-organic-basics` | hierarchy | 有机物、无机物和有机高分子的分类关系 |
+| `chem-k-materials` | hierarchy | 天然、合成和复合材料的分类与选择 |
 | `chem-k-chemical-health` | flow | 元素、营养来源、均衡摄入与健康判断 |
 | `chem-k-resources-environment` | cycle | 资源利用、污染防治、回收与绿色化学的持续关联 |
 
 ## 页面、组件与兼容层
 
-新增主包公共组件 `components/structured-visual-guide/`，只接收已经预处理的 `guide`：
+新增主包公共组件 `components/structured-visual-guide/`，接收已经预处理的 `guide` 和现有 `readingPreferences`：
 
 - 默认单列显示编号、标签和说明；`flow` 的非末项显示方向连接符。
 - `compare` 通过预处理后的 `compareColumns.left`、`compareColumns.right` 形成两个明确列容器，不能依赖稀疏数据的自动排版。
@@ -132,7 +132,7 @@
 prepareStructuredVisualGuide(guide) => preparedGuide | null
 ```
 
-它深拷贝输入，并补充 `displayIndex`、`isLast`、`isSequential`、`isCycle`、`isCompare`、`compareColumns`、`cycleHint` 等仅供界面渲染的字段。现有 `packages/biology/pages/knowledge/visual-guide.js` 保留 `prepareVisualGuide` 兼容导出，并转调此通用函数；既有生物知识点、路由和页面访问结果不变。
+它深拷贝输入，并补充 `displayIndex`、`isLast`、`isSequential`、`isCycle`、`isCompare`、`compareColumns`、`cycleHint` 等仅供界面渲染的字段。组件内部沿用 `buildReadingDisplayClass(readingPreferences)`，使字号和行距设置继续生效。现有 `packages/biology/pages/knowledge/visual-guide.js` 保留 `prepareVisualGuide` 兼容导出，并转调此通用函数；既有生物知识点、路由和页面访问结果不变。
 
 化学知识页的顺序固定为：标题与核心知识 → **结构化关键图解** → 现有封面图及其失败降级 → 核心解释与其他内容。缺少图解的异常数据只跳过该区块，不阻塞整页；构建期 40/40 覆盖检查会阻止正式内容遗漏。
 
