@@ -62,13 +62,19 @@ function buildContentSourceBlocker(report, reportPath, reportFresh) {
   if (report.status === 'ready') return null;
   const summary = report.summary || {};
   const nextBatchId = summary.nextBatchId || '(暂无)';
+  const nextBatch = Array.isArray(report.batches)
+    ? report.batches.find((batch) => batch && batch.id === summary.nextBatchId)
+    : null;
+  const evidenceNote = nextBatch && nextBatch.sourceRequirements && nextBatch.sourceRequirements.note
+    ? `：${nextBatch.sourceRequirements.note}`
+    : '';
   return {
     id: 'content-source-follow-up',
     priority: 'P1',
     message: `内容源跟进未 ready：${report.status || 'unknown'}；下一批次 ${nextBatchId}`,
     nextActions: summary.nextBatchId ? [{
       id: 'process-content-source-batch',
-      instruction: `处理内容源批次 ${summary.nextBatchId}，补齐外部来源凭证并重新生成报告。`,
+      instruction: `处理内容源批次 ${summary.nextBatchId}${evidenceNote}；补齐外部来源凭证并重新生成报告。`,
     }] : [],
   };
 }

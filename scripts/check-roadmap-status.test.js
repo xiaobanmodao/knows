@@ -60,6 +60,10 @@ const blocked = buildRoadmapStatus({
   contentSourceFollowUp: {
     status: 'blocked',
     summary: { total: 23, ready: 0, blocked: 23, pending: 22, changed: 0, failed: 0, nextBatchId: 'english-units-v1.11' },
+    batches: [{
+      id: 'english-units-v1.11',
+      sourceRequirements: { note: '需要官方单元目录和来源定位' },
+    }],
   },
   contentSourceReportPath: '/tmp/content-source-follow-up.json',
 });
@@ -70,6 +74,7 @@ assert.strictEqual(blocked.blockers[1].priority, 'P1');
 assert.ok(blocked.blockers[0].nextActions.some((item) => /权限/.test(item.instruction)));
 assert.match(formatRoadmapStatus(blocked), /41002/);
 assert.match(formatRoadmapStatus(blocked), /english-units-v1\.11/);
+assert.ok(blocked.blockers[1].nextActions.some((item) => /需要官方单元目录和来源定位/.test(item.instruction)));
 
 const missing = buildRoadmapStatus({
   releaseToolStatePath: '/tmp/missing-tool-state.json',

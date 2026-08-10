@@ -47,6 +47,17 @@ try {
   assert.strictEqual(englishWordsBatch.reason, 'manifest-missing');
   assert.strictEqual(englishWordsBatch.inputHash, null);
 
+  const mathChaptersBatch = report.batches.find((batch) => batch.id === 'math-chapters-v1.11');
+  assert.strictEqual(mathChaptersBatch.sourceRequirements.evidenceStatus, 'needs-official-volume-map');
+  assert.deepStrictEqual(mathChaptersBatch.sourceRequirements.requiredFields, [
+    '教材版本与册次',
+    '官方章序和章标题',
+    '官方小节清单',
+    '来源定位与复核日期',
+  ]);
+  assert.ok(mathChaptersBatch.sourceRequirements.sourceCandidates.some((source) => source.key === 'moe-textbook-catalog-2024'));
+  assert.match(mathChaptersBatch.sourceRequirements.note, /逐册|官方完整目录/);
+
   const allowFixtureReport = buildContentSourceFollowUpReport({
     manifest: normalizeBatchManifest(manifest),
     baseDirectory: directory,

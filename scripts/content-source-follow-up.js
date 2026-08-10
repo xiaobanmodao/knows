@@ -20,6 +20,61 @@ const STATUS_ORDER = {
   passed: 4,
 };
 
+const SOURCE_CANDIDATES = Object.freeze({
+  math: [
+    { key: 'moe-math-curriculum-2022', title: '义务教育数学课程标准（2022年版）', url: 'https://www.moe.gov.cn/srcsite/A26/s8001/202204/W020220420582346895190.pdf' },
+    { key: 'moe-textbook-catalog-2024', title: '2024年义务教育国家课程教学用书目录', url: 'https://www.moe.gov.cn/srcsite/A26/s8001/202408/W020250418502592948423.pdf' },
+    { key: 'pep-math-new-textbook-2024', title: '人教版义务教育数学（七至九年级）新教材介绍', url: 'https://www.pep.com.cn/xw/zt/hd/12/xjcjs/cz/202408/t20240826_1994351.html' },
+  ],
+  english: [
+    { key: 'moe-english-curriculum-2022', title: '义务教育英语课程标准（2022年版）', url: 'https://www.moe.gov.cn/srcsite/A26/s8001/202204/t20220420_619921.html' },
+    { key: 'pep-english-new-textbook-2025', title: '人教版义务教育英语（七至九年级）新教材介绍', url: 'https://www.pep.com.cn/xw/zt/hd/12/xjcjs/cz/202510/t20251024_2004130.html' },
+  ],
+  physics: [
+    { key: 'moe-physics-2022', title: '义务教育物理课程标准（2022年版）', url: 'https://www.moe.gov.cn/srcsite/A26/s8001/202204/t20220420_619921.html' },
+    { key: 'pep-physics-public', title: '人教版初中物理新教材介绍', url: 'https://www.pep.com.cn/xw/zt/hd/12/xjcjs/cz/202409/t20240925_1995627.html' },
+  ],
+  chemistry: [
+    { key: 'moe-chemistry-2022', title: '义务教育化学课程标准（2022年版）', url: 'https://www.moe.gov.cn/srcsite/A26/s8001/202204/t20220420_619921.html' },
+    { key: 'moe-textbook-catalog-2024', title: '2024年义务教育国家课程教学用书目录', url: 'https://www.moe.gov.cn/srcsite/A26/s8001/202408/W020250418502592948423.pdf' },
+    { key: 'pep-chemistry-training-2024', title: '人教版义务教育化学新教材培训通知', url: 'https://www.pep.com.cn/rjdt/rjdt/202405/t20240517_1992181.shtml' },
+  ],
+  biology: [
+    { key: 'moe-biology-curriculum-2022', title: '义务教育生物学课程标准（2022年版）', url: 'https://www.moe.gov.cn/srcsite/A26/s8001/202204/W020220420582359998122.pdf' },
+    { key: 'pep-compulsory-biology-textbook', title: '人教版义务教育生物学（七至八年级）新教材介绍', url: 'https://www.pep.com.cn/xw/zt/hd/12/xjcjs/cz/202409/t20240914_1995532.html' },
+  ],
+});
+
+const REQUIRED_FIELDS_BY_TYPE = Object.freeze({
+  chapter: ['教材版本与册次', '官方章序和章标题', '官方小节清单', '来源定位与复核日期'],
+  unit: ['教材版本与册次', '官方单元序号和单元标题', '单元范围与父级关系', '来源定位与复核日期'],
+  theme: ['课标主题边界', '主题标题和父级关系', '知识/方法引用范围', '来源定位与复核日期'],
+  topic: ['专题标题和适用范围', '知识点/方法模板引用', '搜索与资源范围', '来源定位与复核日期'],
+  knowledge: ['知识点标题和父级关系', '核心字段与示例统计', '来源定位与复核日期'],
+  word: ['词条、词性与单元归属', '词形/搭配/例句统计', '来源定位与复核日期'],
+  grammar: ['语法点与单元归属', '结构变式/例句统计', '来源定位与复核日期'],
+  'structured-knowledge': ['知识点父级关系', '公式/单位/实验字段', '来源定位与复核日期'],
+  template: ['方法名称和适用条件', '步骤/示例/图示范围', '来源定位与复核日期'],
+  'structured-template': ['方法名称和适用条件', '公式/单位/方向/实验图示', '来源定位与复核日期'],
+});
+
+const MATH_CHAPTER_REQUIREMENT = Object.freeze({
+  evidenceStatus: 'needs-official-volume-map',
+  note: '当前官方公开资料能确认课程范围和结构变化，但尚不足以逐项证明 29 个稳定章节对应新版原始册次、章号和完整标题；需要逐册官方完整目录后再接入。',
+  blockedActions: ['重排章节显示顺序', '批量修改章号', '猜测或创建新版章节标题'],
+});
+
+function getSourceRequirements(subjectId, type) {
+  const special = subjectId === 'math' && type === 'chapter' ? MATH_CHAPTER_REQUIREMENT : null;
+  return {
+    evidenceStatus: special ? special.evidenceStatus : 'source-evidence-required',
+    sourceCandidates: (SOURCE_CANDIDATES[subjectId] || []).map((source) => ({ ...source })),
+    requiredFields: [...(REQUIRED_FIELDS_BY_TYPE[type] || ['批次范围、来源定位与复核日期'])],
+    note: special ? special.note : '接入前需保留与本批范围一致的官方来源、字段定位和人工复核日期。',
+    blockedActions: special ? [...special.blockedActions] : [],
+  };
+}
+
 function hashManifest(manifest) {
   return crypto.createHash('sha256').update(JSON.stringify({
     schemaVersion: manifest.schemaVersion,
@@ -107,6 +162,7 @@ function buildContentSourceFollowUpReport({
       importedSourceHash: batch.importedSourceHash || null,
       currentSourceHash: batch.currentSourceHash || null,
       review: batch.review || null,
+      sourceRequirements: getSourceRequirements(batch.subjectId, batch.type),
       expected: definition ? {
         entities: definition.expectedCount,
         examples: definition.expectedExampleCount,
