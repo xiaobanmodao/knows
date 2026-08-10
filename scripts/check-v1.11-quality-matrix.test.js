@@ -87,6 +87,7 @@ assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-detail-p
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-catalog-page-fallbacks.test.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-package-source-estimate.test.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-package-source-estimate.js'));
+assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-search-aliases-package-boundary.test.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-privacy-interfaces.test.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-privacy-interfaces.js'));
 [
