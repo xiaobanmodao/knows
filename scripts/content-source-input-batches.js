@@ -29,6 +29,51 @@ function normalizeSourceKind(value) {
   return sourceKind;
 }
 
+function normalizeEvidenceSourceKeys(value, index) {
+  const sourceKeys = Array.isArray(value)
+    ? value
+    : typeof value === 'string'
+      ? value.split(/[|,]/)
+      : [];
+  return [...new Set(sourceKeys.map((sourceKey) => requireText(sourceKey, 'sourceEvidence.sourceKeys', index)))].sort();
+}
+
+function normalizeSourceEvidence(value, index) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new Error(`内容源输入批次 manifest 第 ${index + 1} 项 sourceEvidence 无效`);
+  }
+  const sourceKeys = normalizeEvidenceSourceKeys(value.sourceKeys, index);
+  if (!sourceKeys.length) {
+    throw new Error(`内容源输入批次 manifest 第 ${index + 1} 项 sourceEvidence.sourceKeys 不能为空`);
+  }
+  const sourceUrls = value.sourceUrls === undefined ? [] : value.sourceUrls;
+  if (!Array.isArray(sourceUrls)) {
+    throw new Error(`内容源输入批次 manifest 第 ${index + 1} 项 sourceEvidence.sourceUrls 必须为数组`);
+  }
+  const normalizedUrls = [...new Set(sourceUrls.map((sourceUrl) => requireText(sourceUrl, 'sourceEvidence.sourceUrls', index)))].sort();
+  normalizedUrls.forEach((sourceUrl) => {
+    let parsed;
+    try {
+      parsed = new URL(sourceUrl);
+    } catch (error) {
+      throw new Error(`内容源输入批次 manifest 第 ${index + 1} 项 sourceEvidence.sourceUrls 无效：${sourceUrl}`);
+    }
+    if (!['http:', 'https:'].includes(parsed.protocol)) {
+      throw new Error(`内容源输入批次 manifest 第 ${index + 1} 项 sourceEvidence.sourceUrls 必须使用 http/https：${sourceUrl}`);
+    }
+  });
+  const reviewedAt = requireText(value.reviewedAt, 'sourceEvidence.reviewedAt', index);
+  if (Number.isNaN(Date.parse(reviewedAt))) {
+    throw new Error(`内容源输入批次 manifest 第 ${index + 1} 项 sourceEvidence.reviewedAt 无效：${reviewedAt}`);
+  }
+  return {
+    sourceKeys,
+    sourceUrls: normalizedUrls,
+    reviewedAt,
+    note: requireText(value.note, 'sourceEvidence.note', index),
+  };
+}
+
 function normalizeBatchManifest(input) {
   if (!input || typeof input !== 'object' || Array.isArray(input)) {
     throw new Error('内容源输入批次 manifest 根对象无效');
@@ -56,7 +101,15 @@ function normalizeBatchManifest(input) {
       throw new Error(`内容源输入批次 manifest 路径必须为相对路径：${inputPath}`);
     }
     const sourceKind = normalizeSourceKind(entry.sourceKind === undefined ? input.sourceKind : entry.sourceKind);
-    return { id, path: inputPath, sourceKind };
+    const sourceEvidence = entry.sourceEvidence === undefined
+      ? null
+      : normalizeSourceEvidence(entry.sourceEvidence, index);
+    return {
+      id,
+      path: inputPath,
+      sourceKind,
+      ...(sourceEvidence ? { sourceEvidence } : {}),
+    };
   });
 
   return {
@@ -83,6 +136,7 @@ function buildPendingResult(entry, reason) {
     type: batch.type,
     path: entry.path || null,
     sourceKind: entry.sourceKind || 'unknown',
+    sourceEvidence: entry.sourceEvidence || null,
     status: 'pending',
     reason,
   };
@@ -129,6 +183,7 @@ function auditBatchInput(entry, baseDirectory, currentCatalog, sourceVersion) {
       type: batch.type,
       path: relativePath,
       sourceKind: entry.sourceKind,
+      sourceEvidence: entry.sourceEvidence || null,
       status: report.status,
       inputSourceVersion: input.sourceVersion,
       inputHash: report.inputHash,
@@ -170,12 +225,14 @@ function buildContentSourceInputBatchAudit({
   }
   const externalSourceIssues = requireExternalSource
     ? entries
-      .filter((entry) => entry.sourceKind !== 'external-source')
+      .filter((entry) => entry.sourceKind !== 'external-source' || !entry.sourceEvidence)
       .map((entry) => ({
         id: entry.id,
         path: entry.path || null,
         sourceKind: entry.sourceKind || 'unknown',
-        reason: 'source-kind-not-external',
+        reason: entry.sourceKind !== 'external-source'
+          ? 'source-kind-not-external'
+          : 'source-evidence-missing',
       }))
     : [];
 

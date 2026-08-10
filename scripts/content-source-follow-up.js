@@ -94,6 +94,7 @@ function buildContentSourceFollowUpReport({
       type: batch.type,
       path: batch.path || null,
       sourceKind: batch.sourceKind || 'unknown',
+      sourceEvidence: batch.sourceEvidence || null,
       status: batch.status,
       priority: getPriority(batch, action),
       action,

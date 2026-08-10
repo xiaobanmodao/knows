@@ -69,12 +69,19 @@ try {
   });
 
   const externalManifestPath = path.join(tempDirectory, 'external-manifest.json');
+  const sourceEvidence = {
+    sourceKeys: ['contract-external-source'],
+    sourceUrls: ['https://example.com/contract-source'],
+    reviewedAt: '2026-08-10',
+    note: '契约测试中的外部来源凭证',
+  };
   fs.writeFileSync(externalManifestPath, `${JSON.stringify({
     ...result.manifest,
     sourceKind: 'external-source',
     batches: result.manifest.batches.map((batch) => ({
       ...batch,
       sourceKind: 'external-source',
+      sourceEvidence,
     })),
   }, null, 2)}\n`, 'utf8');
   const externalAuditResult = spawnSync(process.execPath, [

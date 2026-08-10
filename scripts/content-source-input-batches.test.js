@@ -133,6 +133,25 @@ try {
     sourceKind: 'current-fixture',
     reason: 'source-kind-not-external',
   }]);
+
+  const missingEvidenceReport = buildContentSourceInputBatchAudit({
+    manifest: normalizeBatchManifest({
+      schemaVersion: 1,
+      sourceVersion: 'missing-evidence-fixture-v1',
+      sourceKind: 'external-source',
+      batches: [{ id: 'english-units-v1.11', path: 'english-units.json', sourceKind: 'external-source' }],
+    }),
+    baseDirectory: tempDirectory,
+    currentCatalog: source,
+    requireExternalSource: true,
+  });
+  assert.strictEqual(missingEvidenceReport.status, 'blocked');
+  assert.deepStrictEqual(missingEvidenceReport.requirements.externalSourceIssues, [{
+    id: 'english-units-v1.11',
+    path: 'english-units.json',
+    sourceKind: 'external-source',
+    reason: 'source-evidence-missing',
+  }]);
   const currentFixtureManifestPath = path.join(tempDirectory, 'current-fixture-manifest.json');
   const externalGateReportPath = path.join(tempDirectory, 'external-gate-report.json');
   fs.writeFileSync(currentFixtureManifestPath, `${JSON.stringify(currentFixtureManifest, null, 2)}\n`, 'utf8');
