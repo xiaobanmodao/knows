@@ -19,6 +19,7 @@ const ALLOWED_RECORD_FIELDS = new Set([
   'title',
   'revisionMarker',
   'directoryChapterRange',
+  'directoryChapters',
   'directoryPreviewPages',
   'previewPageUrlTemplate',
 ]);
@@ -40,6 +41,42 @@ function checkUrl(value, field, pattern) {
   return url;
 }
 
+function parseChapterRange(value, field) {
+  const match = /^(\d+)-(\d+)$/.exec(requireText(value, field));
+  if (!match || Number(match[1]) > Number(match[2])) fail(`${field} 必须是递增的“起始章-结束章”`);
+  return { start: Number(match[1]), end: Number(match[2]) };
+}
+
+function checkDirectoryChapters(record, index, previewPages) {
+  const field = `第 ${index + 1} 册 directoryChapters`;
+  const range = parseChapterRange(record.directoryChapterRange, `第 ${index + 1} 册 directoryChapterRange`);
+  if (!Array.isArray(record.directoryChapters) || !record.directoryChapters.length) {
+    fail(`${field} 必须为非空数组`);
+  }
+  const expectedCount = range.end - range.start + 1;
+  if (record.directoryChapters.length !== expectedCount) {
+    fail(`${field} 数量必须为 ${expectedCount}`);
+  }
+  record.directoryChapters.forEach((chapter, chapterIndex) => {
+    if (!chapter || typeof chapter !== 'object' || Array.isArray(chapter)) {
+      fail(`${field}[${chapterIndex}] 必须为对象`);
+    }
+    const unknownFields = Object.keys(chapter).filter((key) => !['number', 'title', 'sourcePages'].includes(key));
+    if (unknownFields.length) fail(`${field}[${chapterIndex}] 包含未知字段：${unknownFields.join(',')}`);
+    if (!Number.isInteger(chapter.number) || chapter.number !== range.start + chapterIndex) {
+      fail(`${field}[${chapterIndex}].number 必须按目录范围连续`);
+    }
+    requireText(chapter.title, `${field}[${chapterIndex}].title`);
+    if (!Array.isArray(chapter.sourcePages) || !chapter.sourcePages.length) {
+      fail(`${field}[${chapterIndex}].sourcePages 必须为非空数组`);
+    }
+    if (chapter.sourcePages.some((page) => !previewPages.includes(page))) {
+      fail(`${field}[${chapterIndex}].sourcePages 必须落在 directoryPreviewPages 内`);
+    }
+  });
+  return record.directoryChapters.length;
+}
+
 function checkRecord(record, index) {
   if (!record || typeof record !== 'object' || Array.isArray(record)) fail(`第 ${index + 1} 册记录无效`);
   Object.keys(record).forEach((field) => {
@@ -53,7 +90,6 @@ function checkRecord(record, index) {
   if (!['2022-revised', 'unmarked-edition'].includes(revisionMarker)) {
     fail(`第 ${index + 1} 册 revisionMarker 无效：${revisionMarker}`);
   }
-  requireText(record.directoryChapterRange, `第 ${index + 1} 册 directoryChapterRange`);
   if (!Array.isArray(record.directoryPreviewPages) || !record.directoryPreviewPages.length) {
     fail(`第 ${index + 1} 册 directoryPreviewPages 必须为非空数组`);
   }
@@ -62,7 +98,8 @@ function checkRecord(record, index) {
   }
   const previewUrl = checkUrl(record.previewPageUrlTemplate, `第 ${index + 1} 册 previewPageUrlTemplate`, PREVIEW_ENDPOINT);
   if (!previewUrl.includes('{page}')) fail(`第 ${index + 1} 册预览 URL 缺少 {page} 占位符`);
-  return { grade, volume, resourceId: record.resourceId, revisionMarker };
+  const directoryObservationCount = checkDirectoryChapters(record, index, record.directoryPreviewPages);
+  return { grade, volume, resourceId: record.resourceId, revisionMarker, directoryObservationCount };
 }
 
 function readInput(inputPath) {
@@ -110,15 +147,16 @@ function checkEvidence(input) {
   if (records.filter((record) => record.revisionMarker === 'unmarked-edition').length !== 4) {
     fail('unmarked-edition 资源数量必须为 4');
   }
+  const directoryObservationCount = records.reduce((total, record) => total + record.directoryObservationCount, 0);
   const decision = input.reviewDecision;
   if (!decision || decision.catalogStatus !== 'official-records-found') fail('catalogStatus 必须声明官方资源已获取');
   if (decision.volumeMapStatus !== 'blocked-version-inconsistent') fail('volumeMapStatus 必须保留版本不一致阻塞');
-  return records;
+  return { records, directoryObservationCount };
 }
 
 function main() {
-  const records = checkEvidence(readInput(process.argv[2]));
-  console.log(`OK math SmartEdu catalog evidence: ${records.length} volumes; version gate blocked`);
+  const result = checkEvidence(readInput(process.argv[2]));
+  console.log(`OK math SmartEdu catalog evidence: ${result.records.length} volumes, ${result.directoryObservationCount} directory observations; version gate blocked`);
 }
 
 try {

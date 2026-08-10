@@ -21,7 +21,16 @@ try {
   fs.copyFileSync(source, tempSource);
   const valid = run(tempSource);
   assert.strictEqual(valid.status, 0, valid.stderr || valid.stdout);
-  assert.match(valid.stdout, /OK math SmartEdu catalog evidence: 6 volumes/);
+  assert.match(valid.stdout, /OK math SmartEdu catalog evidence: 6 volumes, 31 directory observations/);
+
+  const missingDirectoryObservation = JSON.parse(fs.readFileSync(tempSource, 'utf8'));
+  delete missingDirectoryObservation.resourceRecords[0].directoryChapters;
+  fs.writeFileSync(tempSource, `${JSON.stringify(missingDirectoryObservation, null, 2)}\n`, 'utf8');
+  const missingDirectory = run(tempSource);
+  assert.notStrictEqual(missingDirectory.status, 0);
+  assert.match(`${missingDirectory.stdout}\n${missingDirectory.stderr}`, /directoryChapters/);
+
+  fs.copyFileSync(source, tempSource);
 
   const tampered = JSON.parse(fs.readFileSync(tempSource, 'utf8'));
   tampered.resourceRecords[0].resourceId = tampered.resourceRecords[1].resourceId;

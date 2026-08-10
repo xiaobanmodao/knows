@@ -24,6 +24,14 @@
       "title": "（根据2022年版课程标准修订）义务教育教科书·数学七年级上册",
       "revisionMarker": "2022-revised",
       "directoryChapterRange": "1-6",
+      "directoryChapters": [
+        { "number": 1, "title": "有理数", "sourcePages": [5] },
+        { "number": 2, "title": "有理数的运算", "sourcePages": [5] },
+        { "number": 3, "title": "代数式", "sourcePages": [6] },
+        { "number": 4, "title": "整式的加减", "sourcePages": [6] },
+        { "number": 5, "title": "一元一次方程", "sourcePages": [6] },
+        { "number": 6, "title": "几何图形初步", "sourcePages": [7] }
+      ],
       "directoryPreviewPages": [5, 6, 7],
       "previewPageUrlTemplate": "https://r3-ndr.ykt.cbern.com.cn/edu_product/esp/assets/assets_document.t/zh-CN/1750313459212/transcode/image/{page}.jpg"
     },
@@ -34,6 +42,14 @@
       "title": "（根据2022年版课程标准修订）义务教育教科书·数学七年级下册",
       "revisionMarker": "2022-revised",
       "directoryChapterRange": "7-12",
+      "directoryChapters": [
+        { "number": 7, "title": "相交线与平行线", "sourcePages": [5] },
+        { "number": 8, "title": "实数", "sourcePages": [5] },
+        { "number": 9, "title": "平面直角坐标系", "sourcePages": [6] },
+        { "number": 10, "title": "二元一次方程组", "sourcePages": [6] },
+        { "number": 11, "title": "不等式与不等式组", "sourcePages": [7] },
+        { "number": 12, "title": "数据的收集、整理与描述", "sourcePages": [7] }
+      ],
       "directoryPreviewPages": [5, 6, 7],
       "previewPageUrlTemplate": "https://r2-ndr.ykt.cbern.com.cn/edu_product/esp/assets/81d65033-4cb1-4cf0-ae27-8c367c537c30.t/zh-CN/1750314808424/transcode/image/{page}.jpg"
     },
@@ -44,6 +60,13 @@
       "title": "义务教育教科书·数学八年级上册",
       "revisionMarker": "unmarked-edition",
       "directoryChapterRange": "11-15",
+      "directoryChapters": [
+        { "number": 11, "title": "三角形", "sourcePages": [5] },
+        { "number": 12, "title": "全等三角形", "sourcePages": [5] },
+        { "number": 13, "title": "轴对称", "sourcePages": [6] },
+        { "number": 14, "title": "整式的乘法与因式分解", "sourcePages": [6] },
+        { "number": 15, "title": "分式", "sourcePages": [7] }
+      ],
       "directoryPreviewPages": [5, 6, 7],
       "previewPageUrlTemplate": "https://r2-ndr.ykt.cbern.com.cn/edu_product/esp/assets/assets_document.t/zh-CN/1725006572412/transcode/image/{page}.jpg"
     },
@@ -54,6 +77,13 @@
       "title": "义务教育教科书·数学八年级下册",
       "revisionMarker": "unmarked-edition",
       "directoryChapterRange": "16-20",
+      "directoryChapters": [
+        { "number": 16, "title": "二次根式", "sourcePages": [5] },
+        { "number": 17, "title": "勾股定理", "sourcePages": [5] },
+        { "number": 18, "title": "平行四边形", "sourcePages": [6] },
+        { "number": 19, "title": "一次函数", "sourcePages": [6] },
+        { "number": 20, "title": "数据的分析", "sourcePages": [7] }
+      ],
       "directoryPreviewPages": [5, 6, 7],
       "previewPageUrlTemplate": "https://r2-ndr.ykt.cbern.com.cn/edu_product/esp/assets/e91a6f80-2a9a-4452-a47e-b9ec164156ff.t/zh-CN/1737863675082/transcode/image/{page}.jpg"
     },
@@ -64,6 +94,13 @@
       "title": "义务教育教科书·数学九年级上册",
       "revisionMarker": "unmarked-edition",
       "directoryChapterRange": "21-25",
+      "directoryChapters": [
+        { "number": 21, "title": "一元二次方程", "sourcePages": [5] },
+        { "number": 22, "title": "二次函数", "sourcePages": [5] },
+        { "number": 23, "title": "旋转", "sourcePages": [6] },
+        { "number": 24, "title": "圆", "sourcePages": [6] },
+        { "number": 25, "title": "概率初步", "sourcePages": [7] }
+      ],
       "directoryPreviewPages": [5, 6, 7],
       "previewPageUrlTemplate": "https://r3-ndr.ykt.cbern.com.cn/edu_product/esp/assets/assets_document.t/zh-CN/1725006575610/transcode/image/{page}.jpg"
     },
@@ -74,6 +111,12 @@
       "title": "义务教育教科书·数学九年级下册",
       "revisionMarker": "unmarked-edition",
       "directoryChapterRange": "26-29",
+      "directoryChapters": [
+        { "number": 26, "title": "反比例函数", "sourcePages": [5] },
+        { "number": 27, "title": "相似", "sourcePages": [5] },
+        { "number": 28, "title": "锐角三角函数", "sourcePages": [6] },
+        { "number": 29, "title": "投影与视图", "sourcePages": [6] }
+      ],
       "directoryPreviewPages": [5, 6],
       "previewPageUrlTemplate": "https://r1-ndr.ykt.cbern.com.cn/edu_product/esp/assets/ab188631-292c-455e-8082-e09a0ab4001c.t/zh-CN/1737863675819/transcode/image/{page}.jpg"
     }
