@@ -23,6 +23,7 @@
 {
   status: 'passed',
   clipboard: { readCalls: 0, writeCalls: 8, writesByFile: {}, allowedFiles: [] },
+  cloud: { userTraceCalls: 0, userTraceFiles: {} },
   file: {
     calls: 2,
     callsByApi: {
@@ -45,6 +46,10 @@
 
 审计器扫描运行时 JavaScript 时，若发现文件接口出现在未登记文件、调用次数改变或出现未登记的文件接口，返回确定性错误码。Clipboard 的既有规则和输出保持不变。
 
+## 云开发用户追踪
+
+小程序仍使用云开发为知识图片生成临时链接，但不需要记录访问用户。`app.js` 中的 `wx.cloud.init` 显式设置 `traceUser: false`；`cloudfunctions/getImageTempUrls` 只接收知识图片 `fileIDs` 并返回临时链接，不接收收藏、笔记、阅读位置或其他学习记录。隐私审计对 `traceUser: true` 返回 `cloud-user-trace-forbidden`，防止后续配置误开启用户访问记录。
+
 ## 隐私说明口径
 
 文件备份相关说明使用以下准确表述：
@@ -58,6 +63,8 @@
 - 真实路线工作树和冻结发布工作树的 `wx.chooseMessageFile`、`wx.shareFileMessage` 均为各 1 次；
 - 两个接口均只出现在 `utils/local-backup-file.js`；
 - 测试覆盖未登记文件、次数变化和未登记文件接口；
+- 测试覆盖 `traceUser: true` 的违规配置；
 - Clipboard 原有 8 次写入、0 次读取检查保持通过；
+- 云开发用户追踪为 0 次，且路线分支与发布热修复分支均通过；
 - v1.11 质量矩阵默认检查数量保持 92，只扩展现有隐私审计的覆盖范围；
 - 不把静态审计结果当作微信平台隐私审核结果。
