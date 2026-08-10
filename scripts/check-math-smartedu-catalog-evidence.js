@@ -159,11 +159,13 @@ function main() {
   console.log(`OK math SmartEdu catalog evidence: ${result.records.length} volumes, ${result.directoryObservationCount} directory observations; version gate blocked`);
 }
 
-try {
-  main();
-} catch (error) {
-  console.error(`FOUND_MATH_SMARTEDU_CATALOG_EVIDENCE_ISSUE\n${error.message}`);
-  process.exitCode = 1;
+if (require.main === module) {
+  try {
+    main();
+  } catch (error) {
+    console.error(`FOUND_MATH_SMARTEDU_CATALOG_EVIDENCE_ISSUE\n${error.message}`);
+    process.exitCode = 1;
+  }
 }
 
 module.exports = { checkEvidence };
