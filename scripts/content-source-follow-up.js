@@ -6,7 +6,7 @@ const {
 } = require('./content-source-input-batches');
 const { buildContentSourceCatalog } = require('./content-source-catalog');
 const { getContentSourceBatch } = require('./check-content-source-batches');
-const { getContentSourceCandidates } = require('../data/content-source-registry');
+const { getContentSourceCandidatesForSubject } = require('../data/content-source-registry');
 
 const SUBJECT_ORDER = ['math', 'english', 'physics', 'chemistry', 'biology'];
 const TYPE_ORDER = [
@@ -20,14 +20,6 @@ const STATUS_ORDER = {
   pending: 3,
   passed: 4,
 };
-
-const SOURCE_CANDIDATE_KEYS = Object.freeze({
-  math: ['moe-math-curriculum-2022', 'moe-textbook-catalog-2024', 'pep-math-new-textbook-2024'],
-  english: ['moe-english-curriculum-2022', 'pep-english-new-textbook-2025'],
-  physics: ['moe-physics-2022', 'pep-physics-public'],
-  chemistry: ['moe-chemistry-2022', 'moe-textbook-catalog-2024', 'pep-chemistry-training-2024'],
-  biology: ['moe-biology-curriculum-2022', 'pep-compulsory-biology-textbook'],
-});
 
 const REQUIRED_FIELDS_BY_TYPE = Object.freeze({
   chapter: ['教材版本与册次', '官方章序和章标题', '官方小节清单', '来源定位与复核日期'],
@@ -52,7 +44,7 @@ function getSourceRequirements(subjectId, type) {
   const special = subjectId === 'math' && type === 'chapter' ? MATH_CHAPTER_REQUIREMENT : null;
   return {
     evidenceStatus: special ? special.evidenceStatus : 'source-evidence-required',
-    sourceCandidates: getContentSourceCandidates(SOURCE_CANDIDATE_KEYS[subjectId] || []),
+    sourceCandidates: getContentSourceCandidatesForSubject(subjectId),
     requiredFields: [...(REQUIRED_FIELDS_BY_TYPE[type] || ['批次范围、来源定位与复核日期'])],
     note: special ? special.note : '接入前需保留与本批范围一致的官方来源、字段定位和人工复核日期。',
     blockedActions: special ? [...special.blockedActions] : [],

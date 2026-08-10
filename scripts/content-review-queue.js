@@ -1,7 +1,7 @@
 const crypto = require('crypto');
 
 const { collectAuditEntities } = require('./content-audit');
-const { getContentSourceCandidates } = require('../data/content-source-registry');
+const { getContentSourceCandidatesForSubject } = require('../data/content-source-registry');
 
 const SUBJECT_ORDER = ['math', 'english', 'physics'];
 const SUBJECT_RANK = Object.fromEntries(SUBJECT_ORDER.map((id, index) => [id, index]));
@@ -25,11 +25,6 @@ const PRIORITY_REASON = {
   1: '先复核容器边界、归属和入口，后续知识与方法内容才有稳定上下文。',
   2: '容器边界确认后复核方法适用条件、步骤、示例和图示。',
 };
-const SOURCE_CANDIDATE_KEYS = Object.freeze({
-  math: ['moe-math-curriculum-2022', 'pep-math-new-textbook-2024'],
-  english: ['moe-english-curriculum-2022', 'pep-english-new-textbook-2025'],
-  physics: ['moe-physics-2022', 'pep-physics-public'],
-});
 const EVIDENCE_BY_TYPE = {
   chapter: ['教材目录范围与章节顺序', '章节标题、摘要与稳定父级关系', '来源与人工复核记录'],
   unit: ['教材单元范围与单元顺序', '单元标题、摘要与稳定父级关系', '来源与人工复核记录'],
@@ -68,7 +63,7 @@ function buildItem(entity) {
     priority,
     priorityReason: PRIORITY_REASON[priority],
     searchKey: `${entity.subjectId}:${searchType(entity.type)}:${entity.id}`,
-    sourceCandidates: getContentSourceCandidates(SOURCE_CANDIDATE_KEYS[entity.subjectId] || []),
+    sourceCandidates: getContentSourceCandidatesForSubject(entity.subjectId),
     evidence: [...EVIDENCE_BY_TYPE[entity.type]],
   };
 }

@@ -4,7 +4,9 @@ const { collectAuditEntities, validateSourceReference } = require('./content-aud
 const {
   CONTENT_SOURCE_REGISTRY,
   getContentSource,
+  getContentSourceCandidateKeys,
   getContentSourceCandidates,
+  getContentSourceCandidatesForSubject,
   getContentSourceKeys,
   checkContentSourceRegistry,
 } = require('../data/content-source-registry');
@@ -27,6 +29,26 @@ const canonical = getContentSource('pep-english-new-textbook-2025');
 assert.strictEqual(canonical.url, 'https://www.pep.com.cn/xw/zt/hd/12/xjcjs/cz/202510/t20251024_2004130.html');
 assert.strictEqual(canonical.kind, 'official');
 assert.strictEqual(getContentSource('not-registered'), null);
+assert.deepStrictEqual(
+  getContentSourceCandidateKeys('math'),
+  ['moe-math-curriculum-2022', 'moe-textbook-catalog-2024', 'pep-math-new-textbook-2024'],
+);
+assert.deepStrictEqual(getContentSourceCandidateKeys('not-a-subject'), []);
+assert.deepStrictEqual(
+  getContentSourceCandidatesForSubject('physics'),
+  [
+    {
+      key: 'moe-physics-2022',
+      title: '义务教育物理课程标准（2022年版）',
+      url: 'https://www.moe.gov.cn/srcsite/A26/s8001/202204/t20220420_619921.html',
+    },
+    {
+      key: 'pep-physics-public',
+      title: '人教版初中物理新教材介绍',
+      url: 'https://www.pep.com.cn/xw/zt/hd/12/xjcjs/cz/202409/t20240925_1995627.html',
+    },
+  ],
+);
 assert.deepStrictEqual(
   getContentSourceCandidates(['moe-math-curriculum-2022', 'pep-math-new-textbook-2024']),
   [

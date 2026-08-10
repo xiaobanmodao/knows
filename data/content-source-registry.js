@@ -107,12 +107,26 @@ const CONTENT_SOURCE_REGISTRY = Object.freeze(
   Object.fromEntries(Object.entries(SOURCE_DEFINITIONS).map(([key, source]) => [key, Object.freeze({ key, ...source })])),
 );
 
+const CONTENT_SOURCE_CANDIDATE_KEYS_BY_SUBJECT = Object.freeze(
+  Object.fromEntries(Object.entries({
+    math: ['moe-math-curriculum-2022', 'moe-textbook-catalog-2024', 'pep-math-new-textbook-2024'],
+    english: ['moe-english-curriculum-2022', 'pep-english-new-textbook-2025'],
+    physics: ['moe-physics-2022', 'pep-physics-public'],
+    chemistry: ['moe-chemistry-2022', 'moe-textbook-catalog-2024', 'pep-chemistry-training-2024'],
+    biology: ['moe-biology-curriculum-2022', 'pep-compulsory-biology-textbook'],
+  }).map(([subjectId, keys]) => [subjectId, Object.freeze(keys)])),
+);
+
 function getContentSource(key) {
   return CONTENT_SOURCE_REGISTRY[key] || null;
 }
 
 function getContentSourceKeys() {
   return Object.keys(CONTENT_SOURCE_REGISTRY).sort();
+}
+
+function getContentSourceCandidateKeys(subjectId) {
+  return [...(CONTENT_SOURCE_CANDIDATE_KEYS_BY_SUBJECT[subjectId] || [])];
 }
 
 function getContentSourceCandidates(keys) {
@@ -128,6 +142,10 @@ function getContentSourceCandidates(keys) {
       url: source.url,
     };
   });
+}
+
+function getContentSourceCandidatesForSubject(subjectId) {
+  return getContentSourceCandidates(getContentSourceCandidateKeys(subjectId));
 }
 
 function isAllowedContentSourceUrl(source, url) {
@@ -157,14 +175,21 @@ function checkContentSourceRegistry() {
       throw new Error(`来源域名与来源类型不匹配：${key}/${hostname}`);
     }
   });
+  Object.entries(CONTENT_SOURCE_CANDIDATE_KEYS_BY_SUBJECT).forEach(([subjectId, candidateKeys]) => {
+    if (!candidateKeys.length) throw new Error(`学科来源候选不能为空：${subjectId}`);
+    getContentSourceCandidates(candidateKeys);
+  });
   return true;
 }
 
 module.exports = {
   CONTENT_SOURCE_REGISTRY,
+  CONTENT_SOURCE_CANDIDATE_KEYS_BY_SUBJECT,
   getContentSource,
+  getContentSourceCandidateKeys,
   getContentSourceKeys,
   getContentSourceCandidates,
+  getContentSourceCandidatesForSubject,
   isAllowedContentSourceUrl,
   checkContentSourceRegistry,
 };
