@@ -89,7 +89,8 @@
 ### 本次验证执行状态（2026-08-11）
 
 - 已执行并通过：`node scripts/check-biology-visual-guides.test.js`、`node scripts/check-biology-visual-guides.js`、`node scripts/check-biology-content.js`、`node scripts/build-content-audit.js`、`node scripts/check-content-audit.js --require-reviewed`、`node scripts/check-v1.11-quality-matrix.js`。内容审计产物为 948 个实体；生物内容检查显示 36 个 `visual guides`；全量矩阵输出 `OK v1.11 quality matrix: 121 checks`。
-- 未执行微信开发者工具模拟器、真机或发布流程；这些结果不在本设计规格中宣称完成。
+- 已在微信开发者工具以 iPhone 14 Pro Max 和 Nexus 5 完成最终模拟器回归：全局搜索可直达对照、根节点层级、顺序流程和循环图解；长文本未裁切，云封面失败时完整文字知识和结构图仍可读。实际记录位于 `.superpowers/sdd/2026-08-11-biology-visual-guides-v1.12/simulator-regression.md`。
+- 未执行真机或发布流程；这些结果不在本设计规格中宣称完成。
 
 ## 验收标准
 
@@ -97,7 +98,7 @@
 - 文字在小屏下可换行，结构不依赖位图加载。
 - 不改变任何稳定内容 ID、云图片路径、路由路径或本地存储版本。
 - 无新版权来源或未复核教材文本进入项目。
-- 已完成本次实际运行的 Node 图解契约、页面语义、生物内容、严格内容审计和 121 项全量质量矩阵检查。iPhone/Nexus 5 模拟器页面回归以及实际设备发布回归仍待独立执行，后者继续沿用 v1.10.1 证据流程。
+- 已完成本次实际运行的 Node 图解契约、页面语义、生物内容、严格内容审计和 121 项全量质量矩阵检查，以及 iPhone 14 Pro Max 和 Nexus 5 的模拟器页面回归。实际设备发布回归仍待独立执行，并继续沿用 v1.10.1 证据流程。
 
 ## 实施顺序
 
