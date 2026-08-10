@@ -51,6 +51,14 @@ function setServerFailure() {
   };
 }
 
+function setServerAppIdFailure() {
+  wx.cloud.callFunction = ({ fail }) => {
+    serverCalls += 1;
+    events.push('server');
+    fail({ errMsg: 'cloud.callFunction:fail appid missing' });
+  };
+}
+
 function setClientSuccess() {
   wx.cloud.getTempFileURL = ({ fileList, success }) => {
     clientCalls += 1;
@@ -110,6 +118,25 @@ async function run() {
   setClientFailure();
   const failedMap = await cloudAssets.getTempFileURLMap([fileID('unavailable')]);
   assert.deepStrictEqual(failedMap, {});
+
+  reset();
+  const cloudState = { globalData: { cloudReady: true } };
+  global.getApp = () => cloudState;
+  setServerAppIdFailure();
+  setClientSuccess();
+  const warningCount = { value: 0 };
+  console.warn = () => { warningCount.value += 1; };
+  const firstPermissionFailure = await cloudAssets.getTempFileURLMap([fileID('permission-failure')]);
+  assert.deepStrictEqual(firstPermissionFailure, {});
+  assert.strictEqual(serverCalls, 1, 'AppID/权限失败只应尝试服务端一次');
+  assert.strictEqual(clientCalls, 0, 'AppID/权限失败不应继续调用客户端云存储');
+  assert.strictEqual(cloudState.globalData.cloudReady, false, 'AppID/权限失败应熔断本次云运行时');
+  assert.strictEqual(warningCount.value, 0, '已知 AppID/权限失败不应额外输出项目警告');
+  const secondPermissionFailure = await cloudAssets.getTempFileURLMap([fileID('permission-failure-2')]);
+  assert.deepStrictEqual(secondPermissionFailure, {});
+  assert.strictEqual(serverCalls, 1, '熔断后不应重复调用云函数');
+  assert.strictEqual(clientCalls, 0, '熔断后不应重复调用客户端云存储');
+  delete global.getApp;
 
   reset();
   setServerSuccess();

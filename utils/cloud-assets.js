@@ -27,6 +27,32 @@ function isCloudRuntimeReady() {
   return !app || !app.globalData || app.globalData.cloudReady !== false;
 }
 
+function isCloudRuntimeUnavailableError(error) {
+  const message = [error && error.errMsg, error && error.message, error && error.errorMessage]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+  return Boolean(
+    /appid\s+missing|appid.*permission|permission\s+denied|not\s+authorized|env.*not\s+found/.test(message)
+      || error && String(error.errCode) === '41002',
+  );
+}
+
+function markCloudRuntimeUnavailable() {
+  if (typeof getApp !== 'function') {
+    return;
+  }
+
+  try {
+    const app = getApp();
+    if (app && app.globalData) {
+      app.globalData.cloudReady = false;
+    }
+  } catch (error) {
+    // App state is optional in isolated tests and legacy pages.
+  }
+}
+
 function collectTempURLs(fileList) {
   const map = {};
   const failed = [];
@@ -49,6 +75,11 @@ function collectTempURLs(fileList) {
 
 function warnFailedTempURLs(title, failed) {
   if (!failed.length) {
+    return;
+  }
+
+  if (failed.some(isCloudRuntimeUnavailableError)) {
+    markCloudRuntimeUnavailable();
     return;
   }
 
@@ -76,6 +107,11 @@ function getServerTempFileURLBatch(fileIDs) {
         resolve(map);
       },
       fail(error) {
+        if (isCloudRuntimeUnavailableError(error)) {
+          markCloudRuntimeUnavailable();
+          resolve({});
+          return;
+        }
         console.warn('云函数图片签名调用失败，请确认 getImageTempUrls 已部署', {
           count: fileIDs.length,
           errMsg: error && error.errMsg,
@@ -89,11 +125,6 @@ function getServerTempFileURLBatch(fileIDs) {
 function getClientTempFileURLBatch(fileIDs) {
   return new Promise((resolve) => {
     if (!fileIDs.length || !isCloudRuntimeReady() || !wx.cloud || !wx.cloud.getTempFileURL) {
-      console.warn('云存储能力不可用，无法获取图片临时链接', {
-        count: fileIDs.length,
-        hasWxCloud: Boolean(wx.cloud),
-        hasGetTempFileURL: Boolean(wx.cloud && wx.cloud.getTempFileURL),
-      });
       resolve({});
       return;
     }
@@ -106,6 +137,11 @@ function getClientTempFileURLBatch(fileIDs) {
         resolve(map);
       },
       fail(error) {
+        if (isCloudRuntimeUnavailableError(error)) {
+          markCloudRuntimeUnavailable();
+          resolve({});
+          return;
+        }
         console.warn('小程序端云存储临时链接获取失败', {
           count: fileIDs.length,
           errMsg: error && error.errMsg,
@@ -118,6 +154,10 @@ function getClientTempFileURLBatch(fileIDs) {
 
 function getTempFileURLBatch(fileIDs) {
   return getServerTempFileURLBatch(fileIDs).then((serverMap) => {
+    if (!isCloudRuntimeReady()) {
+      return serverMap;
+    }
+
     const missing = fileIDs.filter((fileID) => !serverMap[fileID]);
 
     if (!missing.length) {
@@ -151,6 +191,10 @@ function getTempFileURLMap(fileIDs) {
   return Promise.all(chunk(missing, 50).map(getTempFileURLBatch))
     .then((results) => results.reduce((next, item) => Object.assign(next, item), map))
     .catch((error) => {
+      if (isCloudRuntimeUnavailableError(error)) {
+        markCloudRuntimeUnavailable();
+        return map;
+      }
       console.warn('云图片临时链接获取异常，已回退为文字内容', {
         count: missing.length,
         errMsg: error && error.errMsg,
