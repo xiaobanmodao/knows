@@ -1,6 +1,8 @@
 const assert = require('assert');
 
 const { collectBiologyVisualGuideIssues } = require('./biology-visual-guide-contract');
+const { knowledgeItems } = require('../packages/biology/data/biology-knowledge');
+const { visualGuidesByKnowledgeId } = require('../packages/biology/data/biology-visual-guides');
 
 const validGuide = {
   type: 'flow',
@@ -79,5 +81,13 @@ const untouched = fixture();
 const snapshot = JSON.stringify(untouched);
 collectBiologyVisualGuideIssues(untouched);
 assert.strictEqual(JSON.stringify(untouched), snapshot);
+
+const firstHalfIds = knowledgeItems
+  .filter((item) => ['bio-unit-cells', 'bio-unit-diversity', 'bio-unit-plants'].includes(item.topicId))
+  .map((item) => item.id);
+assert.deepStrictEqual(
+  Object.keys(visualGuidesByKnowledgeId).filter((id) => firstHalfIds.includes(id)).sort(),
+  firstHalfIds.sort(),
+);
 
 console.log('OK biology visual guide contract test');
