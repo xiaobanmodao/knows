@@ -94,6 +94,7 @@ const DEFAULT_CHECKS = [
   { script: 'scripts/check-release-tool-state.test.js', label: '开发者工具状态诊断契约' },
   { script: 'scripts/check-release-tool-state-evidence.test.js', label: '开发者工具发布证据契约' },
   { script: 'scripts/check-roadmap-status.test.js', label: '路线状态汇总契约' },
+  { script: 'scripts/check-roadmap-document-consistency.test.js', label: '路线文档一致性契约' },
   { script: 'scripts/check-content-source-catalog.js', label: '内容源目录产物' },
   { script: 'scripts/check-content-diff.js', label: '内容差异报告' },
   { script: 'scripts/check-subject-high-risk-batches.js', args: ['--report', 'dist/content-audit/subject-high-risk-batches.json'], label: '英语物理高风险批次报告' },

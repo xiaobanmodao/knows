@@ -64,6 +64,7 @@ assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-release-
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-release-regression-evidence.test.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/run-release-preview.test.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-roadmap-status.test.js'));
+assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-roadmap-document-consistency.test.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-subject-index-fallbacks.test.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-detail-page-fallbacks.test.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-catalog-page-fallbacks.test.js'));
