@@ -128,6 +128,14 @@ try {
   ], { cwd: path.resolve(__dirname, '..'), encoding: 'utf8' });
   assert.notStrictEqual(tamperedCli.status, 0);
   assert.match(`${tamperedCli.stdout}\n${tamperedCli.stderr}`, /sourceId|来源/);
+  const canonicalReportPath = path.join(__dirname, '..', 'docs/evidence/math-smartedu-catalog-live-2026.json');
+  const canonicalCli = spawnSync(process.execPath, [
+    path.join(__dirname, 'check-math-smartedu-catalog-live-report.js'),
+    canonicalReportPath,
+    sourceEvidencePath,
+  ], { cwd: path.resolve(__dirname, '..'), encoding: 'utf8' });
+  assert.strictEqual(canonicalCli.status, 0, `${canonicalCli.stdout}\n${canonicalCli.stderr}`);
+  assert.match(`${canonicalCli.stdout}\n${canonicalCli.stderr}`, /OK math SmartEdu live report/);
 
   const reportPath = path.join(tempDirectory, 'report.json');
   const inputPath = path.join(tempDirectory, 'input.json');

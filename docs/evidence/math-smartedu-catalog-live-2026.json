@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "sourceId": "smartedu-math-textbook-catalog-2026",
+  "evidenceSha256": "c8d5ac7b0a97d3f9ffb5db6240c8b50e8c1f5cbbdad76e1202a82c6f213d9b72",
+  "checkedAt": "2026-08-10T08:55:51.887Z",
+  "records": [
+    {
+      "resourceId": "540ac93d-67fc-4353-9e49-1ef20d02b5a4",
+      "title": "（根据2022年版课程标准修订）义务教育教科书·数学七年级上册",
+      "previewPages": [5, 6, 7]
+    },
+    {
+      "resourceId": "81d65033-4cb1-4cf0-ae27-8c367c537c30",
+      "title": "（根据2022年版课程标准修订）义务教育教科书·数学七年级下册",
+      "previewPages": [5, 6, 7]
+    },
+    {
+      "resourceId": "81264e9e-22bc-4289-8389-13b40433b5ba",
+      "title": "义务教育教科书·数学八年级上册",
+      "previewPages": [5, 6, 7]
+    },
+    {
+      "resourceId": "e91a6f80-2a9a-4452-a47e-b9ec164156ff",
+      "title": "义务教育教科书·数学八年级下册",
+      "previewPages": [5, 6, 7]
+    },
+    {
+      "resourceId": "937a48c1-de81-4cc6-91b2-617cd859de4b",
+      "title": "义务教育教科书·数学九年级上册",
+      "previewPages": [5, 6, 7]
+    },
+    {
+      "resourceId": "ab188631-292c-455e-8082-e09a0ab4001c",
+      "title": "义务教育教科书·数学九年级下册",
+      "previewPages": [5, 6]
+    }
+  ]
+}
