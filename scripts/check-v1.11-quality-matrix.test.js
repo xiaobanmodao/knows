@@ -36,6 +36,7 @@ assert.ok(defaultCommands.some((item) => item.script === 'scripts/content-source
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/build-content-source-input-manifest.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/build-content-source-follow-up.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/build-content-source-intake-pack.js'));
+assert.ok(defaultCommands.some((item) => item.script === 'scripts/content-source-url-access.test.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-content-source-batches.test.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-content-source-batches.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/content-source-catalog.test.js'));
