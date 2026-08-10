@@ -16,7 +16,6 @@ const bindingQualityCheckCount = 117;
 const grade8UpperUnitList = 'Unit 1 Happy Holiday；Unit 2 Home Sweet Home；Unit 3 Same or Different；Unit 4 Amazing Plants and Animals；Unit 5 What a Delicious Meal!；Unit 6 Plan for Yourself；Unit 7 When Tomorrow Comes；Unit 8 Let\'s Communicate!。';
 const grade8LowerUnitList = 'Unit 1 Time to Relax；Unit 2 Stay Healthy；Unit 3 Growing Up；Unit 4 The Wonders of Nature；Unit 5 Nature\'s Temper；Unit 6 Crossing Cultures；Unit 7 A Good Read；Unit 8 Making a Difference。';
 const grade9UpperDirectoryBoundary = '九年级上册当前页面只核对 Unit 1-2，其余既有 Unit 3-8 继续保持可查阅的项目原创讲解内容，等待完整官方目录复核。';
-const grade9UpperFullDirectoryVerificationClaim = /(?:九年级上册|九上)\s*(?:的)?[^。！？\n]{0,16}(?:全部|所有|全册|8\s*个|八个)[^。！？\n]{0,16}单元[^。！？\n]{0,32}(?:(?:均|都|已全部|全部)?\s*(?:已)?(?:完成|通过)(?:了)?(?:完整|全部)?官方目录(?:核验|核对|复核|确认)|官方目录(?:核验|核对|复核|确认)[^。！？\n]{0,12}(?:均已|都已|均|都|已)?(?:完成|通过)(?:了)?)/;
 const directoryImportBoundary = '这份独立官方目录证据记录只核对目录元数据，不核对教材正文、音频、题目、词表、图片或项目知识讲解，不是外部内容导入。';
 const roadmapDirectoryBoundary = '英语目录门禁已加强为独立官方目录证据：四册具有完整当期目录页证据，九年级上册当前页面只核对 Unit 1-2，其余既有 Unit 3-8 等待完整官方目录复核；该记录只验证目录元数据，不是外部内容来源接入，不解除全局外部资料阻断。真实外部内容来源接入的下一批阻断仍为 `math-chapters-v1.11`，它要求完整官方逐册目录。';
 
@@ -26,6 +25,29 @@ function escapeRegExp(value) {
 
 function assertExactLine(source, line, message) {
   assert.match(source, new RegExp(`^${escapeRegExp(line)}$`, 'm'), message);
+}
+
+function splitSourceSentences(source) {
+  return source
+    .split(/(?:[。！？!?]+|\r?\n)/)
+    .map((sentence) => sentence.trim())
+    .filter(Boolean);
+}
+
+function isProhibitedFullG9aDirectoryClaim(sentence) {
+  const referencesGrade9Upper = /九年级上册|九上/.test(sentence);
+  const hasWholeBookScope = /全部|所有|全册|8\s*个|八个/.test(sentence)
+    && /单元(?:的)?/.test(sentence);
+  const hasOfficialDirectoryVerification = /官方目录.*(?:核验|核对|复核|确认)/.test(sentence)
+    || /(?:核验|核对|复核|确认).*官方目录/.test(sentence);
+  const hasPositiveCompletion = /已|均|都|完成|通过/.test(sentence);
+  const hasPendingOrNegativeSignal = /尚未|未|等待|待/.test(sentence);
+
+  return referencesGrade9Upper
+    && hasWholeBookScope
+    && hasOfficialDirectoryVerification
+    && hasPositiveCompletion
+    && !hasPendingOrNegativeSignal;
 }
 
 function assertEnglishSourceContract(source) {
@@ -39,10 +61,12 @@ function assertEnglishSourceContract(source) {
     /(?:九年级上册|九上)(?:的)?(?:全部|所有|8 个|八个)?(?:单元(?:的)?)?标题(?:和|及|、)顺序(?:均|都)?(?:已经|已)核对/,
     '不得宣称九年级上册全部单元标题和顺序已核对',
   );
-  assert.doesNotMatch(
-    source,
-    grade9UpperFullDirectoryVerificationClaim,
-    '不得宣称九年级上册全部或八个单元已完成官方目录核验',
+  const prohibitedFullDirectoryClaim = splitSourceSentences(source)
+    .find(isProhibitedFullG9aDirectoryClaim);
+  assert.strictEqual(
+    prohibitedFullDirectoryClaim,
+    undefined,
+    `不得宣称九年级上册全部或八个单元已完成官方目录核验：${prohibitedFullDirectoryClaim}`,
   );
   assertExactLine(source, directoryImportBoundary, '独立官方目录证据必须明确不是外部内容导入');
 }
@@ -110,6 +134,15 @@ assert.throws(
   () => assertEnglishSourceContract(`${englishSource}\n九年级上册 8 个单元均已完成官方目录核验。`),
   assert.AssertionError,
   '注入九年级上册八个单元完成官方目录核验声明必须失败',
+);
+assert.throws(
+  () => assertEnglishSourceContract(`${englishSource}\n九年级上册 8 个单元的官方目录均已核验。`),
+  assert.AssertionError,
+  '注入九年级上册八个单元官方目录均已核验声明必须失败',
+);
+assert.doesNotThrow(
+  () => assertEnglishSourceContract(`${englishSource}\n九年级上册所有单元尚未完成官方目录核验。`),
+  '明确尚未完成的九年级上册官方目录核验声明不得被拒绝',
 );
 assert.throws(
   () => assertEnglishSourceContract(englishSource.replace(directoryImportBoundary, '这份记录只核对目录元数据。')),
