@@ -28,10 +28,18 @@ referencedKeys.forEach((key) => {
 const canonical = getContentSource('pep-english-new-textbook-2025');
 assert.strictEqual(canonical.url, 'https://www.pep.com.cn/xw/zt/hd/12/xjcjs/cz/202510/t20251024_2004130.html');
 assert.strictEqual(canonical.kind, 'official');
+const smartEducation = getContentSource('smartedu-math-textbook-catalog-2026');
+assert.strictEqual(smartEducation.url, 'https://basic.smartedu.cn/tchMaterial');
+assert.strictEqual(smartEducation.kind, 'official');
 assert.strictEqual(getContentSource('not-registered'), null);
 assert.deepStrictEqual(
   getContentSourceCandidateKeys('math'),
-  ['moe-math-curriculum-2022', 'moe-textbook-catalog-2024', 'pep-math-new-textbook-2024'],
+  [
+    'moe-math-curriculum-2022',
+    'moe-textbook-catalog-2024',
+    'pep-math-new-textbook-2024',
+    'smartedu-math-textbook-catalog-2026',
+  ],
 );
 assert.deepStrictEqual(getContentSourceCandidateKeys('not-a-subject'), []);
 assert.deepStrictEqual(

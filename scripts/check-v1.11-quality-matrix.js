@@ -14,6 +14,8 @@ const DEFAULT_CHECKS = [
   { script: 'scripts/check-math-volume-map-input.test.js', label: '数学逐册目录输入契约' },
   { script: 'scripts/math-volume-map-diff.test.js', label: '数学逐册目录差异契约' },
   { script: 'scripts/math-volume-map-review.test.js', label: '数学逐册目录人工确认契约' },
+  { script: 'scripts/check-math-smartedu-catalog-evidence.test.js', label: '数学官方平台目录证据契约' },
+  { script: 'scripts/check-math-smartedu-catalog-evidence.js', label: '数学官方平台目录证据' },
   { script: 'scripts/build-math-curriculum-audit.js', label: '数学目录审计产物' },
   { script: 'scripts/check-math-curriculum-audit.js', label: '数学目录审计校验' },
   { script: 'scripts/check-english-units.js', label: '英语单元' },

@@ -1,4 +1,10 @@
-const OFFICIAL_HOSTS = new Set(['www.moe.gov.cn', 'moe.gov.cn', 'www.pep.com.cn', 'pep.com.cn']);
+const OFFICIAL_HOSTS = new Set([
+  'www.moe.gov.cn',
+  'moe.gov.cn',
+  'www.pep.com.cn',
+  'pep.com.cn',
+  'basic.smartedu.cn',
+]);
 const REFERENCE_HOSTS = new Set([
   'dictionary.cambridge.org',
   'www.oxfordlearnersdictionaries.com',
@@ -44,6 +50,11 @@ const SOURCE_DEFINITIONS = {
   'pep-math-new-textbook-2024': {
     title: '人教版义务教育数学（七至九年级）新教材介绍',
     url: 'https://www.pep.com.cn/xw/zt/hd/12/xjcjs/cz/202408/t20240826_1994351.html',
+    kind: 'official',
+  },
+  'smartedu-math-textbook-catalog-2026': {
+    title: '国家中小学智慧教育平台人教版初中数学教材资源清单与公开预览',
+    url: 'https://basic.smartedu.cn/tchMaterial',
     kind: 'official',
   },
   'original-derivation-review': {
@@ -109,7 +120,12 @@ const CONTENT_SOURCE_REGISTRY = Object.freeze(
 
 const CONTENT_SOURCE_CANDIDATE_KEYS_BY_SUBJECT = Object.freeze(
   Object.fromEntries(Object.entries({
-    math: ['moe-math-curriculum-2022', 'moe-textbook-catalog-2024', 'pep-math-new-textbook-2024'],
+    math: [
+      'moe-math-curriculum-2022',
+      'moe-textbook-catalog-2024',
+      'pep-math-new-textbook-2024',
+      'smartedu-math-textbook-catalog-2026',
+    ],
     english: ['moe-english-curriculum-2022', 'pep-english-new-textbook-2025'],
     physics: ['moe-physics-2022', 'pep-physics-public'],
     chemistry: ['moe-chemistry-2022', 'moe-textbook-catalog-2024', 'pep-chemistry-training-2024'],
