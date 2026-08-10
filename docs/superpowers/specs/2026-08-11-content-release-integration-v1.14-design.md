@@ -43,7 +43,7 @@ git merge --no-commit --no-ff codex/chemistry-visual-guides-v1.13
 
 | 文件 | 发布线保留内容 | 内容线保留内容 | 集成结果 |
 |---|---|---|---|
-| `scripts/check-release-readiness.js` | 云用户追踪隐私门禁、发布热修复范围门禁、纯知识运行文案门禁、预览状态报告检查 | 结构化内容源目录、英语目录、数学目录和开发者工具状态证据检查 | 合并两个 import 和全部独立检查函数；默认运行不要求实体设备证据，`--require-device-evidence` 仍严格要求工具状态报告。 |
+| `scripts/check-release-readiness.js` | 云用户追踪隐私门禁、纯知识运行文案门禁、预览状态报告检查、发布热修复范围脚本 | 结构化内容源目录、英语目录、数学目录和开发者工具状态证据检查 | 合并两个 import 和全部独立检查函数；热修复范围检查只在 `--require-hotfix-scope` 时执行，默认产品检查不把内容集成误判为热修复越界；`--require-device-evidence` 仍严格要求工具状态报告。 |
 | `scripts/check-search-semantics.js` | `SEARCH_ALIAS_GROUPS` 从 `packages/catalog/data/search-aliases` 加载 | 旧版英语单元标题别名断言 | 使用 catalog 分包路径，并保留 `Same or Different?` 与 `The Wonder of Nature` 的可检索性断言。 |
 
 非冲突但必须复核的发布侧规则：
@@ -53,6 +53,14 @@ git merge --no-commit --no-ff codex/chemistry-visual-guides-v1.13
 - `utils/asset-config.js` 和云图片降级逻辑继续保留熔断、重试边界和完整正文后备。
 - 运行时搜索别名只从 catalog 分包读取，主包不重新引入 `data/search-aliases.js`。
 - `project.config.json` 的忽略清单保留对 `.superpowers` 等开发辅助目录的排除；不得混入开发者工具仅重排字段的格式化噪声。
+
+### 3.3 热修复范围门禁的显式模式
+
+`scripts/check-release-hotfix-scope.js` 的白名单只能验证“小范围热修复相对于发布基线的改动”，不能验证包含五科内容线的大型集成。把它无条件嵌入 `check-release-readiness.js` 会使任何经过审查的内容集成误报越界，也会诱使调用者用错误的基线绕过检查。
+
+因此保留白名单与 `validateReleaseHotfixScope()` 的全部现有行为，并新增 `shouldRequireHotfixScope(args)`：只有 `node scripts/check-release-readiness.js --require-hotfix-scope` 才调用热修复范围脚本。`--require-device-evidence` 与热修复范围是两个独立选项；实体设备发布回归不自动等同于热修复。`scripts/check-release-hotfix-scope.test.js` 必须覆盖空参数、显式参数和无关参数三种情况。
+
+这不是降低热修复约束：在 v1.10.x 热修复分支仍显式运行 `--require-hotfix-scope`，而通用内容分支只运行产品、隐私、分包和内容门禁。所有分支都继续运行云用户追踪与纯知识文案检查。
 
 ## 4. 数据、路由与包体不变量
 
@@ -74,7 +82,6 @@ node scripts/check-cloud-user-trace.js
 node scripts/check-pure-knowledge-runtime.test.js
 node scripts/check-pure-knowledge-runtime.js
 node scripts/check-release-hotfix-scope.test.js
-node scripts/check-release-hotfix-scope.js
 node scripts/build-content-audit.js
 node scripts/check-content-audit.js
 node scripts/build-content-review-queue.js
@@ -87,10 +94,16 @@ git diff --check
 
 若 `check-v1.11-quality-matrix.js` 需要先生成来源目录、外部输入 manifest 或数学目录审计，必须只调用矩阵已经定义的构建顺序；不可和依赖同一 `dist/content-audit` 输出的单项检查并行运行。
 
+在独立 v1.10.x 热修复分支补充执行：
+
+```bash
+node scripts/check-release-readiness.js --require-hotfix-scope
+```
+
 ### 5.2 结果判定
 
 - 默认质量矩阵必须输出 `OK v1.11 quality matrix: 123 checks`。
-- 发布就绪检查必须输出 `OK release readiness checked`，但这不等同于拥有实体机和预览包证据。
+- 发布就绪检查必须输出 `OK release readiness checked`，默认模式不启用仅适用于热修复分支的白名单；这不等同于拥有实体机和预览包证据。
 - 内容来源跟进报告可以且应继续显示 `blocked: math-chapters-v1.11`；这不阻止本次代码集成，但阻止把其描述成正式发布完成。
 - `git status --short` 只能留下被明确说明的开发者工具配置格式化变化；集成提交不得包含 `dist/`、`.codex-output/`、本地设备日志或临时资源。
 
@@ -102,7 +115,7 @@ git diff --check
 
 | 风险 | 控制方式 | 回退方式 |
 |---|---|---|
-| 合并改坏发布热修复 | 对应专项门禁先行运行并纳入 `check-release-readiness.js` | 丢弃新集成分支；发布回归分支不受影响。 |
+| 合并改坏发布热修复 | 云用户追踪、纯知识和云资源门禁始终运行；热修复白名单只在显式模式运行 | 丢弃新集成分支；发布回归分支不受影响。 |
 | 内容开发绕过分包边界 | 运行分包边界与 v1.11 质量矩阵 | 修复冲突解决或内容引入点，不修改发布分支。 |
 | 生成产物导致脏工作树 | 仅允许可忽略 `dist/` 和 `.codex-output/` 产物 | 删除本地生成产物，不提交。 |
 | 误以为已可发布 | 文档固定“未执行实体机、预览、上传、审核、发布” | 仅在独立发布分支补齐严格证据后再创建 RC。 |
