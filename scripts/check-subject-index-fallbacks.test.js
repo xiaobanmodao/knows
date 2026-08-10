@@ -25,6 +25,23 @@ subjects.forEach((subject) => {
   assert(/wx:elif="\{\{notFound\}\}"/.test(wxml), `${subject} 首页必须渲染缺失内容状态`);
   assert(/bindtap="reopen"/.test(wxml), `${subject} 首页必须渲染重试入口`);
   assert(/\.error-state\s*\{/.test(wxss), `${subject} 首页必须有失败态样式`);
+  const errorStateBlocks = wxml.match(/<view[^>]*class="error-state"[^>]*>/g) || [];
+  assert.strictEqual(errorStateBlocks.length, 3, `${subject} 首页必须只有加载、失败和兜底三种状态`);
+  assert.strictEqual(
+    errorStateBlocks.filter((block) => block.includes('wx:elif="{{loading}}"')).length,
+    1,
+    `${subject} 首页只能有一个加载状态分支`,
+  );
+  assert.strictEqual(
+    errorStateBlocks.filter((block) => block.includes('wx:elif="{{notFound}}"')).length,
+    1,
+    `${subject} 首页只能有一个失败状态分支`,
+  );
+  assert.strictEqual(
+    errorStateBlocks.filter((block) => block.includes('wx:else')).length,
+    1,
+    `${subject} 首页只能有一个兜底状态分支`,
+  );
 });
 
 const mathJs = readSubjectIndex('math', 'js');
