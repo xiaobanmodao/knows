@@ -179,8 +179,15 @@ function assertTopicReviewMeta(topic) {
   assert.strictEqual(meta.status, expectedMeta.status, `${topic.id}: 复核状态与化学基线不一致`);
   assert.strictEqual(meta.statusLabel, expectedMeta.statusLabel, `${topic.id}: 复核标签与化学基线不一致`);
   assert.deepStrictEqual([...(meta.sourceKeys || [])].sort(), EXPECTED_SOURCE_KEYS, `${topic.id}: 来源键不完整`);
+  assert.ok(Array.isArray(meta.sourceRefs), `${topic.id}: 来源引用必须为数组`);
   assert.strictEqual((meta.sourceRefs || []).length, EXPECTED_SOURCE_KEYS.length, `${topic.id}: 来源引用不完整`);
-  meta.sourceRefs.forEach((source) => {
+  assert.deepStrictEqual(
+    meta.sourceRefs.map((source) => source && source.key).sort(),
+    EXPECTED_SOURCE_KEYS,
+    `${topic.id}: 复核来源键不完整`,
+  );
+  meta.sourceRefs.forEach((source, index) => {
+    assert.ok(source && typeof source === 'object', `${topic.id}/sourceRefs[${index}]: 复核来源无效`);
     const registered = getContentSource(source.key);
     assert.ok(registered && registered.kind === 'official', `${topic.id}/${source.key}: 复核来源无效`);
     assert.ok(typeof source.title === 'string' && source.title.trim(), `${topic.id}/${source.key}: 复核来源标题缺失`);
@@ -193,6 +200,11 @@ function assertTopics(topicEvidence) {
   assert.deepStrictEqual(topics.map((topic) => topic.id), REVIEWED_CHEMISTRY_TOPIC_IDS, '当前化学专题 ID 或顺序漂移');
   assert.ok(Array.isArray(topicEvidence), 'topics 必须为数组');
   assert.strictEqual(topicEvidence.length, topics.length, 'topics 数量不匹配');
+  assert.deepStrictEqual(
+    topicEvidence.map((item) => item && item.id),
+    topics.map((topic) => topic.id),
+    '专题佐证 ID 或顺序漂移',
+  );
 
   const currentTopics = new Map(topics.map((topic) => [topic.id, topic]));
   const seen = new Set();

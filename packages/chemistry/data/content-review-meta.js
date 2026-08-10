@@ -8,7 +8,7 @@ const CHEMISTRY_SOURCES = {
     url: 'https://www.moe.gov.cn/srcsite/A26/s8001/202408/W020250418502592948423.pdf',
   },
   'pep-chemistry-training-2024': {
-    title: '人教版义务教育化学新教材培训会在成都举办',
+    title: '人教版义务教育化学新教材培训通知',
     url: 'https://www.pep.com.cn/rjdt/rjdt/202405/t20240517_1992181.shtml',
   },
 };

@@ -11,6 +11,7 @@ const {
   checkChemistryTopicFrameworkEvidence,
 } = require('./check-chemistry-topic-framework-evidence');
 const { getContentSource } = require('../data/content-source-registry');
+const { getChemistryContentMeta } = require('../packages/chemistry/data/content-review-meta');
 const { topics: chemistryTopics } = require('../packages/chemistry/data/chemistry-topics');
 
 assert.strictEqual(EVIDENCE_KIND, 'official-framework-support');
@@ -18,6 +19,11 @@ assert.strictEqual(REVIEW_ID, 'chemistry-topic-framework-support-2026-v1');
 assert.strictEqual(
   getContentSource('pep-chemistry-training-2024').title,
   '人教版义务教育化学新教材培训会在成都举办',
+);
+assert.strictEqual(
+  getChemistryContentMeta().sourceRefs.find((source) => source.key === 'pep-chemistry-training-2024').title,
+  '人教版义务教育化学新教材培训通知',
+  '构建期框架佐证不得改写运行时化学复核元数据',
 );
 
 const missingEvidencePath = path.join(
@@ -126,6 +132,42 @@ try {
   assert.doesNotThrow(() => checkChemistryTopicFrameworkEvidence({ evidencePath: completeEvidencePath }));
 } finally {
   fs.rmSync(completeEvidencePath, { force: true });
+}
+
+const firstTopic = chemistryTopics[0];
+const originalContentMeta = firstTopic.contentMeta;
+const physicsSource = getContentSource('moe-physics-2022');
+firstTopic.contentMeta = {
+  ...originalContentMeta,
+  sourceRefs: originalContentMeta.sourceRefs.map((source) => (source.key === 'moe-textbook-catalog-2024'
+    ? { key: physicsSource.key, title: physicsSource.title, url: physicsSource.url }
+    : source)),
+};
+try {
+  assert.throws(
+    () => checkChemistryTopicFrameworkEvidence(),
+    /复核来源键不完整/,
+    '运行时专题复核来源不得用其他官方来源替换',
+  );
+} finally {
+  firstTopic.contentMeta = originalContentMeta;
+}
+
+const reorderedEvidencePath = path.join(
+  os.tmpdir(),
+  `knows-chemistry-topic-framework-order-${process.pid}-${Date.now()}.json`,
+);
+const reorderedEvidence = createCompleteEvidence();
+[reorderedEvidence.topics[0], reorderedEvidence.topics[1]] = [reorderedEvidence.topics[1], reorderedEvidence.topics[0]];
+fs.writeFileSync(reorderedEvidencePath, JSON.stringify(reorderedEvidence));
+try {
+  assert.throws(
+    () => checkChemistryTopicFrameworkEvidence({ evidencePath: reorderedEvidencePath }),
+    /专题佐证 ID 或顺序漂移/,
+    '专题佐证记录必须保持当前专题数据顺序',
+  );
+} finally {
+  fs.rmSync(reorderedEvidencePath, { force: true });
 }
 
 console.log('OK chemistry topic framework evidence contract');
