@@ -148,8 +148,8 @@ function normalizeSourceInput(input) {
   entities.forEach((entity, index) => {
     if (!entity.parentId) return;
     const sameSubjectParent = entities.some((candidate) => candidate.subjectId === entity.subjectId && candidate.id === entity.parentId);
-    if (!sameSubjectParent && !/^(grade|g\d+|theme|book|unit|chapter)/i.test(entity.parentId)
-      && !/^[a-z0-9]+-(?:grade|g\d+|theme|book|unit|chapter|topic)/i.test(entity.parentId)) {
+    if (!sameSubjectParent && !/^(grade|g\d+|theme|book|unit|chapter|ch\d+)/i.test(entity.parentId)
+      && !/^[a-z0-9]+-(?:grade|g\d+|theme|book|unit|chapter|ch\d+|topic)/i.test(entity.parentId)) {
       fail(`parentId 格式无法识别：${entity.parentId}`, index);
     }
   });

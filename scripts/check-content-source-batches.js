@@ -33,6 +33,22 @@ const SOURCE_BATCHES = Object.freeze([
     expectedAliasCount: 0,
     status: 'audited',
   }),
+  Object.freeze({
+    id: 'physics-knowledge-v1.11',
+    subjectId: 'physics',
+    type: 'knowledge',
+    expectedCount: 84,
+    expectedAliasCount: 0,
+    status: 'audited',
+  }),
+  Object.freeze({
+    id: 'physics-structured-knowledge-v1.11',
+    subjectId: 'physics',
+    type: 'structured-knowledge',
+    expectedCount: 18,
+    expectedAliasCount: 0,
+    status: 'audited',
+  }),
 ]);
 
 function getContentSourceBatch(batchId) {

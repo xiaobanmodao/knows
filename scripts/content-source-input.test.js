@@ -41,6 +41,19 @@ assert.deepStrictEqual(normalized.entities[0].review.sourceKeys, ['moe-standard'
 assert.strictEqual(normalized.entityCount, 1);
 assert.strictEqual(normalized.aliasCount, 0);
 assert.ok(/^[a-f0-9]{64}$/.test(normalized.inputHash));
+const physicsParent = normalizeSourceInput({
+  schemaVersion: 1,
+  sourceVersion: 'fixture-physics-parent-v1',
+  entities: [{
+    ...baseRecord,
+    key: 'physics:knowledge:fixture-physics-knowledge',
+    subjectId: 'physics',
+    id: 'fixture-physics-knowledge',
+    parentId: 'phy-ch01-motion',
+  }],
+  aliases: [],
+});
+assert.strictEqual(physicsParent.entities[0].parentId, 'phy-ch01-motion');
 checkSourceInput(buildContentSourceCatalog());
 const importedCatalog = buildContentSourceCatalogFromInput(normalized);
   checkContentSourceCatalog(importedCatalog, { allowAnySourceVersion: true });
