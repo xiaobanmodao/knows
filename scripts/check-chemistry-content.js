@@ -3,6 +3,8 @@ const { themes } = require('../packages/chemistry/data/chemistry-themes');
 const { topics } = require('../packages/chemistry/data/chemistry-topics');
 const { templates } = require('../packages/chemistry/data/chemistry-templates');
 const chemistryKnowledge = require('../packages/chemistry/data/chemistry-knowledge');
+const { collectChemistryVisualGuideIssues } = require('./chemistry-visual-guide-contract');
+const chemistryRepository = require('../packages/chemistry/repository');
 
 const EXPECTED_KNOWLEDGE_IDS = topics.flatMap((topic) => topic.knowledgeIds);
 const EXPECTED_EXPERIMENT_IDS = [
@@ -152,6 +154,22 @@ assert.strictEqual(topics.length, 10, 'chemistry topic count');
 assert.strictEqual(templates.length, 12, 'chemistry template count');
 assert.strictEqual(knowledgeItems.length, 40, 'chemistry knowledge count');
 assert.deepStrictEqual(knowledgeItems.map((item) => item.id), EXPECTED_KNOWLEDGE_IDS);
+assert.strictEqual(
+  Object.keys(require('../packages/chemistry/data/chemistry-visual-guides').visualGuidesByKnowledgeId).length,
+  knowledgeItems.length,
+  'chemistry visual guide coverage',
+);
+assert.deepStrictEqual(
+  collectChemistryVisualGuideIssues({
+    sourceKnowledgeItems: knowledgeItems,
+    runtimeLayers: [{
+      label: 'repository',
+      knowledgeItems: knowledgeItems.map((item) => chemistryRepository.getKnowledgeById(item.id)),
+    }],
+  }),
+  [],
+  'chemistry visual guides',
+);
 
 const entityIds = [...themes, ...topics, ...templates, ...knowledgeItems].map((item) => item.id);
 assert.strictEqual(new Set(entityIds).size, entityIds.length, 'chemistry entity IDs must be globally unique');

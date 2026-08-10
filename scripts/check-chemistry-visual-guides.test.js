@@ -4,6 +4,8 @@ const {
   getVisualGuideForKnowledge,
   visualGuidesByKnowledgeId,
 } = require('../packages/chemistry/data/chemistry-visual-guides');
+const { knowledgeItems } = require('../packages/chemistry/data/chemistry-knowledge');
+const repository = require('../packages/chemistry/repository');
 
 const foundationIds = [
   'chem-k-lab-object-change', 'chem-k-lab-instruments', 'chem-k-lab-operations',
@@ -16,8 +18,41 @@ const foundationIds = [
   'chem-k-stoichiometry',
 ].sort();
 
-assert.deepStrictEqual(Object.keys(visualGuidesByKnowledgeId).sort(), foundationIds);
+foundationIds.forEach((knowledgeId) => {
+  assert(visualGuidesByKnowledgeId[knowledgeId], `${knowledgeId} must have a source guide`);
+});
 assert.strictEqual(getVisualGuideForKnowledge('chem-k-unknown'), null);
+
+assert.strictEqual(Object.keys(visualGuidesByKnowledgeId).length, 40);
+assert.strictEqual(knowledgeItems.length, 40);
+knowledgeItems.forEach((knowledge) => {
+  assert(knowledge.visualGuide, `${knowledge.id} must have a visual guide`);
+  assert.notStrictEqual(
+    knowledge.visualGuide,
+    getVisualGuideForKnowledge(knowledge.id),
+    `${knowledge.id} guide must be cloned`,
+  );
+});
+assert.deepStrictEqual(
+  collectChemistryVisualGuideIssues({
+    sourceKnowledgeItems: knowledgeItems,
+    runtimeLayers: [{
+      label: 'repository',
+      knowledgeItems: knowledgeItems.map((knowledge) => repository.getKnowledgeById(knowledge.id)),
+    }],
+  }),
+  [],
+);
+
+const guideTypes = Object.entries(visualGuidesByKnowledgeId)
+  .map(([knowledgeId, guide]) => ({ knowledgeId, type: guide.type }));
+assert.deepStrictEqual(
+  guideTypes.filter((guide) => guide.type === 'cycle').map((guide) => guide.knowledgeId),
+  ['chem-k-resources-environment'],
+);
+['flow', 'compare', 'hierarchy'].forEach((type) => {
+  assert(guideTypes.some((guide) => guide.type === type), `must include a ${type} guide`);
+});
 
 const sourceOxygenGuide = visualGuidesByKnowledgeId['chem-k-oxygen-properties'];
 assert(Object.isFrozen(visualGuidesByKnowledgeId));

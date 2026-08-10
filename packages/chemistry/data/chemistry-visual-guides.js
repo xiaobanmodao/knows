@@ -190,6 +190,186 @@ const visualGuidesByKnowledgeId = deepFreeze({
       { label: '核对单位', note: '结果与已知量和问法对应', tone: 'slate' },
     ],
   },
+  'chem-k-carbon-allotropes': {
+    type: 'compare', title: '碳单质的差异', summary: '碳原子的不同排列方式带来不同性质。',
+    items: [
+      { label: '金刚石结构', note: '碳原子排列方式不同', tone: 'blue', lane: 'left' },
+      { label: '金刚石性质', note: '硬度大且不导电', tone: 'green', lane: 'left' },
+      { label: '石墨结构', note: '层状排列使层间容易滑动', tone: 'amber', lane: 'right' },
+      { label: '石墨性质', note: '质软且能导电并有润滑性', tone: 'slate', lane: 'right' },
+    ],
+  },
+  'chem-k-carbon-oxides': {
+    type: 'compare', title: '两种碳的氧化物', summary: '一氧化碳和二氧化碳的性质及应用不同。',
+    items: [
+      { label: '一氧化碳性质', note: '有毒且有可燃性和还原性', tone: 'blue', lane: 'left' },
+      { label: '一氧化碳安全', note: '密闭或通风不良处需防中毒', tone: 'green', lane: 'left' },
+      { label: '二氧化碳性质', note: '通常不燃烧也不支持燃烧', tone: 'amber', lane: 'right' },
+      { label: '二氧化碳用途', note: '可用于灭火等适当场景', tone: 'slate', lane: 'right' },
+    ],
+  },
+  'chem-k-carbon-dioxide-lab': {
+    type: 'flow', title: '二氧化碳制取检验', summary: '按实验规范制取、收集和检验二氧化碳。',
+    items: [
+      { label: '选择药品装置', note: '按现有实验方案准备', tone: 'blue' },
+      { label: '检查气密性', note: '制气前确认装置连接', tone: 'green' },
+      { label: '收集气体', note: '依据性质选择收集方法', tone: 'amber' },
+      { label: '检验记录', note: '用石灰水等规范方法判断现象', tone: 'slate' },
+    ],
+  },
+  'chem-k-fuels-energy': {
+    type: 'flow', title: '燃料与低碳选择', summary: '使用燃料时兼顾能量利用和环境影响。',
+    items: [
+      { label: '使用燃料', note: '燃烧释放可利用能量', tone: 'blue' },
+      { label: '关注排放', note: '不完全燃烧和污染物需要控制', tone: 'green' },
+      { label: '提高利用效率', note: '减少无效能量损失', tone: 'amber' },
+      { label: '选择低碳方式', note: '结合具体情境节约资源', tone: 'slate' },
+    ],
+  },
+  'chem-k-metal-properties': {
+    type: 'flow', title: '金属性质到用途', summary: '根据性质和使用条件选择金属材料。',
+    items: [
+      { label: '识别性质', note: '光泽、导电、导热和延展性等', tone: 'blue' },
+      { label: '匹配用途', note: '根据用途选择关键性质', tone: 'green' },
+      { label: '考虑环境', note: '强度、耐腐蚀和成本也会影响选择', tone: 'amber' },
+      { label: '规范回收', note: '金属资源应合理循环利用', tone: 'slate' },
+    ],
+  },
+  'chem-k-metal-activity': {
+    type: 'hierarchy', title: '金属活动性判断', summary: '活动性顺序帮助判断金属反应的可能性。',
+    items: [
+      { label: '金属活动性顺序', note: '反映金属失电子能力相对强弱', tone: 'blue', depth: 0 },
+      { label: '与酸反应', note: '排在氢前的金属通常能置换酸中的氢', tone: 'green', depth: 1 },
+      { label: '置换反应', note: '较活泼金属可置换较不活泼金属盐溶液中的金属', tone: 'amber', depth: 1 },
+      { label: '条件边界', note: '结合金属和溶液的具体条件判断', tone: 'slate', depth: 1 },
+    ],
+  },
+  'chem-k-metal-extraction': {
+    type: 'flow', title: '金属资源与冶炼', summary: '依据矿石和金属活动性选择冶炼与回收方式。',
+    items: [
+      { label: '认识矿石', note: '多数金属以化合物形式存在', tone: 'blue' },
+      { label: '选择冶炼方法', note: '依据金属活动性和化合物性质', tone: 'green' },
+      { label: '得到金属', note: '过程要符合工艺和安全条件', tone: 'amber' },
+      { label: '循环利用', note: '回收可减少资源消耗和污染', tone: 'slate' },
+    ],
+  },
+  'chem-k-metal-corrosion': {
+    type: 'flow', title: '锈蚀与防护', summary: '针对锈蚀条件选择材料和防护措施。',
+    items: [
+      { label: '观察锈蚀条件', note: '铁与氧气和水共同作用易生锈', tone: 'blue' },
+      { label: '隔绝条件', note: '涂油、刷漆或镀层可减慢锈蚀', tone: 'green' },
+      { label: '选择材料', note: '合金和防护层适合不同环境', tone: 'amber' },
+      { label: '维护检查', note: '及时修补破损防护层', tone: 'slate' },
+    ],
+  },
+  'chem-k-indicators-ph': {
+    type: 'flow', title: '指示剂与 pH 判断', summary: '用规范方法判断溶液酸碱性并安全处理。',
+    items: [
+      { label: '使用指示剂', note: '用颜色变化初步判断酸碱性', tone: 'blue' },
+      { label: '读取 pH', note: '按规范比色或读数', tone: 'green' },
+      { label: '作出判断', note: 'pH 小于 7 通常显酸性', tone: 'amber' },
+      { label: '安全处理', note: '未知溶液不品尝不直接闻气味', tone: 'slate' },
+    ],
+  },
+  'chem-k-common-acids': {
+    type: 'hierarchy', title: '酸的共同性质', summary: '酸的性质与溶液中的氢离子有关。',
+    items: [
+      { label: '酸', note: '溶液中能电离出氢离子', tone: 'blue', depth: 0 },
+      { label: '与指示剂', note: '使某些指示剂显示特定颜色', tone: 'green', depth: 1 },
+      { label: '与活泼金属', note: '在条件适当时生成氢气和盐', tone: 'amber', depth: 1 },
+      { label: '与碱和金属氧化物', note: '可发生中和或生成盐和水', tone: 'slate', depth: 1 },
+    ],
+  },
+  'chem-k-common-bases': {
+    type: 'hierarchy', title: '碱的共同性质', summary: '碱的性质与溶液中的氢氧根离子有关。',
+    items: [
+      { label: '碱', note: '溶液中能电离出氢氧根离子', tone: 'blue', depth: 0 },
+      { label: '与指示剂', note: '使某些指示剂显示特定颜色', tone: 'green', depth: 1 },
+      { label: '与酸', note: '发生中和生成盐和水', tone: 'amber', depth: 1 },
+      { label: '使用边界', note: '强碱具有腐蚀性需按规范防护', tone: 'slate', depth: 1 },
+    ],
+  },
+  'chem-k-neutralization': {
+    type: 'flow', title: '中和反应判断', summary: '依据证据判断中和反应及其适用条件。',
+    items: [
+      { label: '确认酸碱', note: '从指示剂或 pH 等证据判断', tone: 'blue' },
+      { label: '发生中和', note: '酸与碱反应生成盐和水', tone: 'green' },
+      { label: '观察变化', note: '现象取决于反应物和指示剂', tone: 'amber' },
+      { label: '联系应用', note: '调节土壤或处理酸碱废液需遵守条件', tone: 'slate' },
+    ],
+  },
+  'chem-k-common-salts': {
+    type: 'hierarchy', title: '常见盐及用途', summary: '根据组成、性质和条件认识常见盐的用途。',
+    items: [
+      { label: '盐', note: '由金属离子或铵根离子与酸根离子构成', tone: 'blue', depth: 0 },
+      { label: '常见盐', note: '氯化钠、碳酸钠、碳酸钙等', tone: 'green', depth: 1 },
+      { label: '用途判断', note: '用途取决于性质和实际条件', tone: 'amber', depth: 1 },
+      { label: '安全使用', note: '化学品按标签和规范使用', tone: 'slate', depth: 1 },
+    ],
+  },
+  'chem-k-ion-reactions': {
+    type: 'flow', title: '复分解与离子检验', summary: '依据生成条件和现象判断离子反应。',
+    items: [
+      { label: '判断反应物', note: '先识别溶液中的离子', tone: 'blue' },
+      { label: '检查生成条件', note: '生成沉淀、气体或水时可能反应', tone: 'green' },
+      { label: '选择检验', note: '使用特征反应和规范现象', tone: 'amber' },
+      { label: '得出结论', note: '结论要对应观察证据', tone: 'slate' },
+    ],
+  },
+  'chem-k-fertilizers': {
+    type: 'hierarchy', title: '化学肥料分类', summary: '肥料分类与合理施用要结合实际需要。',
+    items: [
+      { label: '化学肥料', note: '为植物提供一种或多种营养元素', tone: 'blue', depth: 0 },
+      { label: '氮肥', note: '主要补充氮元素', tone: 'green', depth: 1 },
+      { label: '磷肥和钾肥', note: '分别主要补充磷、钾元素', tone: 'amber', depth: 1 },
+      { label: '合理施用', note: '依据土壤和作物需要避免过量', tone: 'slate', depth: 1 },
+    ],
+  },
+  'chem-k-substance-classification': {
+    type: 'hierarchy', title: '物质分类线索', summary: '从组成和特征逐步判断物质类别。',
+    items: [
+      { label: '物质', note: '先按组成是否固定分类', tone: 'blue', depth: 0 },
+      { label: '混合物', note: '由多种物质组成', tone: 'green', depth: 1 },
+      { label: '纯净物', note: '组成固定可继续分类', tone: 'amber', depth: 1 },
+      { label: '纯净物再分类', note: '单质、化合物和酸碱盐等按特征判断', tone: 'slate', depth: 2 },
+    ],
+  },
+  'chem-k-organic-basics': {
+    type: 'hierarchy', title: '有机物与高分子', summary: '依据组成和特征认识有机物及有机高分子。',
+    items: [
+      { label: '含碳化合物', note: '分类要看组成和特征', tone: 'blue', depth: 0 },
+      { label: '有机物', note: '多数含碳元素的化合物', tone: 'green', depth: 1 },
+      { label: '无机物', note: '有些含碳化合物不属于有机物', tone: 'amber', depth: 1 },
+      { label: '有机高分子', note: '相对分子质量很大的一类有机物', tone: 'slate', depth: 2 },
+    ],
+  },
+  'chem-k-materials': {
+    type: 'hierarchy', title: '材料分类与选择', summary: '材料分类和选择要结合来源、组成与用途。',
+    items: [
+      { label: '材料', note: '根据来源、组成和用途选择', tone: 'blue', depth: 0 },
+      { label: '天然材料', note: '来自自然界并经加工使用', tone: 'green', depth: 1 },
+      { label: '合成材料', note: '通过化学方法制得', tone: 'amber', depth: 1 },
+      { label: '复合材料', note: '结合多种材料优点', tone: 'slate', depth: 1 },
+    ],
+  },
+  'chem-k-chemical-health': {
+    type: 'flow', title: '元素营养与健康', summary: '从元素营养出发作出科学的健康判断。',
+    items: [
+      { label: '认识元素作用', note: '人体需要多种元素维持生命活动', tone: 'blue' },
+      { label: '获取营养', note: '食物提供不同营养元素', tone: 'green' },
+      { label: '保持均衡', note: '不能用单一食物替代合理膳食', tone: 'amber' },
+      { label: '科学判断', note: '不以化学名词替代健康建议', tone: 'slate' },
+    ],
+  },
+  'chem-k-resources-environment': {
+    type: 'cycle', title: '绿色化学持续关系', summary: '资源利用、污染预防和回收处理持续改进环境表现。',
+    items: [
+      { label: '资源利用', note: '按需要节约使用原料和能源', tone: 'blue' },
+      { label: '污染预防', note: '优先从源头减少有害排放', tone: 'green' },
+      { label: '回收处理', note: '分类回收并规范处置废弃物', tone: 'amber' },
+      { label: '改进选择', note: '在设计和使用中持续降低环境负担', tone: 'slate' },
+    ],
+  },
 });
 
 function clone(value) {
