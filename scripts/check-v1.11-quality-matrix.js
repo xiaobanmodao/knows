@@ -87,7 +87,12 @@ const DEFAULT_CHECKS = [
   { script: 'scripts/check-content-source-batches.test.js', label: '内容源批次审计' },
   { script: 'scripts/check-content-source-batches.js', args: ['--report', 'dist/content-audit/content-source-batches.json'], label: '内容源批次报告' },
   { script: 'scripts/content-source-catalog.test.js', label: '内容源目录契约' },
-  { script: 'scripts/check-content-audit.js', args: ['--require-reviewed'], label: '严格内容审计' },
+  {
+    script: 'scripts/check-content-audit.js',
+    args: ['--require-reviewed'],
+    before: [{ script: 'scripts/build-content-audit.js' }],
+    label: '严格内容审计',
+  },
   { script: 'scripts/check-search-index.js', label: '搜索索引' },
   { script: 'scripts/check-search-semantics.js', label: '搜索语义' },
   { script: 'scripts/check-search-experience.js', label: '搜索体验' },
@@ -133,11 +138,19 @@ const RELEASE_CHECKS = [
   { script: 'scripts/check-release-readiness.js', args: ['--require-device-evidence'], label: '实体设备与包体严格门禁' },
 ];
 
+function cloneCheckCommand(item) {
+  const command = { ...item, args: [...(item.args || [])] };
+  if (item.before) {
+    command.before = item.before.map((before) => ({ ...before, args: [...(before.args || [])] }));
+  }
+  return command;
+}
+
 function getCheckCommands(requireReleaseEvidence = false) {
-  if (!requireReleaseEvidence) return DEFAULT_CHECKS.map((item) => ({ ...item, args: [...(item.args || [])] }));
+  if (!requireReleaseEvidence) return DEFAULT_CHECKS.map(cloneCheckCommand);
 
   const base = DEFAULT_CHECKS.filter((item) => item.script !== 'scripts/check-release-readiness.js');
-  return [...base, ...RELEASE_CHECKS].map((item) => ({ ...item, args: [...(item.args || [])] }));
+  return [...base, ...RELEASE_CHECKS].map(cloneCheckCommand);
 }
 
 function getMatrixEnvironment(args = process.argv, baseEnvironment = process.env) {
@@ -165,15 +178,20 @@ function getCheckEnvironment(item, baseEnvironment = process.env) {
   return environment;
 }
 
-function runCheck(item, index, total, baseEnvironment = process.env) {
+function runCommand(item, baseEnvironment = process.env) {
   const args = item.args || [];
-  console.log(`[${index}/${total}] ${item.label}`);
   execFileSync(process.execPath, [path.join(root, item.script), ...args], {
     cwd: root,
     encoding: 'utf8',
     stdio: 'inherit',
     env: getCheckEnvironment(item, baseEnvironment),
   });
+}
+
+function runCheck(item, index, total, baseEnvironment = process.env) {
+  console.log(`[${index}/${total}] ${item.label}`);
+  (item.before || []).forEach((before) => runCommand(before, baseEnvironment));
+  runCommand(item, baseEnvironment);
 }
 
 function main(requireReleaseEvidence = false, args = process.argv, baseEnvironment = process.env) {

@@ -104,6 +104,17 @@ assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-privacy-
   assert.ok(defaultCommands.some((item) => item.script === script), `质量矩阵缺少 ${script}`);
 });
 assert.ok(!defaultCommands.some((item) => item.script === 'scripts/check-package-sizes.js'));
+assert.strictEqual(defaultCommands.length, 117, '默认质量矩阵必须保持 117 项');
+const strictContentAudit = defaultCommands.find((item) => item.script === 'scripts/check-content-audit.js');
+assert.strictEqual(strictContentAudit.before.length, 1, '严格内容审计必须恰有一个前置检查');
+assert.strictEqual(
+  strictContentAudit.before[0].script,
+  'scripts/build-content-audit.js',
+  '严格内容审计必须先构建内容审计报告',
+);
+const declaredStrictContentAudit = DEFAULT_CHECKS.find((item) => item.script === 'scripts/check-content-audit.js');
+assert.notStrictEqual(strictContentAudit.before, declaredStrictContentAudit.before);
+assert.notStrictEqual(strictContentAudit.before[0].args, declaredStrictContentAudit.before[0].args);
 assert.ok(strictCommands.some((item) => item.script === 'scripts/check-release-readiness.js'));
 assert.ok(strictCommands.some((item) => item.args.includes('--require-device-evidence')));
 
