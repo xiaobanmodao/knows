@@ -4,7 +4,7 @@
 
 **Goal:** 在隔离分支中把截至 `7339c30` 的 v1.13 内容质量线合并到 `4377e97` 的 v1.10.1 发布回归基线，同时保留发布热修复、把默认质量矩阵扩展为 125 项，并且不执行任何发布动作。
 
-**Architecture:** 分支从 `codex/release-regression-v1.10.1` 出发，先将“热修复文件范围”从通用产品检查切换为显式模式，再以一个保留双亲历史的 merge commit 引入 v1.13。冲突只在发布检查和搜索语义脚本处理；矩阵与实时路线文档在 merge 状态中一并校验，实际模拟器验证记录在 merge commit 之后的独立文档提交中完成，避免修改冻结发布分支。
+**Architecture:** 分支从 `codex/release-regression-v1.10.1` 出发，先将“热修复文件范围”从通用产品检查切换为显式模式，再以一个保留双亲历史的 merge commit 引入 v1.13。冲突只在发布检查和搜索语义脚本处理；矩阵与实时路线文档在 merge commit 之后的独立提交中完成，实际模拟器验证记录再使用独立文档提交，避免修改冻结发布分支。
 
 **Tech Stack:** 微信小程序 JavaScript、Node.js 内置 `assert`/`fs`/`child_process`、Git 三方合并、现有 Developer Tools 项目。
 
@@ -117,7 +117,7 @@ git commit -m "fix(release): scope hotfix validation explicitly"
 
 **Interfaces:**
 - Consumes: `codex/chemistry-visual-guides-v1.13`、Task 1 的 `shouldRequireHotfixScope()` 和 v1.10.1 发布热修复脚本。
-- Produces: 一个未提交的 Git merge 状态；所有 v1.13 模块可由当前工作树加载。
+- Produces: 第二父提交为 `7339c30` 的 Git merge commit；所有 v1.13 模块可由当前工作树加载。
 - Preserves: `checkCloudPrivacyTooling()`、`checkPureKnowledgeRuntimeTooling()`、`checkReleasePackageEvidenceTooling()`、`checkReleaseToolStateEvidence()`、catalog 分包别名路径。
 
 - [ ] **Step 1: 启动无提交三方合并并确认冲突范围**
@@ -236,6 +236,21 @@ node scripts/check-release-readiness.js
 
 Expected: 未解决冲突列表为空；两个脚本和矩阵契约通过；默认发布检查不再把内容集成视为热修复范围违规。此阶段矩阵总数断言仍可能等待 Task 3 更新，不运行完整矩阵。
 
+- [ ] **Step 6: 创建内容线 merge commit**
+
+Run:
+
+```bash
+git diff --check
+git status --short
+git add -A
+git reset -- dist .codex-output project.private.config.json
+git commit -m "merge: integrate v1.13 content quality stack"
+git log --oneline --parents -1
+```
+
+Expected: 提交具有两个父提交，第二父提交为 `7339c30`。若 `git reset --` 报路径未匹配，先确认这些生成目录未被暂存，再继续；不得创建空占位文件。
+
 ### Task 3: 把发布隐私检查纳入默认矩阵并同步实时路线
 
 **Files:**
@@ -312,15 +327,22 @@ node scripts/check-cloud-user-trace.js
 
 Expected: 全部通过；矩阵契约明确要求 125 项，路线文档和可执行命令数量一致。
 
-### Task 4: 执行全量静态校验并创建保留双亲的合并提交
+- [ ] **Step 6: 提交质量矩阵和路线同步**
+
+```bash
+git add scripts/check-v1.11-quality-matrix.js scripts/check-v1.11-quality-matrix.test.js scripts/check-roadmap-document-consistency.test.js docs/v1.11后续开发路线.md docs/后续开发与发布路线.md
+git commit -m "test(quality): restore release privacy gates"
+```
+
+### Task 4: 执行全量静态校验并审计集成历史
 
 **Files:**
-- Stage: Task 2、Task 3 和 v1.13 自动合并引入的所有源代码、数据、资源、检查和文档。
+- Inspect: Task 2 的 merge commit、Task 3 的质量矩阵提交和当前可再生产物。
 - Do not stage: `dist/`、`.codex-output/`、`project.private.config.json`、设备日志、截图或开发者工具单纯字段重排。
 
 **Interfaces:**
 - Consumes: 合并后的五学科内容、所有检查工具、125 项质量矩阵。
-- Produces: 第二父提交为 `7339c30`、第一父提交为 Task 1 之后当前集成分支 HEAD 的 merge commit。
+- Produces: 当前集成树的静态验证证据；不新增业务代码提交。
 - Preserves: `codex/release-regression-v1.10.1` 的工作树和引用不变。
 
 - [ ] **Step 1: 串行生成依赖审计产物**
@@ -355,26 +377,19 @@ git diff --check
 
 Expected: 默认矩阵最后输出 `OK v1.11 quality matrix: 125 checks`；内容来源跟进仍可报告 `blocked: math-chapters-v1.11`；不运行 `--require-device-evidence`，也不把默认检查解释成正式发布通过。
 
-- [ ] **Step 3: 审核暂存范围并创建 merge commit**
+- [ ] **Step 3: 审核集成历史与工作树范围**
 
 Run:
 
 ```bash
 git status --short
-git diff --cached --check
-git diff --cached --name-only --diff-filter=D
-git log --oneline --parents -1
+git diff --check
+git status --short
+git log --oneline --parents -3
+git diff --name-only codex/release-regression-v1.10.1...HEAD
 ```
 
-只在确认没有生成产物或本地证据文件后执行：
-
-```bash
-git add -A
-git reset -- dist .codex-output project.private.config.json
-git commit -m "merge: integrate v1.13 content quality stack"
-```
-
-Expected: 提交是 merge commit，具有两个父提交；`git status --short` 不显示暂存的生成产物。若 `git reset --` 报路径未匹配，先用 `git status --short` 确认它们本就没有被暂存，再继续，不创建空占位文件。
+Expected: 最近历史同时包含 `merge: integrate v1.13 content quality stack` 和 `test(quality): restore release privacy gates`；`git status --short` 只允许显示被忽略的可再生产物，不能有暂存的生成文件、设备日志或开发者工具格式化噪声。
 
 ### Task 5: 模拟器回归、记录证据并推送集成分支
 
