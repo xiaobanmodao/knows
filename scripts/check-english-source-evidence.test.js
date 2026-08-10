@@ -55,6 +55,59 @@ assert.throws(
   /未核对单元/,
 );
 
+const overObservedPartialReview = cloneReview();
+const overObservedG9a = overObservedPartialReview.books.find((book) => book.bookId === 'eng-book-g9a-2025');
+overObservedG9a.unitEvidence.push({
+  unitId: 'eng-unit-g9a-smart-learning',
+  number: 3,
+  title: 'Smart Learning',
+  isStarter: false,
+});
+overObservedG9a.unverifiedUnitIds.shift();
+assert.throws(
+  () => checkEnglishSourceEvidence({ review: overObservedPartialReview }),
+  /Unit 1-2/,
+);
+
+const extraReviewField = cloneReview();
+extraReviewField['external-content'] = 'forbidden';
+assert.throws(
+  () => checkEnglishSourceEvidence({ review: extraReviewField }),
+  /字段/,
+);
+
+const extraBookField = cloneReview();
+extraBookField.books.find((book) => book.bookId === 'eng-book-g8a-2024')
+  .textbookBody = 'forbidden';
+assert.throws(
+  () => checkEnglishSourceEvidence({ review: extraBookField }),
+  /字段/,
+);
+
+const extraUnitField = cloneReview();
+extraUnitField.books.find((book) => book.bookId === 'eng-book-g8a-2024')
+  .unitEvidence[0]['external-content'] = 'forbidden';
+assert.throws(
+  () => checkEnglishSourceEvidence({ review: extraUnitField }),
+  /字段/,
+);
+
+const dotSegmentUrlReview = cloneReview();
+dotSegmentUrlReview.books.find((book) => book.bookId === 'eng-book-g8a-2024')
+  .resourceUrl = 'https://www.pep.com.cn/zslth/yyptzy/czyy/./';
+assert.throws(
+  () => checkEnglishSourceEvidence({ review: dotSegmentUrlReview }),
+  /URL/,
+);
+
+const numericStarterReview = cloneReview();
+numericStarterReview.books.find((book) => book.bookId === 'eng-book-g7a-2024')
+  .unitEvidence[0].isStarter = 1;
+assert.throws(
+  () => checkEnglishSourceEvidence({ review: numericStarterReview }),
+  /Starter/,
+);
+
 const observedPendingReview = cloneReview();
 observedPendingReview.books.find((book) => book.bookId === 'eng-book-g9b-pending')
   .unitEvidence.push({
