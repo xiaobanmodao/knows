@@ -123,3 +123,20 @@
     </view>
   </block>
 </view>
+
+<view wx:elif="{{loading}}" class="error-state">
+  <view class="error-state__title">正在打开</view>
+  <view class="error-state__message">正在读取英语内容</view>
+</view>
+
+<view wx:elif="{{notFound}}" class="error-state">
+  <view class="error-state__title">内容暂未打开</view>
+  <view class="error-state__message">{{notFound}}</view>
+  <view class="error-state__retry" bindtap="reopen">重新打开</view>
+</view>
+
+<view wx:else class="error-state">
+  <view class="error-state__title">内容暂未打开</view>
+  <view class="error-state__message">请返回后重新打开。</view>
+  <view class="error-state__retry" bindtap="reopen">重新打开</view>
+</view>

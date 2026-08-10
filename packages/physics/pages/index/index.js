@@ -5,6 +5,8 @@ const { openCatalogRoute } = require('../../../../utils/catalog-routes');
 
 Page({
   data: {
+    loading: true,
+    notFound: '',
     subject: null,
     topics: [],
     isEnglish: false,
@@ -20,67 +22,92 @@ Page({
     activeView: 'catalog',
   },
 
-  async onLoad(options) {
+  async onLoad(options = {}) {
     this.pageActive = true;
+    const requestToken = (this.assetRequestToken || 0) + 1;
+    this.assetRequestToken = requestToken;
     const subjectId = normalizeSubjectId(options.id);
-
-    const home = getSubjectHome(subjectId);
-    const isEnglish = subjectId === 'english';
-    const isPhysics = subjectId === 'physics';
-    const books = (home.unitBooks || []).map((book) => ({
-      ...book,
-      disabled: book.status !== 'verified' || !book.unitCount,
-    }));
-    const storedBookId = isEnglish ? wx.getStorageSync('englishCurrentBookId') : '';
-    const selectedBook = books.find((book) => book.id === storedBookId && !book.disabled)
-      || books.find((book) => !book.disabled)
-      || null;
-    const physicsBooks = home.physicsBooks || [];
-    const storedPhysicsBookId = isPhysics ? wx.getStorageSync('physicsCurrentBookId') : '';
-    const selectedPhysicsBook = physicsBooks.find((book) => book.id === storedPhysicsBookId)
-      || physicsBooks[0]
-      || null;
     this.subjectId = subjectId;
-    wx.setNavigationBarTitle({ title: home.subject.name });
-    this.setData({
-      subject: { ...home.subject, gradeText: home.subject.gradeBands.join(' · ') },
-      isEnglish,
-      isPhysics,
-      books,
-      selectedBookId: selectedBook ? selectedBook.id : '',
-      selectedBook,
-      units: selectedBook ? selectedBook.units : [],
-      physicsBooks,
-      selectedPhysicsBookId: selectedPhysicsBook ? selectedPhysicsBook.id : '',
-      selectedPhysicsBook,
-      physicsChapters: selectedPhysicsBook ? selectedPhysicsBook.chapters : [],
-      topics: home.topics.map((topic) => ({
-        ...topic,
-        gradeText: topic.gradeBands.join(' / '),
-        coverImage: isCloudFile(topic.coverImage) ? '' : topic.coverImage,
-        imageLoadFailed: false,
-      })),
-    });
+    this.setData({ loading: true, notFound: '' });
 
-    const imagePaths = home.topics.map((topic) => topic.coverImage).filter(Boolean);
-    const fileMap = await getTempFileURLMap(imagePaths);
+    try {
+      const home = getSubjectHome(subjectId);
+      if (!home || !home.subject) {
+        throw new Error('学科内容暂未找到');
+      }
 
-    if (!this.pageActive) {
-      return;
+      const isEnglish = subjectId === 'english';
+      const isPhysics = subjectId === 'physics';
+      const books = (home.unitBooks || []).map((book) => ({
+        ...book,
+        disabled: book.status !== 'verified' || !book.unitCount,
+      }));
+      const storedBookId = isEnglish ? wx.getStorageSync('englishCurrentBookId') : '';
+      const selectedBook = books.find((book) => book.id === storedBookId && !book.disabled)
+        || books.find((book) => !book.disabled)
+        || null;
+      const physicsBooks = home.physicsBooks || [];
+      const storedPhysicsBookId = isPhysics ? wx.getStorageSync('physicsCurrentBookId') : '';
+      const selectedPhysicsBook = physicsBooks.find((book) => book.id === storedPhysicsBookId)
+        || physicsBooks[0]
+        || null;
+      const topics = Array.isArray(home.topics) ? home.topics : [];
+      wx.setNavigationBarTitle({ title: home.subject.name });
+      this.setData({
+        subject: { ...home.subject, gradeText: (home.subject.gradeBands || []).join(' · ') },
+        isEnglish,
+        isPhysics,
+        books,
+        selectedBookId: selectedBook ? selectedBook.id : '',
+        selectedBook,
+        units: selectedBook ? selectedBook.units : [],
+        physicsBooks,
+        selectedPhysicsBookId: selectedPhysicsBook ? selectedPhysicsBook.id : '',
+        selectedPhysicsBook,
+        physicsChapters: selectedPhysicsBook ? selectedPhysicsBook.chapters : [],
+        loading: false,
+        notFound: '',
+        topics: topics.map((topic) => ({
+          ...topic,
+          gradeText: (topic.gradeBands || []).join(' / '),
+          coverImage: isCloudFile(topic.coverImage) ? '' : topic.coverImage,
+          imageLoadFailed: false,
+        })),
+      });
+
+      const imagePaths = topics.map((topic) => topic.coverImage).filter(Boolean);
+      try {
+        const fileMap = await getTempFileURLMap(imagePaths);
+        if (!this.pageActive || this.assetRequestToken !== requestToken) return;
+        this.setData({
+          topics: topics.map((topic) => ({
+            ...topic,
+            gradeText: (topic.gradeBands || []).join(' / '),
+            coverImage: applyTempFileURL(topic.coverImage, fileMap) || (isCloudFile(topic.coverImage) ? '' : topic.coverImage),
+            imageLoadFailed: false,
+          })),
+        });
+      } catch (error) {
+        // 图片地址失败时保留已经展示的文字内容。
+      }
+    } catch (error) {
+      if (!this.pageActive || this.assetRequestToken !== requestToken) return;
+      this.setData({
+        loading: false,
+        subject: null,
+        topics: [],
+        notFound: '当前学科内容暂未打开，请重试。',
+      });
     }
-
-    this.setData({
-      topics: home.topics.map((topic) => ({
-        ...topic,
-        gradeText: topic.gradeBands.join(' / '),
-        coverImage: applyTempFileURL(topic.coverImage, fileMap) || (isCloudFile(topic.coverImage) ? '' : topic.coverImage),
-        imageLoadFailed: false,
-      })),
-    });
   },
 
   onUnload() {
     this.pageActive = false;
+    this.assetRequestToken = (this.assetRequestToken || 0) + 1;
+  },
+
+  reopen() {
+    this.onLoad({ id: this.subjectId });
   },
 
   openTopic(event) {

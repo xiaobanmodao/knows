@@ -62,6 +62,7 @@ assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-release-
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-release-regression-evidence.test.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/run-release-preview.test.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-roadmap-status.test.js'));
+assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-subject-index-fallbacks.test.js'));
 [
   'scripts/check-package-manifest.js',
   'scripts/check-student-copy.js',

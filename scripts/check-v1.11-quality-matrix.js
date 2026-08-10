@@ -68,6 +68,7 @@ const DEFAULT_CHECKS = [
   { script: 'scripts/check-search-experience.js', label: '搜索体验' },
   { script: 'scripts/check-reference-index.js', label: '参考索引' },
   { script: 'scripts/check-content-routes.js', label: '内容路由' },
+  { script: 'scripts/check-subject-index-fallbacks.test.js', label: '学科首页失败兜底契约' },
   { script: 'scripts/check-package-manifest.js', label: '包注册表' },
   { script: 'scripts/check-package-boundaries.js', label: '分包边界' },
   { script: 'scripts/check-subject-adapters.js', label: '学科适配器' },
