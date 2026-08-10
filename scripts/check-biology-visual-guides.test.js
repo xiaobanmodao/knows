@@ -58,6 +58,20 @@ expectIssue((data) => {
 }, '右侧 lane');
 
 expectIssue((data) => {
+  const hierarchyGuide = {
+    type: 'hierarchy',
+    title: '层级路径',
+    summary: '按层级整理关系。',
+    items: [
+      { label: '根', note: '最高层级', tone: 'slate', depth: 0 },
+      { label: '分支', note: '超出允许上界', tone: 'green', depth: 3 },
+    ],
+  };
+  data.sourceKnowledgeItems[0].visualGuide = hierarchyGuide;
+  data.runtimeLayers[0].knowledgeItems[0].visualGuide = JSON.parse(JSON.stringify(hierarchyGuide));
+}, 'depth');
+
+expectIssue((data) => {
   data.runtimeLayers[0].knowledgeItems[0].visualGuide.summary = '被篡改的摘要';
 }, '字段与源数据不一致');
 

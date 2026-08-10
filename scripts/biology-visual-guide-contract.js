@@ -79,7 +79,7 @@ function validateSourceGuides(sourceKnowledgeItems) {
       }
 
       if (guide.type === 'hierarchy') {
-        if (!Number.isInteger(item.depth) || item.depth < 0) {
+        if (!Number.isInteger(item.depth) || item.depth < 0 || item.depth > 2) {
           issues.push(`${knowledgeId}: hierarchy 图解${itemLabel} depth 类型不合法`);
         }
       } else if (Object.prototype.hasOwnProperty.call(item, 'depth') && !Number.isInteger(item.depth)) {
