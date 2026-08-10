@@ -24,6 +24,7 @@ assert.ok(defaultCommands.some((item) => item.script === 'scripts/build-math-cur
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-math-curriculum-audit.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-math-volume-map-input.test.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/math-volume-map-diff.test.js'));
+assert.ok(defaultCommands.some((item) => item.script === 'scripts/math-volume-map-review.test.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-chemistry-build-contract.test.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-biology-build-contract.test.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/content-source-input.test.js'));
