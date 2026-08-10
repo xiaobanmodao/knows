@@ -1,46 +1,74 @@
 const assert = require('assert');
 
 const {
+  DIRECTORY_REVIEW,
   ENGLISH_SOURCE_EVIDENCE,
   checkEnglishSourceEvidence,
   getEnglishSourceEvidence,
 } = require('../packages/english/data/english-source-evidence');
 
-assert.strictEqual(checkEnglishSourceEvidence(), true);
-assert.strictEqual(ENGLISH_SOURCE_EVIDENCE.length, 6);
+function cloneReview() {
+  return JSON.parse(JSON.stringify(DIRECTORY_REVIEW));
+}
 
-const verified = ENGLISH_SOURCE_EVIDENCE.filter((item) => item.status === 'verified');
-const pending = ENGLISH_SOURCE_EVIDENCE.filter((item) => item.status === 'pending');
-
-assert.strictEqual(verified.length, 5);
-assert.strictEqual(pending.length, 1);
+assert.strictEqual(DIRECTORY_REVIEW.evidenceKind, 'official-unit-directory');
 assert.deepStrictEqual(
-  ENGLISH_SOURCE_EVIDENCE.map((item) => item.bookId),
+  DIRECTORY_REVIEW.books.find((book) => book.bookId === 'eng-book-g9a-2025').unverifiedUnitIds,
   [
-    'eng-book-g7a-2024',
-    'eng-book-g7b-2024',
-    'eng-book-g8a-2024',
-    'eng-book-g8b-2024',
-    'eng-book-g9a-2025',
-    'eng-book-g9b-pending',
+    'eng-unit-g9a-smart-learning',
+    'eng-unit-g9a-our-memory',
+    'eng-unit-g9a-power-of-ideas',
+    'eng-unit-g9a-beyond-earth',
+    'eng-unit-g9a-feel-rhythm',
+    'eng-unit-g9a-more-than-game',
   ],
 );
 
-verified.forEach((item) => {
-  assert.strictEqual(item.sourceKey, 'pep-english-digital-resources-2025');
-  assert.match(item.resourceUrl, /^https:\/\/www\.pep\.com\.cn\/zslth\/yyptzy\/czyy\//);
-  assert.ok(item.unitEvidence.length > 0);
-  assert.strictEqual(item.unitCount, item.unitEvidence.length);
-  assert.ok(item.unitEvidence.every((unit) => unit.unitId && unit.title));
-});
+assert.strictEqual(checkEnglishSourceEvidence(), true);
+assert.strictEqual(ENGLISH_SOURCE_EVIDENCE.length, 6);
+assert.strictEqual(ENGLISH_SOURCE_EVIDENCE.filter((item) => item.status === 'verified').length, 4);
+assert.strictEqual(ENGLISH_SOURCE_EVIDENCE.filter((item) => item.status === 'partial').length, 1);
+assert.strictEqual(ENGLISH_SOURCE_EVIDENCE.filter((item) => item.status === 'pending').length, 1);
 
-assert.strictEqual(pending[0].bookId, 'eng-book-g9b-pending');
-assert.strictEqual(pending[0].resourceUrl, 'https://www.pep.com.cn/zslth/yyptzy/');
-assert.deepStrictEqual(pending[0].unitEvidence, []);
-assert.strictEqual(pending[0].unitCount, 0);
-assert.match(pending[0].note, /不创建|不猜测/);
+const titleDriftReview = cloneReview();
+titleDriftReview.books.find((book) => book.bookId === 'eng-book-g8a-2024')
+  .unitEvidence.find((unit) => unit.unitId === 'eng-unit-g8a-same-or-different')
+  .title = 'Same or Different?';
+assert.throws(
+  () => checkEnglishSourceEvidence({ review: titleDriftReview }),
+  /标题漂移/,
+);
 
-assert.deepStrictEqual(getEnglishSourceEvidence('eng-book-g8a-2024'), verified[2]);
+const legacyUrlReview = cloneReview();
+legacyUrlReview.books.find((book) => book.bookId === 'eng-book-g8a-2024')
+  .resourceUrl = 'https://www.pep.com.cn/zslth/yyptypzj/czyy/8s/';
+assert.throws(
+  () => checkEnglishSourceEvidence({ review: legacyUrlReview }),
+  /URL/,
+);
+
+const incompletePartialReview = cloneReview();
+incompletePartialReview.books.find((book) => book.bookId === 'eng-book-g9a-2025')
+  .unverifiedUnitIds.pop();
+assert.throws(
+  () => checkEnglishSourceEvidence({ review: incompletePartialReview }),
+  /未核对单元/,
+);
+
+const observedPendingReview = cloneReview();
+observedPendingReview.books.find((book) => book.bookId === 'eng-book-g9b-pending')
+  .unitEvidence.push({
+    unitId: 'eng-unit-g9a-changing-world',
+    number: 1,
+    title: 'The Changing World',
+    isStarter: false,
+  });
+assert.throws(
+  () => checkEnglishSourceEvidence({ review: observedPendingReview }),
+  /待核对册次不得包含单元/,
+);
+
+assert.strictEqual(getEnglishSourceEvidence('eng-book-g9a-2025').status, 'partial');
 assert.strictEqual(getEnglishSourceEvidence('eng-book-g9b-pending').status, 'pending');
 assert.strictEqual(getEnglishSourceEvidence('missing-book'), null);
 
