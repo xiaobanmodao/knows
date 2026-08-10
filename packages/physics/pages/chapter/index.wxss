@@ -1,3 +1,8 @@
+.error-state { min-height: 68vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 48rpx; text-align: center; }
+.error-state__title { color: #243047; font-size: 34rpx; font-weight: 800; }
+.error-state__message { margin-top: 16rpx; color: #697386; font-size: 25rpx; line-height: 1.7; }
+.error-state__retry { margin-top: 28rpx; padding: 18rpx 34rpx; border-radius: 12rpx; background: #c34e21; color: #fff; font-size: 25rpx; font-weight: 700; }
+
 .physics-hero { padding: 30rpx; border-top: 8rpx solid #c85a2d; }
 .physics-hero__eyebrow { color: #9b4a28; font-size: 22rpx; font-weight: 700; }
 .physics-hero__title { margin-top: 10rpx; color: #1d2638; font-size: 42rpx; font-weight: 800; line-height: 1.3; }

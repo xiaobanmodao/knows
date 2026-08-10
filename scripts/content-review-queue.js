@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 
 const { collectAuditEntities } = require('./content-audit');
+const { getContentSourceCandidatesForSubject } = require('../data/content-source-registry');
 
 const SUBJECT_ORDER = ['math', 'english', 'physics'];
 const SUBJECT_RANK = Object.fromEntries(SUBJECT_ORDER.map((id, index) => [id, index]));
@@ -23,38 +24,6 @@ const PRIORITY_BY_TYPE = {
 const PRIORITY_REASON = {
   1: '先复核容器边界、归属和入口，后续知识与方法内容才有稳定上下文。',
   2: '容器边界确认后复核方法适用条件、步骤、示例和图示。',
-};
-const SOURCE_CANDIDATES = {
-  math: [
-    {
-      title: '义务教育数学课程标准（2022年版）',
-      url: 'https://www.moe.gov.cn/srcsite/A26/s8001/202204/W020220420582346895190.pdf',
-    },
-    {
-      title: '人教版初中数学新版教材介绍',
-      url: 'https://www.pep.com.cn/xw/zt/hd/12/xjcjs/cz/202408/t20240826_1994351.html',
-    },
-  ],
-  english: [
-    {
-      title: '义务教育课程方案和课程标准（2022年版）',
-      url: 'https://www.moe.gov.cn/srcsite/A26/s8001/202204/t20220420_619921.html',
-    },
-    {
-      title: '人教版初中英语新教材介绍',
-      url: 'https://www.pep.com.cn/xw/zt/hd/12/xjcjs/cz/202510/t20251024_2004130.html',
-    },
-  ],
-  physics: [
-    {
-      title: '义务教育课程方案和课程标准（2022年版）',
-      url: 'https://www.moe.gov.cn/srcsite/A26/s8001/202204/t20220420_619921.html',
-    },
-    {
-      title: '人教版初中物理新教材介绍',
-      url: 'https://www.pep.com.cn/xw/zt/hd/12/xjcjs/cz/202409/t20240925_1995627.html',
-    },
-  ],
 };
 const EVIDENCE_BY_TYPE = {
   chapter: ['教材目录范围与章节顺序', '章节标题、摘要与稳定父级关系', '来源与人工复核记录'],
@@ -94,7 +63,7 @@ function buildItem(entity) {
     priority,
     priorityReason: PRIORITY_REASON[priority],
     searchKey: `${entity.subjectId}:${searchType(entity.type)}:${entity.id}`,
-    sourceCandidates: SOURCE_CANDIDATES[entity.subjectId].map((source) => ({ ...source })),
+    sourceCandidates: getContentSourceCandidatesForSubject(entity.subjectId),
     evidence: [...EVIDENCE_BY_TYPE[entity.type]],
   };
 }

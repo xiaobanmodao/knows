@@ -1,4 +1,4 @@
-<view class="page-shell">
+<view wx:if="{{!loading && !notFound}}" class="page-shell">
   <search-bar value="{{query}}" autoFocus="{{true}}" bind:change="onChange" bind:submit="onSubmit" />
   <view class="subject-filter">
     <view wx:for="{{subjectFilters}}" wx:key="id" wx:for-item="filter" class="subject-filter__item {{selectedSubjectId === filter.id ? 'subject-filter__item--active' : ''}}" data-id="{{filter.id}}" bindtap="selectSubject">{{filter.title}}</view>
@@ -88,4 +88,18 @@
     </view>
     <empty-state wx:else title="没有找到匹配内容" description="换个关键词试试，比如单元名、单词、语法、方法或公式。" />
   </view>
+</view>
+<view wx:elif="{{loading}}" class="page-shell error-state">
+  <view class="error-state__title">正在打开搜索</view>
+  <view class="error-state__message">请稍候，正在准备索引。</view>
+</view>
+<view wx:elif="{{notFound}}" class="page-shell error-state">
+  <view class="error-state__title">搜索暂时不可用</view>
+  <view class="error-state__message">{{notFound}}</view>
+  <button class="error-state__retry" bindtap="reopen">重新打开</button>
+</view>
+<view wx:else class="page-shell error-state">
+  <view class="error-state__title">搜索暂时不可用</view>
+  <view class="error-state__message">搜索暂未打开，请重试。</view>
+  <button class="error-state__retry" bindtap="reopen">重新打开</button>
 </view>

@@ -53,12 +53,20 @@ topics.forEach((topic) => {
 
 let exampleCount = 0;
 let safetyCount = 0;
+let visualGuideCount = 0;
 knowledgeItems.forEach((knowledge) => {
   ['subjectId', 'topicId', 'title', 'summary', 'boundary'].forEach((field) => assertText(knowledge[field], `${knowledge.id}.${field}`));
   assert.strictEqual(knowledge.subjectId, 'biology', `${knowledge.id}.subjectId`);
   assert(topicById.has(knowledge.topicId), `${knowledge.id} unknown topic`);
   assert(Array.isArray(knowledge.knowledgePoints) && knowledge.knowledgePoints.length >= 3, `${knowledge.id}.knowledgePoints`);
   assert(Array.isArray(knowledge.pitfalls) && knowledge.pitfalls.length >= 1, `${knowledge.id}.pitfalls`);
+  assert(knowledge.visualGuide, `${knowledge.id}.visualGuide`);
+  assertText(knowledge.visualGuide.title, `${knowledge.id}.visualGuide.title`);
+  assert(
+    Array.isArray(knowledge.visualGuide.items) && knowledge.visualGuide.items.length >= 2,
+    `${knowledge.id}.visualGuide.items`,
+  );
+  visualGuideCount += 1;
   assert.strictEqual(knowledge.examples.length, 3, `${knowledge.id} example count`);
   knowledge.examples.forEach((example) => {
     assert(example.id.startsWith('bio-ex-'), `${knowledge.id} example ID`);
@@ -75,6 +83,7 @@ knowledgeItems.forEach((knowledge) => {
 
 assert.strictEqual(exampleCount, 108, 'biology example count');
 assert.strictEqual(safetyCount, 6, 'biology safety observation count');
+assert.strictEqual(visualGuideCount, 36, 'biology visual guide count');
 templates.forEach((template) => {
   assert(template.id.startsWith('bio-tpl-'), `${template.id} must start with bio-tpl-`);
   assert(Array.isArray(template.topicIds) && template.topicIds.length >= 1, `${template.id}.topicIds`);
@@ -82,4 +91,4 @@ templates.forEach((template) => {
 });
 
 rejectForbidden({ topics, knowledgeItems, templates });
-console.log(`OK biology: ${topics.length} units, ${knowledgeItems.length} knowledge items, ${templates.length} templates, ${exampleCount} examples`);
+console.log(`OK biology: ${topics.length} units, ${knowledgeItems.length} knowledge items, ${templates.length} templates, ${exampleCount} examples, ${visualGuideCount} visual guides`);

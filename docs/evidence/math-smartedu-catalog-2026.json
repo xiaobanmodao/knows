@@ -1,0 +1,235 @@
+{
+  "schemaVersion": 1,
+  "sourceId": "smartedu-math-textbook-catalog-2026",
+  "reviewedAt": "2026-08-10",
+  "sourceUrl": "https://basic.smartedu.cn/tchMaterial",
+  "sourceKind": "official-catalog-index",
+  "contentBoundary": "仅记录官方资源元数据、公开预览目录页定位和版本核对结论，不保存教材正文、题目、解析或插图。",
+  "retrieval": {
+    "tagManifestUrl": "https://bdcs-file-2.ykt.cbern.com.cn/zxx_secondary/ndrs/tags/tch_material_tag.json",
+    "versionManifestUrl": "https://bdcs-file-2.ykt.cbern.com.cn/zxx_secondary/ndrs/resources/tch_material/version/data_version.json",
+    "resourceParts": [
+      "https://bdcs-file-1.ykt.cbern.com.cn/zxx_secondary/ndrs/resources/tch_material/part_100.json",
+      "https://bdcs-file-1.ykt.cbern.com.cn/zxx_secondary/ndrs/resources/tch_material/part_101.json",
+      "https://bdcs-file-1.ykt.cbern.com.cn/zxx_secondary/ndrs/resources/tch_material/part_102.json",
+      "https://bdcs-file-1.ykt.cbern.com.cn/zxx_secondary/ndrs/resources/tch_material/part_103.json"
+    ],
+    "detailUrlTemplate": "https://bdcs-file-2.ykt.cbern.com.cn/zxx_secondary/ndrv2/resources/tch_material/details/{resourceId}.json"
+  },
+  "resourceRecords": [
+    {
+      "grade": "七年级",
+      "volume": "上册",
+      "resourceId": "540ac93d-67fc-4353-9e49-1ef20d02b5a4",
+      "title": "（根据2022年版课程标准修订）义务教育教科书·数学七年级上册",
+      "revisionMarker": "2022-revised",
+      "detailMetadata": {
+        "globalTitle": "（根据2022年版课程标准修订）义务教育教科书·数学七年级上册",
+        "versionVisible": "RELEASE",
+        "format": "pdf",
+        "previewAssetCount": 49
+      },
+      "platformMetadata": {
+        "globalLabel": ["zxx", "义务教育教科书 数学 七年级 上册", "2cbuPWM3oXGSBI80OFKOSa", "x_document"],
+        "createTime": "2022-09-29T19:09:43.010+0800",
+        "updateTime": "2025-06-19T14:29:07.576+0800",
+        "onlineTime": "2025-06-20T08:38:49.910+0800",
+        "versionId": "540ac93d-67fc-4353-9e49-1ef20d02b5a4",
+        "providerName": "智慧中小学",
+        "catalogType": "tchMaterial",
+        "resourceSource": "CREATE"
+      },
+      "directoryChapterRange": "1-6",
+      "directoryChapters": [
+        { "number": 1, "title": "有理数", "sourcePages": [5] },
+        { "number": 2, "title": "有理数的运算", "sourcePages": [5] },
+        { "number": 3, "title": "代数式", "sourcePages": [6] },
+        { "number": 4, "title": "整式的加减", "sourcePages": [6] },
+        { "number": 5, "title": "一元一次方程", "sourcePages": [6] },
+        { "number": 6, "title": "几何图形初步", "sourcePages": [7] }
+      ],
+      "directoryPreviewPages": [5, 6, 7],
+      "previewPageUrlTemplate": "https://r3-ndr.ykt.cbern.com.cn/edu_product/esp/assets/assets_document.t/zh-CN/1750313459212/transcode/image/{page}.jpg"
+    },
+    {
+      "grade": "七年级",
+      "volume": "下册",
+      "resourceId": "81d65033-4cb1-4cf0-ae27-8c367c537c30",
+      "title": "（根据2022年版课程标准修订）义务教育教科书·数学七年级下册",
+      "revisionMarker": "2022-revised",
+      "detailMetadata": {
+        "globalTitle": "（根据2022年版课程标准修订）义务教育教科书·数学七年级下册",
+        "versionVisible": "RELEASE",
+        "format": "pdf",
+        "previewAssetCount": 49
+      },
+      "platformMetadata": {
+        "globalLabel": ["zxx", "义务教育教科书 数学 七年级 下册", "2cbuPWM3oXGSBI80OFKOSa", "x_document"],
+        "createTime": "2022-09-29T19:09:44.904+0800",
+        "updateTime": "2025-06-19T15:59:12.323+0800",
+        "onlineTime": "2025-06-20T08:39:01.920+0800",
+        "versionId": "81d65033-4cb1-4cf0-ae27-8c367c537c30",
+        "providerName": "智慧中小学",
+        "catalogType": "tchMaterial",
+        "resourceSource": "CREATE"
+      },
+      "directoryChapterRange": "7-12",
+      "directoryChapters": [
+        { "number": 7, "title": "相交线与平行线", "sourcePages": [5] },
+        { "number": 8, "title": "实数", "sourcePages": [5] },
+        { "number": 9, "title": "平面直角坐标系", "sourcePages": [6] },
+        { "number": 10, "title": "二元一次方程组", "sourcePages": [6] },
+        { "number": 11, "title": "不等式与不等式组", "sourcePages": [7] },
+        { "number": 12, "title": "数据的收集、整理与描述", "sourcePages": [7] }
+      ],
+      "directoryPreviewPages": [5, 6, 7],
+      "previewPageUrlTemplate": "https://r2-ndr.ykt.cbern.com.cn/edu_product/esp/assets/81d65033-4cb1-4cf0-ae27-8c367c537c30.t/zh-CN/1750314808424/transcode/image/{page}.jpg"
+    },
+    {
+      "grade": "八年级",
+      "volume": "上册",
+      "resourceId": "81264e9e-22bc-4289-8389-13b40433b5ba",
+      "title": "义务教育教科书·数学八年级上册",
+      "revisionMarker": "unmarked-edition",
+      "detailMetadata": {
+        "globalTitle": "义务教育教科书·数学八年级上册",
+        "versionVisible": "RELEASE",
+        "format": "pdf",
+        "previewAssetCount": 49
+      },
+      "platformMetadata": {
+        "globalLabel": ["zxx", "义务教育教科书 数学 八年级 上册", "2cbuPWM3oXGSBI80OFKOSa", "x_document"],
+        "createTime": "2022-09-29T19:09:46.705+0800",
+        "updateTime": "2024-08-31T17:46:06.094+0800",
+        "onlineTime": "2023-07-04T18:34:21.320+0800",
+        "versionId": "81264e9e-22bc-4289-8389-13b40433b5ba",
+        "providerName": "智慧中小学",
+        "catalogType": "tchMaterial",
+        "resourceSource": "CREATE"
+      },
+      "directoryChapterRange": "11-15",
+      "directoryChapters": [
+        { "number": 11, "title": "三角形", "sourcePages": [5] },
+        { "number": 12, "title": "全等三角形", "sourcePages": [5] },
+        { "number": 13, "title": "轴对称", "sourcePages": [6] },
+        { "number": 14, "title": "整式的乘法与因式分解", "sourcePages": [6] },
+        { "number": 15, "title": "分式", "sourcePages": [7] }
+      ],
+      "directoryPreviewPages": [5, 6, 7],
+      "previewPageUrlTemplate": "https://r2-ndr.ykt.cbern.com.cn/edu_product/esp/assets/assets_document.t/zh-CN/1725006572412/transcode/image/{page}.jpg"
+    },
+    {
+      "grade": "八年级",
+      "volume": "下册",
+      "resourceId": "e91a6f80-2a9a-4452-a47e-b9ec164156ff",
+      "title": "义务教育教科书·数学八年级下册",
+      "revisionMarker": "unmarked-edition",
+      "detailMetadata": {
+        "globalTitle": "义务教育教科书·数学八年级下册",
+        "versionVisible": "RELEASE",
+        "format": "pdf",
+        "previewAssetCount": 49
+      },
+      "platformMetadata": {
+        "globalLabel": ["zxx", "义务教育教科书 数学 八年级 下册", "2cbuPWM3oXGSBI80OFKOSa", "x_document"],
+        "createTime": "2022-09-29T19:09:48.583+0800",
+        "updateTime": "2025-01-26T12:41:31.077+0800",
+        "onlineTime": "2022-09-29T19:09:48.613+0800",
+        "versionId": "e91a6f80-2a9a-4452-a47e-b9ec164156ff",
+        "providerName": "智慧中小学",
+        "catalogType": "tchMaterial",
+        "resourceSource": "CREATE"
+      },
+      "directoryChapterRange": "16-20",
+      "directoryChapters": [
+        { "number": 16, "title": "二次根式", "sourcePages": [5] },
+        { "number": 17, "title": "勾股定理", "sourcePages": [5] },
+        { "number": 18, "title": "平行四边形", "sourcePages": [6] },
+        { "number": 19, "title": "一次函数", "sourcePages": [6] },
+        { "number": 20, "title": "数据的分析", "sourcePages": [7] }
+      ],
+      "directoryPreviewPages": [5, 6, 7],
+      "previewPageUrlTemplate": "https://r2-ndr.ykt.cbern.com.cn/edu_product/esp/assets/e91a6f80-2a9a-4452-a47e-b9ec164156ff.t/zh-CN/1737863675082/transcode/image/{page}.jpg"
+    },
+    {
+      "grade": "九年级",
+      "volume": "上册",
+      "resourceId": "937a48c1-de81-4cc6-91b2-617cd859de4b",
+      "title": "义务教育教科书·数学九年级上册",
+      "revisionMarker": "unmarked-edition",
+      "detailMetadata": {
+        "globalTitle": "义务教育教科书·数学九年级上册",
+        "versionVisible": "RELEASE",
+        "format": "pdf",
+        "previewAssetCount": 49
+      },
+      "platformMetadata": {
+        "globalLabel": ["zxx", "义务教育教科书 数学 九年级 上册", "2cbuPWM3oXGSBI80OFKOSa", "x_document"],
+        "createTime": "2022-09-29T19:09:50.789+0800",
+        "updateTime": "2024-08-31T17:46:39.807+0800",
+        "onlineTime": "2023-07-04T18:29:01.932+0800",
+        "versionId": "937a48c1-de81-4cc6-91b2-617cd859de4b",
+        "providerName": "智慧中小学",
+        "catalogType": "tchMaterial",
+        "resourceSource": "CREATE"
+      },
+      "directoryChapterRange": "21-25",
+      "directoryChapters": [
+        { "number": 21, "title": "一元二次方程", "sourcePages": [5] },
+        { "number": 22, "title": "二次函数", "sourcePages": [5] },
+        { "number": 23, "title": "旋转", "sourcePages": [6] },
+        { "number": 24, "title": "圆", "sourcePages": [6] },
+        { "number": 25, "title": "概率初步", "sourcePages": [7] }
+      ],
+      "directoryPreviewPages": [5, 6, 7],
+      "previewPageUrlTemplate": "https://r3-ndr.ykt.cbern.com.cn/edu_product/esp/assets/assets_document.t/zh-CN/1725006575610/transcode/image/{page}.jpg"
+    },
+    {
+      "grade": "九年级",
+      "volume": "下册",
+      "resourceId": "ab188631-292c-455e-8082-e09a0ab4001c",
+      "title": "义务教育教科书·数学九年级下册",
+      "revisionMarker": "unmarked-edition",
+      "detailMetadata": {
+        "globalTitle": "义务教育教科书·数学九年级下册",
+        "versionVisible": "RELEASE",
+        "format": "pdf",
+        "previewAssetCount": 49
+      },
+      "platformMetadata": {
+        "globalLabel": ["zxx", "义务教育教科书 数学 九年级 下册", "2cbuPWM3oXGSBI80OFKOSa", "x_document"],
+        "createTime": "2022-09-29T19:09:52.502+0800",
+        "updateTime": "2025-01-26T12:42:14.545+0800",
+        "onlineTime": "2022-09-29T19:09:52.534+0800",
+        "versionId": "ab188631-292c-455e-8082-e09a0ab4001c",
+        "providerName": "智慧中小学",
+        "catalogType": "tchMaterial",
+        "resourceSource": "CREATE"
+      },
+      "directoryChapterRange": "26-29",
+      "directoryChapters": [
+        { "number": 26, "title": "反比例函数", "sourcePages": [5] },
+        { "number": 27, "title": "相似", "sourcePages": [5] },
+        { "number": 28, "title": "锐角三角函数", "sourcePages": [6] },
+        { "number": 29, "title": "投影与视图", "sourcePages": [6] }
+      ],
+      "directoryPreviewPages": [5, 6],
+      "previewPageUrlTemplate": "https://r1-ndr.ykt.cbern.com.cn/edu_product/esp/assets/ab188631-292c-455e-8082-e09a0ab4001c.t/zh-CN/1737863675819/transcode/image/{page}.jpg"
+    }
+  ],
+  "reviewDecision": {
+    "catalogStatus": "official-records-found",
+    "volumeMapStatus": "blocked-version-inconsistent",
+    "blockingReason": "七上、七下记录明确标注2022年版课程标准修订，八上至九下记录未标注同一修订版本；不能把目录页证据直接合并为完整新版29章映射。",
+    "allowedActions": [
+      "登记资源 ID、书名、册次和目录预览页",
+      "用于后续逐册版本核对",
+      "保留现有稳定章节 ID 和旧别名"
+    ],
+    "blockedActions": [
+      "重排章节显示顺序",
+      "批量修改官方章号或小节",
+      "以未标注版本记录解除新版目录门禁"
+    ]
+  }
+}

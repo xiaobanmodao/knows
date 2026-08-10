@@ -1,4 +1,4 @@
-<view class="page-shell reference-page">
+<view wx:if="{{!loading && !notFound}}" class="page-shell reference-page">
   <view class="reference-header">
     <view class="reference-header__title">知识索引</view>
     <view class="reference-header__summary">{{referenceTotal}} 条已复核条目</view>
@@ -67,4 +67,18 @@
     <view wx:if="{{hasMore}}" class="reference-more" bindtap="loadMore">继续显示 {{totalCount - visibleCount}} 条</view>
   </view>
   <empty-state wx:else title="没有找到匹配条目" description="当前关键词没有对应的索引条目。" />
+</view>
+<view wx:elif="{{loading}}" class="page-shell error-state">
+  <view class="error-state__title">正在打开知识索引</view>
+  <view class="error-state__message">请稍候，正在准备索引。</view>
+</view>
+<view wx:elif="{{notFound}}" class="page-shell error-state">
+  <view class="error-state__title">知识索引暂时不可用</view>
+  <view class="error-state__message">{{notFound}}</view>
+  <button class="error-state__retry" bindtap="reopen">重新打开</button>
+</view>
+<view wx:else class="page-shell error-state">
+  <view class="error-state__title">知识索引暂时不可用</view>
+  <view class="error-state__message">索引暂未打开，请重试。</view>
+  <button class="error-state__retry" bindtap="reopen">重新打开</button>
 </view>

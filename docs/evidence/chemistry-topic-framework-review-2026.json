@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 1,
+  "reviewId": "chemistry-topic-framework-support-2026-v1",
+  "reviewedAt": "2026-08-11",
+  "evidenceKind": "official-framework-support",
+  "scope": {
+    "supports": [
+      "现有原创化学专题与官方公开课程、教材版本语境的宏观领域相容。",
+      "专题稳定标识、标题与内部复核快照可追溯。"
+    ],
+    "notVerified": [
+      "教材逐章标题",
+      "教材章节顺序",
+      "教材册次映射",
+      "教材正文与原始插图"
+    ]
+  },
+  "sources": [
+    {
+      "key": "moe-chemistry-2022",
+      "title": "义务教育化学课程标准（2022年版）",
+      "url": "https://www.moe.gov.cn/srcsite/A26/s8001/202204/t20220420_619921.html",
+      "role": "curriculum-baseline",
+      "observation": "作为义务教育化学课程标准的官方基线，用于宏观课程框架观察。"
+    },
+    {
+      "key": "moe-textbook-catalog-2024",
+      "title": "2024年义务教育国家课程教学用书目录（根据2022年版课程标准修订）",
+      "url": "https://www.moe.gov.cn/srcsite/A26/s8001/202408/W020250418502592948423.pdf",
+      "role": "textbook-edition-catalog",
+      "observation": "国家目录列有人教版义务教育教科书化学九年级上下册，作为教材版本与册次的目录观察。"
+    },
+    {
+      "key": "pep-chemistry-training-2024",
+      "title": "人教版义务教育化学新教材培训会在成都举办",
+      "url": "https://www.pep.com.cn/rjdt/rjdt/202405/t20240517_1992181.shtml",
+      "role": "textbook-revision-context",
+      "observation": "人教社化学编辑室举办新教材培训会，公开说明培训聚焦编写思路和教材修订情况。"
+    }
+  ],
+  "topics": [
+    {
+      "id": "chem-topic-lab",
+      "title": "走进化学与实验安全",
+      "reviewSnapshotHash": "1571100d7b8a3a29f707a9dc2e25edb4239f9b1b912d8914271d485eb39ce889",
+      "frameworkDomains": [
+        "chemical inquiry/laboratory safety"
+      ]
+    },
+    {
+      "id": "chem-topic-air-oxygen",
+      "title": "空气、氧气与燃烧",
+      "reviewSnapshotHash": "f865686c3211b891f82808198edb07fc09a7083a5467fabef02d2eb8c62f47ec",
+      "frameworkDomains": [
+        "air/oxygen/combustion"
+      ]
+    },
+    {
+      "id": "chem-topic-water-solution",
+      "title": "水与溶液",
+      "reviewSnapshotHash": "3c9d1ce7b5c9fad7e2acdca10a6c6fb4caf466b5e99ceea32955ed00d65d0d32",
+      "frameworkDomains": [
+        "water/solutions"
+      ]
+    },
+    {
+      "id": "chem-topic-particles-elements",
+      "title": "分子、原子、离子与元素",
+      "reviewSnapshotHash": "b9fdd8f9bb3c1fb3cffc054df90bb8e9ca4ce74a94e31c3621a35575a70add94",
+      "frameworkDomains": [
+        "particles/elements"
+      ]
+    },
+    {
+      "id": "chem-topic-language-conservation",
+      "title": "化学用语与质量守恒",
+      "reviewSnapshotHash": "b5280d057d04520d0946b364f3fe4f8205ab0056f29716f160d90b531d061435",
+      "frameworkDomains": [
+        "chemical language/conservation"
+      ]
+    },
+    {
+      "id": "chem-topic-carbon-fuels",
+      "title": "碳及其化合物与燃料",
+      "reviewSnapshotHash": "957c78591509940d0847810212cc645248ddac8ed303d60aa512e07955f8cb7b",
+      "frameworkDomains": [
+        "carbon compounds/fuels"
+      ]
+    },
+    {
+      "id": "chem-topic-metals",
+      "title": "金属与金属材料",
+      "reviewSnapshotHash": "6a0f4c513a7517a5f61fb4717ca5e2ee87b566621672d4bfaa23c6182efad1d3",
+      "frameworkDomains": [
+        "metals/materials"
+      ]
+    },
+    {
+      "id": "chem-topic-acids-bases",
+      "title": "常见的酸和碱",
+      "reviewSnapshotHash": "0efc4fab6d574b8654d933ce5244e1ba2a2836db3450e118a4e4ecbd6f8bf740",
+      "frameworkDomains": [
+        "acids/bases"
+      ]
+    },
+    {
+      "id": "chem-topic-salts-fertilizers",
+      "title": "盐、化肥与常见离子反应",
+      "reviewSnapshotHash": "e1ee11065ede2bc592c50e3c9b836c06d4d774a380579c2e0ce929b64c6d0293",
+      "frameworkDomains": [
+        "salts/fertilizers"
+      ]
+    },
+    {
+      "id": "chem-topic-materials-environment",
+      "title": "化学材料、资源与环境",
+      "reviewSnapshotHash": "575670dbf76c9803aaa33f82d145f898e416e2a38caaf1cd681de0efd254198e",
+      "frameworkDomains": [
+        "materials/resources/environment"
+      ]
+    }
+  ]
+}

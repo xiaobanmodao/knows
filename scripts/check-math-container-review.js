@@ -6,6 +6,7 @@ const {
   CHAPTER_REVIEW_RECORDS,
   getChapterReviewMeta,
 } = require('../packages/math/data/chapter-review-meta');
+const { getContentSource, isAllowedContentSourceUrl } = require('../data/content-source-registry');
 
 const EXPECTED_IDS = [
   'ch01-rational',
@@ -38,7 +39,6 @@ const EXPECTED_IDS = [
   'ch28-trigonometry',
   'ch29-projection',
 ];
-const OFFICIAL_HOSTS = new Set(['www.moe.gov.cn', 'moe.gov.cn', 'www.pep.com.cn', 'pep.com.cn']);
 const EXPECTED_SOURCE_KEYS = new Set(['moe-math-curriculum-2022', 'pep-math-new-textbook-2024']);
 const FIRST_BATCH_IDS = new Set(EXPECTED_IDS.slice(0, 10));
 const SECOND_BATCH_IDS = new Set(EXPECTED_IDS.slice(10));
@@ -74,7 +74,10 @@ function checkMathContainerReview() {
     assert.strictEqual(new Set(meta.sourceRefs.map((source) => source.key)).size, 2, `${id} 来源 key 重复`);
     meta.sourceRefs.forEach((source) => {
       assert.ok(EXPECTED_SOURCE_KEYS.has(source.key), `${id} 来源 key 未登记：${source.key}`);
-      assert.ok(OFFICIAL_HOSTS.has(new URL(source.url).hostname), `${id} 来源域名不受信任`);
+      const registered = getContentSource(source.key);
+      assert.ok(registered && registered.kind === 'official', `${id} 来源类型不受信任`);
+      assert.strictEqual(registered.url, source.url, `${id} 来源 URL 与注册表不一致`);
+      assert.ok(isAllowedContentSourceUrl(registered, source.url), `${id} 来源域名不受信任`);
     });
   });
 

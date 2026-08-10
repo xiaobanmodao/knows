@@ -1,3 +1,4 @@
+const assert = require('assert');
 const { SEARCH_ALIAS_GROUPS } = require('../packages/catalog/data/search-aliases');
 const {
   buildHighlightSegments,
@@ -84,5 +85,15 @@ const aliasResult = searchAllSubjects('spelled', 'english')[0];
 if (!aliasResult || aliasResult.title !== 'spell' || !aliasResult.matchLabel) {
   throw new Error('英语词形别名没有保留关联匹配说明');
 }
+
+const oldQuestionTitle = searchAllSubjects('Same or Different?', 'english')[0];
+assert.ok(oldQuestionTitle, '旧标题 Same or Different? 应保留搜索入口');
+assert.strictEqual(oldQuestionTitle.refId, 'eng-unit-g8a-same-or-different');
+assert.strictEqual(oldQuestionTitle.title, 'Unit 3 Same or Different');
+
+const oldSingularTitle = searchAllSubjects('The Wonder of Nature', 'english')[0];
+assert.ok(oldSingularTitle, '旧标题 The Wonder of Nature 应保留搜索入口');
+assert.strictEqual(oldSingularTitle.refId, 'eng-unit-g8b-wonder-of-nature');
+assert.strictEqual(oldSingularTitle.title, 'Unit 4 The Wonders of Nature');
 
 console.log(`OK ${SEARCH_ALIAS_GROUPS.length} alias groups, ${normalizationChecks.length} normalizations, highlight ranges and formula lookups checked`);

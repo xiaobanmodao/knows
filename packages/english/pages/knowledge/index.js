@@ -38,6 +38,8 @@ function splitKnowledgeSections(sections) {
 
 Page({
   data: {
+    loading: true,
+    notFound: '',
     knowledge: null,
     context: null,
     subjectLabel: '',
@@ -58,10 +60,13 @@ Page({
     readingSettingsVisible: false,
   },
 
-  onLoad(options) {
+  onLoad(options = {}) {
+    this.pageActive = true;
+    this.assetRequestToken = (this.assetRequestToken || 0) + 1;
     this.subjectId = normalizeSubjectId(options.subjectId);
     this.shouldRestorePosition = options.restore === '1';
     this.currentScrollTop = 0;
+    this.setData({ loading: true, notFound: '' });
     this.syncReadingPreferences();
     this.loadKnowledge(options.id);
   },
@@ -115,16 +120,12 @@ Page({
 
   async loadKnowledge(knowledgeId) {
     this.currentKnowledgeId = knowledgeId;
+    const requestToken = this.assetRequestToken;
+    this.setData({ loading: true, notFound: '', knowledge: null });
 
-    const knowledge = getKnowledgeById(this.subjectId, knowledgeId);
-
-    if (!knowledge) {
-      wx.showToast({
-        title: '知识点不存在',
-        icon: 'none',
-      });
-      return;
-    }
+    try {
+      const knowledge = getKnowledgeById(this.subjectId, knowledgeId);
+      if (!knowledge) throw new Error('知识点不存在');
 
     const context = getKnowledgeContext(this.subjectId, knowledge);
     const navigation = getKnowledgeNavigation(this.subjectId, knowledge.id);
@@ -172,6 +173,8 @@ Page({
     this.currentScrollTop = restorePosition ? restorePosition.scrollTop : 0;
 
     this.setData({
+      loading: false,
+      notFound: '',
       knowledge: displayKnowledge,
       context,
       subjectLabel: SUBJECT_LABELS[this.subjectId],
@@ -194,27 +197,44 @@ Page({
       knowledge.coverImage,
       ...(knowledge.problems || []).map((problem) => problem.image),
     ];
-    const fileMap = await getTempFileURLMap(imagePaths);
+    try {
+      const fileMap = await getTempFileURLMap(imagePaths);
+      if (!this.pageActive || this.assetRequestToken !== requestToken || this.currentKnowledgeId !== knowledgeId) return;
 
-    if (this.currentKnowledgeId !== knowledgeId) {
-      return;
+      const signedCoverImage = applyTempFileURL(knowledge.coverImage, fileMap);
+      const signedProblems = (knowledge.problems || []).map((problem, index) => ({
+        ...problem,
+        image: applyTempFileURL(problem.image, fileMap) || (isCloudFile(problem.image) ? '' : problem.image),
+        imageLoadFailed: false,
+        expanded: displayKnowledge.problems[index].expanded,
+      }));
+
+      this.setData({
+        coverImageLoadFailed: false,
+        'knowledge.coverImage': signedCoverImage || (isCloudFile(knowledge.coverImage) ? '' : knowledge.coverImage),
+        'knowledge.problems': signedProblems,
+      }, () => {
+        this.restoreReadingPosition();
+      });
+    } catch (error) {
+      if (this.pageActive && this.assetRequestToken === requestToken && this.currentKnowledgeId === knowledgeId) {
+        this.restoreReadingPosition();
+      }
     }
-
-    const signedCoverImage = applyTempFileURL(knowledge.coverImage, fileMap);
-    const signedProblems = (knowledge.problems || []).map((problem, index) => ({
-      ...problem,
-      image: applyTempFileURL(problem.image, fileMap) || (isCloudFile(problem.image) ? '' : problem.image),
-      imageLoadFailed: false,
-      expanded: displayKnowledge.problems[index].expanded,
-    }));
-
-    this.setData({
-      coverImageLoadFailed: false,
-      'knowledge.coverImage': signedCoverImage || (isCloudFile(knowledge.coverImage) ? '' : knowledge.coverImage),
-      'knowledge.problems': signedProblems,
-    }, () => {
-      this.restoreReadingPosition();
-    });
+    } catch (error) {
+      if (!this.pageActive || this.assetRequestToken !== requestToken) return;
+      this.readingItem = null;
+      this.setData({
+        loading: false,
+        knowledge: null,
+        context: null,
+        relatedItems: [],
+        navigation: null,
+        essentialSections: [],
+        detailSections: [],
+        notFound: '当前英语知识点暂未打开，请重试。',
+      });
+    }
   },
 
   restoreReadingPosition() {
@@ -414,6 +434,12 @@ Page({
 
   onUnload() {
     this.persistReadingPosition();
+    this.pageActive = false;
+    this.assetRequestToken = (this.assetRequestToken || 0) + 1;
+  },
+
+  reopen() {
+    this.onLoad({ subjectId: this.subjectId, id: this.currentKnowledgeId });
   },
 
   onCoverImageError(event) {

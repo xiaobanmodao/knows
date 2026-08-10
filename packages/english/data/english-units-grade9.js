@@ -8,7 +8,7 @@ function unit(config) {
 
 const grade9Upper = createBook({
   id: 'eng-book-g9a-2025', gradeId: 'g9', semester: 'upper', label: '九年级上册', shortLabel: '九上',
-  edition: '新版教材', status: 'verified', sourceNote: '单元标题和顺序已按当前公开的人教版九年级上册新版教材核对；词汇用法、语法讲解和例句由本项目按单元主题原创整理，不作为教材逐页词表。',
+  edition: '新版教材', status: 'verified', sourceNote: '当前人教社公开目录页已核对 Unit 1-2；其余现有单元保留原创讲解，等待完整官方目录复核。词汇用法、语法讲解和例句由本项目按单元主题原创整理，不作为教材逐页词表。',
   units: [
     unit({
       id: 'eng-unit-g9a-changing-world', number: 1, title: 'The Changing World', theme: '社会变化与适应',

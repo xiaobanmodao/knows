@@ -9,6 +9,7 @@ const {
   buildEnglishTopicReviewSnapshot,
   getEnglishTopicReviewMeta,
 } = require('../packages/english/data/topic-review-meta');
+const { getContentSource, isAllowedContentSourceUrl } = require('../data/content-source-registry');
 
 const EXPECTED_TOPIC_IDS = [
   'eng-topic-vocabulary',
@@ -24,17 +25,13 @@ const EXPECTED_SOURCE_KEYS = new Set([
   'pep-english-new-textbook-2025',
 ]);
 
-const OFFICIAL_HOSTS = new Set([
-  'www.moe.gov.cn',
-  'moe.gov.cn',
-  'www.pep.com.cn',
-  'pep.com.cn',
-]);
-
 function assertOfficialSource(source, owner) {
   assert.ok(source && EXPECTED_SOURCE_KEYS.has(source.key), `${owner}: source key invalid`);
   assert.ok(source.title, `${owner}: source title missing`);
-  assert.ok(OFFICIAL_HOSTS.has(new URL(source.url).hostname), `${owner}: source host invalid`);
+  const registered = getContentSource(source.key);
+  assert.ok(registered && registered.kind === 'official', `${owner}: source kind invalid`);
+  assert.strictEqual(registered.url, source.url, `${owner}: source URL drifted`);
+  assert.ok(isAllowedContentSourceUrl(registered, source.url), `${owner}: source host invalid`);
 }
 
 function checkCloneIsolation(topicId) {

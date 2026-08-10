@@ -1,5 +1,6 @@
 const { buildKnowledge } = require('./biology-builders');
 const { getBiologyReview } = require('./content-review-meta');
+const { getVisualGuideForKnowledge } = require('./biology-visual-guides');
 
 function defineKnowledge(definition) {
   const observation = definition.safetyObservation && {
@@ -14,6 +15,7 @@ function defineKnowledge(definition) {
   }));
   return buildKnowledge({
     ...definition,
+    visualGuide: getVisualGuideForKnowledge(definition.id),
     safetyObservation: observation,
     tags: definition.tags || definition.keywords.slice(0, 3),
     boundary: definition.boundary || '本条用初中阶段可观察的事实解释概念，不把局部观察扩大为超出证据范围的结论。',

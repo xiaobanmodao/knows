@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 1,
+  "reviewId": "english-unit-directory-review-2026",
+  "reviewedAt": "2026-08-10",
+  "evidenceKind": "official-unit-directory",
+  "sourceKey": "pep-english-digital-resources-2025",
+  "indexUrl": "https://www.pep.com.cn/zslth/yyptzy/",
+  "scope": {
+    "supports": ["册次", "单元标题", "单元顺序", "Starter 标记"],
+    "notVerified": ["教材正文", "音频", "题目", "词表", "图片", "项目知识讲解", "外部内容导入"]
+  },
+  "books": [
+    {
+      "bookId": "eng-book-g7a-2024",
+      "status": "verified",
+      "resourceUrl": "https://www.pep.com.cn/zslth/yyptzy/czyy/7s/",
+      "unitEvidence": [
+        { "unitId": "eng-unit-g7a-starter-hello", "number": 1, "title": "Hello!", "isStarter": true },
+        { "unitId": "eng-unit-g7a-starter-keep-tidy", "number": 2, "title": "Keep Tidy!", "isStarter": true },
+        { "unitId": "eng-unit-g7a-starter-welcome", "number": 3, "title": "Welcome!", "isStarter": true },
+        { "unitId": "eng-unit-g7a-you-and-me", "number": 1, "title": "You and Me", "isStarter": false },
+        { "unitId": "eng-unit-g7a-were-family", "number": 2, "title": "We're Family!", "isStarter": false },
+        { "unitId": "eng-unit-g7a-my-school", "number": 3, "title": "My School", "isStarter": false },
+        { "unitId": "eng-unit-g7a-favourite-subject", "number": 4, "title": "My Favourite Subject", "isStarter": false },
+        { "unitId": "eng-unit-g7a-fun-clubs", "number": 5, "title": "Fun Clubs", "isStarter": false },
+        { "unitId": "eng-unit-g7a-day-in-life", "number": 6, "title": "A Day in the Life", "isStarter": false },
+        { "unitId": "eng-unit-g7a-happy-birthday", "number": 7, "title": "Happy Birthday!", "isStarter": false }
+      ],
+      "unverifiedUnitIds": []
+    },
+    {
+      "bookId": "eng-book-g7b-2024",
+      "status": "verified",
+      "resourceUrl": "https://www.pep.com.cn/zslth/yyptzy/czyy/7x/",
+      "unitEvidence": [
+        { "unitId": "eng-unit-g7b-animal-friends", "number": 1, "title": "Animal Friends", "isStarter": false },
+        { "unitId": "eng-unit-g7b-no-rules-no-order", "number": 2, "title": "No Rules, No Order", "isStarter": false },
+        { "unitId": "eng-unit-g7b-keep-fit", "number": 3, "title": "Keep Fit", "isStarter": false },
+        { "unitId": "eng-unit-g7b-eat-well", "number": 4, "title": "Eat Well", "isStarter": false },
+        { "unitId": "eng-unit-g7b-here-and-now", "number": 5, "title": "Here and Now", "isStarter": false },
+        { "unitId": "eng-unit-g7b-rain-or-shine", "number": 6, "title": "Rain or Shine", "isStarter": false },
+        { "unitId": "eng-unit-g7b-day-to-remember", "number": 7, "title": "A Day to Remember", "isStarter": false },
+        { "unitId": "eng-unit-g7b-once-upon-a-time", "number": 8, "title": "Once upon a Time", "isStarter": false }
+      ],
+      "unverifiedUnitIds": []
+    },
+    {
+      "bookId": "eng-book-g8a-2024",
+      "status": "verified",
+      "resourceUrl": "https://www.pep.com.cn/zslth/yyptzy/czyy/8s/",
+      "unitEvidence": [
+        { "unitId": "eng-unit-g8a-happy-holiday", "number": 1, "title": "Happy Holiday", "isStarter": false },
+        { "unitId": "eng-unit-g8a-home-sweet-home", "number": 2, "title": "Home Sweet Home", "isStarter": false },
+        { "unitId": "eng-unit-g8a-same-or-different", "number": 3, "title": "Same or Different", "isStarter": false },
+        { "unitId": "eng-unit-g8a-amazing-plants-animals", "number": 4, "title": "Amazing Plants and Animals", "isStarter": false },
+        { "unitId": "eng-unit-g8a-delicious-meal", "number": 5, "title": "What a Delicious Meal!", "isStarter": false },
+        { "unitId": "eng-unit-g8a-plan-yourself", "number": 6, "title": "Plan for Yourself", "isStarter": false },
+        { "unitId": "eng-unit-g8a-when-tomorrow-comes", "number": 7, "title": "When Tomorrow Comes", "isStarter": false },
+        { "unitId": "eng-unit-g8a-communicate", "number": 8, "title": "Let's Communicate!", "isStarter": false }
+      ],
+      "unverifiedUnitIds": []
+    },
+    {
+      "bookId": "eng-book-g8b-2024",
+      "status": "verified",
+      "resourceUrl": "https://www.pep.com.cn/zslth/yyptzy/czyy/8x/",
+      "unitEvidence": [
+        { "unitId": "eng-unit-g8b-time-to-relax", "number": 1, "title": "Time to Relax", "isStarter": false },
+        { "unitId": "eng-unit-g8b-stay-healthy", "number": 2, "title": "Stay Healthy", "isStarter": false },
+        { "unitId": "eng-unit-g8b-growing-up", "number": 3, "title": "Growing Up", "isStarter": false },
+        { "unitId": "eng-unit-g8b-wonder-of-nature", "number": 4, "title": "The Wonders of Nature", "isStarter": false },
+        { "unitId": "eng-unit-g8b-natures-temper", "number": 5, "title": "Nature's Temper", "isStarter": false },
+        { "unitId": "eng-unit-g8b-crossing-cultures", "number": 6, "title": "Crossing Cultures", "isStarter": false },
+        { "unitId": "eng-unit-g8b-good-read", "number": 7, "title": "A Good Read", "isStarter": false },
+        { "unitId": "eng-unit-g8b-making-difference", "number": 8, "title": "Making a Difference", "isStarter": false }
+      ],
+      "unverifiedUnitIds": []
+    },
+    {
+      "bookId": "eng-book-g9a-2025",
+      "status": "partial",
+      "resourceUrl": "https://www.pep.com.cn/zslth/yyptzy/czyy/9s/",
+      "unitEvidence": [
+        { "unitId": "eng-unit-g9a-changing-world", "number": 1, "title": "The Changing World", "isStarter": false },
+        { "unitId": "eng-unit-g9a-inspiring-people", "number": 2, "title": "Inspiring People", "isStarter": false }
+      ],
+      "unverifiedUnitIds": [
+        "eng-unit-g9a-smart-learning",
+        "eng-unit-g9a-our-memory",
+        "eng-unit-g9a-power-of-ideas",
+        "eng-unit-g9a-beyond-earth",
+        "eng-unit-g9a-feel-rhythm",
+        "eng-unit-g9a-more-than-game"
+      ]
+    },
+    {
+      "bookId": "eng-book-g9b-pending",
+      "status": "pending",
+      "resourceUrl": "https://www.pep.com.cn/zslth/yyptzy/",
+      "unitEvidence": [],
+      "unverifiedUnitIds": []
+    }
+  ]
+}

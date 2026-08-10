@@ -83,6 +83,8 @@ node scripts/check-search-semantics.js
 node scripts/check-reference-index.js
 node scripts/check-content-routes.js
 node scripts/check-package-boundaries.js
+node scripts/check-pure-knowledge-runtime.test.js
+node scripts/check-pure-knowledge-runtime.js
 node scripts/check-content-schema.js
 node scripts/check-content-diff.js
 node scripts/check-package-sizes.js
@@ -94,6 +96,9 @@ node scripts/check-content-review-queue.js
 node scripts/check-math-container-review.js
 node scripts/build-math-curriculum-audit.js
 node scripts/check-math-curriculum-audit.js
+node scripts/math-volume-map.test.js
+node scripts/english-curriculum-map.test.js
+node scripts/check-v1.11-quality-matrix.js
 ```
 
 生物学 v1.8 的实体设备回归步骤和发布门禁见：`docs/v1.8实体设备回归清单.md`。模拟器通过不等于真机通过；实体 iPhone 与 Android 回归完成前不创建 RC。
@@ -106,26 +111,22 @@ node scripts/check-math-curriculum-audit.js
 
 ## 当前开发顺序
 
-1. 在 iPhone 与 Android 实体手机完成生物学首页、知识点、搜索、观察聚焦、收藏、返回栈和弱网降级回归
-2. 通过后更新为 `1.8.0-rc.1` 并生成体验版，不直接提交正式审核
-3. 正式云环境与 `getImageTempUrls` 继续保持云函数签名优先、客户端文字兜底
-4. `codex/english-depth-v1.5` 已按七上、七下、八上、八下、九上顺序完成英语逐词讲解与单元语法
-5. `codex/physics-depth-v1.5.1` 补齐 84 个物理知识点的物理量、单位、条件与方向，并统一 29 个实验的结构化记录
-6. `codex/math-depth-v1.5.2` 补齐 89 个数学小节的成立条件、推导关系、成立原因和跨学科联系
-7. `codex/reference-indexes-v1.6` 建设公式、单词、语法和实验轻量索引与内容直达
-8. `codex/reference-indexes-v1.6` 完成“我的”页本地笔记筛选
-9. `codex/reference-indexes-v1.6` 完成本地数据备份与恢复
-10. `codex/reference-indexes-v1.6` 完成阅读显示设置
-11. `codex/math-template-review-v1.9.6` 完成 36 个数学方法模板的来源、父级、适用条件、步骤、示例和图示入口复核
-12. `codex/english-topic-review-v1.9.7` 完成 6 个英语专题的来源、知识点/方法引用和搜索入口复核
-13. `codex/physics-topic-review-v1.9.8` 完成 6 个物理专题的来源、知识点/方法引用、实验/公式入口和图示搜索入口复核
-14. `codex/english-template-review-v1.9.9` 完成 6 个英语方法模板的来源、专题父级、适用信号、步骤、示例和图示入口复核
-15. `codex/physics-template-review-v1.10.0` 完成 22 个物理章节方法模板和 6 个物理结构化方法模板的来源、父级、适用信号、步骤、示例和图示入口复核
-16. 复核队列清空后，进入严格内容门禁、实体设备回归和发布候选准备，不在本批加入答题、测评或登录功能
+1. 运行 `node scripts/check-release-tool-state.js --project <发布工作树>`，读取真实登录、AppID 和上传日志状态
+2. 按报告中的 `blocker.nextActions` 修复权限、项目绑定或配置问题；状态恢复为 `ready` 前不重复上传
+3. 在当前最终构建上生成二维码、日志和 `packages-preview.json`，不使用历史包体报告
+4. 在 iPhone 与 Android 实体设备完成 `docs/v1.10发布前实体设备回归清单.md` 的 A1-A15
+5. 通过严格发布门禁后创建 `1.10.1-rc.1` 并生成体验版，不直接提交正式审核
+6. 在 `codex/roadmap-v1.11` 建立数学新版逐册目录官方证据映射和差异报告
+7. 核对英语九年级下册正式目录和可靠教材文件，资料不足时保持空缺，不猜测扩充
+8. 按数学、英语、物理、化学、生物顺序做高风险字段小批复核，持续运行内容审计和资源检查
+9. 继续保持纯知识查阅，不加入答题、测评、任务、错题、登录或云同步
 
 ## 后续开发
 
 - 详细发布清单与长期路线见：`docs/后续开发与发布路线.md`
+- v1.11 具体阶段、分支边界与验收命令见：`docs/v1.11后续开发路线.md`
+- 数学新版目录证据表实施记录见：`docs/v1.11数学新版目录证据表实施记录.md`
+- 英语九年级下册目录核对记录见：`docs/v1.11英语九年级下册目录核对实施记录.md`
 - v1.2 数据、资源和验收记录见：`docs/v1.2多学科基础版实施记录.md`
 - v1.3 阅读体验实施记录见：`docs/v1.3知识阅读体验实施记录.md`
 - v1.4 分包底座实施记录见：`docs/v1.4分包底座实施记录.md`

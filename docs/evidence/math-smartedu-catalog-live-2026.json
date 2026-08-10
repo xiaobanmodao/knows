@@ -1,0 +1,211 @@
+{
+  "schemaVersion": 3,
+  "sourceId": "smartedu-math-textbook-catalog-2026",
+  "evidenceSha256": "6b7a9c9e9e060c23cc39ff9987215e5b738cd76d2efbca301c8f5ce31a5eb29f",
+  "checkedAt": "2026-08-10T10:30:47.951Z",
+  "records": [
+    {
+      "resourceId": "540ac93d-67fc-4353-9e49-1ef20d02b5a4",
+      "title": "（根据2022年版课程标准修订）义务教育教科书·数学七年级上册",
+      "tagNames": [
+        "电子教材",
+        "教材",
+        "人教版",
+        "上册",
+        "七年级",
+        "初中",
+        "数学"
+      ],
+      "revisionMarker": "2022-revised",
+      "previewPages": [
+        5,
+        6,
+        7
+      ],
+      "platformMetadata": {
+        "globalLabel": [
+          "zxx",
+          "义务教育教科书 数学 七年级 上册",
+          "2cbuPWM3oXGSBI80OFKOSa",
+          "x_document"
+        ],
+        "createTime": "2022-09-29T19:09:43.010+0800",
+        "updateTime": "2025-06-19T14:29:07.576+0800",
+        "onlineTime": "2025-06-20T08:38:49.910+0800",
+        "versionId": "540ac93d-67fc-4353-9e49-1ef20d02b5a4",
+        "providerName": "智慧中小学",
+        "catalogType": "tchMaterial",
+        "resourceSource": "CREATE"
+      }
+    },
+    {
+      "resourceId": "81d65033-4cb1-4cf0-ae27-8c367c537c30",
+      "title": "（根据2022年版课程标准修订）义务教育教科书·数学七年级下册",
+      "tagNames": [
+        "电子教材",
+        "教材",
+        "人教版",
+        "下册",
+        "七年级",
+        "初中",
+        "数学"
+      ],
+      "revisionMarker": "2022-revised",
+      "previewPages": [
+        5,
+        6,
+        7
+      ],
+      "platformMetadata": {
+        "globalLabel": [
+          "zxx",
+          "义务教育教科书 数学 七年级 下册",
+          "2cbuPWM3oXGSBI80OFKOSa",
+          "x_document"
+        ],
+        "createTime": "2022-09-29T19:09:44.904+0800",
+        "updateTime": "2025-06-19T15:59:12.323+0800",
+        "onlineTime": "2025-06-20T08:39:01.920+0800",
+        "versionId": "81d65033-4cb1-4cf0-ae27-8c367c537c30",
+        "providerName": "智慧中小学",
+        "catalogType": "tchMaterial",
+        "resourceSource": "CREATE"
+      }
+    },
+    {
+      "resourceId": "81264e9e-22bc-4289-8389-13b40433b5ba",
+      "title": "义务教育教科书·数学八年级上册",
+      "tagNames": [
+        "电子教材",
+        "教材",
+        "人教版",
+        "上册",
+        "八年级",
+        "初中",
+        "数学"
+      ],
+      "revisionMarker": "unmarked-edition",
+      "previewPages": [
+        5,
+        6,
+        7
+      ],
+      "platformMetadata": {
+        "globalLabel": [
+          "zxx",
+          "义务教育教科书 数学 八年级 上册",
+          "2cbuPWM3oXGSBI80OFKOSa",
+          "x_document"
+        ],
+        "createTime": "2022-09-29T19:09:46.705+0800",
+        "updateTime": "2024-08-31T17:46:06.094+0800",
+        "onlineTime": "2023-07-04T18:34:21.320+0800",
+        "versionId": "81264e9e-22bc-4289-8389-13b40433b5ba",
+        "providerName": "智慧中小学",
+        "catalogType": "tchMaterial",
+        "resourceSource": "CREATE"
+      }
+    },
+    {
+      "resourceId": "e91a6f80-2a9a-4452-a47e-b9ec164156ff",
+      "title": "义务教育教科书·数学八年级下册",
+      "tagNames": [
+        "电子教材",
+        "教材",
+        "人教版",
+        "下册",
+        "八年级",
+        "初中",
+        "数学"
+      ],
+      "revisionMarker": "unmarked-edition",
+      "previewPages": [
+        5,
+        6,
+        7
+      ],
+      "platformMetadata": {
+        "globalLabel": [
+          "zxx",
+          "义务教育教科书 数学 八年级 下册",
+          "2cbuPWM3oXGSBI80OFKOSa",
+          "x_document"
+        ],
+        "createTime": "2022-09-29T19:09:48.583+0800",
+        "updateTime": "2025-01-26T12:41:31.077+0800",
+        "onlineTime": "2022-09-29T19:09:48.613+0800",
+        "versionId": "e91a6f80-2a9a-4452-a47e-b9ec164156ff",
+        "providerName": "智慧中小学",
+        "catalogType": "tchMaterial",
+        "resourceSource": "CREATE"
+      }
+    },
+    {
+      "resourceId": "937a48c1-de81-4cc6-91b2-617cd859de4b",
+      "title": "义务教育教科书·数学九年级上册",
+      "tagNames": [
+        "电子教材",
+        "教材",
+        "人教版",
+        "上册",
+        "九年级",
+        "初中",
+        "数学"
+      ],
+      "revisionMarker": "unmarked-edition",
+      "previewPages": [
+        5,
+        6,
+        7
+      ],
+      "platformMetadata": {
+        "globalLabel": [
+          "zxx",
+          "义务教育教科书 数学 九年级 上册",
+          "2cbuPWM3oXGSBI80OFKOSa",
+          "x_document"
+        ],
+        "createTime": "2022-09-29T19:09:50.789+0800",
+        "updateTime": "2024-08-31T17:46:39.807+0800",
+        "onlineTime": "2023-07-04T18:29:01.932+0800",
+        "versionId": "937a48c1-de81-4cc6-91b2-617cd859de4b",
+        "providerName": "智慧中小学",
+        "catalogType": "tchMaterial",
+        "resourceSource": "CREATE"
+      }
+    },
+    {
+      "resourceId": "ab188631-292c-455e-8082-e09a0ab4001c",
+      "title": "义务教育教科书·数学九年级下册",
+      "tagNames": [
+        "电子教材",
+        "教材",
+        "人教版",
+        "下册",
+        "九年级",
+        "初中",
+        "数学"
+      ],
+      "revisionMarker": "unmarked-edition",
+      "previewPages": [
+        5,
+        6
+      ],
+      "platformMetadata": {
+        "globalLabel": [
+          "zxx",
+          "义务教育教科书 数学 九年级 下册",
+          "2cbuPWM3oXGSBI80OFKOSa",
+          "x_document"
+        ],
+        "createTime": "2022-09-29T19:09:52.502+0800",
+        "updateTime": "2025-01-26T12:42:14.545+0800",
+        "onlineTime": "2022-09-29T19:09:52.534+0800",
+        "versionId": "ab188631-292c-455e-8082-e09a0ab4001c",
+        "providerName": "智慧中小学",
+        "catalogType": "tchMaterial",
+        "resourceSource": "CREATE"
+      }
+    }
+  ]
+}

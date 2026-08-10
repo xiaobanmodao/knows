@@ -27,7 +27,7 @@ const REFERENCE_SOURCES = {
   },
   'british-council-grammar': {
     title: 'British Council LearnEnglish Grammar',
-    url: 'https://learnenglish.britishcouncil.org/grammar',
+    url: 'https://learnenglish.britishcouncil.org/free-resources/grammar',
   },
 };
 

@@ -47,7 +47,7 @@ const grade8Upper = createBook({
       ],
     }),
     unit({
-      id: 'eng-unit-g8a-same-or-different', number: 3, title: 'Same or Different?', theme: '人物比较与个性差异',
+      id: 'eng-unit-g8a-same-or-different', number: 3, title: 'Same or Different', legacyTitles: ['Same or Different?'], theme: '人物比较与个性差异',
       expressions: ['She is more outgoing than I am.', 'We are similar in some ways.', 'Both of us enjoy science.'],
       vocabulary: [
         ['compare', '动词', '比较；对照', 'compare A with B 强调比较异同，compare A to B 也可表示比作。', 'compares；compared；comparing；名词 comparison。', ['compare with', 'compare ... to ...'], 'Compare the two speakers’ ideas before you decide.', '决定前比较两位发言者的观点。', '比较级句本身常用 than，不等于 compare 的介词。'],
@@ -216,7 +216,7 @@ const grade8Lower = createBook({
       ],
     }),
     unit({
-      id: 'eng-unit-g8b-wonder-of-nature', number: 4, title: 'The Wonder of Nature', theme: '自然奇观与探索体验',
+      id: 'eng-unit-g8b-wonder-of-nature', number: 4, title: 'The Wonders of Nature', legacyTitles: ['The Wonder of Nature'], theme: '自然奇观与探索体验',
       expressions: ['It is one of the greatest natural wonders.', 'Have you ever seen a canyon?', 'The view took my breath away.'],
       vocabulary: [
         ['wonder', '名词/动词', '奇观；惊叹；想知道', '作名词可指数自然奇观；作动词后接疑问词从句。', '复数 wonders；wondered；wondering。', ['natural wonder', 'wonder why'], 'The limestone forest is a natural wonder.', '石灰岩森林是一处自然奇观。', 'No wonder 表示“难怪”。'],

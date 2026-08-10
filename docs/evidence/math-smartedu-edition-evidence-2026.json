@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 1,
+  "sourceId": "smartedu-math-textbook-catalog-2026",
+  "checkedAt": "2026-08-10T10:49:56.399Z",
+  "reviewMethod": "manual-preview-inspection",
+  "scope": "SmartEdu 人教版初中数学八至九年级册次预览页封面、版权页和本册导引",
+  "records": [
+    {
+      "grade": "八年级",
+      "volume": "上册",
+      "resourceId": "81264e9e-22bc-4289-8389-13b40433b5ba",
+      "observations": [
+        {
+          "page": 1,
+          "signal": "cover-approval",
+          "value": "2013",
+          "sourceUrl": "https://r2-ndr.ykt.cbern.com.cn/edu_product/esp/assets/assets_document.t/zh-CN/1725006572412/transcode/image/1.jpg",
+          "reviewMethod": "manual-preview-inspection"
+        },
+        {
+          "page": 4,
+          "signal": "curriculum-standard",
+          "value": "2011",
+          "sourceUrl": "https://r2-ndr.ykt.cbern.com.cn/edu_product/esp/assets/assets_document.t/zh-CN/1725006572412/transcode/image/4.jpg",
+          "reviewMethod": "manual-preview-inspection"
+        }
+      ]
+    },
+    {
+      "grade": "八年级",
+      "volume": "下册",
+      "resourceId": "e91a6f80-2a9a-4452-a47e-b9ec164156ff",
+      "observations": [
+        {
+          "page": 1,
+          "signal": "cover-approval",
+          "value": "2013",
+          "sourceUrl": "https://r2-ndr.ykt.cbern.com.cn/edu_product/esp/assets/e91a6f80-2a9a-4452-a47e-b9ec164156ff.t/zh-CN/1737863675082/transcode/image/1.jpg",
+          "reviewMethod": "manual-preview-inspection"
+        },
+        {
+          "page": 4,
+          "signal": "curriculum-standard",
+          "value": "2011",
+          "sourceUrl": "https://r2-ndr.ykt.cbern.com.cn/edu_product/esp/assets/e91a6f80-2a9a-4452-a47e-b9ec164156ff.t/zh-CN/1737863675082/transcode/image/4.jpg",
+          "reviewMethod": "manual-preview-inspection"
+        }
+      ]
+    },
+    {
+      "grade": "九年级",
+      "volume": "上册",
+      "resourceId": "937a48c1-de81-4cc6-91b2-617cd859de4b",
+      "observations": [
+        {
+          "page": 1,
+          "signal": "cover-approval",
+          "value": "2013",
+          "sourceUrl": "https://r3-ndr.ykt.cbern.com.cn/edu_product/esp/assets/assets_document.t/zh-CN/1725006575610/transcode/image/1.jpg",
+          "reviewMethod": "manual-preview-inspection"
+        },
+        {
+          "page": 4,
+          "signal": "curriculum-standard",
+          "value": "2011",
+          "sourceUrl": "https://r3-ndr.ykt.cbern.com.cn/edu_product/esp/assets/assets_document.t/zh-CN/1725006575610/transcode/image/4.jpg",
+          "reviewMethod": "manual-preview-inspection"
+        }
+      ]
+    },
+    {
+      "grade": "九年级",
+      "volume": "下册",
+      "resourceId": "ab188631-292c-455e-8082-e09a0ab4001c",
+      "observations": [
+        {
+          "page": 1,
+          "signal": "cover-approval",
+          "value": "2013",
+          "sourceUrl": "https://r1-ndr.ykt.cbern.com.cn/edu_product/esp/assets/ab188631-292c-455e-8082-e09a0ab4001c.t/zh-CN/1737863675819/transcode/image/1.jpg",
+          "reviewMethod": "manual-preview-inspection"
+        }
+      ]
+    }
+  ],
+  "editionGate": {
+    "expectedMarker": "2022-revised",
+    "status": "blocked-version-inconsistent",
+    "result": "no-2022-revised-marker",
+    "observedSignals": [
+      {
+        "signal": "cover-approval",
+        "value": "2013",
+        "recordCount": 4
+      },
+      {
+        "signal": "curriculum-standard",
+        "value": "2011",
+        "recordCount": 3
+      }
+    ],
+    "runtimeAction": "keep-volume-map-blocked"
+  }
+}

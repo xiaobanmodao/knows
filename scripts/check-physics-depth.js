@@ -5,6 +5,7 @@ const {
   QUANTITY_LIBRARY,
 } = require('../packages/physics/data/details/physics-depth-knowledge');
 const { EXPERIMENT_DEPTH } = require('../packages/physics/data/details/physics-depth-experiments');
+const { collectPhysicsFormulaContractIssues } = require('./physics-formula-contract');
 
 const issues = [];
 const quantityKeys = new Set(Object.keys(QUANTITY_LIBRARY));
@@ -13,6 +14,9 @@ const knowledgeIds = new Set(physics.knowledgeItems.map((item) => item.id));
 function issue(owner, message) {
   issues.push(`${owner}: ${message}`);
 }
+
+collectPhysicsFormulaContractIssues(physics.knowledgeItems)
+  .forEach((message) => issue('公式契约', message));
 
 function requireText(owner, value, field) {
   if (!String(value || '').trim()) issue(owner, `缺少 ${field}`);

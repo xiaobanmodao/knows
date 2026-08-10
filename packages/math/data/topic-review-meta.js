@@ -35,10 +35,12 @@ const REVIEWED_MATH_TOPIC_IDS = [
 const SOURCE_REFS = [
   {
     key: 'moe-math-curriculum-2022',
+    key: 'moe-math-curriculum-2022',
     title: '义务教育数学课程标准（2022年版）',
     url: 'https://www.moe.gov.cn/srcsite/A26/s8001/202204/W020220420582346895190.pdf',
   },
   {
+    key: 'pep-math-new-textbook-2024',
     key: 'pep-math-new-textbook-2024',
     title: '人教版义务教育数学（七至九年级）新教材介绍',
     url: 'https://www.pep.com.cn/xw/zt/hd/12/xjcjs/cz/202408/t20240826_1994351.html',

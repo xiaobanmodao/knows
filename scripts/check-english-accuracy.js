@@ -1,4 +1,5 @@
 const englishUnits = require('../packages/english/data/english-units');
+const { getEnglishSourceEvidence } = require('../packages/english/data/english-source-evidence');
 
 const issues = [];
 
@@ -54,7 +55,14 @@ function rejectMatch(value, pattern, owner, message) {
 englishUnits.books.forEach((book) => {
   if (book.status !== 'verified') return;
   const owner = `${book.label}/来源说明`;
-  requireMatch(book.sourceNote, /单元标题和顺序已.*核对/, owner, '应明确“已核对”仅指单元标题和顺序');
+  const evidence = getEnglishSourceEvidence(book.id);
+  if (evidence && evidence.status === 'partial') {
+    requireMatch(book.sourceNote, /公开目录页已核对 Unit 1-2/, owner, '部分目录证据必须说明当前已核对范围');
+    requireMatch(book.sourceNote, /等待完整官方目录复核/, owner, '部分目录证据必须说明后续核对边界');
+    rejectMatch(book.sourceNote, /单元标题和顺序已.*核对/, owner, '部分目录证据不得宣称整册目录已核对');
+  } else {
+    requireMatch(book.sourceNote, /单元标题和顺序已.*核对/, owner, '完整目录证据必须说明标题和顺序已核对');
+  }
   requireMatch(book.sourceNote, /原创整理/, owner, '应声明词汇、语法和例句为项目原创整理');
   requireMatch(book.sourceNote, /不作为教材逐页词表/, owner, '应避免把主题词汇误称为教材逐页词表');
 });

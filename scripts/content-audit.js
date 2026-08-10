@@ -5,6 +5,11 @@ const path = require('path');
 const adapters = require('./subject-adapters');
 const { buildContentManifest } = require('./content-manifest');
 const { getSubjectRegistry } = require('../data/subject-manifest');
+const {
+  checkContentSourceRegistry,
+  getContentSource,
+  isAllowedContentSourceUrl,
+} = require('../data/content-source-registry');
 const { SEARCH_INDEX_META, getSearchIndexEntries } = require('../packages/catalog/utils/search-index');
 const {
   getReferenceEntries,
@@ -19,27 +24,6 @@ const FORBIDDEN_FIELDS = new Set([
   'learningPath',
 ]);
 const ASSET_KEYS = /^(coverImage|diagramImage|sourceImage|figure|figurePath|image|imagePath)$/i;
-const OFFICIAL_HOSTS = new Set(['www.moe.gov.cn', 'moe.gov.cn', 'www.pep.com.cn', 'pep.com.cn']);
-const KNOWN_SOURCE_KEYS = new Set([
-  'moe-biology-curriculum-2022',
-  'pep-compulsory-biology-textbook',
-  'moe-chemistry-2022',
-  'moe-textbook-catalog-2024',
-  'pep-chemistry-training-2024',
-  'moe-math-curriculum-2022',
-  'pep-math-current-catalog',
-  'pep-math-new-textbook-2024',
-  'original-derivation-review',
-  'moe-physics-2022',
-  'moe-physics-experiments',
-  'pep-physics-public',
-  'cambridge-dictionary',
-  'oxford-learners-dictionaries',
-  'cambridge-grammar',
-  'british-council-grammar',
-  'moe-english-curriculum-2022',
-  'pep-english-new-textbook-2025',
-]);
 
 function sha256(value) {
   return crypto.createHash('sha256').update(JSON.stringify(value)).digest('hex');
@@ -54,7 +38,9 @@ function countArray(value) {
 }
 
 function getParentId(entity) {
-  return entity.chapterId
+  return entity.themeId
+    || entity.gradeId
+    || entity.chapterId
     || entity.unitId
     || entity.topicId
     || entity.bookId
@@ -238,6 +224,24 @@ function buildReferenceSummary() {
   };
 }
 
+function validateSourceReference(source, entityKey) {
+  if (!source.key && !source.url) throw new Error(`审计实体来源缺少 key 或 URL：${entityKey}`);
+  if (source.url && !source.key) {
+    throw new Error(`审计实体 URL 来源缺少稳定 key：${entityKey}/${source.url}`);
+  }
+  const sourceDefinition = source.key ? getContentSource(source.key) : null;
+  if (source.key && !sourceDefinition) {
+    throw new Error(`审计实体来源 key 未登记：${entityKey}/${source.key}`);
+  }
+  if (sourceDefinition && sourceDefinition.kind !== 'internal' && (!source.title || !source.url)) {
+    throw new Error(`审计实体外部来源缺少标题或 URL：${entityKey}/${source.key}`);
+  }
+  if (sourceDefinition && source.url && sourceDefinition.url !== source.url) {
+    throw new Error(`审计实体来源 URL 与注册表不一致：${entityKey}/${source.key}`);
+  }
+  return true;
+}
+
 function collectContentAudit() {
   const registry = getSubjectRegistry().sort((a, b) => a.id.localeCompare(b.id));
   const entities = collectEntities();
@@ -266,6 +270,7 @@ function collectContentAudit() {
 }
 
 function checkAuditReport(report, { requireReviewed = false } = {}) {
+  checkContentSourceRegistry();
   if (!report || report.schemaVersion !== 1) throw new Error('审计报告 schemaVersion 必须为 1');
   if (!Array.isArray(report.subjects) || report.subjects.length !== SUBJECT_ORDER.length) {
     throw new Error('审计报告必须覆盖五个启用学科');
@@ -276,6 +281,7 @@ function checkAuditReport(report, { requireReviewed = false } = {}) {
   const entities = collectEntities();
   const ids = new Set();
   const scopedIds = new Set();
+  const sourceUrlsByKey = new Map();
   entities.forEach((entity) => {
     const key = `${entity.subjectId}:${entity.type}:${entity.id}`;
     if (!entity.id || !entity.title) throw new Error(`审计实体缺少 ID 或标题：${key}`);
@@ -297,13 +303,18 @@ function checkAuditReport(report, { requireReviewed = false } = {}) {
       throw new Error(`审计实体来源不足：${key}`);
     }
     entity.reviewed.sourceRefs.forEach((source) => {
-      if (!source.key && !source.url) throw new Error(`审计实体来源缺少 key 或 URL：${key}`);
-      if (source.key && !KNOWN_SOURCE_KEYS.has(source.key)) {
-        throw new Error(`审计实体来源 key 未登记：${key}/${source.key}`);
-      }
+      validateSourceReference(source, key);
       if (!source.url) return;
-      const hostname = new URL(source.url).hostname;
-      if (!OFFICIAL_HOSTS.has(hostname)) throw new Error(`审计实体来源域名不受信任：${key}/${hostname}`);
+      const urls = sourceUrlsByKey.get(source.key) || new Set();
+      if (urls.size > 0 && !urls.has(source.url)) {
+        throw new Error(`审计来源 key 对应多个 URL：${source.key}/${[...urls, source.url].join(',')}`);
+      }
+      urls.add(source.url);
+      sourceUrlsByKey.set(source.key, urls);
+      if (!isAllowedContentSourceUrl(getContentSource(source.key), source.url)) {
+        const hostname = new URL(source.url).hostname;
+        throw new Error(`审计实体来源域名不受信任：${key}/${hostname}`);
+      }
     });
     if (entity.forbiddenFields.length) {
       throw new Error(`审计实体含任务型字段：${key}/${entity.forbiddenFields.join(',')}`);
@@ -329,4 +340,5 @@ module.exports = {
   collectAuditEntities: collectEntities,
   collectContentAudit,
   checkAuditReport,
+  validateSourceReference,
 };

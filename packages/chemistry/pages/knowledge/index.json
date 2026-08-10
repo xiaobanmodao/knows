@@ -2,6 +2,7 @@
   "navigationBarTitleText": "化学知识点",
   "usingComponents": {
     "content-block": "/components/content-block/index",
+    "structured-visual-guide": "/components/structured-visual-guide/index",
     "reading-settings": "/components/reading-settings/index"
   }
 }

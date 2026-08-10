@@ -39,7 +39,7 @@ if (new Set(keys).size !== keys.length) {
 
 const priorEntries = built.entries.filter((entry) => !['chemistry', 'biology'].includes(entry.subjectId));
 const priorHash = crypto.createHash('sha256').update(JSON.stringify(priorEntries)).digest('hex');
-if (priorEntries.length !== 833 || priorHash !== 'e42dc687f1236b1e71fc3ff4ad3c052df4f3deb1fb812a99e2b59b1cf0a5e27a') {
+if (priorEntries.length !== 833 || priorHash !== '090d0f25a0d325338ccdfd1b4088365580eadd0f1e54441e79c5f3f45cd57e80') {
   issues.push(`旧三科搜索语义或顺序发生变化：${priorEntries.length}/${priorHash}`);
 }
 const chemistryEntries = built.entries.filter((entry) => entry.subjectId === 'chemistry');

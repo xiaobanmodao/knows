@@ -1,7 +1,12 @@
 const { foundationKnowledge } = require('./chemistry-knowledge-foundations');
 const { applicationKnowledge } = require('./chemistry-knowledge-applications');
+const { getVisualGuideForKnowledge } = require('./chemistry-visual-guides');
 
-const knowledgeItems = [...foundationKnowledge, ...applicationKnowledge];
+const baseKnowledgeItems = [...foundationKnowledge, ...applicationKnowledge];
+const knowledgeItems = baseKnowledgeItems.map((knowledge) => ({
+  ...knowledge,
+  visualGuide: getVisualGuideForKnowledge(knowledge.id),
+}));
 
 function clone(value) {
   return JSON.parse(JSON.stringify(value));

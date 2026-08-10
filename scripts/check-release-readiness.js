@@ -7,6 +7,7 @@ const {
   getPreviewStatusPath,
   readPreviewStatus,
 } = require('./check-release-package-evidence');
+const { validateReleaseToolStateEvidence } = require('./release-tool-state-evidence');
 const { shouldRequireHotfixScope } = require('./check-release-hotfix-scope');
 
 const root = path.resolve(__dirname, '..');
@@ -14,7 +15,7 @@ const issues = [];
 const warnings = [];
 
 function readJson(file) {
-  const absolutePath = path.join(root, file);
+  const absolutePath = resolveRepoPath(file);
 
   try {
     return JSON.parse(fs.readFileSync(absolutePath, 'utf8'));
@@ -25,7 +26,11 @@ function readJson(file) {
 }
 
 function fileExists(file) {
-  return fs.existsSync(path.join(root, file));
+  return fs.existsSync(resolveRepoPath(file));
+}
+
+function resolveRepoPath(file) {
+  return path.isAbsolute(file) ? file : path.join(root, file);
 }
 
 function assertFile(file, owner) {
@@ -305,9 +310,21 @@ function checkContentAuditTooling() {
   const auditScripts = ['scripts/content-audit.js', 'scripts/build-content-audit.js', 'scripts/check-content-audit.js'];
   auditScripts.forEach((file) => assertFile(file, '内容审计工具'));
 
+  const sourceCatalogScripts = [
+    'scripts/content-source-catalog.js',
+    'scripts/build-content-source-catalog.js',
+    'scripts/check-content-source-catalog.js',
+  ];
+  sourceCatalogScripts.forEach((file) => assertFile(file, '结构化内容源目录工具'));
+
   const auditOutput = path.resolve(root, 'dist/content-audit/content-audit.json');
   if (!auditOutput.startsWith(path.resolve(root, 'dist/content-audit') + path.sep)) {
     issues.push('内容审计工具: 输出路径必须位于 dist/content-audit/');
+  }
+
+  const sourceCatalogOutput = path.resolve(root, 'dist/content-audit/content-source-catalog.json');
+  if (!sourceCatalogOutput.startsWith(path.resolve(root, 'dist/content-audit') + path.sep)) {
+    issues.push('结构化内容源目录工具: 输出路径必须位于 dist/content-audit/');
   }
 
   if (auditScripts.every(fileExists)) {
@@ -321,6 +338,21 @@ function checkContentAuditTooling() {
       } catch (error) {
         const output = String(error.stdout || error.stderr || error.message).trim().split('\n').slice(-3).join(' | ');
         issues.push(`内容审计工具 ${script}: 执行失败 -> ${output}`);
+      }
+    });
+  }
+
+  if (sourceCatalogScripts.every(fileExists)) {
+    ['scripts/build-content-source-catalog.js', 'scripts/check-content-source-catalog.js'].forEach((script) => {
+      try {
+        execFileSync(process.execPath, [path.join(root, script)], {
+          cwd: root,
+          encoding: 'utf8',
+          stdio: 'pipe',
+        });
+      } catch (error) {
+        const output = String(error.stdout || error.stderr || error.message).trim().split('\n').slice(-3).join(' | ');
+        issues.push(`结构化内容源目录工具 ${script}: 执行失败 -> ${output}`);
       }
     });
   }
@@ -384,6 +416,7 @@ function checkMathCurriculumAuditTooling() {
     'scripts/math-curriculum-audit.js',
     'scripts/build-math-curriculum-audit.js',
     'scripts/check-math-curriculum-audit.js',
+    'scripts/math-volume-map.test.js',
   ];
   auditScripts.forEach((file) => assertFile(file, '数学新版目录审计工具'));
 
@@ -393,7 +426,11 @@ function checkMathCurriculumAuditTooling() {
   }
 
   if (auditScripts.slice(1).every(fileExists)) {
-    ['scripts/build-math-curriculum-audit.js', 'scripts/check-math-curriculum-audit.js'].forEach((script) => {
+    [
+      'scripts/build-math-curriculum-audit.js',
+      'scripts/check-math-curriculum-audit.js',
+      'scripts/math-volume-map.test.js',
+    ].forEach((script) => {
       try {
         execFileSync(process.execPath, [path.join(root, script)], {
           cwd: root,
@@ -405,6 +442,27 @@ function checkMathCurriculumAuditTooling() {
         issues.push(`数学新版目录审计工具 ${script}: 执行失败 -> ${output}`);
       }
     });
+  }
+}
+
+function checkEnglishCurriculumMapTooling() {
+  const mapScripts = [
+    'packages/english/data/english-curriculum-baseline.js',
+    'scripts/english-curriculum-map.test.js',
+  ];
+  mapScripts.forEach((file) => assertFile(file, '英语新版目录核对工具'));
+
+  if (mapScripts.every(fileExists)) {
+    try {
+      execFileSync(process.execPath, [path.join(root, 'scripts/english-curriculum-map.test.js')], {
+        cwd: root,
+        encoding: 'utf8',
+        stdio: 'pipe',
+      });
+    } catch (error) {
+      const output = String(error.stdout || error.stderr || error.message).trim().split('\n').slice(-3).join(' | ');
+      issues.push(`英语新版目录核对工具: 执行失败 -> ${output}`);
+    }
   }
 }
 
@@ -620,6 +678,23 @@ function checkReleasePackageEvidenceTooling() {
   }
 }
 
+function checkReleaseToolStateEvidence() {
+  if (!process.argv.includes('--require-device-evidence')) {
+    return;
+  }
+
+  const reportPath = process.env.RELEASE_TOOL_STATE
+    || '.codex-output/release-regression-v1.10.1/tool-state.json';
+  assertFile(reportPath, '开发者工具状态报告');
+  if (!fileExists(reportPath)) return;
+
+  const report = readJson(reportPath);
+  if (!report) return;
+  validateReleaseToolStateEvidence(report).issues.forEach((issue) => {
+    issues.push(`开发者工具状态报告: ${issue}`);
+  });
+}
+
 function checkAssetConfig() {
   const assetConfigPath = 'utils/asset-config.js';
   assertFile(assetConfigPath, '云图片配置');
@@ -686,6 +761,7 @@ checkContentAuditTooling();
 checkPureKnowledgeRuntimeTooling();
 checkContentReviewQueueTooling();
 checkMathCurriculumAuditTooling();
+checkEnglishCurriculumMapTooling();
 checkMathContainerReviewTooling();
 checkMathTopicReviewTooling();
 checkMathTemplateReviewTooling();
@@ -696,6 +772,7 @@ checkPhysicsTemplateReviewTooling();
 checkReleaseRegressionEvidenceTooling();
 checkRuntimePackageDependencyTooling();
 checkReleasePackageEvidenceTooling();
+checkReleaseToolStateEvidence();
 checkAssetConfig();
 checkReleaseInfo();
 

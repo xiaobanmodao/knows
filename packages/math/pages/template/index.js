@@ -11,6 +11,8 @@ const { openContent } = require('../../../../utils/content-routes');
 
 Page({
   data: {
+    loading: true,
+    notFound: '',
     template: null,
     relatedChapters: [],
     relatedTopics: [],
@@ -19,62 +21,76 @@ Page({
     figureLoadFailed: false,
   },
 
-  async onLoad(options) {
-    this.subjectId = normalizeSubjectId(options.subjectId);
-    const template = getTemplateById(this.subjectId, options.id);
+  async onLoad(options = {}) {
+    this.pageActive = true;
+    const requestToken = (this.assetRequestToken || 0) + 1;
+    this.assetRequestToken = requestToken;
+    this.setData({ loading: true, notFound: '' });
 
-    if (!template) {
-      wx.showToast({
-        title: '方法模板不存在',
-        icon: 'none',
+    try {
+      this.subjectId = normalizeSubjectId(options.subjectId);
+      this.currentTemplateId = options.id || this.currentTemplateId || '';
+      const template = getTemplateById(this.subjectId, options.id);
+      if (!template) throw new Error('方法模板不存在');
+
+      wx.setNavigationBarTitle({ title: template.name });
+
+      const relatedChapters = this.subjectId === 'math'
+        ? (template.relatedChapters || []).map((chapterId) => getChapterById(chapterId)).filter(Boolean)
+        : this.subjectId === 'physics'
+          ? (template.chapterIds || []).map((chapterId) => getPhysicsChapterById(chapterId)).filter(Boolean)
+          : [];
+      const relatedTopics = this.subjectId === 'math'
+        ? []
+        : (template.topicIds || []).map((topicId) => getTopicById(this.subjectId, topicId)).filter(Boolean);
+      const app = getApp();
+      app.refreshSession();
+      app.addRecent({
+        id: template.id,
+        title: template.name,
+        subtitle: `${SUBJECT_LABELS[this.subjectId]} · ${template.category}`,
+        subjectId: this.subjectId,
+        type: 'template',
+        containerId: template.containerId || '',
       });
-      return;
-    }
 
-    wx.setNavigationBarTitle({
-      title: template.name,
-    });
-
-    const relatedChapters = this.subjectId === 'math'
-      ? (template.relatedChapters || []).map((chapterId) => getChapterById(chapterId)).filter(Boolean)
-      : this.subjectId === 'physics'
-        ? (template.chapterIds || []).map((chapterId) => getPhysicsChapterById(chapterId)).filter(Boolean)
-        : [];
-    const relatedTopics = this.subjectId === 'math'
-      ? []
-      : (template.topicIds || []).map((topicId) => getTopicById(this.subjectId, topicId)).filter(Boolean);
-    const app = getApp();
-    app.refreshSession();
-    app.addRecent({
-      id: template.id,
-      title: template.name,
-      subtitle: `${SUBJECT_LABELS[this.subjectId]} · ${template.category}`,
-      subjectId: this.subjectId,
-      type: 'template',
-      containerId: template.containerId || '',
-    });
-
-    this.setData({
-      figureLoadFailed: false,
-      subjectLabel: SUBJECT_LABELS[this.subjectId],
-      isFavorite: app.globalData.favorites.some((item) => item.id === template.id && (item.subjectId || 'math') === this.subjectId && item.type === 'template'),
-      template: {
-        ...template,
-        figure: isCloudFile(template.figure) ? '' : template.figure,
-      },
-      relatedChapters,
-      relatedTopics,
-    });
-
-    const fileMap = await getTempFileURLMap([template.figure]);
-    const signedFigure = applyTempFileURL(template.figure, fileMap);
-
-    if (signedFigure) {
       this.setData({
+        loading: false,
+        notFound: '',
         figureLoadFailed: false,
-        'template.figure': signedFigure,
+        subjectLabel: SUBJECT_LABELS[this.subjectId],
+        isFavorite: app.globalData.favorites.some((item) => item.id === template.id && (item.subjectId || 'math') === this.subjectId && item.type === 'template'),
+        template: {
+          ...template,
+          figure: isCloudFile(template.figure) ? '' : template.figure,
+        },
+        relatedChapters,
+        relatedTopics,
       });
+
+      try {
+        const fileMap = await getTempFileURLMap([template.figure]);
+        if (!this.pageActive || this.assetRequestToken !== requestToken) return;
+        const signedFigure = applyTempFileURL(template.figure, fileMap);
+        if (signedFigure) {
+          this.setData({ figureLoadFailed: false, 'template.figure': signedFigure });
+        }
+      } catch (error) {
+        // 图片地址失败时保留方法步骤和适用范围。
+      }
+    } catch (error) {
+      if (!this.pageActive || this.assetRequestToken !== requestToken) return;
+      this.setData({ loading: false, template: null, relatedChapters: [], relatedTopics: [], notFound: '当前方法模板暂未打开，请重试。' });
     }
+  },
+
+  onUnload() {
+    this.pageActive = false;
+    this.assetRequestToken = (this.assetRequestToken || 0) + 1;
+  },
+
+  reopen() {
+    this.onLoad({ subjectId: this.subjectId, id: this.currentTemplateId });
   },
 
   onShow() {
