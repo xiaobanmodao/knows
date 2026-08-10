@@ -153,6 +153,22 @@ try {
   firstTopic.contentMeta = originalContentMeta;
 }
 
+firstTopic.contentMeta = {
+  ...originalContentMeta,
+  sourceRefs: originalContentMeta.sourceRefs.map((source) => (source.key === 'moe-textbook-catalog-2024'
+    ? { ...source, url: `${source.url}?drift=1` }
+    : source)),
+};
+try {
+  assert.throws(
+    () => checkChemistryTopicFrameworkEvidence(),
+    /复核来源 URL 漂移/,
+    '运行时专题复核来源不得保留正确键却改写 URL',
+  );
+} finally {
+  firstTopic.contentMeta = originalContentMeta;
+}
+
 const reorderedEvidencePath = path.join(
   os.tmpdir(),
   `knows-chemistry-topic-framework-order-${process.pid}-${Date.now()}.json`,
