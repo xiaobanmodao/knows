@@ -5,7 +5,7 @@ const CHEMISTRY_SOURCES = {
   },
   'moe-textbook-catalog-2024': {
     title: '2024年义务教育国家课程教学用书目录',
-    url: 'https://www.moe.gov.cn/srcsite/A26/s8001/202408/W020240805496325238752.pdf',
+    url: 'https://www.moe.gov.cn/srcsite/A26/s8001/202408/W020250418502592948423.pdf',
   },
   'pep-chemistry-training-2024': {
     title: '人教版义务教育化学新教材培训通知',
