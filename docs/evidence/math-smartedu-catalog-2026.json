@@ -29,6 +29,16 @@
         "format": "pdf",
         "previewAssetCount": 49
       },
+      "platformMetadata": {
+        "globalLabel": ["zxx", "义务教育教科书 数学 七年级 上册", "2cbuPWM3oXGSBI80OFKOSa", "x_document"],
+        "createTime": "2022-09-29T19:09:43.010+0800",
+        "updateTime": "2025-06-19T14:29:07.576+0800",
+        "onlineTime": "2025-06-20T08:38:49.910+0800",
+        "versionId": "540ac93d-67fc-4353-9e49-1ef20d02b5a4",
+        "providerName": "智慧中小学",
+        "catalogType": "tchMaterial",
+        "resourceSource": "CREATE"
+      },
       "directoryChapterRange": "1-6",
       "directoryChapters": [
         { "number": 1, "title": "有理数", "sourcePages": [5] },
@@ -52,6 +62,16 @@
         "versionVisible": "RELEASE",
         "format": "pdf",
         "previewAssetCount": 49
+      },
+      "platformMetadata": {
+        "globalLabel": ["zxx", "义务教育教科书 数学 七年级 下册", "2cbuPWM3oXGSBI80OFKOSa", "x_document"],
+        "createTime": "2022-09-29T19:09:44.904+0800",
+        "updateTime": "2025-06-19T15:59:12.323+0800",
+        "onlineTime": "2025-06-20T08:39:01.920+0800",
+        "versionId": "81d65033-4cb1-4cf0-ae27-8c367c537c30",
+        "providerName": "智慧中小学",
+        "catalogType": "tchMaterial",
+        "resourceSource": "CREATE"
       },
       "directoryChapterRange": "7-12",
       "directoryChapters": [
@@ -77,6 +97,16 @@
         "format": "pdf",
         "previewAssetCount": 49
       },
+      "platformMetadata": {
+        "globalLabel": ["zxx", "义务教育教科书 数学 八年级 上册", "2cbuPWM3oXGSBI80OFKOSa", "x_document"],
+        "createTime": "2022-09-29T19:09:46.705+0800",
+        "updateTime": "2024-08-31T17:46:06.094+0800",
+        "onlineTime": "2023-07-04T18:34:21.320+0800",
+        "versionId": "81264e9e-22bc-4289-8389-13b40433b5ba",
+        "providerName": "智慧中小学",
+        "catalogType": "tchMaterial",
+        "resourceSource": "CREATE"
+      },
       "directoryChapterRange": "11-15",
       "directoryChapters": [
         { "number": 11, "title": "三角形", "sourcePages": [5] },
@@ -99,6 +129,16 @@
         "versionVisible": "RELEASE",
         "format": "pdf",
         "previewAssetCount": 49
+      },
+      "platformMetadata": {
+        "globalLabel": ["zxx", "义务教育教科书 数学 八年级 下册", "2cbuPWM3oXGSBI80OFKOSa", "x_document"],
+        "createTime": "2022-09-29T19:09:48.583+0800",
+        "updateTime": "2025-01-26T12:41:31.077+0800",
+        "onlineTime": "2022-09-29T19:09:48.613+0800",
+        "versionId": "e91a6f80-2a9a-4452-a47e-b9ec164156ff",
+        "providerName": "智慧中小学",
+        "catalogType": "tchMaterial",
+        "resourceSource": "CREATE"
       },
       "directoryChapterRange": "16-20",
       "directoryChapters": [
@@ -123,6 +163,16 @@
         "format": "pdf",
         "previewAssetCount": 49
       },
+      "platformMetadata": {
+        "globalLabel": ["zxx", "义务教育教科书 数学 九年级 上册", "2cbuPWM3oXGSBI80OFKOSa", "x_document"],
+        "createTime": "2022-09-29T19:09:50.789+0800",
+        "updateTime": "2024-08-31T17:46:39.807+0800",
+        "onlineTime": "2023-07-04T18:29:01.932+0800",
+        "versionId": "937a48c1-de81-4cc6-91b2-617cd859de4b",
+        "providerName": "智慧中小学",
+        "catalogType": "tchMaterial",
+        "resourceSource": "CREATE"
+      },
       "directoryChapterRange": "21-25",
       "directoryChapters": [
         { "number": 21, "title": "一元二次方程", "sourcePages": [5] },
@@ -145,6 +195,16 @@
         "versionVisible": "RELEASE",
         "format": "pdf",
         "previewAssetCount": 49
+      },
+      "platformMetadata": {
+        "globalLabel": ["zxx", "义务教育教科书 数学 九年级 下册", "2cbuPWM3oXGSBI80OFKOSa", "x_document"],
+        "createTime": "2022-09-29T19:09:52.502+0800",
+        "updateTime": "2025-01-26T12:42:14.545+0800",
+        "onlineTime": "2022-09-29T19:09:52.534+0800",
+        "versionId": "ab188631-292c-455e-8082-e09a0ab4001c",
+        "providerName": "智慧中小学",
+        "catalogType": "tchMaterial",
+        "resourceSource": "CREATE"
       },
       "directoryChapterRange": "26-29",
       "directoryChapters": [

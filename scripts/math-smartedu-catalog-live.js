@@ -6,7 +6,7 @@ const { checkEvidence } = require('./check-math-smartedu-catalog-evidence');
 
 const DETAIL_ENDPOINT = /^https:\/\/bdcs-file-[12]\.ykt\.cbern\.com\.cn\//;
 const PREVIEW_ENDPOINT = /^https:\/\/r[123]-ndr\.ykt\.cbern\.com\.cn\//;
-const LIVE_REPORT_SCHEMA_VERSION = 2;
+const LIVE_REPORT_SCHEMA_VERSION = 3;
 
 function fail(message) {
   throw new Error(`数学官方平台目录在线复核：${message}`);
@@ -60,6 +60,29 @@ function getFormat(liveRecord) {
   return properties && typeof properties.format === 'string' ? properties.format.trim() : '';
 }
 
+function getPlatformMetadata(liveRecord) {
+  const globalLabel = liveRecord.global_label && liveRecord.global_label['zh-CN'];
+  const provider = Array.isArray(liveRecord.provider_list)
+    ? liveRecord.provider_list.find((item) => item && item.type === 'provider' && typeof item.name === 'string')
+    : null;
+  const extProperties = liveRecord.custom_properties && liveRecord.custom_properties.ext_properties;
+  const container = liveRecord.resource_container_cp;
+  return {
+    globalLabel: Array.isArray(globalLabel) ? [...globalLabel] : [],
+    createTime: typeof liveRecord.create_time === 'string' ? liveRecord.create_time.trim() : '',
+    updateTime: typeof liveRecord.update_time === 'string' ? liveRecord.update_time.trim() : '',
+    onlineTime: typeof liveRecord.online_time === 'string' ? liveRecord.online_time.trim() : '',
+    versionId: typeof liveRecord.version_id === 'string' ? liveRecord.version_id.trim() : '',
+    providerName: provider ? provider.name.trim() : '',
+    catalogType: extProperties && typeof extProperties.catalog_type === 'string'
+      ? extProperties.catalog_type.trim()
+      : '',
+    resourceSource: container && typeof container.resource_source === 'string'
+      ? container.resource_source.trim()
+      : '',
+  };
+}
+
 function getRevisionMarker(liveRecord) {
   const title = getLiveTitle(liveRecord);
   return title.includes('根据2022年版课程标准修订') ? '2022-revised' : 'unmarked-edition';
@@ -96,6 +119,15 @@ function validateDetailMetadata(evidenceRecord, liveRecord, preview) {
   }
 }
 
+function validatePlatformMetadata(evidenceRecord, liveRecord) {
+  const actual = getPlatformMetadata(liveRecord);
+  const expected = evidenceRecord.platformMetadata;
+  if (!expected || JSON.stringify(actual) !== JSON.stringify(expected)) {
+    fail(`${evidenceRecord.grade}/${evidenceRecord.volume} platformMetadata 与官方详情不一致`);
+  }
+  return actual;
+}
+
 function validateLiveRecord(evidenceRecord, liveRecord) {
   if (!evidenceRecord || typeof evidenceRecord !== 'object') fail('本地证据记录无效');
   if (!liveRecord || typeof liveRecord !== 'object' || Array.isArray(liveRecord)) fail('远程详情无效');
@@ -122,12 +154,14 @@ function validateLiveRecord(evidenceRecord, liveRecord) {
     validatePreviewUrl(preview[key], page, `${evidenceRecord.grade}/${evidenceRecord.volume}.${key}`);
   });
   validateDetailMetadata(evidenceRecord, liveRecord, preview);
+  const platformMetadata = validatePlatformMetadata(evidenceRecord, liveRecord);
   return {
     resourceId: evidenceRecord.resourceId,
     title: liveTitle,
     tagNames: [...tagNames],
     revisionMarker,
     previewPages: [...previewPages],
+    platformMetadata,
   };
 }
 
@@ -221,6 +255,9 @@ function checkLiveReport(input, report, { evidenceSha256 } = {}) {
     }
     if (record.revisionMarker !== evidenceRecord.revisionMarker) {
       fail(`${record.resourceId} 离线报告 revisionMarker 不一致`);
+    }
+    if (JSON.stringify(record.platformMetadata) !== JSON.stringify(evidenceRecord.platformMetadata)) {
+      fail(`${record.resourceId} 离线报告 platformMetadata 不一致`);
     }
     if (JSON.stringify(record.previewPages) !== JSON.stringify(evidenceRecord.directoryPreviewPages)) {
       fail(`${record.resourceId} 离线报告 previewPages 不一致`);

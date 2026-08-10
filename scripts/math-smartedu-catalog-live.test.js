@@ -23,6 +23,16 @@ const evidenceRecord = {
     format: 'pdf',
     previewAssetCount: 7,
   },
+  platformMetadata: {
+    globalLabel: ['zxx', '义务教育教科书 数学 七年级 上册', 'catalog-key', 'x_document'],
+    createTime: '2022-09-29T19:09:43.010+0800',
+    updateTime: '2025-06-19T14:29:07.576+0800',
+    onlineTime: '2025-06-20T08:38:49.910+0800',
+    versionId: 'resource-7u',
+    providerName: '智慧中小学',
+    catalogType: 'tchMaterial',
+    resourceSource: 'CREATE',
+  },
   directoryPreviewPages: [5, 6, 7],
 };
 
@@ -36,8 +46,17 @@ function buildLiveRecord(overrides = {}) {
   return {
     id: evidenceRecord.resourceId,
     title: evidenceRecord.title,
+    global_label: {
+      'zh-CN': ['zxx', '义务教育教科书 数学 七年级 上册', 'catalog-key', 'x_document'],
+    },
+    create_time: '2022-09-29T19:09:43.010+0800',
+    update_time: '2025-06-19T14:29:07.576+0800',
+    online_time: '2025-06-20T08:38:49.910+0800',
+    version_id: 'resource-7u',
+    provider_list: [{ name: '智慧中小学', type: 'provider' }],
     resource_container_cp: {
       version_visible: 'RELEASE',
+      resource_source: 'CREATE',
     },
     tag_list: [
       { tag_name: '人教版' },
@@ -48,10 +67,46 @@ function buildLiveRecord(overrides = {}) {
     ],
     custom_properties: {
       format: 'pdf',
+      ext_properties: { catalog_type: 'tchMaterial' },
       preview,
     },
     ...overrides,
   };
+}
+
+function buildLiveRecordForEvidence(record) {
+  const metadata = record.platformMetadata;
+  return buildLiveRecord({
+    id: record.resourceId,
+    title: record.title,
+    global_label: { 'zh-CN': metadata.globalLabel },
+    create_time: metadata.createTime,
+    update_time: metadata.updateTime,
+    online_time: metadata.onlineTime,
+    version_id: metadata.versionId,
+    provider_list: [{ name: metadata.providerName, type: 'provider' }],
+    resource_container_cp: {
+      version_visible: 'RELEASE',
+      resource_source: metadata.resourceSource,
+    },
+    tag_list: [
+      { tag_name: '人教版' },
+      { tag_name: '初中' },
+      { tag_name: '数学' },
+      { tag_name: record.grade },
+      { tag_name: record.volume },
+    ],
+    custom_properties: {
+      format: 'pdf',
+      ext_properties: { catalog_type: metadata.catalogType },
+      preview: Object.fromEntries(
+        Array.from({ length: record.detailMetadata.previewAssetCount }, (_, index) => {
+          const page = index + 1;
+          return [`Slide${page}`, `https://r${(index % 3) + 1}-ndr.ykt.cbern.com.cn/edu_product/esp/assets/demo/image/${page}.jpg`];
+        }),
+      ),
+    },
+  });
 }
 
 try {
@@ -62,6 +117,7 @@ try {
     tagNames: ['人教版', '初中', '数学', '七年级', '上册'],
     revisionMarker: '2022-revised',
     previewPages: [5, 6, 7],
+    platformMetadata: evidenceRecord.platformMetadata,
   });
 
   assert.throws(
@@ -110,6 +166,12 @@ try {
     })),
     /detailMetadata|format|pdf/i,
   );
+  assert.throws(
+    () => validateLiveRecord(evidenceRecord, buildLiveRecord({
+      provider_list: [{ name: '其他平台', type: 'provider' }],
+    })),
+    /platformMetadata|providerName|平台/i,
+  );
 
   const tempDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'knows-smartedu-live-'));
   const evidencePath = path.join(tempDirectory, 'evidence.json');
@@ -119,31 +181,11 @@ try {
   const reportResult = {
     sourceId: reportInput.sourceId,
     records: reportInput.resourceRecords.map((record) => ({
-      ...validateLiveRecord(record, buildLiveRecord({
-        id: record.resourceId,
-        title: record.title,
-        resource_container_cp: { version_visible: 'RELEASE' },
-        tag_list: [
-          { tag_name: '人教版' },
-          { tag_name: '初中' },
-          { tag_name: '数学' },
-          { tag_name: record.grade },
-          { tag_name: record.volume },
-        ],
-        custom_properties: {
-          format: 'pdf',
-          preview: Object.fromEntries(
-            Array.from({ length: record.detailMetadata.previewAssetCount }, (_, index) => {
-              const page = index + 1;
-              return [`Slide${page}`, `https://r${(index % 3) + 1}-ndr.ykt.cbern.com.cn/edu_product/esp/assets/demo/image/${page}.jpg`];
-            }),
-          ),
-        },
-      })),
+      ...validateLiveRecord(record, buildLiveRecordForEvidence(record)),
     })),
   };
   const report = buildLiveReport(reportInput, evidencePath, reportResult, '2026-08-10T08:39:07.639Z');
-  assert.strictEqual(report.schemaVersion, 2);
+  assert.strictEqual(report.schemaVersion, 3);
   assert.strictEqual(report.evidenceSha256, sha256File(evidencePath));
   assert.strictEqual(checkLiveReport(reportInput, report, { evidenceSha256: sha256File(evidencePath) }), true);
   assert.throws(

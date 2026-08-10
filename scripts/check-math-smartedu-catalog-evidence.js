@@ -23,12 +23,23 @@ const ALLOWED_RECORD_FIELDS = new Set([
   'directoryPreviewPages',
   'previewPageUrlTemplate',
   'detailMetadata',
+  'platformMetadata',
 ]);
 const DETAIL_METADATA_FIELDS = new Set([
   'globalTitle',
   'versionVisible',
   'format',
   'previewAssetCount',
+]);
+const PLATFORM_METADATA_FIELDS = new Set([
+  'globalLabel',
+  'createTime',
+  'updateTime',
+  'onlineTime',
+  'versionId',
+  'providerName',
+  'catalogType',
+  'resourceSource',
 ]);
 const PLATFORM_ENDPOINT = /^https:\/\/bdcs-file-[12]\.ykt\.cbern\.com\.cn\//;
 const PREVIEW_ENDPOINT = /^https:\/\/r[123]-ndr\.ykt\.cbern\.com\.cn\//;
@@ -105,6 +116,35 @@ function checkDetailMetadata(metadata, record, index) {
   return metadata;
 }
 
+function checkPlatformMetadata(metadata, record, index) {
+  if (!metadata || typeof metadata !== 'object' || Array.isArray(metadata)) {
+    fail(`第 ${index + 1} 册 platformMetadata 必须为对象`);
+  }
+  const unknownFields = Object.keys(metadata).filter((key) => !PLATFORM_METADATA_FIELDS.has(key));
+  if (unknownFields.length) fail(`第 ${index + 1} 册 platformMetadata 包含未知字段：${unknownFields.join(',')}`);
+  if (!Array.isArray(metadata.globalLabel) || metadata.globalLabel.length !== 4
+    || metadata.globalLabel.some((value) => typeof value !== 'string' || !value.trim())) {
+    fail(`第 ${index + 1} 册 platformMetadata.globalLabel 必须包含 4 个非空标签`);
+  }
+  ['createTime', 'updateTime', 'onlineTime'].forEach((field) => {
+    const value = requireText(metadata[field], `第 ${index + 1} 册 platformMetadata.${field}`);
+    if (Number.isNaN(Date.parse(value))) fail(`第 ${index + 1} 册 platformMetadata.${field} 日期无效`);
+  });
+  if (requireText(metadata.versionId, `第 ${index + 1} 册 platformMetadata.versionId`) !== record.resourceId) {
+    fail(`第 ${index + 1} 册 platformMetadata.versionId 必须与 resourceId 一致`);
+  }
+  if (requireText(metadata.providerName, `第 ${index + 1} 册 platformMetadata.providerName`) !== '智慧中小学') {
+    fail(`第 ${index + 1} 册 platformMetadata.providerName 必须为 智慧中小学`);
+  }
+  if (requireText(metadata.catalogType, `第 ${index + 1} 册 platformMetadata.catalogType`) !== 'tchMaterial') {
+    fail(`第 ${index + 1} 册 platformMetadata.catalogType 必须为 tchMaterial`);
+  }
+  if (requireText(metadata.resourceSource, `第 ${index + 1} 册 platformMetadata.resourceSource`) !== 'CREATE') {
+    fail(`第 ${index + 1} 册 platformMetadata.resourceSource 必须为 CREATE`);
+  }
+  return metadata;
+}
+
 function checkRecord(record, index) {
   if (!record || typeof record !== 'object' || Array.isArray(record)) fail(`第 ${index + 1} 册记录无效`);
   Object.keys(record).forEach((field) => {
@@ -125,6 +165,7 @@ function checkRecord(record, index) {
     fail(`第 ${index + 1} 册 directoryPreviewPages 必须是 1-49 的整数`);
   }
   checkDetailMetadata(record.detailMetadata, record, index);
+  checkPlatformMetadata(record.platformMetadata, record, index);
   const previewUrl = checkUrl(record.previewPageUrlTemplate, `第 ${index + 1} 册 previewPageUrlTemplate`, PREVIEW_ENDPOINT);
   if (!previewUrl.includes('{page}')) fail(`第 ${index + 1} 册预览 URL 缺少 {page} 占位符`);
   const directoryObservationCount = checkDirectoryChapters(record, index, record.directoryPreviewPages);

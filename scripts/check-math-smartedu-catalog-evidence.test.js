@@ -30,6 +30,10 @@ try {
     assert.strictEqual(record.detailMetadata.versionVisible, 'RELEASE');
     assert.strictEqual(record.detailMetadata.format, 'pdf');
     assert.strictEqual(record.detailMetadata.previewAssetCount, 49);
+    assert.ok(record.platformMetadata);
+    assert.strictEqual(record.platformMetadata.versionId, record.resourceId);
+    assert.strictEqual(record.platformMetadata.providerName, '智慧中小学');
+    assert.strictEqual(record.platformMetadata.catalogType, 'tchMaterial');
   });
 
   const tamperedDetailMetadata = JSON.parse(fs.readFileSync(tempSource, 'utf8'));
@@ -38,6 +42,15 @@ try {
   const invalidDetailMetadata = run(tempSource);
   assert.notStrictEqual(invalidDetailMetadata.status, 0);
   assert.match(`${invalidDetailMetadata.stdout}\n${invalidDetailMetadata.stderr}`, /detailMetadata|globalTitle/);
+
+  fs.copyFileSync(source, tempSource);
+
+  const tamperedPlatformMetadata = JSON.parse(fs.readFileSync(tempSource, 'utf8'));
+  tamperedPlatformMetadata.resourceRecords[0].platformMetadata.providerName = '其他平台';
+  fs.writeFileSync(tempSource, `${JSON.stringify(tamperedPlatformMetadata, null, 2)}\n`, 'utf8');
+  const invalidPlatformMetadata = run(tempSource);
+  assert.notStrictEqual(invalidPlatformMetadata.status, 0);
+  assert.match(`${invalidPlatformMetadata.stdout}\n${invalidPlatformMetadata.stderr}`, /platformMetadata|providerName/);
 
   fs.copyFileSync(source, tempSource);
 
@@ -52,6 +65,7 @@ try {
 
   const tampered = JSON.parse(fs.readFileSync(tempSource, 'utf8'));
   tampered.resourceRecords[0].resourceId = tampered.resourceRecords[1].resourceId;
+  tampered.resourceRecords[0].platformMetadata.versionId = tampered.resourceRecords[0].resourceId;
   fs.writeFileSync(tempSource, `${JSON.stringify(tampered, null, 2)}\n`, 'utf8');
   const invalid = run(tempSource);
   assert.notStrictEqual(invalid.status, 0);
