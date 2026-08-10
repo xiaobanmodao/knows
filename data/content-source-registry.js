@@ -20,7 +20,7 @@ const SOURCE_DEFINITIONS = {
     kind: 'official',
   },
   'pep-compulsory-biology-textbook': {
-    title: '人教版义务教育生物学（七至八年级）新教材介绍',
+    title: '人教版义务教育生物学（七～八年级）新教材介绍',
     url: 'https://www.pep.com.cn/xw/zt/hd/12/xjcjs/cz/202409/t20240914_1995532.html',
     kind: 'official',
   },
