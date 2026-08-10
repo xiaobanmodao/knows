@@ -14,6 +14,7 @@ function prepareTopics(topics, fileMap = {}) {
 
 Page({
   data: {
+    loading: true,
     subject: null,
     topics: [],
     notFound: '',
@@ -23,24 +24,40 @@ Page({
     this.pageActive = true;
     const requestToken = (this.assetRequestToken || 0) + 1;
     this.assetRequestToken = requestToken;
-    const home = getSubjectHome();
+    this.setData({ loading: true, notFound: '' });
 
-    if (!home || !home.subject) {
-      this.setData({ notFound: '生物内容暂未找到，请返回后重新打开。' });
-      return;
+    try {
+      const home = getSubjectHome();
+      if (!home || !home.subject) {
+        throw new Error('生物内容暂未找到');
+      }
+
+      const topics = Array.isArray(home.topics) ? home.topics : [];
+      wx.setNavigationBarTitle({ title: home.subject.name });
+      this.setData({
+        loading: false,
+        subject: home.subject,
+        topics: prepareTopics(topics),
+        notFound: '',
+      });
+
+      const imagePaths = topics.map((topic) => topic.coverImage).filter(Boolean);
+      try {
+        const fileMap = await getTempFileURLMap(imagePaths);
+        if (!this.pageActive || this.assetRequestToken !== requestToken) return;
+        this.setData({ topics: prepareTopics(topics, fileMap) });
+      } catch (error) {
+        // 图片地址失败时保留已经展示的文字内容。
+      }
+    } catch (error) {
+      if (!this.pageActive || this.assetRequestToken !== requestToken) return;
+      this.setData({
+        loading: false,
+        subject: null,
+        topics: [],
+        notFound: '当前生物内容暂未打开，请重试。',
+      });
     }
-
-    wx.setNavigationBarTitle({ title: home.subject.name });
-    this.setData({
-      subject: home.subject,
-      topics: prepareTopics(home.topics),
-      notFound: '',
-    });
-
-    const imagePaths = home.topics.map((topic) => topic.coverImage).filter(Boolean);
-    const fileMap = await getTempFileURLMap(imagePaths);
-    if (!this.pageActive || this.assetRequestToken !== requestToken) return;
-    this.setData({ topics: prepareTopics(home.topics, fileMap) });
   },
 
   onUnload() {

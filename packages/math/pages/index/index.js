@@ -54,6 +54,8 @@ function getDisplayStudyMap(studyMap) {
 
 Page({
   data: {
+    loading: true,
+    notFound: '',
     chapterGroups: [],
     visibleChapterGroups: [],
     studyMap: {},
@@ -68,37 +70,78 @@ Page({
   },
 
   async onLoad() {
-    const app = getApp();
-    const chapterGroups = getChapterGroups();
-    const studyMap = getMathStudyMap();
-    const displayStudyMap = getDisplayStudyMap(studyMap);
-    const selectedGradeId = app.getMathGrade();
+    this.pageActive = true;
+    const requestToken = (this.assetRequestToken || 0) + 1;
+    this.assetRequestToken = requestToken;
+    this.setData({ loading: true, notFound: '' });
 
-    this.setData({
-      chapterGroups,
-      studyMap: displayStudyMap,
-      totalChapters: chapterGroups.reduce((sum, group) => sum + group.items.length, 0),
-      ...buildGradeView(selectedGradeId, displayStudyMap, chapterGroups),
-    });
+    try {
+      const app = getApp();
+      const chapterGroups = getChapterGroups();
+      const studyMap = getMathStudyMap();
+      if (!studyMap || !Array.isArray(studyMap.gradePackages) || !Array.isArray(studyMap.topicGroups)) {
+        throw new Error('数学内容暂未找到');
+      }
+      const displayStudyMap = getDisplayStudyMap(studyMap);
+      const selectedGradeId = app.getMathGrade();
 
-    const topicImages = studyMap.topicGroups
-      .flatMap((group) => group.topics)
-      .map((topic) => topic.image)
-      .filter(Boolean);
-    const fileMap = await getTempFileURLMap(topicImages);
-    const topicGroups = studyMap.topicGroups.map((group) => ({
-      ...group,
-      topics: group.topics.map((topic) => ({
-        ...topic,
-        image: applyTempFileURL(topic.image, fileMap) || (isCloudFile(topic.image) ? '' : topic.image),
-      })),
-    }));
-    const signedStudyMap = { ...studyMap, topicGroups };
+      this.setData({
+        loading: false,
+        notFound: '',
+        chapterGroups,
+        studyMap: displayStudyMap,
+        totalChapters: chapterGroups.reduce((sum, group) => sum + group.items.length, 0),
+        ...buildGradeView(selectedGradeId, displayStudyMap, chapterGroups),
+      });
 
-    this.setData({
-      studyMap: signedStudyMap,
-      ...buildGradeView(this.data.selectedGradeId, signedStudyMap, chapterGroups),
-    });
+      const topicImages = studyMap.topicGroups
+        .flatMap((group) => group.topics || [])
+        .map((topic) => topic.image)
+        .filter(Boolean);
+      try {
+        const fileMap = await getTempFileURLMap(topicImages);
+        if (!this.pageActive || this.assetRequestToken !== requestToken) return;
+        const topicGroups = studyMap.topicGroups.map((group) => ({
+          ...group,
+          topics: (group.topics || []).map((topic) => ({
+            ...topic,
+            image: applyTempFileURL(topic.image, fileMap) || (isCloudFile(topic.image) ? '' : topic.image),
+          })),
+        }));
+        const signedStudyMap = { ...studyMap, topicGroups };
+
+        this.setData({
+          studyMap: signedStudyMap,
+          ...buildGradeView(this.data.selectedGradeId, signedStudyMap, chapterGroups),
+        });
+      } catch (error) {
+        // 图片地址失败时保留已经展示的目录和专题文字。
+      }
+    } catch (error) {
+      if (!this.pageActive || this.assetRequestToken !== requestToken) return;
+      this.setData({
+        loading: false,
+        notFound: '当前数学内容暂未打开，请重试。',
+        chapterGroups: [],
+        visibleChapterGroups: [],
+        studyMap: {},
+        gradeOptions: [],
+        activeGradePackage: null,
+        activeTopicGroup: null,
+        hasActiveTopics: false,
+        totalChapters: 0,
+        visibleChapterCount: 0,
+      });
+    }
+  },
+
+  onUnload() {
+    this.pageActive = false;
+    this.assetRequestToken = (this.assetRequestToken || 0) + 1;
+  },
+
+  reopen() {
+    this.onLoad();
   },
 
   selectGrade(event) {
