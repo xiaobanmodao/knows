@@ -1,6 +1,7 @@
 const assert = require('assert');
 
 const {
+  BLOCKER_ACTIONS,
   analyzePreviewLog,
   buildToolStateReport,
   parseLoginOutput,
@@ -63,6 +64,15 @@ const report = buildToolStateReport({
 assert.strictEqual(report.schemaVersion, 1);
 assert.strictEqual(report.status, 'blocked');
 assert.strictEqual(report.blocker.kind, 'appid-permission-or-project-binding');
+assert.deepStrictEqual(report.blocker.nextActions.map((item) => item.id), [
+  'verify-appid-permission',
+  'reopen-project',
+  'rerun-state-diagnostic',
+]);
+report.blocker.nextActions.forEach((item) => {
+  assert.ok(BLOCKER_ACTIONS[item.id], `缺少阻塞动作说明：${item.id}`);
+  assert.strictEqual(item.instruction, BLOCKER_ACTIONS[item.id]);
+});
 assert.strictEqual(report.checks.projectConfig.status, 'passed');
 assert.strictEqual(report.checks.cliLogin.status, 'passed');
 assert.strictEqual(report.checks.preview.status, 'blocked');
@@ -76,5 +86,27 @@ const pendingReport = buildToolStateReport({
 });
 assert.strictEqual(pendingReport.status, 'pending');
 assert.strictEqual(pendingReport.blocker, null);
+
+const loginBlockedReport = buildToolStateReport({
+  projectRoot: '/tmp/knows',
+  appid,
+  loginOutput: '{"login":false}',
+  previewLog: '',
+});
+assert.deepStrictEqual(loginBlockedReport.blocker.nextActions.map((item) => item.id), [
+  'login-devtools',
+  'rerun-state-diagnostic',
+]);
+
+const invalidConfigReport = buildToolStateReport({
+  projectRoot: '/tmp/knows',
+  appid: 'touristappid',
+  loginOutput: '{"login":true}',
+  previewLog: '',
+});
+assert.strictEqual(invalidConfigReport.blocker.kind, 'invalid-project-config');
+assert.deepStrictEqual(invalidConfigReport.blocker.nextActions.map((item) => item.id), [
+  'verify-project-config',
+]);
 
 console.log('OK release tool state contract');

@@ -7,6 +7,25 @@ const DEFAULT_CLI = '/Applications/wechatwebdevtools.app/Contents/MacOS/cli';
 const DEFAULT_OUTPUT = '.codex-output/release-regression-v1.10.1/tool-state.json';
 const DEFAULT_PREVIEW_LOG = '.codex-output/release-regression-v1.10.1/preview.log';
 
+const BLOCKER_ACTIONS = Object.freeze({
+  'verify-project-config': '核对 project.config.json 中的 AppID 与开发者工具当前项目一致。',
+  'login-devtools': '在微信开发者工具中登录拥有该 AppID 开发权限的账号，再重新生成状态报告。',
+  'verify-appid-permission': '在微信公众平台确认当前账号拥有该 AppID 的开发权限，并确认项目成员权限未过期。',
+  'reopen-project': '关闭并重新打开当前项目，确认项目绑定的 AppID 与日志中的 Using AppID 完全一致。',
+  'rerun-state-diagnostic': '重新运行 check-release-tool-state.js，确认登录、AppID 和最近上传日志均已更新。',
+  'preserve-preview-log': '保留完整 preview.log、错误码和 request id，不要用空报告或旧包体报告替代。',
+  'inspect-upload-error': '根据日志中的错误码和 request id 排查开发者工具或微信服务端状态。',
+  'retry-preview-after-fix': '仅当前置状态恢复为 ready 后，再运行 run-release-preview.js 生成当前构建包体报告。',
+});
+
+function makeBlocker(kind, message, actionIds) {
+  return {
+    kind,
+    message,
+    nextActions: actionIds.map((id) => ({ id, instruction: BLOCKER_ACTIONS[id] })),
+  };
+}
+
 function isNonEmptyString(value) {
   return typeof value === 'string' && value.trim().length > 0;
 }
@@ -97,28 +116,32 @@ function buildToolStateReport({ projectRoot, appid, loginOutput, previewLog }) {
   let blocker = null;
   if (projectConfigStatus !== 'passed') {
     status = 'blocked';
-    blocker = {
-      kind: 'invalid-project-config',
-      message: '项目配置中的 AppID 不是正式格式，无法继续判断开发者工具状态',
-    };
+    blocker = makeBlocker(
+      'invalid-project-config',
+      '项目配置中的 AppID 不是正式格式，无法继续判断开发者工具状态',
+      ['verify-project-config'],
+    );
   } else if (cliLogin.loggedIn === false) {
     status = 'blocked';
-    blocker = {
-      kind: 'cli-login-required',
-      message: '开发者工具当前未登录，需要先完成登录',
-    };
+    blocker = makeBlocker(
+      'cli-login-required',
+      '开发者工具当前未登录，需要先完成登录',
+      ['login-devtools', 'rerun-state-diagnostic'],
+    );
   } else if (preview.errorCode === '41002') {
     status = 'blocked';
-    blocker = {
-      kind: 'appid-permission-or-project-binding',
-      message: `已读取到 Using AppID，但上传阶段仍返回 41002；请确认账号拥有 ${appid} 的开发权限并重新打开项目`,
-    };
+    blocker = makeBlocker(
+      'appid-permission-or-project-binding',
+      `已读取到 Using AppID，但上传阶段仍返回 41002；请确认账号拥有 ${appid} 的开发权限并重新打开项目`,
+      ['verify-appid-permission', 'reopen-project', 'rerun-state-diagnostic'],
+    );
   } else if (preview.status === 'failed') {
     status = 'blocked';
-    blocker = {
-      kind: 'preview-upload-failed',
-      message: `预览日志出现错误码 ${preview.errorCode}`,
-    };
+    blocker = makeBlocker(
+      'preview-upload-failed',
+      `预览日志出现错误码 ${preview.errorCode}`,
+      ['preserve-preview-log', 'inspect-upload-error', 'retry-preview-after-fix'],
+    );
   } else if (cliLogin.loggedIn === null || preview.status === 'pending') {
     status = 'pending';
   } else {
@@ -220,6 +243,7 @@ if (require.main === module) {
 }
 
 module.exports = {
+  BLOCKER_ACTIONS,
   analyzePreviewLog,
   buildToolStateReport,
   parseLoginOutput,
