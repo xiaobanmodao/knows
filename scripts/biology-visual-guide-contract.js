@@ -8,7 +8,7 @@ const TEXT_LIMITS = Object.freeze({
   label: 32,
   note: 96,
 });
-const FINAL_TO_FIRST_CAUSALITY = /(?:最后(?:一个)?(?:环节|节点|步骤)?|末尾|终点)[^。！？；]{0,48}(?:直接)?(?:导致|引起|造成|使得|促使)[^。！？；]{0,48}(?:第?(?:一|1)个?(?:环节|节点|步骤)?|起点)/;
+const FINAL_TO_FIRST_CAUSALITY = /(?:最后(?:一个)?(?:环节|节点|步骤|阶段)?|最终(?:阶段|环节|节点|步骤)?|终末(?:阶段|环节|节点|步骤)?|末尾|终点)[^。！？；]{0,48}(?:直接)?(?:导致|引起|造成|使得|使|促使)[^。！？；]{0,48}(?:第?(?:一|1)个?(?:环节|节点|步骤|阶段)?|起点)/;
 
 function isNonEmptyString(value) {
   return typeof value === 'string' && value.trim().length > 0;

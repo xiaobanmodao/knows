@@ -148,6 +148,13 @@ expectIssue((data) => {
 }, 'cycle 图解不得声明末尾节点直接导致起点');
 
 expectIssue((data) => {
+  const cycleGuide = clone(validGuide);
+  cycleGuide.type = 'cycle';
+  cycleGuide.summary = '最终阶段使第一阶段重新开始。';
+  replaceFixtureGuide(data, cycleGuide);
+}, 'cycle 图解不得声明末尾节点直接导致起点');
+
+expectIssue((data) => {
   data.runtimeLayers[0].knowledgeItems[0].visualGuide.summary = '被篡改的摘要';
 }, '字段与源数据不一致');
 
