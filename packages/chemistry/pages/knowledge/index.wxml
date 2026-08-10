@@ -26,6 +26,11 @@
     </view>
   </view>
 
+  <structured-visual-guide
+    guide="{{knowledge.visualGuide}}"
+    reading-preferences="{{readingPreferences}}"
+  />
+
   <view wx:if="{{knowledge.hasCoverImage}}" class="knowledge-figure section-gap">
     <view class="section-title__main">关键图解</view>
     <image wx:if="{{knowledge.coverImage && !coverImageLoadFailed}}" class="knowledge-figure__image reading-image" src="{{knowledge.coverImage}}" mode="widthFix" binderror="onCoverImageError"></image>

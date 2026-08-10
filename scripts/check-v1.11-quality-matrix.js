@@ -61,6 +61,8 @@ const DEFAULT_CHECKS = [
   { script: 'scripts/check-chemistry-foundations.js', label: '化学基础' },
   { script: 'scripts/check-chemistry-pages.js', label: '化学页面' },
   { script: 'scripts/check-chemistry-assets.js', label: '化学资源' },
+  { script: 'scripts/check-chemistry-visual-guides.test.js', label: '化学图解契约' },
+  { script: 'scripts/check-chemistry-visual-guides.js', label: '化学图解内容与页面' },
   { script: 'scripts/check-biology-visual-guides.test.js', label: '生物图解契约' },
   { script: 'scripts/check-biology-visual-guides.js', label: '生物图解内容与页面' },
   { script: 'scripts/check-biology-content.js', label: '生物内容' },

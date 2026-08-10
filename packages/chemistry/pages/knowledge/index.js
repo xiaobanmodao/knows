@@ -10,6 +10,7 @@ const {
   DEFAULT_READING_PREFERENCES,
   buildReadingDisplayClass,
 } = require('../../../../utils/reading-preferences');
+const { prepareStructuredVisualGuide } = require('../../../../utils/structured-visual-guide');
 
 function splitKnowledgeSections(sections) {
   const essentialSections = [];
@@ -123,6 +124,7 @@ Page({
       const navigation = getKnowledgeNavigation(knowledge.id);
       const relatedItems = getRelatedKnowledge(knowledge, 4);
       const sectionGroups = splitKnowledgeSections(knowledge.sections);
+      const visualGuide = prepareStructuredVisualGuide(knowledge.visualGuide);
       const app = getApp();
       const readingPosition = app.getReadingPosition('chemistry', knowledge.id);
       const restorePosition = this.shouldRestorePosition ? readingPosition : null;
@@ -154,6 +156,7 @@ Page({
         loading: false,
         knowledge: {
           ...knowledge,
+          visualGuide,
           coverImage: isCloudFile(knowledge.coverImage) ? '' : knowledge.coverImage,
           hasCoverImage: Boolean(knowledge.coverImage),
         },
