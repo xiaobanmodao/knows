@@ -15,6 +15,10 @@ const { topics: chemistryTopics } = require('../packages/chemistry/data/chemistr
 
 assert.strictEqual(EVIDENCE_KIND, 'official-framework-support');
 assert.strictEqual(REVIEW_ID, 'chemistry-topic-framework-support-2026-v1');
+assert.strictEqual(
+  getContentSource('pep-chemistry-training-2024').title,
+  '人教版义务教育化学新教材培训会在成都举办',
+);
 
 const missingEvidencePath = path.join(
   os.tmpdir(),
@@ -29,8 +33,13 @@ assert.throws(
 const defaultRun = spawnSync(process.execPath, [path.join(__dirname, 'check-chemistry-topic-framework-evidence.js')], {
   encoding: 'utf8',
 });
-assert.strictEqual(defaultRun.status, 1, 'default checker must fail before evidence is added');
-assert.match(defaultRun.stderr, /化学专题官方框架佐证记录读取失败/);
+assert.strictEqual(defaultRun.status, 0, 'default checker must pass with the checked-in evidence record');
+assert.match(defaultRun.stdout, /OK chemistry topic framework evidence: 10 topics/);
+assert.deepStrictEqual(checkChemistryTopicFrameworkEvidence(), {
+  topicCount: 10,
+  sourceKeys: ['moe-chemistry-2022', 'moe-textbook-catalog-2024', 'pep-chemistry-training-2024'],
+  evidenceKind: 'official-framework-support',
+});
 
 const prohibitedEvidencePath = path.join(
   os.tmpdir(),

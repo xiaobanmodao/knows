@@ -41,7 +41,7 @@ const SOURCE_DEFINITIONS = {
     kind: 'official',
   },
   'pep-chemistry-training-2024': {
-    title: '人教版义务教育化学新教材培训通知',
+    title: '人教版义务教育化学新教材培训会在成都举办',
     url: 'https://www.pep.com.cn/rjdt/rjdt/202405/t20240517_1992181.shtml',
     kind: 'official',
   },
