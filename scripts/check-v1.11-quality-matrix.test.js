@@ -7,6 +7,7 @@ const {
   RELEASE_CHECKS,
   getCheckCommands,
   getCheckEnvironment,
+  getMatrixEnvironment,
 } = require('./check-v1.11-quality-matrix');
 
 const defaultCommands = getCheckCommands(false);
@@ -92,7 +93,7 @@ assert.ok(strictCommands.some((item) => item.args.includes('--require-device-evi
 const inheritedReleaseEnvironment = {
   RELEASE_TOOL_STATE: '/tmp/tool-state.json',
   RELEASE_REGRESSION_EVIDENCE: '/tmp/evidence.json',
-  RELEASE_PREVIEW_REPORT: '/tmp/packages-preview.json',
+  PACKAGE_SIZE_REPORT: '/tmp/packages-preview.json',
 };
 const contractEnvironment = getCheckEnvironment(
   { script: 'scripts/check-roadmap-status.test.js' },
@@ -108,6 +109,29 @@ const releaseEnvironment = getCheckEnvironment(
 Object.entries(inheritedReleaseEnvironment).forEach(([key, value]) => {
   assert.strictEqual(releaseEnvironment[key], value, `发布检查必须保留 ${key}`);
 });
+
+const releaseProject = '/tmp/knows-release-project';
+const matrixEnvironment = getMatrixEnvironment(
+  ['node', 'check-v1.11-quality-matrix.js', '--require-release-evidence', '--release-project', releaseProject],
+  { CI: '1' },
+);
+assert.strictEqual(matrixEnvironment.CI, '1');
+assert.strictEqual(
+  matrixEnvironment.RELEASE_TOOL_STATE,
+  '/tmp/knows-release-project/.codex-output/release-regression-v1.10.1/tool-state.json',
+);
+assert.strictEqual(
+  matrixEnvironment.RELEASE_REGRESSION_EVIDENCE,
+  '/tmp/knows-release-project/.codex-output/release-regression-v1.10.1/evidence.json',
+);
+assert.strictEqual(
+  matrixEnvironment.PACKAGE_SIZE_REPORT,
+  '/tmp/knows-release-project/.codex-output/release-regression-v1.10.1/packages-preview.json',
+);
+assert.throws(
+  () => getMatrixEnvironment(['node', 'matrix.js', '--release-project']),
+  /--release-project.*路径/,
+);
 
 const matrixScripts = new Set(defaultCommands.map((item) => item.script));
 const testScripts = fs.readdirSync(__dirname)

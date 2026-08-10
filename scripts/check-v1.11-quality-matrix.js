@@ -2,10 +2,11 @@ const { execFileSync } = require('child_process');
 const path = require('path');
 
 const root = path.resolve(__dirname, '..');
+const RELEASE_OUTPUT_DIR = '.codex-output/release-regression-v1.10.1';
 const RELEASE_ENV_KEYS = Object.freeze([
   'RELEASE_TOOL_STATE',
   'RELEASE_REGRESSION_EVIDENCE',
-  'RELEASE_PREVIEW_REPORT',
+  'PACKAGE_SIZE_REPORT',
 ]);
 
 const DEFAULT_CHECKS = [
@@ -120,6 +121,23 @@ function getCheckCommands(requireReleaseEvidence = false) {
   return [...base, ...RELEASE_CHECKS].map((item) => ({ ...item, args: [...(item.args || [])] }));
 }
 
+function getMatrixEnvironment(args = process.argv, baseEnvironment = process.env) {
+  const environment = { ...baseEnvironment };
+  const releaseProjectOption = args.indexOf('--release-project');
+  if (releaseProjectOption < 0) return environment;
+  const releaseProject = args[releaseProjectOption + 1];
+  if (!releaseProject || releaseProject.startsWith('--')) {
+    throw new Error('--release-project 必须提供发布工作树路径');
+  }
+  const outputDirectory = path.resolve(releaseProject, RELEASE_OUTPUT_DIR);
+  return {
+    ...environment,
+    RELEASE_TOOL_STATE: path.join(outputDirectory, 'tool-state.json'),
+    RELEASE_REGRESSION_EVIDENCE: path.join(outputDirectory, 'evidence.json'),
+    PACKAGE_SIZE_REPORT: path.join(outputDirectory, 'packages-preview.json'),
+  };
+}
+
 function getCheckEnvironment(item, baseEnvironment = process.env) {
   const environment = { ...baseEnvironment };
   if (item && /\.test\.js$/.test(item.script || '')) {
@@ -128,20 +146,21 @@ function getCheckEnvironment(item, baseEnvironment = process.env) {
   return environment;
 }
 
-function runCheck(item, index, total) {
+function runCheck(item, index, total, baseEnvironment = process.env) {
   const args = item.args || [];
   console.log(`[${index}/${total}] ${item.label}`);
   execFileSync(process.execPath, [path.join(root, item.script), ...args], {
     cwd: root,
     encoding: 'utf8',
     stdio: 'inherit',
-    env: getCheckEnvironment(item),
+    env: getCheckEnvironment(item, baseEnvironment),
   });
 }
 
-function main(requireReleaseEvidence = false) {
+function main(requireReleaseEvidence = false, args = process.argv, baseEnvironment = process.env) {
   const commands = getCheckCommands(requireReleaseEvidence);
-  commands.forEach((item, index) => runCheck(item, index + 1, commands.length));
+  const matrixEnvironment = getMatrixEnvironment(args, baseEnvironment);
+  commands.forEach((item, index) => runCheck(item, index + 1, commands.length, matrixEnvironment));
   console.log(`OK v1.11 quality matrix: ${commands.length} checks`);
 }
 
@@ -151,8 +170,10 @@ if (require.main === module) {
 
 module.exports = {
   DEFAULT_CHECKS,
+  RELEASE_OUTPUT_DIR,
   RELEASE_CHECKS,
   getCheckEnvironment,
   getCheckCommands,
+  getMatrixEnvironment,
   main,
 };
