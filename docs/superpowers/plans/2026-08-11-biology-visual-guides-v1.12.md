@@ -31,7 +31,8 @@
 - Create: scripts/check-biology-visual-guides.test.js — 正常、缺失、非法色调、重复标签和运行时篡改的 Node 测试。
 - Modify: scripts/check-biology-content.js — 明确验证知识点的图解字段。
 - Modify: scripts/check-v1.11-quality-matrix.js — 将图解检查接入全量基线。
-- Modify: packages/biology/pages/knowledge/index.js、index.wxml、index.wxss — 预处理并展示四种结构。
+- Create: packages/biology/pages/knowledge/visual-guide.js — 可单测的图解渲染数据预处理，明确生成对比图左右列。
+- Modify: packages/biology/pages/knowledge/index.js、index.wxml、index.wxss — 使用预处理并展示四种结构。
 
 ## 图解内容清单
 
@@ -54,7 +55,7 @@
 | 植物的生活 | bio-k-stem-transport | compare | 导管的水和无机盐运输，与筛管的有机物运输 |
 | 植物的生活 | bio-k-leaf-structure | hierarchy | 叶片 → 表皮/叶肉/叶脉 → 各自功能 |
 | 植物的生活 | bio-k-photosynthesis | flow | 光、叶绿体、二氧化碳和水 → 有机物和氧气 |
-| 植物的生活 | bio-k-respiration-growth | cycle | 有机物供能 → 细胞活动与生长 → 产生可继续交换的物质 |
+| 植物的生活 | bio-k-respiration-growth | cycle | 光合作用制造有机物 → 呼吸作用分解释放能量 → 支持细胞活动与生长 → 两过程持续参与物质和能量变化 |
 | 人体健康 | bio-k-reproduction-development | flow | 生殖细胞结合 → 胚胎发育 → 出生后生长发育 |
 | 人体健康 | bio-k-digestion | flow | 食物摄入 → 消化分解 → 小肠吸收 → 运输利用 |
 | 人体健康 | bio-k-breathing | flow | 空气进入呼吸道 → 肺部气体交换 → 氧进入血液 → 细胞利用氧 |
@@ -235,11 +236,12 @@ Expected: 36 条图解完整；108 条例子和 6 个受控观察统计不变。
 - Modify: packages/biology/pages/knowledge/index.js
 - Modify: packages/biology/pages/knowledge/index.wxml
 - Modify: packages/biology/pages/knowledge/index.wxss
+- Create: packages/biology/pages/knowledge/visual-guide.js
 - Create: scripts/check-biology-visual-guides.js
 
 **Interfaces:**
 - Consumes: knowledge.visualGuide，结构由 Tasks 1 至 3 固定。
-- Produces: prepareVisualGuide(guide)，返回带 displayIndex、isLast、isSequential、isCycle 的可渲染副本。
+- Produces: visual-guide.js 的 prepareVisualGuide(guide)，返回带 displayIndex、isLast、isSequential、isCycle、isCompare、compareColumns、cycleHint 的可渲染副本。
 
 - [ ] **Step 1: 在图解检查器中写页面语义失败断言**
 
@@ -257,11 +259,12 @@ Expected: 页面语义断言失败，但不会修改生产数据。
 
     function prepareVisualGuide(guide) {
       if (!guide || !Array.isArray(guide.items) || !guide.items.length) return null;
-      const isSequential = guide.type === 'flow' || guide.type === 'cycle';
+      const isSequential = guide.type === 'flow';
       return {
         ...guide,
         isSequential,
-        isCycle: guide.type === 'cycle',
+      isCycle: guide.type === 'cycle',
+      cycleHint: guide.type === 'cycle' ? '这些环节持续关联，不表示单一因果链。' : '',
         items: guide.items.map((item, index, items) => ({
           ...item,
           displayIndex: index + 1,
@@ -270,11 +273,11 @@ Expected: 页面语义断言失败，但不会修改生产数据。
       };
     }
 
-在 loadKnowledge() 设置 knowledge 时调用预处理函数。WXML 固定放在 .explanation-section 后、.knowledge-figure 前，使用 wx:if 保护，显示序号、标签、说明；顺序型节点非末项后显示箭头，循环型末尾显示“回到起点”的纯文本提示。
+在 loadKnowledge() 设置 knowledge 时调用预处理函数。WXML 固定放在 .explanation-section 后、.knowledge-figure 前，使用 wx:if 保护，显示序号、标签、说明；flow 节点非末项后显示箭头；cycle 显示 cycleHint，不显示“回到起点”或从最后节点指向第一个节点的因果箭头。compare 只渲染 compareColumns.left 和 compareColumns.right 两个独立列容器，保证 3+2 与 2+2 节点均从同一首行开始。
 
 - [ ] **Step 4: 实现小屏不溢出的样式**
 
-加入 .visual-guide、.visual-guide__items、.visual-guide__item、.visual-guide__index、.visual-guide__label、.visual-guide__note、.visual-guide__connector、.visual-guide--compare、.visual-guide--hierarchy 和四个色调规则。默认单列；compare 用最小宽度为 0 的两列弹性布局；hierarchy 左缩进不超过 36rpx。禁止固定高度、文字截断、横向滚动、背景渐变和嵌套卡片。
+加入 .visual-guide、.visual-guide__items、.visual-guide__item、.visual-guide__index、.visual-guide__label、.visual-guide__note、.visual-guide__connector、.visual-guide__compare、.visual-guide__compare-column、.visual-guide--hierarchy 和四个色调规则。默认单列；compare 用最小宽度为 0 的两个显式列容器布局；hierarchy 左缩进不超过 36rpx。禁止固定高度、文字截断、横向滚动、背景渐变和嵌套卡片。
 
 - [ ] **Step 5: 运行页面语义和 JavaScript 语法检查**
 
@@ -298,7 +301,7 @@ Expected: 有图解和无图解路径均可解析，运行时 JS 语法通过。
 - Consumes: collectBiologyVisualGuideIssues() 与 check-biology-visual-guides.js 的退出状态。
 - Produces: 全量质量矩阵中可重复运行的图解检查。
 
-- [ ] **Step 1: 为既有内容检查增加图解字段断言**
+- [x] **Step 1: 为既有内容检查增加图解字段断言**
 
     assert(knowledge.visualGuide, knowledge.id + '.visualGuide');
     assertText(knowledge.visualGuide.title, knowledge.id + '.visualGuide.title');
@@ -307,7 +310,7 @@ Expected: 有图解和无图解路径均可解析，运行时 JS 语法通过。
 
 脚本末尾打印 36 visual guides，使持续集成显示覆盖规模。
 
-- [ ] **Step 2: 将专用检查接入质量矩阵**
+- [x] **Step 2: 将专用检查接入质量矩阵**
 
 在 DEFAULT_CHECKS 的“生物内容”前增加：
 
@@ -326,9 +329,13 @@ Run: node scripts/check-content-audit.js --require-reviewed
 Run: node scripts/check-v1.11-quality-matrix.js  
 Expected: 36 个图解，948 个现有实体不意外减少；全量矩阵全绿。若矩阵数字增加，记录真实数字。
 
+执行记录（2026-08-11）：前五条 Node 命令均已执行并通过；严格内容审计为 948 个实体，生物内容检查为 36 个图解。全量矩阵已实际运行，但在第 1/121 项停止：既有 `check-v1.11-quality-matrix.test.js` 仍断言 119 项。该测试文件不在本任务允许修改的文件范围内，故本步骤保持未完成。
+
 - [ ] **Step 4: 模拟器回归并记录真实结果**
 
 在微信开发者工具分别以 iPhone 14 Pro Max 与 Nexus 5 打开“植物细胞和动物细胞”“血液循环”“生物体的结构层次”。确认对比、循环、层级均无文字溢出；封面 URL 失败时，图解仍显示。只记录实际执行的结果。
+
+执行记录（2026-08-11）：未执行微信开发者工具模拟器、真机或发布流程，不能标记为通过。
 
 - [ ] **Step 5: 复核差异、提交并推送**
 
