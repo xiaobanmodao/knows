@@ -60,6 +60,7 @@ const DEFAULT_CHECKS = [
   { script: 'scripts/check-release-readiness.js', label: '发布准备' },
   { script: 'scripts/check-release-tool-state.test.js', label: '开发者工具状态诊断契约' },
   { script: 'scripts/check-content-source-catalog.js', label: '内容源目录产物' },
+  { script: 'scripts/check-content-diff.js', label: '内容差异报告' },
   { script: 'scripts/check-subject-high-risk-batches.js', args: ['--report', 'dist/content-audit/subject-high-risk-batches.json'], label: '英语物理高风险批次报告' },
   { script: 'scripts/check-chemistry-biology-high-risk-batches.js', args: ['--report', 'dist/content-audit/chemistry-biology-high-risk-batches.json'], label: '化学生物高风险批次报告' },
 ];
