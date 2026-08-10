@@ -29,12 +29,24 @@ const packageRegistry = [{
   sizeLimitBytes: 20,
 }];
 
+const realProjectConfig = JSON.parse(fs.readFileSync(path.resolve(__dirname, '..', 'project.config.json'), 'utf8'));
+const superpowersFolderIgnores = realProjectConfig.packOptions.ignore.filter((entry) => (
+  entry.type === 'folder' && entry.value === '.superpowers'
+));
+
+assert.strictEqual(
+  superpowersFolderIgnores.length,
+  1,
+  'project config must ignore the .superpowers development workspace exactly once',
+);
+
 withProject((root) => {
   writeFile(root, 'app.js', 'main');
   writeFile(root, 'pages/index/index.js', 'page');
   writeFile(root, 'packages/math/repository.js', 'math');
   writeFile(root, 'assets/figures/generated/math.png', 'ignored source asset');
   writeFile(root, '.codex-output/old-report.json', 'ignored report');
+  writeFile(root, '.superpowers/sdd/review.diff', 'ignored development review');
   writeFile(root, '.git/should-not-be-read', 'ignored metadata');
 
   const report = buildSourcePackageEstimate({
@@ -44,6 +56,7 @@ withProject((root) => {
         ignore: [
           { type: 'folder', value: 'assets/figures/generated' },
           { type: 'folder', value: '.codex-output' },
+          { type: 'folder', value: '.superpowers' },
         ],
       },
     },
@@ -58,6 +71,7 @@ withProject((root) => {
   assert.strictEqual(report.packages[1].bytes, 'math'.length);
   assert.deepStrictEqual(report.packages[1].files, ['packages/math/repository.js']);
   assert.ok(!report.packages[0].files.some((file) => file.includes('generated')));
+  assert.ok(!report.packages[0].files.some((file) => file.startsWith('.superpowers/')));
   assert.ok(!report.packages[0].files.some((file) => file.startsWith('.git/')));
   assert.strictEqual(checkSourcePackageEstimate({
     root,
@@ -66,6 +80,7 @@ withProject((root) => {
         ignore: [
           { type: 'folder', value: 'assets/figures/generated' },
           { type: 'folder', value: '.codex-output' },
+          { type: 'folder', value: '.superpowers' },
         ],
       },
     },

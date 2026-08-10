@@ -73,6 +73,10 @@
         "value": ".codex-preview"
       },
       {
+        "type": "folder",
+        "value": ".superpowers"
+      },
+      {
         "type": "file",
         "value": "README.md"
       },
