@@ -5,6 +5,9 @@ const path = require('path');
 const { spawnSync } = require('child_process');
 
 const {
+  buildLiveReport,
+  checkLiveReport,
+  sha256File,
   validateLiveRecord,
 } = require('./math-smartedu-catalog-live');
 
@@ -76,6 +79,56 @@ try {
   );
 
   const tempDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'knows-smartedu-live-'));
+  const evidencePath = path.join(tempDirectory, 'evidence.json');
+  const sourceEvidencePath = path.join(__dirname, '..', 'docs/evidence/math-smartedu-catalog-2026.json');
+  const reportInput = JSON.parse(fs.readFileSync(sourceEvidencePath, 'utf8'));
+  fs.copyFileSync(sourceEvidencePath, evidencePath);
+  const reportResult = {
+    sourceId: reportInput.sourceId,
+    records: reportInput.resourceRecords.map((record) => ({
+      resourceId: record.resourceId,
+      title: record.title,
+      previewPages: record.directoryPreviewPages,
+    })),
+  };
+  const report = buildLiveReport(reportInput, evidencePath, reportResult, '2026-08-10T08:39:07.639Z');
+  assert.strictEqual(report.evidenceSha256, sha256File(evidencePath));
+  assert.strictEqual(checkLiveReport(reportInput, report, { evidenceSha256: sha256File(evidencePath) }), true);
+  assert.throws(
+    () => checkLiveReport(reportInput, { ...report, evidenceSha256: '0'.repeat(64) }, { evidenceSha256: sha256File(evidencePath) }),
+    /hash|哈希|evidenceSha256/i,
+  );
+  assert.throws(
+    () => checkLiveReport(reportInput, { ...report, sourceId: 'other-source' }, { evidenceSha256: sha256File(evidencePath) }),
+    /sourceId|来源/i,
+  );
+  assert.throws(
+    () => checkLiveReport(reportInput, { ...report, records: [] }, { evidenceSha256: sha256File(evidencePath) }),
+    /records|记录|数量/i,
+  );
+  assert.throws(
+    () => checkLiveReport(reportInput, { ...report, checkedAt: 'not-a-date' }, { evidenceSha256: sha256File(evidencePath) }),
+    /checkedAt|时间/i,
+  );
+  const offlineReportPath = path.join(tempDirectory, 'offline-report.json');
+  fs.writeFileSync(offlineReportPath, `${JSON.stringify(report)}\n`, 'utf8');
+  const offlineCli = spawnSync(process.execPath, [
+    path.join(__dirname, 'check-math-smartedu-catalog-live-report.js'),
+    offlineReportPath,
+    evidencePath,
+  ], { cwd: path.resolve(__dirname, '..'), encoding: 'utf8' });
+  assert.strictEqual(offlineCli.status, 0, `${offlineCli.stdout}\n${offlineCli.stderr}`);
+  assert.match(`${offlineCli.stdout}\n${offlineCli.stderr}`, /OK math SmartEdu live report/);
+  const tamperedReportPath = path.join(tempDirectory, 'tampered-report.json');
+  fs.writeFileSync(tamperedReportPath, `${JSON.stringify({ ...report, sourceId: 'other-source' })}\n`, 'utf8');
+  const tamperedCli = spawnSync(process.execPath, [
+    path.join(__dirname, 'check-math-smartedu-catalog-live-report.js'),
+    tamperedReportPath,
+    evidencePath,
+  ], { cwd: path.resolve(__dirname, '..'), encoding: 'utf8' });
+  assert.notStrictEqual(tamperedCli.status, 0);
+  assert.match(`${tamperedCli.stdout}\n${tamperedCli.stderr}`, /sourceId|来源/);
+
   const reportPath = path.join(tempDirectory, 'report.json');
   const inputPath = path.join(tempDirectory, 'input.json');
   fs.writeFileSync(inputPath, '{}\n', 'utf8');

@@ -1,4 +1,5 @@
 const fs = require('fs');
+const crypto = require('crypto');
 const path = require('path');
 
 const { checkEvidence } = require('./check-math-smartedu-catalog-evidence');
@@ -8,6 +9,14 @@ const PREVIEW_ENDPOINT = /^https:\/\/r[123]-ndr\.ykt\.cbern\.com\.cn\//;
 
 function fail(message) {
   throw new Error(`数学官方平台目录在线复核：${message}`);
+}
+
+function sha256File(filePath) {
+  try {
+    return crypto.createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
+  } catch (error) {
+    fail(`证据文件哈希计算失败：${filePath}：${error.message}`);
+  }
 }
 
 function requireText(value, field) {
@@ -135,14 +144,61 @@ async function checkLiveEvidence(input, { timeoutMs = 15000 } = {}) {
   };
 }
 
+function checkLiveReport(input, report, { evidenceSha256 } = {}) {
+  if (!input || typeof input !== 'object' || !Array.isArray(input.resourceRecords)) {
+    fail('离线报告对应的本地证据无效');
+  }
+  if (!report || typeof report !== 'object' || Array.isArray(report)) fail('离线报告无效');
+  if (report.schemaVersion !== 1) fail('离线报告 schemaVersion 必须为 1');
+  if (report.sourceId !== input.sourceId) fail('离线报告 sourceId 与本地证据不一致');
+  if (!/^[a-f0-9]{64}$/.test(report.evidenceSha256)) fail('离线报告 evidenceSha256 无效');
+  if (evidenceSha256 && report.evidenceSha256 !== evidenceSha256) {
+    fail('离线报告 evidenceSha256 与当前证据文件不一致');
+  }
+  if (typeof report.checkedAt !== 'string' || Number.isNaN(Date.parse(report.checkedAt))) {
+    fail('离线报告 checkedAt 无效');
+  }
+  if (!Array.isArray(report.records) || report.records.length !== input.resourceRecords.length) {
+    fail('离线报告 records 数量与本地证据不一致');
+  }
+  const evidenceById = new Map(input.resourceRecords.map((record) => [record.resourceId, record]));
+  const reportIds = new Set();
+  report.records.forEach((record) => {
+    if (!record || typeof record !== 'object' || !record.resourceId) fail('离线报告记录不完整');
+    if (reportIds.has(record.resourceId)) fail(`离线报告重复 resourceId：${record.resourceId}`);
+    reportIds.add(record.resourceId);
+    const evidenceRecord = evidenceById.get(record.resourceId);
+    if (!evidenceRecord) fail(`离线报告包含未知 resourceId：${record.resourceId}`);
+    if (record.title !== evidenceRecord.title) fail(`${record.resourceId} 离线报告 title 不一致`);
+    if (JSON.stringify(record.previewPages) !== JSON.stringify(evidenceRecord.directoryPreviewPages)) {
+      fail(`${record.resourceId} 离线报告 previewPages 不一致`);
+    }
+  });
+  return true;
+}
+
+function buildLiveReport(input, evidencePath, result, checkedAt = new Date().toISOString()) {
+  const report = {
+    schemaVersion: 1,
+    sourceId: result.sourceId,
+    evidenceSha256: sha256File(evidencePath),
+    checkedAt,
+    records: result.records,
+  };
+  checkLiveReport(input, report, { evidenceSha256: report.evidenceSha256 });
+  return report;
+}
+
 async function main() {
-  const input = readEvidence(getInputPath());
+  const evidencePath = path.resolve(getInputPath() || 'docs/evidence/math-smartedu-catalog-2026.json');
+  const input = readEvidence(evidencePath);
   const result = await checkLiveEvidence(input, { timeoutMs: Number(getOption('--timeout') || 15000) });
   const reportPath = getOption('--report');
   if (reportPath) {
+    const report = buildLiveReport(input, evidencePath, result);
     const absoluteReportPath = path.resolve(reportPath);
     fs.mkdirSync(path.dirname(absoluteReportPath), { recursive: true });
-    fs.writeFileSync(absoluteReportPath, `${JSON.stringify({ ...result, checkedAt: new Date().toISOString() }, null, 2)}\n`, 'utf8');
+    fs.writeFileSync(absoluteReportPath, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
     console.log(`Report: ${absoluteReportPath}`);
   }
   console.log(`OK math SmartEdu live evidence: ${result.records.length} volumes and ${result.records.reduce((sum, record) => sum + record.previewPages.length, 0)} directory pages checked`);
@@ -156,7 +212,10 @@ if (require.main === module) {
 }
 
 module.exports = {
+  buildLiveReport,
   checkLiveEvidence,
+  checkLiveReport,
   fetchJson,
+  sha256File,
   validateLiveRecord,
 };
