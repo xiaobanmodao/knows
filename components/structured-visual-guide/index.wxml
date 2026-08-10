@@ -1,0 +1,41 @@
+<view wx:if="{{guide}}" class="structured-visual-guide structured-visual-guide--{{guide.type}} {{readingDisplayClass}}">
+  <view class="structured-visual-guide__title">{{guide.title}}</view>
+  <view class="structured-visual-guide__summary reading-copy--24 reading-leading--175">{{guide.summary}}</view>
+  <block wx:if="{{guide.isCompare}}">
+    <view class="structured-visual-guide__compare">
+      <view class="structured-visual-guide__compare-column">
+        <view wx:for="{{guide.compareColumns.left}}" wx:key="index" class="structured-visual-guide__item structured-visual-guide__item--{{item.tone}}">
+          <view class="structured-visual-guide__index">{{item.displayIndex}}</view>
+          <view class="structured-visual-guide__body">
+            <view class="structured-visual-guide__label">{{item.label}}</view>
+            <view class="structured-visual-guide__note reading-copy--23 reading-leading--170">{{item.note}}</view>
+          </view>
+        </view>
+      </view>
+      <view class="structured-visual-guide__compare-column">
+        <view wx:for="{{guide.compareColumns.right}}" wx:key="index" class="structured-visual-guide__item structured-visual-guide__item--{{item.tone}}">
+          <view class="structured-visual-guide__index">{{item.displayIndex}}</view>
+          <view class="structured-visual-guide__body">
+            <view class="structured-visual-guide__label">{{item.label}}</view>
+            <view class="structured-visual-guide__note reading-copy--23 reading-leading--170">{{item.note}}</view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </block>
+  <block wx:else>
+    <view class="structured-visual-guide__items">
+      <block wx:for="{{guide.items}}" wx:key="index">
+        <view class="structured-visual-guide__item structured-visual-guide__item--{{item.tone}} structured-visual-guide__item--depth-{{item.depth}}">
+          <view class="structured-visual-guide__index">{{item.displayIndex}}</view>
+          <view class="structured-visual-guide__body">
+            <view class="structured-visual-guide__label">{{item.label}}</view>
+            <view class="structured-visual-guide__note reading-copy--23 reading-leading--170">{{item.note}}</view>
+          </view>
+        </view>
+        <view wx:if="{{guide.isSequential && !item.isLast}}" class="structured-visual-guide__connector" aria-hidden="true">↓</view>
+      </block>
+    </view>
+  </block>
+  <view wx:if="{{guide.isCycle}}" class="structured-visual-guide__cycle-hint">{{guide.cycleHint}}</view>
+</view>

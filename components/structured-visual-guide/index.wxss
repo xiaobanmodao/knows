@@ -1,0 +1,27 @@
+@import "../../styles/reading-display.wxss";
+
+.structured-visual-guide {
+  margin-top: 34rpx;
+  padding: 22rpx 0;
+  border-top: 1rpx solid #dce4df;
+  border-bottom: 1rpx solid #dce4df;
+}
+
+.structured-visual-guide__title { color: #213047; font-size: 28rpx; font-weight: 800; }
+.structured-visual-guide__summary { margin-top: 10rpx; color: #566477; font-size: 23rpx; line-height: 1.75; }
+.structured-visual-guide__items { display: flex; flex-direction: column; gap: 12rpx; margin-top: 18rpx; }
+.structured-visual-guide__compare { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; column-gap: 20rpx; margin-top: 18rpx; }
+.structured-visual-guide__compare-column { display: flex; flex-direction: column; min-width: 0; gap: 12rpx; }
+.structured-visual-guide__item { display: flex; align-items: flex-start; min-width: 0; gap: 14rpx; padding: 14rpx 0 14rpx 14rpx; border-left: 5rpx solid #81918b; }
+.structured-visual-guide__index { display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 38rpx; aspect-ratio: 1; border-radius: 50%; background: #e9eeeb; color: #39584b; font-size: 19rpx; font-weight: 800; }
+.structured-visual-guide__body { min-width: 0; flex: 1; }
+.structured-visual-guide__label { color: #263247; font-size: 24rpx; font-weight: 800; line-height: 1.5; word-break: break-word; }
+.structured-visual-guide__note { margin-top: 4rpx; color: #566477; font-size: 22rpx; line-height: 1.7; word-break: break-word; }
+.structured-visual-guide__connector { align-self: center; color: #59806d; font-size: 30rpx; font-weight: 800; line-height: 1; }
+.structured-visual-guide__cycle-hint { margin-top: 18rpx; padding-left: 14rpx; border-left: 5rpx solid #758594; color: #536575; font-size: 22rpx; line-height: 1.7; }
+.structured-visual-guide__item--green { border-left-color: #4d816d; }
+.structured-visual-guide__item--blue { border-left-color: #4d7794; }
+.structured-visual-guide__item--amber { border-left-color: #a97a42; }
+.structured-visual-guide__item--slate { border-left-color: #71808a; }
+.structured-visual-guide--hierarchy .structured-visual-guide__item--depth-1 { padding-left: 18rpx; }
+.structured-visual-guide--hierarchy .structured-visual-guide__item--depth-2 { padding-left: 36rpx; }

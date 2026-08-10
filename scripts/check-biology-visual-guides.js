@@ -4,16 +4,20 @@ const path = require('path');
 
 const rootDir = path.resolve(__dirname, '..');
 const pageDir = path.join(rootDir, 'packages/biology/pages/knowledge');
+const componentDir = path.join(rootDir, 'components/structured-visual-guide');
 const visualGuidePath = path.join(pageDir, 'visual-guide.js');
 const pageJs = fs.readFileSync(path.join(pageDir, 'index.js'), 'utf8');
 const wxml = fs.readFileSync(path.join(pageDir, 'index.wxml'), 'utf8');
-const wxss = fs.readFileSync(path.join(pageDir, 'index.wxss'), 'utf8');
+const componentJs = fs.readFileSync(path.join(componentDir, 'index.js'), 'utf8');
+const componentWxml = fs.readFileSync(path.join(componentDir, 'index.wxml'), 'utf8');
+const componentWxss = fs.readFileSync(path.join(componentDir, 'index.wxss'), 'utf8');
+const pageJson = fs.readFileSync(path.join(pageDir, 'index.json'), 'utf8');
 const CYCLE_HINT = '这些环节持续关联，不表示单一因果链。';
 const RESPONSIVE_SELECTORS = Object.freeze([
-  '.visual-guide__item',
-  '.visual-guide__body',
-  '.visual-guide__compare',
-  '.visual-guide__compare-column',
+  '.structured-visual-guide__item',
+  '.structured-visual-guide__body',
+  '.structured-visual-guide__compare',
+  '.structured-visual-guide__compare-column',
 ]);
 
 function escapeRegex(value) {
@@ -50,13 +54,6 @@ function createGuide(type, items) {
 
 function labels(items) {
   return items.map((item) => item.label);
-}
-
-function getGuideMarkup(source) {
-  const start = source.indexOf('<view wx:if="{{knowledge.visualGuide}}" class="visual-guide');
-  const end = source.indexOf('<view wx:if="{{knowledge.hasCoverImage}}" class="knowledge-figure');
-  assert(start >= 0 && end > start, '知识页缺少受保护的完整图解区块');
-  return source.slice(start, end);
 }
 
 function findMatchingView(source, openingIndex) {
@@ -117,12 +114,12 @@ function prefixCssRule(styles, selector) {
 }
 
 function countLoop(markup, collection) {
-  const loop = `wx:for="{{knowledge.visualGuide.compareColumns.${collection}}}"`;
+  const loop = `wx:for="{{guide.compareColumns.${collection}}}"`;
   return markup.split(loop).length - 1;
 }
 
 function assertCompareColumnStructure(compareMarkup) {
-  const columns = findViewsByClass(compareMarkup, 'visual-guide__compare-column');
+  const columns = findViewsByClass(compareMarkup, 'structured-visual-guide__compare-column');
   assert.strictEqual(columns.length, 2, 'compare 必须有两个列容器');
   const [leftColumn, rightColumn] = columns;
   assert.strictEqual(countLoop(compareMarkup, 'left'), 1, 'compare 左列循环只能出现一次');
@@ -134,12 +131,12 @@ function assertCompareColumnStructure(compareMarkup) {
 }
 
 function moveCompareLoopsOutsideColumns(compareMarkup) {
-  const leftLoop = 'wx:for="{{knowledge.visualGuide.compareColumns.left}}"';
-  const rightLoop = 'wx:for="{{knowledge.visualGuide.compareColumns.right}}"';
+  const leftLoop = 'wx:for="{{guide.compareColumns.left}}"';
+  const rightLoop = 'wx:for="{{guide.compareColumns.right}}"';
   const withoutColumnLoops = compareMarkup
     .replace(leftLoop, 'data-removed-for="left"')
     .replace(rightLoop, 'data-removed-for="right"');
-  const compareContainer = findViewsByClass(withoutColumnLoops, 'visual-guide__compare')[0];
+  const compareContainer = findViewsByClass(withoutColumnLoops, 'structured-visual-guide__compare')[0];
   const movedLoops = `<view ${leftLoop}></view><view ${rightLoop}></view>`;
   return [
     withoutColumnLoops.slice(0, compareContainer.end),
@@ -154,7 +151,7 @@ function getVisualGuideRules(styles) {
   let match;
   while ((match = rulePattern.exec(styles))) {
     const selector = match[2].trim();
-    if (selector.includes('.visual-guide')) {
+    if (selector.includes('.structured-visual-guide')) {
       rules.push({ selector, body: match[3] });
     }
   }
@@ -185,7 +182,7 @@ function assertForbiddenStyleProbes(styles) {
     ['-webkit-line-clamp: 2;', '图解文字不能截断'],
   ];
   probes.forEach(([declaration, message]) => {
-    const mutatedStyles = `${styles}\n.visual-guide__probe { ${declaration} }`;
+    const mutatedStyles = `${styles}\n.structured-visual-guide__probe { ${declaration} }`;
     assert.throws(() => assertGuideStylesAvoidResponsiveTraps(mutatedStyles), new RegExp(message));
   });
 }
@@ -264,46 +261,46 @@ function assertPrepareVisualGuide(prepareVisualGuide) {
 }
 
 function assertGuideMarkupAndStyles(markup, styles) {
-  const guideMarkup = getGuideMarkup(markup);
   const explanationIndex = markup.indexOf('<view class="explanation-section');
   const figureIndex = markup.indexOf('<view wx:if="{{knowledge.hasCoverImage}}" class="knowledge-figure');
-  assert(explanationIndex >= 0 && explanationIndex < markup.indexOf(guideMarkup), '图解必须位于概念说明之后');
-  assert(figureIndex > markup.indexOf(guideMarkup), '图解必须位于专题封面之前');
-  assert(guideMarkup.includes('visual-guide--{{knowledge.visualGuide.type}}'), '图解根节点缺少类型样式钩子');
-  assert(!/class="[^"]*\bcard\b/.test(guideMarkup), '图解区块不能嵌套卡片');
+  const guideIndex = markup.indexOf('<structured-visual-guide guide="{{knowledge.visualGuide}}"');
+  assert(explanationIndex >= 0 && explanationIndex < guideIndex, '图解必须位于概念说明之后');
+  assert(figureIndex > guideIndex, '图解必须位于专题封面之前');
+  assert(componentWxml.includes('structured-visual-guide--{{guide.type}}'), '图解根节点缺少类型样式钩子');
+  assert(!/class="[^"]*\bcard\b/.test(componentWxml), '图解区块不能嵌套卡片');
 
-  const compareStart = guideMarkup.indexOf('<block wx:if="{{knowledge.visualGuide.isCompare}}">');
-  const nonCompareStart = guideMarkup.indexOf('<block wx:else>');
+  const compareStart = componentWxml.indexOf('<block wx:if="{{guide.isCompare}}">');
+  const nonCompareStart = componentWxml.indexOf('<block wx:else>');
   assert(compareStart >= 0 && nonCompareStart > compareStart, 'compare 必须与普通列表使用独立分支');
-  const compareMarkup = guideMarkup.slice(compareStart, nonCompareStart);
-  const nonCompareMarkup = guideMarkup.slice(nonCompareStart);
-  assert(findViewsByClass(compareMarkup, 'visual-guide__compare').length === 1, 'compare 必须使用独立两列容器');
+  const compareMarkup = componentWxml.slice(compareStart, nonCompareStart);
+  const nonCompareMarkup = componentWxml.slice(nonCompareStart);
+  assert(findViewsByClass(compareMarkup, 'structured-visual-guide__compare').length === 1, 'compare 必须使用独立两列容器');
   assertCompareColumnStructure(compareMarkup);
   assert.throws(
     () => assertCompareColumnStructure(moveCompareLoopsOutsideColumns(compareMarkup)),
     /compare (?:左列|右列)循环必须在第[一二]个列容器内/,
     '循环移出列容器必须被拒绝',
   );
-  assert(!compareMarkup.includes('visual-guide__connector'), 'compare 区块不能渲染连接符');
-  assert.strictEqual((guideMarkup.match(/class="visual-guide__connector"/g) || []).length, 1, '连接符只能在普通列表中出现一次');
-  assert(/wx:if="\{\{knowledge\.visualGuide\.isSequential && !item\.isLast\}\}" class="visual-guide__connector"/.test(nonCompareMarkup), '普通列表连接符必须只受 flow 相邻节点条件控制');
-  assert(/wx:if="\{\{knowledge\.visualGuide\.isCycle\}\}" class="visual-guide__cycle-hint">\{\{knowledge\.visualGuide\.cycleHint\}\}/.test(guideMarkup), 'cycle 必须显示固定关联提示');
-  assert(!guideMarkup.includes('回到起点'), 'cycle 图解不得暗示回到起点');
-  assert(!guideMarkup.includes('visual-guide__item--{{item.lane}}'), 'compare 不能依赖 lane 的节点网格定位');
+  assert(!compareMarkup.includes('structured-visual-guide__connector'), 'compare 区块不能渲染连接符');
+  assert.strictEqual((componentWxml.match(/class="structured-visual-guide__connector"/g) || []).length, 1, '连接符只能在普通列表中出现一次');
+  assert(/wx:if="\{\{guide\.isSequential && !item\.isLast\}\}" class="structured-visual-guide__connector"/.test(nonCompareMarkup), '普通列表连接符必须只受 flow 相邻节点条件控制');
+  assert(/wx:if="\{\{guide\.isCycle\}\}" class="structured-visual-guide__cycle-hint">\{\{guide\.cycleHint\}\}/.test(componentWxml), 'cycle 必须显示固定关联提示');
+  assert(!componentWxml.includes('回到起点'), 'cycle 图解不得暗示回到起点');
+  assert(!componentWxml.includes('structured-visual-guide__item--{{item.lane}}'), 'compare 不能依赖 lane 的节点网格定位');
 
   const rules = Object.fromEntries(RESPONSIVE_SELECTORS.map((selector) => [selector, getCssRule(styles, selector)]));
-  assert(hasDeclaration(rules['.visual-guide__item'], 'min-width', '0'), '图解节点必须可收缩');
-  assert(hasDeclaration(rules['.visual-guide__body'], 'min-width', '0'), '图解节点正文必须可收缩');
-  assert(hasDeclaration(rules['.visual-guide__compare-column'], 'min-width', '0'), 'compare 列必须可收缩');
-  assert(hasDeclaration(rules['.visual-guide__compare'], 'display', 'grid'), 'compare 容器必须使用两列 grid');
-  assert(hasDeclaration(rules['.visual-guide__compare'], 'grid-template-columns', 'repeat(2, minmax(0, 1fr))'), 'compare 必须使用可收缩两列');
+  assert(hasDeclaration(rules['.structured-visual-guide__item'], 'min-width', '0'), '图解节点必须可收缩');
+  assert(hasDeclaration(rules['.structured-visual-guide__body'], 'min-width', '0'), '图解节点正文必须可收缩');
+  assert(hasDeclaration(rules['.structured-visual-guide__compare-column'], 'min-width', '0'), 'compare 列必须可收缩');
+  assert(hasDeclaration(rules['.structured-visual-guide__compare'], 'display', 'grid'), 'compare 容器必须使用两列 grid');
+  assert(hasDeclaration(rules['.structured-visual-guide__compare'], 'grid-template-columns', 'repeat(2, minmax(0, 1fr))'), 'compare 必须使用可收缩两列');
   RESPONSIVE_SELECTORS.forEach((selector) => {
     assert.throws(() => getCssRule(prefixCssRule(styles, selector), selector), /缺少图解样式选择器/, `无效祖先前缀必须使 ${selector} 失效`);
   });
-  assert(!/\.visual-guide--compare\s+\.visual-guide__items\s*\{/.test(styles), 'compare 不能依赖稀疏节点 grid');
-  assert(!/\.visual-guide__item--(?:left|right)\s*\{[\s\S]*?grid-column\s*:/.test(styles), 'compare 不能依赖 lane 的 grid-column 排列');
-  assert(hasDeclaration(getCssRule(styles, '.visual-guide--hierarchy .visual-guide__item--depth-1'), 'padding-left', '18rpx'));
-  assert(hasDeclaration(getCssRule(styles, '.visual-guide--hierarchy .visual-guide__item--depth-2'), 'padding-left', '36rpx'));
+  assert(!/\.structured-visual-guide--compare\s+\.structured-visual-guide__items\s*\{/.test(styles), 'compare 不能依赖稀疏节点 grid');
+  assert(!/\.structured-visual-guide__item--(?:left|right)\s*\{[\s\S]*?grid-column\s*:/.test(styles), 'compare 不能依赖 lane 的 grid-column 排列');
+  assert(hasDeclaration(getCssRule(styles, '.structured-visual-guide--hierarchy .structured-visual-guide__item--depth-1'), 'padding-left', '18rpx'));
+  assert(hasDeclaration(getCssRule(styles, '.structured-visual-guide--hierarchy .structured-visual-guide__item--depth-2'), 'padding-left', '36rpx'));
   assertGuideStylesAvoidResponsiveTraps(styles);
   assertForbiddenStyleProbes(styles);
 }
@@ -314,7 +311,15 @@ function main() {
   assert.strictEqual(typeof prepareVisualGuide, 'function', 'visual-guide 模块必须导出 prepareVisualGuide');
   assert(/require\(['"]\.\/visual-guide['"]\)/.test(pageJs), '知识页必须使用 visual-guide 预处理模块');
   assertPrepareVisualGuide(prepareVisualGuide);
-  assertGuideMarkupAndStyles(wxml, wxss);
+  assert(pageJson.includes('structured-visual-guide'), '生物页必须注册公共图解组件');
+  assert(wxml.includes('<structured-visual-guide guide="{{knowledge.visualGuide}}"'), '生物页必须传入图解');
+  assert(componentJs.includes('readingPreferences'), '公共图解组件必须接收阅读偏好');
+  assert(componentWxml.includes('wx:if="{{guide}}"'), '公共图解组件必须保护空图解');
+  assert(componentWxml.includes('guide.compareColumns.left'), '公共图解组件必须渲染左列');
+  assert(componentWxml.includes('guide.compareColumns.right'), '公共图解组件必须渲染右列');
+  assert(componentWxml.includes('guide.isSequential'), '公共图解组件必须渲染流程连接');
+  assert(componentWxml.includes('guide.isCycle'), '公共图解组件必须渲染循环提示');
+  assertGuideMarkupAndStyles(wxml, componentWxss);
   console.log('OK biology visual guide page semantics');
 }
 
