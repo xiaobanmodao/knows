@@ -3,12 +3,21 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { spawnSync } = require('child_process');
+const { buildContentSourceCatalog } = require('./content-source-catalog');
 
 const root = path.resolve(__dirname, '..');
 const builder = path.join(__dirname, 'build-content-source-input.js');
+const checker = path.join(__dirname, 'check-content-source-input.js');
 
 function runBuilder(inputPath, outputPath, extraArgs = []) {
   return spawnSync(process.execPath, [builder, inputPath, '--output', outputPath, ...extraArgs], {
+    cwd: root,
+    encoding: 'utf8',
+  });
+}
+
+function runChecker(inputPath, extraArgs = []) {
+  return spawnSync(process.execPath, [checker, inputPath, ...extraArgs], {
     cwd: root,
     encoding: 'utf8',
   });
@@ -57,6 +66,22 @@ try {
   assert.deepStrictEqual(csvOutputData.entities[0].review.sourceKeys, ['moe', 'pep']);
   assert.strictEqual(csvOutputData.entities[0].exampleCount, 2);
   assert.match(csvOutputData.inputHash, /^[a-f0-9]{64}$/);
+
+  const currentCatalogInput = path.join(directory, 'current-catalog.json');
+  fs.writeFileSync(currentCatalogInput, JSON.stringify(buildContentSourceCatalog()));
+  const noDiffResult = runChecker(currentCatalogInput, ['--require-no-diff']);
+  assert.strictEqual(noDiffResult.status, 0, noDiffResult.stderr || noDiffResult.stdout);
+  assert.match(noDiffResult.stdout, /diff \+0 ~0 -0/);
+
+  const changedCatalogInput = path.join(directory, 'changed-catalog.json');
+  const changedCatalog = buildContentSourceCatalog();
+  changedCatalog.entities[0] = { ...changedCatalog.entities[0], title: `${changedCatalog.entities[0].title}（输入变更）` };
+  fs.writeFileSync(changedCatalogInput, JSON.stringify(changedCatalog));
+  const diffResult = runChecker(changedCatalogInput);
+  assert.strictEqual(diffResult.status, 0, diffResult.stderr || diffResult.stdout);
+  assert.match(diffResult.stdout, /diff \+0 ~1 -0/);
+  const blockedDiffResult = runChecker(changedCatalogInput, ['--require-no-diff']);
+  assert.notStrictEqual(blockedDiffResult.status, 0);
 
   const invalidInput = path.join(directory, 'invalid.csv');
   const invalidOutput = path.join(directory, 'invalid-output.json');

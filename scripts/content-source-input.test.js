@@ -4,7 +4,12 @@ const {
   normalizeSourceInput,
   checkSourceInput,
 } = require('./content-source-input');
-const { buildContentSourceCatalog } = require('./content-source-catalog');
+const {
+  buildContentSourceCatalog,
+  buildContentSourceCatalogFromInput,
+  checkContentSourceCatalog,
+  diffContentSourceCatalog,
+} = require('./content-source-catalog');
 
 const baseRecord = {
   key: 'math:knowledge:fixture-knowledge',
@@ -36,6 +41,13 @@ assert.strictEqual(normalized.entityCount, 1);
 assert.strictEqual(normalized.aliasCount, 0);
 assert.ok(/^[a-f0-9]{64}$/.test(normalized.inputHash));
 checkSourceInput(buildContentSourceCatalog());
+const importedCatalog = buildContentSourceCatalogFromInput(normalized);
+  checkContentSourceCatalog(importedCatalog, { allowAnySourceVersion: true });
+assert.deepStrictEqual(diffContentSourceCatalog(importedCatalog, importedCatalog).counts, {
+  added: 0,
+  modified: 0,
+  removed: 0,
+});
 
 const tampered = JSON.parse(JSON.stringify(normalized));
 tampered.entities[0].title = 'Tampered title';

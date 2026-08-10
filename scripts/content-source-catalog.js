@@ -3,7 +3,7 @@ const crypto = require('crypto');
 const { LEGACY_KNOWLEDGE_ALIASES } = require('../data/content-id-aliases');
 const { buildContentManifest } = require('./content-manifest');
 const { collectAuditEntities } = require('./content-audit');
-const { checkSourceInput } = require('./content-source-input');
+const { checkSourceInput, normalizeSourceInput } = require('./content-source-input');
 
 const SCHEMA_VERSION = 1;
 const DIFF_SCHEMA_VERSION = 1;
@@ -87,12 +87,28 @@ function buildContentSourceCatalog() {
   };
 }
 
-function checkContentSourceCatalog(report) {
+function buildContentSourceCatalogFromInput(input) {
+  const source = normalizeSourceInput(input);
+  const report = {
+    schemaVersion: SCHEMA_VERSION,
+    sourceVersion: source.sourceVersion,
+    entityCount: source.entityCount,
+    aliasCount: source.aliasCount,
+    entities: source.entities,
+    aliases: source.aliases,
+  };
+  return {
+    ...report,
+    sourceHash: hashCatalog(report),
+  };
+}
+
+function checkContentSourceCatalog(report, options = {}) {
   checkSourceInput(report);
   if (!report || report.schemaVersion !== SCHEMA_VERSION) {
     throw new Error('内容源目录 schemaVersion 必须为 1');
   }
-  if (report.sourceVersion !== SOURCE_VERSION) {
+  if (!options.allowAnySourceVersion && report.sourceVersion !== SOURCE_VERSION) {
     throw new Error(`内容源目录 sourceVersion 无效：${report.sourceVersion}`);
   }
   if (!Array.isArray(report.entities) || !Array.isArray(report.aliases)) {
@@ -161,8 +177,8 @@ function getChangedFields(before, after) {
 }
 
 function diffContentSourceCatalog(baseline, current) {
-  checkContentSourceCatalog(baseline);
-  checkContentSourceCatalog(current);
+  checkContentSourceCatalog(baseline, { allowAnySourceVersion: true });
+  checkContentSourceCatalog(current, { allowAnySourceVersion: true });
 
   const baselineItems = indexCatalogItems(baseline);
   const currentItems = indexCatalogItems(current);
@@ -220,6 +236,7 @@ module.exports = {
   DIFF_SCHEMA_VERSION,
   SOURCE_VERSION,
   buildContentSourceCatalog,
+  buildContentSourceCatalogFromInput,
   checkContentSourceCatalog,
   diffContentSourceCatalog,
   hashCatalog,
