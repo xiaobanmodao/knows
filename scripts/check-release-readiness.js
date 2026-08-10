@@ -270,6 +270,32 @@ function checkCloudPrivacyTooling() {
   });
 }
 
+function checkReleaseHotfixScopeTooling() {
+  const scripts = [
+    'scripts/check-release-hotfix-scope.test.js',
+    'scripts/check-release-hotfix-scope.js',
+  ];
+  scripts.forEach((script) => assertFile(script, '发布热修复范围门禁'));
+  if (!scripts.every(fileExists)) return;
+
+  scripts.forEach((script) => {
+    try {
+      execFileSync(process.execPath, [path.join(root, script)], {
+        cwd: root,
+        encoding: 'utf8',
+        stdio: 'pipe',
+      });
+    } catch (error) {
+      const output = String(error.stdout || error.stderr || error.message)
+        .trim()
+        .split('\n')
+        .slice(-3)
+        .join(' | ');
+      issues.push(`发布热修复范围门禁 ${script}: 执行失败 -> ${output}`);
+    }
+  });
+}
+
 function checkContentAuditTooling() {
   const auditScripts = ['scripts/content-audit.js', 'scripts/build-content-audit.js', 'scripts/check-content-audit.js'];
   auditScripts.forEach((file) => assertFile(file, '内容审计工具'));
@@ -650,6 +676,7 @@ checkProjectConfig();
 checkSitemap(appConfig);
 checkCloudFunction();
 checkCloudPrivacyTooling();
+checkReleaseHotfixScopeTooling();
 checkContentAuditTooling();
 checkPureKnowledgeRuntimeTooling();
 checkContentReviewQueueTooling();
