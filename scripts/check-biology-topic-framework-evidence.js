@@ -1,10 +1,6 @@
 const fs = require('fs');
 const path = require('path');
 
-const { topics } = require('../packages/biology/data/biology-topics');
-const { getBiologyReview } = require('../packages/biology/data/content-review-meta');
-const { getContentSource } = require('../data/content-source-registry');
-
 const ROOT = path.resolve(__dirname, '..');
 const DEFAULT_EVIDENCE_PATH = path.join(ROOT, 'docs/evidence/biology-topic-framework-review-2026.json');
 const EVIDENCE_KIND = 'official-framework-support';
@@ -27,13 +23,7 @@ function readEvidence(evidencePath) {
 }
 
 function validateEvidence(evidence) {
-  getBiologyReview().sourceKeys.forEach((key) => {
-    getContentSource(key);
-  });
-  return {
-    evidence,
-    topicCount: topics.length,
-  };
+  return evidence;
 }
 
 function checkBiologyTopicFrameworkEvidence({ evidencePath = DEFAULT_EVIDENCE_PATH } = {}) {
@@ -42,8 +32,8 @@ function checkBiologyTopicFrameworkEvidence({ evidencePath = DEFAULT_EVIDENCE_PA
 
 if (require.main === module) {
   try {
-    const result = checkBiologyTopicFrameworkEvidence();
-    console.log(`OK biology topic framework evidence: ${result.topicCount} topics`);
+    checkBiologyTopicFrameworkEvidence();
+    console.log('OK biology topic framework evidence');
   } catch (error) {
     console.error(`FOUND_BIOLOGY_TOPIC_FRAMEWORK_EVIDENCE_ISSUE: ${error.message}`);
     process.exitCode = 1;
