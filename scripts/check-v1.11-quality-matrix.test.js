@@ -22,6 +22,7 @@ assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-chemistr
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-biology-build-contract.test.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/content-source-input.test.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/content-source-input-cli.test.js'));
+assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-content-source-batches.test.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/content-source-catalog.test.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-content-source-catalog.js'));
 [

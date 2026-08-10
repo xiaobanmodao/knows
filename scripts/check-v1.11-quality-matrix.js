@@ -35,6 +35,7 @@ const DEFAULT_CHECKS = [
   { script: 'scripts/check-content-schema.js', label: '内容结构' },
   { script: 'scripts/content-source-input.test.js', label: '内容源输入契约' },
   { script: 'scripts/content-source-input-cli.test.js', label: '内容源输入构建' },
+  { script: 'scripts/check-content-source-batches.test.js', label: '内容源批次审计' },
   { script: 'scripts/content-source-catalog.test.js', label: '内容源目录契约' },
   { script: 'scripts/check-content-audit.js', args: ['--require-reviewed'], label: '严格内容审计' },
   { script: 'scripts/check-search-index.js', label: '搜索索引' },
