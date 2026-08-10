@@ -29,6 +29,8 @@ assert.ok(defaultCommands.some((item) => item.script === 'scripts/content-source
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-content-source-catalog.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-subject-high-risk-batches.test.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-subject-high-risk-batches.js'));
+assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-chemistry-biology-high-risk-batches.test.js'));
+assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-chemistry-biology-high-risk-batches.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-release-tool-state.test.js'));
 [
   'scripts/check-package-manifest.js',
