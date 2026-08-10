@@ -1,0 +1,69 @@
+const assert = require('assert');
+
+const { collectBiologyVisualGuideIssues } = require('./biology-visual-guide-contract');
+
+const validGuide = {
+  type: 'flow',
+  title: '观察路径',
+  summary: '按顺序整理可观察的关系。',
+  items: [
+    { label: '条件', note: '先记录观察条件', tone: 'blue' },
+    { label: '结论', note: '结论不超出证据范围', tone: 'green' },
+  ],
+};
+
+const fixture = () => ({
+  sourceKnowledgeItems: [{ id: 'bio-k-fixture', visualGuide: validGuide }],
+  runtimeLayers: [{
+    label: '知识页',
+    knowledgeItems: [{ id: 'bio-k-fixture', visualGuide: JSON.parse(JSON.stringify(validGuide)) }],
+  }],
+});
+
+function expectIssue(mutator, message) {
+  const data = fixture();
+  mutator(data);
+  assert.throws(
+    () => assert.deepStrictEqual(collectBiologyVisualGuideIssues(data), []),
+    new RegExp(message),
+  );
+}
+
+assert.deepStrictEqual(collectBiologyVisualGuideIssues(fixture()), []);
+
+expectIssue((data) => {
+  delete data.sourceKnowledgeItems[0].visualGuide;
+}, '缺少图解');
+
+expectIssue((data) => {
+  data.sourceKnowledgeItems[0].visualGuide.items[0].tone = 'red';
+}, '色调');
+
+expectIssue((data) => {
+  data.sourceKnowledgeItems[0].visualGuide.items[1].label = '条件';
+}, '标签重复');
+
+expectIssue((data) => {
+  const compareGuide = {
+    type: 'compare',
+    title: '比较路径',
+    summary: '按两侧整理差异。',
+    items: [
+      { label: '左侧', note: '第一侧', tone: 'blue', lane: 'left' },
+      { label: '无侧', note: '缺少右侧归属', tone: 'green' },
+    ],
+  };
+  data.sourceKnowledgeItems[0].visualGuide = compareGuide;
+  data.runtimeLayers[0].knowledgeItems[0].visualGuide = JSON.parse(JSON.stringify(compareGuide));
+}, '右侧 lane');
+
+expectIssue((data) => {
+  data.runtimeLayers[0].knowledgeItems[0].visualGuide.summary = '被篡改的摘要';
+}, '字段与源数据不一致');
+
+const untouched = fixture();
+const snapshot = JSON.stringify(untouched);
+collectBiologyVisualGuideIssues(untouched);
+assert.strictEqual(JSON.stringify(untouched), snapshot);
+
+console.log('OK biology visual guide contract test');
