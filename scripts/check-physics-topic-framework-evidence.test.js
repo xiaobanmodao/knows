@@ -13,4 +13,15 @@ assert.throws(
   /物理专题官方框架佐证记录读取失败/,
 );
 
+const invalidEvidencePath = path.join(os.tmpdir(), `knows-physics-topic-framework-invalid-${process.pid}-${Date.now()}.json`);
+fs.writeFileSync(invalidEvidencePath, '{ invalid json');
+try {
+  assert.throws(
+    () => checkPhysicsTopicFrameworkEvidence({ evidencePath: invalidEvidencePath }),
+    /物理专题官方框架佐证记录读取失败/,
+  );
+} finally {
+  fs.rmSync(invalidEvidencePath, { force: true });
+}
+
 console.log('OK physics topic framework evidence contract');

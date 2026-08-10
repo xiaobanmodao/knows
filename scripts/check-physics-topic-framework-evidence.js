@@ -34,7 +34,7 @@ function readEvidence(evidencePath) {
   try {
     return JSON.parse(input);
   } catch (error) {
-    throw new Error(`物理专题官方框架佐证记录不是有效 JSON：${error.message}`);
+    throw new Error(`物理专题官方框架佐证记录读取失败：${path.relative(ROOT, evidencePath)}（${error.message}）`);
   }
 }
 
