@@ -30,7 +30,7 @@ try {
     manifestPath,
     sourceVersion: 'external-english-units-v1',
     sourceKeys: ['pep-english-external-contract'],
-    sourceUrls: ['https://example.com/english-units'],
+    sourceUrls: ['https://www.pep.com.cn/xw/zt/hd/12/xjcjs/cz/202510/t20251024_2004130.html'],
     reviewedAt: '2026-08-10',
     note: '契约测试外部来源凭证',
   });
@@ -40,7 +40,7 @@ try {
   assert.match(result.manifest.batches[0].inputHash, /^[a-f0-9]{64}$/);
   assert.deepStrictEqual(result.manifest.batches[0].sourceEvidence, {
     sourceKeys: ['pep-english-external-contract'],
-    sourceUrls: ['https://example.com/english-units'],
+    sourceUrls: ['https://www.pep.com.cn/xw/zt/hd/12/xjcjs/cz/202510/t20251024_2004130.html'],
     reviewedAt: '2026-08-10',
     note: '契约测试外部来源凭证',
   });
@@ -82,6 +82,18 @@ try {
     () => buildExternalSourceManifest({
       batchId: 'english-units-v1.11',
       inputPath,
+      manifestPath,
+      sourceKeys: ['placeholder-source'],
+      sourceUrls: ['https://example.com/not-evidence'],
+      reviewedAt: '2026-08-10',
+      note: 'placeholder source URL',
+    }),
+    /占位|placeholder|source URL/i,
+  );
+  assert.throws(
+    () => buildExternalSourceManifest({
+      batchId: 'english-units-v1.11',
+      inputPath,
       manifestPath: inputPath,
       sourceKeys: ['same-file'],
       reviewedAt: '2026-08-10',
@@ -97,7 +109,7 @@ try {
     '--input', inputPath,
     '--manifest', cliManifestPath,
     '--source-key', 'pep-english-external-cli',
-    '--source-url', 'https://example.com/english-cli',
+    '--source-url', 'https://www.pep.com.cn/xw/zt/hd/12/xjcjs/cz/202510/t20251024_2004130.html',
     '--reviewed-at', '2026-08-10',
     '--note', 'CLI contract evidence',
   ], { cwd: root, encoding: 'utf8' });

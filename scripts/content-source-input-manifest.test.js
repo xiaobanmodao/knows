@@ -72,7 +72,7 @@ try {
   const externalManifestPath = path.join(tempDirectory, 'external-manifest.json');
   const sourceEvidence = {
     sourceKeys: ['contract-external-source'],
-    sourceUrls: ['https://example.com/contract-source'],
+    sourceUrls: ['https://www.pep.com.cn/xw/zt/hd/12/xjcjs/cz/202510/t20251024_2004130.html'],
     reviewedAt: '2026-08-10',
     note: '契约测试中的外部来源凭证',
   };

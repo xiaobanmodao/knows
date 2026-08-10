@@ -13,6 +13,25 @@ const { buildContentSourceInputAuditReport } = require('./content-source-input-a
 
 const MANIFEST_SCHEMA_VERSION = 1;
 const SOURCE_KINDS = new Set(['unknown', 'current-fixture', 'external-source']);
+const PLACEHOLDER_SOURCE_HOSTS = new Set([
+  'example.com',
+  'example.org',
+  'example.net',
+  'localhost',
+]);
+
+function isPlaceholderSourceUrl(value) {
+  if (typeof value !== 'string' || !value.trim()) return false;
+  try {
+    const hostname = new URL(value).hostname.toLowerCase();
+    return PLACEHOLDER_SOURCE_HOSTS.has(hostname)
+      || hostname.endsWith('.invalid')
+      || hostname.endsWith('.test')
+      || hostname.endsWith('.example');
+  } catch (error) {
+    return false;
+  }
+}
 
 function requireText(value, field) {
   if (typeof value !== 'string' || !value.trim()) {
@@ -275,6 +294,14 @@ function buildContentSourceInputBatchAudit({
             reason: 'source-evidence-url-missing',
           };
         }
+        if (entry.sourceEvidence.sourceUrls.some(isPlaceholderSourceUrl)) {
+          return {
+            id: entry.id,
+            path: entry.path || null,
+            sourceKind: entry.sourceKind,
+            reason: 'source-evidence-placeholder-url',
+          };
+        }
         return null;
       })
       .filter(Boolean)
@@ -331,6 +358,7 @@ function buildContentSourceInputBatchAudit({
 module.exports = {
   MANIFEST_SCHEMA_VERSION,
   SOURCE_KINDS,
+  isPlaceholderSourceUrl,
   normalizeBatchManifest,
   buildContentSourceInputBatchAudit,
 };

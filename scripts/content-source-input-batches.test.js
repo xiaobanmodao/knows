@@ -181,6 +181,35 @@ try {
     sourceKind: 'external-source',
     reason: 'source-evidence-url-missing',
   }]);
+
+  const placeholderEvidenceReport = buildContentSourceInputBatchAudit({
+    manifest: normalizeBatchManifest({
+      schemaVersion: 1,
+      sourceVersion: 'placeholder-evidence-fixture-v1',
+      sourceKind: 'external-source',
+      batches: [{
+        id: 'english-units-v1.11',
+        path: 'english-units.json',
+        sourceKind: 'external-source',
+        sourceEvidence: {
+          sourceKeys: ['placeholder-source'],
+          sourceUrls: ['https://example.com/not-evidence'],
+          reviewedAt: '2026-08-10',
+          note: '占位来源链接',
+        },
+      }],
+    }),
+    baseDirectory: tempDirectory,
+    currentCatalog: source,
+    requireExternalSource: true,
+  });
+  assert.strictEqual(placeholderEvidenceReport.status, 'blocked');
+  assert.deepStrictEqual(placeholderEvidenceReport.requirements.externalSourceIssues, [{
+    id: 'english-units-v1.11',
+    path: 'english-units.json',
+    sourceKind: 'external-source',
+    reason: 'source-evidence-placeholder-url',
+  }]);
   const currentFixtureManifestPath = path.join(tempDirectory, 'current-fixture-manifest.json');
   const externalGateReportPath = path.join(tempDirectory, 'external-gate-report.json');
   fs.writeFileSync(currentFixtureManifestPath, `${JSON.stringify(currentFixtureManifest, null, 2)}\n`, 'utf8');

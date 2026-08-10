@@ -1,7 +1,10 @@
 const fs = require('fs');
 const path = require('path');
 
-const { normalizeBatchManifest } = require('./content-source-input-batches');
+const {
+  isPlaceholderSourceUrl,
+  normalizeBatchManifest,
+} = require('./content-source-input-batches');
 const { loadSourceInputFile } = require('./content-source-input');
 
 const DEFAULT_SOURCE_VERSION = 'external-source-v1';
@@ -35,6 +38,9 @@ function buildExternalSourceManifest({
   }
   if (!Array.isArray(sourceUrls) || !sourceUrls.length) {
     throw new Error('外部内容源 manifest 至少需要一个 sourceUrls 来源 URL');
+  }
+  if (sourceUrls.some(isPlaceholderSourceUrl)) {
+    throw new Error('外部内容源 manifest 不得使用占位 sourceUrls 来源 URL');
   }
   const input = loadSourceInputFile(sourceFile, { sourceVersion: normalizedSourceVersion });
   const relativeInputPath = path.relative(path.dirname(outputPath), sourceFile).split(path.sep).join('/');
