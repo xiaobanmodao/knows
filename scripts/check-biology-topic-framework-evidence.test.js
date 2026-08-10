@@ -42,7 +42,7 @@ const defaultRun = spawnSync(process.execPath, [path.join(__dirname, 'check-biol
   encoding: 'utf8',
 });
 assert.strictEqual(defaultRun.status, 0);
-assert.match(defaultRun.stdout, /OK biology topic framework evidence/);
+assert.strictEqual(defaultRun.stdout, 'OK biology topic framework evidence: 6 topics\n');
 assert.deepStrictEqual(checkBiologyTopicFrameworkEvidence(), {
   topicCount: 6,
   sourceKeys: ['moe-biology-curriculum-2022', 'pep-compulsory-biology-textbook'],

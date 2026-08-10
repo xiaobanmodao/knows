@@ -227,8 +227,8 @@ function checkBiologyTopicFrameworkEvidence({ evidencePath = DEFAULT_EVIDENCE_PA
 
 if (require.main === module) {
   try {
-    checkBiologyTopicFrameworkEvidence();
-    console.log('OK biology topic framework evidence');
+    const result = checkBiologyTopicFrameworkEvidence();
+    console.log(`OK biology topic framework evidence: ${result.topicCount} topics`);
   } catch (error) {
     console.error(`FOUND_BIOLOGY_TOPIC_FRAMEWORK_EVIDENCE_ISSUE: ${error.message}`);
     process.exitCode = 1;
