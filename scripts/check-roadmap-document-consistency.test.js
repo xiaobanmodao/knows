@@ -30,6 +30,7 @@ const productReleaseBoundaries = [
   '完成 iPhone 与 Android 实体设备 A1-A15',
   '严格模式还要求开发者工具状态报告为 `ready`',
 ];
+const productReleaseRcGate = '1. **先闭合 v1.10.1 发布证据**：解决 AppID/开发者工具绑定，生成当前构建包体报告，完成 iPhone 与 Android 实体设备 A1-A15，严格门禁通过后再创建 RC。';
 
 function escapeRegExp(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -79,6 +80,12 @@ function assertActiveRoadmapBoundaries({
   productReleaseBoundaries.forEach((boundary) => {
     assertIncludes(currentProductRoadmap, boundary, `总路线文档必须保留 ${boundary} 边界`);
   });
+  assertRoadmapDirectoryBoundary(currentProductRoadmap, `- ${roadmapDirectoryBoundary}`, '总路线文档');
+  assertExactLine(
+    currentProductRoadmap,
+    productReleaseRcGate,
+    '总路线文档必须保留严格门禁通过后再创建 RC 的完整发布关系',
+  );
 }
 
 function assertQualityMatrixContract({
@@ -168,6 +175,13 @@ assert.throws(
   assert.AssertionError,
   '替换实际外部内容来源阻断批次必须失败',
 );
+assert.throws(
+  () => assertActiveRoadmapBoundaries({
+    currentProductRoadmap: productRoadmap.replaceAll('math-chapters-v1.11', 'english-chapters-v1.11'),
+  }),
+  assert.AssertionError,
+  '替换总路线文档的 math-chapters-v1.11 外部资料阻断必须失败',
+);
 visualGuideChecks.forEach((check) => {
   assert.throws(
     () => assertActiveRoadmapBoundaries({ currentRoadmap: roadmap.replaceAll(check, '') }),
@@ -194,6 +208,16 @@ productReleaseBoundaries.forEach((boundary) => {
     `从总路线文档移除 ${boundary} 边界必须失败`,
   );
 });
+assert.throws(
+  () => assertActiveRoadmapBoundaries({
+    currentProductRoadmap: productRoadmap.replace(
+      productReleaseRcGate,
+      productReleaseRcGate.replace('严格门禁通过后再创建 RC', '可直接创建 RC'),
+    ),
+  }),
+  assert.AssertionError,
+  '弱化总路线文档严格门禁通过后再创建 RC 的关系必须失败',
+);
 assert.throws(
   () => assertQualityMatrixContract({ currentRoadmap: roadmap.replace('当前共 121 项', '当前共 120 项') }),
   assert.AssertionError,
