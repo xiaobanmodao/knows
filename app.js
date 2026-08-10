@@ -26,7 +26,7 @@ function initCloudEnvironment() {
   try {
     wx.cloud.init({
       env: CLOUD_ENV_ID,
-      traceUser: true,
+      traceUser: false,
     });
     return true;
   } catch (error) {
