@@ -8,6 +8,7 @@ const {
   ACCESS_AUDIT_SCHEMA_VERSION,
   auditSourceUrls,
   collectSourceUrls,
+  requestSourceUrl,
 } = require('./content-source-url-access');
 
 (async () => {
@@ -78,6 +79,40 @@ assert.strictEqual(report.urls[1].status, 'passed');
 assert.strictEqual(report.urls[1].httpStatus, 200);
 assert.strictEqual(report.generatedFrom.sourceVersion, 'url-access-fixture-v1');
 assert.match(report.generatedFrom.manifestHash, /^[a-f0-9]{64}$/);
+
+const fallbackCalls = [];
+const fallbackResponse = await requestSourceUrl('https://fixture.example/source', {
+  timeoutMs: 50,
+  fetchImpl: async (url, options) => {
+    fallbackCalls.push(options.method);
+    if (options.method === 'HEAD') return { status: 403, url, body: { cancel() {} } };
+    return { status: 206, url: `${url}?range=0-0`, body: { cancel() {} } };
+  },
+});
+assert.deepStrictEqual(fallbackCalls, ['HEAD', 'GET']);
+assert.deepStrictEqual(fallbackResponse, {
+  statusCode: 206,
+  finalUrl: 'https://fixture.example/source?range=0-0',
+});
+
+const abortFallbackCalls = [];
+const abortFallbackResponse = await requestSourceUrl('https://fixture.example/slow', {
+  timeoutMs: 50,
+  fetchImpl: async (url, options) => {
+    abortFallbackCalls.push(options.method);
+    if (options.method === 'HEAD') {
+      const error = new Error('aborted');
+      error.name = 'AbortError';
+      throw error;
+    }
+    return { status: 200, url, body: { cancel() {} } };
+  },
+});
+assert.deepStrictEqual(abortFallbackCalls, ['HEAD', 'GET']);
+assert.deepStrictEqual(abortFallbackResponse, {
+  statusCode: 200,
+  finalUrl: 'https://fixture.example/slow',
+});
 
 const emptyReport = await auditSourceUrls({
   manifest: {

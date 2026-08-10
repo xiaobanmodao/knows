@@ -87,32 +87,45 @@ async function auditSourceUrls({ manifest, requestUrl } = {}) {
   };
 }
 
-async function requestSourceUrl(url, { timeoutMs = 10000 } = {}) {
-  if (typeof fetch !== 'function') throw new Error('当前 Node 运行时不支持 fetch');
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    let response = await fetch(url, {
-      method: 'HEAD',
+async function requestSourceUrl(url, { timeoutMs = 10000, fetchImpl } = {}) {
+  const request = fetchImpl || globalThis.fetch;
+  if (typeof request !== 'function') throw new Error('当前 Node 运行时不支持 fetch');
+
+  async function requestWithMethod(method) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    const options = {
+      method,
+      headers: {
+        Accept: '*/*',
+        'User-Agent': 'knows-content-audit/1.0',
+        ...(method === 'GET' ? { Range: 'bytes=0-0' } : {}),
+      },
       redirect: 'follow',
       signal: controller.signal,
-    });
-    if (response.status === 405 || response.status === 501) {
-      response = await fetch(url, {
-        method: 'GET',
-        headers: { Range: 'bytes=0-0' },
-        redirect: 'follow',
-        signal: controller.signal,
-      });
-    }
-    if (response.body && typeof response.body.cancel === 'function') response.body.cancel();
-    return {
-      statusCode: response.status,
-      finalUrl: response.url || url,
     };
-  } finally {
-    clearTimeout(timeout);
+    try {
+      return await request(url, options);
+    } finally {
+      clearTimeout(timeout);
+    }
   }
+
+  let response;
+  try {
+    response = await requestWithMethod('HEAD');
+  } catch (error) {
+    if (!error || error.name !== 'AbortError') throw error;
+    response = await requestWithMethod('GET');
+  }
+  if (response.status === 403 || response.status === 405 || response.status === 501) {
+    response = await requestWithMethod('GET');
+  }
+  if (response.body && typeof response.body.cancel === 'function') response.body.cancel();
+  return {
+    statusCode: response.status,
+    finalUrl: response.url || url,
+  };
 }
 
 module.exports = {
