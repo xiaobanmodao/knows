@@ -34,6 +34,7 @@ try {
   const manifest = normalizeBatchManifest({
     schemaVersion: 1,
     sourceVersion: 'external-fixture-v1',
+    sourceKind: 'external-source',
     batches: [
       { id: 'english-units-v1.11', path: 'english-units.json' },
       { id: 'english-words-v1.11', path: 'english-words.json' },
@@ -85,6 +86,7 @@ try {
     manifest: normalizeBatchManifest({
       schemaVersion: 1,
       sourceVersion: 'external-csv-fixture-v1',
+      sourceKind: 'external-source',
       batches: [{ id: 'english-units-v1.11', path: 'english-units.csv' }],
     }),
     baseDirectory: tempDirectory,
@@ -123,6 +125,7 @@ try {
     manifest: normalizeBatchManifest({
       schemaVersion: 1,
       sourceVersion: 'external-fixture-v1',
+      sourceKind: 'external-source',
       batches: [{ id: 'english-units-v1.11', path: 'english-units.json' }],
     }),
     baseDirectory: tempDirectory,
@@ -138,6 +141,15 @@ try {
   });
   assert.deepStrictEqual(changedReport.batches[0].diff, { added: 0, modified: 1, removed: 0 });
 
+  assert.throws(
+    () => normalizeBatchManifest({
+      schemaVersion: 1,
+      sourceVersion: 'invalid',
+      sourceKind: 'unverified-copy',
+      batches: [{ id: 'english-units-v1.11', path: 'one.json' }],
+    }),
+    /sourceKind|无效/i,
+  );
   assert.throws(
     () => normalizeBatchManifest({
       schemaVersion: 1,

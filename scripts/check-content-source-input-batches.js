@@ -32,7 +32,7 @@ function writeReport(report, reportPath) {
 function main() {
   const inputPath = process.argv[2];
   if (!inputPath || inputPath.startsWith('--')) {
-    throw new Error('用法：node scripts/check-content-source-input-batches.js <manifest.json> [--report <report.json>] [--require-all-batches] [--require-no-diff]');
+    throw new Error('用法：node scripts/check-content-source-input-batches.js <manifest.json> [--report <report.json>] [--require-all-batches] [--require-no-diff] [--require-external-source]');
   }
   const manifestPath = path.resolve(inputPath);
   const manifest = readManifest(manifestPath);
@@ -40,6 +40,7 @@ function main() {
     manifest,
     baseDirectory: path.dirname(manifestPath),
     requireAllBatches: process.argv.includes('--require-all-batches'),
+    requireExternalSource: process.argv.includes('--require-external-source'),
   });
   const reportPath = getOption('--report');
   if (reportPath) console.log(`Report: ${writeReport(report, reportPath)}`);

@@ -21,6 +21,7 @@ try {
 
   assert.strictEqual(result.manifest.schemaVersion, 1);
   assert.strictEqual(result.manifest.sourceVersion, 'v1.11-current');
+  assert.strictEqual(result.manifest.sourceKind, 'current-fixture');
   assert.strictEqual(result.manifest.batches.length, 23);
   assert.strictEqual(result.files.length, 23);
   assert.strictEqual(result.manifest.batches[0].id, 'english-units-v1.11');
@@ -57,6 +58,7 @@ try {
   assert.strictEqual(auditResult.status, 0, auditResult.stderr || auditResult.stdout);
   const audit = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
   assert.strictEqual(audit.status, 'passed');
+  assert.strictEqual(audit.sourceKind, 'current-fixture');
   assert.deepStrictEqual(audit.summary, {
     total: 23,
     passed: 23,
@@ -64,6 +66,28 @@ try {
     pending: 0,
     failed: 0,
   });
+
+  const externalManifestPath = path.join(tempDirectory, 'external-manifest.json');
+  fs.writeFileSync(externalManifestPath, `${JSON.stringify({
+    ...result.manifest,
+    sourceKind: 'external-source',
+  }, null, 2)}\n`, 'utf8');
+  const externalAuditResult = spawnSync(process.execPath, [
+    checker,
+    externalManifestPath,
+    '--require-all-batches',
+    '--require-no-diff',
+    '--require-external-source',
+  ], { cwd: root, encoding: 'utf8' });
+  assert.strictEqual(externalAuditResult.status, 0, externalAuditResult.stderr || externalAuditResult.stdout);
+
+  const fixtureStrictResult = spawnSync(process.execPath, [
+    checker,
+    manifestPath,
+    '--require-external-source',
+  ], { cwd: root, encoding: 'utf8' });
+  assert.notStrictEqual(fixtureStrictResult.status, 0);
+  assert.match(`${fixtureStrictResult.stderr}${fixtureStrictResult.stdout}`, /不是外部资料|external-source/);
 } finally {
   fs.rmSync(tempDirectory, { recursive: true, force: true });
 }

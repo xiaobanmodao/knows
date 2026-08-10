@@ -12,12 +12,21 @@ const { loadSourceInputFile } = require('./content-source-input');
 const { buildContentSourceInputAuditReport } = require('./content-source-input-audit');
 
 const MANIFEST_SCHEMA_VERSION = 1;
+const SOURCE_KINDS = new Set(['unknown', 'current-fixture', 'external-source']);
 
 function requireText(value, field) {
   if (typeof value !== 'string' || !value.trim()) {
     throw new Error(`内容源输入批次 manifest：${field} 必须为非空字符串`);
   }
   return value.trim();
+}
+
+function normalizeSourceKind(value) {
+  const sourceKind = value === undefined ? 'unknown' : requireText(value, 'sourceKind');
+  if (!SOURCE_KINDS.has(sourceKind)) {
+    throw new Error(`内容源输入批次 manifest：sourceKind 无效：${sourceKind}`);
+  }
+  return sourceKind;
 }
 
 function normalizeBatchManifest(input) {
@@ -28,6 +37,7 @@ function normalizeBatchManifest(input) {
     throw new Error(`内容源输入批次 manifest schemaVersion 必须为 ${MANIFEST_SCHEMA_VERSION}`);
   }
   const sourceVersion = requireText(input.sourceVersion, 'sourceVersion');
+  const sourceKind = normalizeSourceKind(input.sourceKind);
   if (!Array.isArray(input.batches) || !input.batches.length) {
     throw new Error('内容源输入批次 manifest batches 不能为空');
   }
@@ -51,6 +61,7 @@ function normalizeBatchManifest(input) {
   return {
     schemaVersion: MANIFEST_SCHEMA_VERSION,
     sourceVersion,
+    sourceKind,
     batches,
   };
 }
@@ -143,8 +154,12 @@ function buildContentSourceInputBatchAudit({
   baseDirectory = process.cwd(),
   currentCatalog = buildContentSourceCatalog(),
   requireAllBatches = false,
+  requireExternalSource = false,
 } = {}) {
   const normalized = normalizeBatchManifest(manifest);
+  if (requireExternalSource && normalized.sourceKind !== 'external-source') {
+    throw new Error(`内容源输入批次 manifest 不是外部资料：sourceKind=${normalized.sourceKind}`);
+  }
   const entries = [...normalized.batches];
   if (requireAllBatches) {
     const registeredIds = new Set(entries.map((entry) => entry.id));
@@ -174,6 +189,7 @@ function buildContentSourceInputBatchAudit({
     schemaVersion: MANIFEST_SCHEMA_VERSION,
     status,
     sourceVersion: normalized.sourceVersion,
+    sourceKind: normalized.sourceKind,
     requireAllBatches,
     summary,
     batches,
@@ -182,6 +198,7 @@ function buildContentSourceInputBatchAudit({
 
 module.exports = {
   MANIFEST_SCHEMA_VERSION,
+  SOURCE_KINDS,
   normalizeBatchManifest,
   buildContentSourceInputBatchAudit,
 };

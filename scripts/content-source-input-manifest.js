@@ -52,6 +52,7 @@ function buildCurrentSourceInputManifest({
   const manifest = normalizeBatchManifest({
     schemaVersion: 1,
     sourceVersion,
+    sourceKind: 'current-fixture',
     batches: batches.map(({ id, path: relativePath }) => ({ id, path: relativePath })),
   });
   fs.mkdirSync(path.dirname(absoluteManifestPath), { recursive: true });
