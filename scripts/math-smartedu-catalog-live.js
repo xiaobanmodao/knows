@@ -6,6 +6,7 @@ const { checkEvidence } = require('./check-math-smartedu-catalog-evidence');
 
 const DETAIL_ENDPOINT = /^https:\/\/bdcs-file-[12]\.ykt\.cbern\.com\.cn\//;
 const PREVIEW_ENDPOINT = /^https:\/\/r[123]-ndr\.ykt\.cbern\.com\.cn\//;
+const LIVE_REPORT_SCHEMA_VERSION = 2;
 
 function fail(message) {
   throw new Error(`数学官方平台目录在线复核：${message}`);
@@ -47,6 +48,11 @@ function getPreviewMap(liveRecord) {
   return preview;
 }
 
+function getRevisionMarker(liveRecord) {
+  const title = getLiveTitle(liveRecord);
+  return title.includes('根据2022年版课程标准修订') ? '2022-revised' : 'unmarked-edition';
+}
+
 function validatePreviewUrl(url, page, field) {
   const previewUrl = requireText(url, field);
   if (!PREVIEW_ENDPOINT.test(previewUrl)) fail(`${field} 不属于官方预览域名`);
@@ -74,8 +80,8 @@ function validateLiveRecord(evidenceRecord, liveRecord) {
   ['人教版', '初中', '数学', evidenceRecord.grade, evidenceRecord.volume].forEach((tag) => {
     if (!tagNames.has(tag)) fail(`${evidenceRecord.grade}/${evidenceRecord.volume} 缺少标签：${tag}`);
   });
-  const markedAsRevised = liveTitle.includes('根据2022年版课程标准修订');
-  if ((evidenceRecord.revisionMarker === '2022-revised') !== markedAsRevised) {
+  const revisionMarker = getRevisionMarker(liveRecord);
+  if (evidenceRecord.revisionMarker !== revisionMarker) {
     fail(`${evidenceRecord.grade}/${evidenceRecord.volume} revisionMarker 不一致`);
   }
   const preview = getPreviewMap(liveRecord);
@@ -88,6 +94,8 @@ function validateLiveRecord(evidenceRecord, liveRecord) {
   return {
     resourceId: evidenceRecord.resourceId,
     title: liveTitle,
+    tagNames: [...tagNames],
+    revisionMarker,
     previewPages: [...previewPages],
   };
 }
@@ -149,7 +157,9 @@ function checkLiveReport(input, report, { evidenceSha256 } = {}) {
     fail('离线报告对应的本地证据无效');
   }
   if (!report || typeof report !== 'object' || Array.isArray(report)) fail('离线报告无效');
-  if (report.schemaVersion !== 1) fail('离线报告 schemaVersion 必须为 1');
+  if (report.schemaVersion !== LIVE_REPORT_SCHEMA_VERSION) {
+    fail(`离线报告 schemaVersion 必须为 ${LIVE_REPORT_SCHEMA_VERSION}`);
+  }
   if (report.sourceId !== input.sourceId) fail('离线报告 sourceId 与本地证据不一致');
   if (!/^[a-f0-9]{64}$/.test(report.evidenceSha256)) fail('离线报告 evidenceSha256 无效');
   if (evidenceSha256 && report.evidenceSha256 !== evidenceSha256) {
@@ -170,6 +180,17 @@ function checkLiveReport(input, report, { evidenceSha256 } = {}) {
     const evidenceRecord = evidenceById.get(record.resourceId);
     if (!evidenceRecord) fail(`离线报告包含未知 resourceId：${record.resourceId}`);
     if (record.title !== evidenceRecord.title) fail(`${record.resourceId} 离线报告 title 不一致`);
+    if (!Array.isArray(record.tagNames) || !record.tagNames.length
+      || record.tagNames.some((tag) => typeof tag !== 'string' || !tag.trim())) {
+      fail(`${record.resourceId} 离线报告 tagNames 不完整`);
+    }
+    const requiredTags = ['人教版', '初中', '数学', evidenceRecord.grade, evidenceRecord.volume];
+    if (requiredTags.some((tag) => !record.tagNames.includes(tag))) {
+      fail(`${record.resourceId} 离线报告缺少必需标签`);
+    }
+    if (record.revisionMarker !== evidenceRecord.revisionMarker) {
+      fail(`${record.resourceId} 离线报告 revisionMarker 不一致`);
+    }
     if (JSON.stringify(record.previewPages) !== JSON.stringify(evidenceRecord.directoryPreviewPages)) {
       fail(`${record.resourceId} 离线报告 previewPages 不一致`);
     }
@@ -179,7 +200,7 @@ function checkLiveReport(input, report, { evidenceSha256 } = {}) {
 
 function buildLiveReport(input, evidencePath, result, checkedAt = new Date().toISOString()) {
   const report = {
-    schemaVersion: 1,
+    schemaVersion: LIVE_REPORT_SCHEMA_VERSION,
     sourceId: result.sourceId,
     evidenceSha256: sha256File(evidencePath),
     checkedAt,

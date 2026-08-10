@@ -47,6 +47,8 @@ try {
   assert.deepStrictEqual(valid, {
     resourceId: 'resource-7u',
     title: evidenceRecord.title,
+    tagNames: ['人教版', '初中', '数学', '七年级', '上册'],
+    revisionMarker: '2022-revised',
     previewPages: [5, 6, 7],
   });
 
@@ -86,12 +88,21 @@ try {
   const reportResult = {
     sourceId: reportInput.sourceId,
     records: reportInput.resourceRecords.map((record) => ({
-      resourceId: record.resourceId,
-      title: record.title,
-      previewPages: record.directoryPreviewPages,
+      ...validateLiveRecord(record, buildLiveRecord({
+        id: record.resourceId,
+        title: record.title,
+        tag_list: [
+          { tag_name: '人教版' },
+          { tag_name: '初中' },
+          { tag_name: '数学' },
+          { tag_name: record.grade },
+          { tag_name: record.volume },
+        ],
+      })),
     })),
   };
   const report = buildLiveReport(reportInput, evidencePath, reportResult, '2026-08-10T08:39:07.639Z');
+  assert.strictEqual(report.schemaVersion, 2);
   assert.strictEqual(report.evidenceSha256, sha256File(evidencePath));
   assert.strictEqual(checkLiveReport(reportInput, report, { evidenceSha256: sha256File(evidencePath) }), true);
   assert.throws(
@@ -105,6 +116,24 @@ try {
   assert.throws(
     () => checkLiveReport(reportInput, { ...report, records: [] }, { evidenceSha256: sha256File(evidencePath) }),
     /records|记录|数量/i,
+  );
+  assert.throws(
+    () => checkLiveReport(reportInput, {
+      ...report,
+      records: report.records.map((record, index) => (
+        index === 0 ? { ...record, tagNames: [] } : record
+      )),
+    }, { evidenceSha256: sha256File(evidencePath) }),
+    /tag|标签/i,
+  );
+  assert.throws(
+    () => checkLiveReport(reportInput, {
+      ...report,
+      records: report.records.map((record, index) => (
+        index === 0 ? { ...record, revisionMarker: 'unmarked-edition' } : record
+      )),
+    }, { evidenceSha256: sha256File(evidencePath) }),
+    /revision|版本|修订/i,
   );
   assert.throws(
     () => checkLiveReport(reportInput, { ...report, checkedAt: 'not-a-date' }, { evidenceSha256: sha256File(evidencePath) }),
