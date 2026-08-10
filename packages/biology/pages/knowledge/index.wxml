@@ -35,18 +35,42 @@
   <view wx:if="{{knowledge.visualGuide}}" class="visual-guide visual-guide--{{knowledge.visualGuide.type}} section-gap">
     <view class="visual-guide__title">{{knowledge.visualGuide.title}}</view>
     <view class="visual-guide__summary reading-copy--24 reading-leading--175">{{knowledge.visualGuide.summary}}</view>
-    <view class="visual-guide__items">
-      <block wx:for="{{knowledge.visualGuide.items}}" wx:key="index">
-        <view class="visual-guide__item visual-guide__item--{{item.tone}} visual-guide__item--{{item.lane}} visual-guide__item--depth-{{item.depth}}">
-          <view class="visual-guide__index">{{item.displayIndex}}</view>
-          <view class="visual-guide__body">
-            <view class="visual-guide__label">{{item.label}}</view>
-            <view class="visual-guide__note reading-copy--23 reading-leading--170">{{item.note}}</view>
+    <block wx:if="{{knowledge.visualGuide.isCompare}}">
+      <view class="visual-guide__compare">
+        <view class="visual-guide__compare-column">
+          <view wx:for="{{knowledge.visualGuide.compareColumns.left}}" wx:key="index" class="visual-guide__item visual-guide__item--{{item.tone}}">
+            <view class="visual-guide__index">{{item.displayIndex}}</view>
+            <view class="visual-guide__body">
+              <view class="visual-guide__label">{{item.label}}</view>
+              <view class="visual-guide__note reading-copy--23 reading-leading--170">{{item.note}}</view>
+            </view>
           </view>
         </view>
-        <view wx:if="{{knowledge.visualGuide.isSequential && !item.isLast}}" class="visual-guide__connector" aria-hidden="true">↓</view>
-      </block>
-    </view>
+        <view class="visual-guide__compare-column">
+          <view wx:for="{{knowledge.visualGuide.compareColumns.right}}" wx:key="index" class="visual-guide__item visual-guide__item--{{item.tone}}">
+            <view class="visual-guide__index">{{item.displayIndex}}</view>
+            <view class="visual-guide__body">
+              <view class="visual-guide__label">{{item.label}}</view>
+              <view class="visual-guide__note reading-copy--23 reading-leading--170">{{item.note}}</view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </block>
+    <block wx:else>
+      <view class="visual-guide__items">
+        <block wx:for="{{knowledge.visualGuide.items}}" wx:key="index">
+          <view class="visual-guide__item visual-guide__item--{{item.tone}} visual-guide__item--depth-{{item.depth}}">
+            <view class="visual-guide__index">{{item.displayIndex}}</view>
+            <view class="visual-guide__body">
+              <view class="visual-guide__label">{{item.label}}</view>
+              <view class="visual-guide__note reading-copy--23 reading-leading--170">{{item.note}}</view>
+            </view>
+          </view>
+          <view wx:if="{{knowledge.visualGuide.isSequential && !item.isLast}}" class="visual-guide__connector" aria-hidden="true">↓</view>
+        </block>
+      </view>
+    </block>
     <view wx:if="{{knowledge.visualGuide.isCycle}}" class="visual-guide__cycle-hint">{{knowledge.visualGuide.cycleHint}}</view>
   </view>
 

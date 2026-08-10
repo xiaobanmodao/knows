@@ -10,6 +10,7 @@ const {
   DEFAULT_READING_PREFERENCES,
   buildReadingDisplayClass,
 } = require('../../../../utils/reading-preferences');
+const { prepareVisualGuide } = require('./visual-guide');
 
 function splitKnowledgeSections(sections) {
   const essentialSections = [];
@@ -24,24 +25,6 @@ function splitKnowledgeSections(sections) {
   });
 
   return { essentialSections, detailSections };
-}
-
-function prepareVisualGuide(guide) {
-  if (!guide || !Array.isArray(guide.items) || !guide.items.length) return null;
-
-  const isSequential = guide.type === 'flow';
-  const isCycle = guide.type === 'cycle';
-  return {
-    ...guide,
-    isSequential,
-    isCycle,
-    cycleHint: isCycle ? '这些环节持续关联，不表示单一因果链。' : '',
-    items: guide.items.map((item, index, items) => ({
-      ...item,
-      displayIndex: index + 1,
-      isLast: index === items.length - 1,
-    })),
-  };
 }
 
 Page({
