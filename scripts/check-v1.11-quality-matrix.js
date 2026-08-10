@@ -41,6 +41,7 @@ const DEFAULT_CHECKS = [
   { script: 'scripts/check-content-review-meta.js', label: '复核元数据' },
   { script: 'scripts/check-content-schema.js', label: '内容结构' },
   { script: 'scripts/check-subject-content.js', label: '五科全局内容契约' },
+  { script: 'scripts/content-source-registry.test.js', label: '内容来源注册表契约' },
   { script: 'scripts/content-source-input.test.js', label: '内容源输入契约' },
   { script: 'scripts/content-source-input-audit.test.js', label: '内容源输入审计报告' },
   { script: 'scripts/content-source-input-cli.test.js', label: '内容源输入构建' },

@@ -47,6 +47,7 @@ assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-chemistr
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-chemistry-biology-high-risk-batches.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-content-diff.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-subject-content.js'));
+assert.ok(defaultCommands.some((item) => item.script === 'scripts/content-source-registry.test.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-english-topic-review.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-english-template-review.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-subject-adapters.js'));
