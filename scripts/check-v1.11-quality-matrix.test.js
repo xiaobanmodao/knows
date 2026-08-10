@@ -72,6 +72,8 @@ assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-english-
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-english-template-review.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-subject-adapters.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-runtime-package-dependencies.js'));
+assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-runtime-js-syntax.test.js'));
+assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-runtime-js-syntax.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-remote-assets.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-release-tool-state.test.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-release-tool-state-evidence.test.js'));

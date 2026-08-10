@@ -101,6 +101,8 @@ const DEFAULT_CHECKS = [
   { script: 'scripts/check-package-boundaries.js', label: '分包边界' },
   { script: 'scripts/check-subject-adapters.js', label: '学科适配器' },
   { script: 'scripts/check-runtime-package-dependencies.js', label: '运行时分包依赖' },
+  { script: 'scripts/check-runtime-js-syntax.test.js', label: '运行时 JavaScript 语法契约' },
+  { script: 'scripts/check-runtime-js-syntax.js', label: '运行时 JavaScript 语法' },
   { script: 'scripts/check-pure-knowledge-runtime.test.js', label: '纯知识运行层契约' },
   { script: 'scripts/check-pure-knowledge-runtime.js', label: '纯知识运行层文案' },
   { script: 'scripts/check-privacy-interfaces.test.js', label: '隐私接口契约' },
