@@ -244,6 +244,32 @@ function checkCloudFunction() {
   }
 }
 
+function checkCloudPrivacyTooling() {
+  const scripts = [
+    'scripts/check-cloud-user-trace.test.js',
+    'scripts/check-cloud-user-trace.js',
+  ];
+  scripts.forEach((script) => assertFile(script, '云开发用户追踪隐私门禁'));
+  if (!scripts.every(fileExists)) return;
+
+  scripts.forEach((script) => {
+    try {
+      execFileSync(process.execPath, [path.join(root, script)], {
+        cwd: root,
+        encoding: 'utf8',
+        stdio: 'pipe',
+      });
+    } catch (error) {
+      const output = String(error.stdout || error.stderr || error.message)
+        .trim()
+        .split('\n')
+        .slice(-3)
+        .join(' | ');
+      issues.push(`云开发用户追踪隐私门禁 ${script}: 执行失败 -> ${output}`);
+    }
+  });
+}
+
 function checkContentAuditTooling() {
   const auditScripts = ['scripts/content-audit.js', 'scripts/build-content-audit.js', 'scripts/check-content-audit.js'];
   auditScripts.forEach((file) => assertFile(file, '内容审计工具'));
@@ -623,6 +649,7 @@ const appConfig = checkAppConfig();
 checkProjectConfig();
 checkSitemap(appConfig);
 checkCloudFunction();
+checkCloudPrivacyTooling();
 checkContentAuditTooling();
 checkPureKnowledgeRuntimeTooling();
 checkContentReviewQueueTooling();
