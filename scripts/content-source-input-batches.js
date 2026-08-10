@@ -74,6 +74,14 @@ function normalizeSourceEvidence(value, index) {
   };
 }
 
+function normalizeInputHash(value, index) {
+  const inputHash = requireText(value, `batches[${index}].inputHash`);
+  if (!/^[a-f0-9]{64}$/.test(inputHash)) {
+    throw new Error(`内容源输入批次 manifest 第 ${index + 1} 项 inputHash 必须为 64 位十六进制哈希`);
+  }
+  return inputHash;
+}
+
 function normalizeBatchManifest(input) {
   if (!input || typeof input !== 'object' || Array.isArray(input)) {
     throw new Error('内容源输入批次 manifest 根对象无效');
@@ -101,6 +109,7 @@ function normalizeBatchManifest(input) {
       throw new Error(`内容源输入批次 manifest 路径必须为相对路径：${inputPath}`);
     }
     const sourceKind = normalizeSourceKind(entry.sourceKind === undefined ? input.sourceKind : entry.sourceKind);
+    const inputHash = entry.inputHash === undefined ? undefined : normalizeInputHash(entry.inputHash, index);
     const sourceEvidence = entry.sourceEvidence === undefined
       ? null
       : normalizeSourceEvidence(entry.sourceEvidence, index);
@@ -108,6 +117,7 @@ function normalizeBatchManifest(input) {
       id,
       path: inputPath,
       sourceKind,
+      ...(inputHash ? { inputHash } : {}),
       ...(sourceEvidence ? { sourceEvidence } : {}),
     };
   });
@@ -152,6 +162,21 @@ function auditBatchInput(entry, baseDirectory, currentCatalog, sourceVersion) {
     const input = loadSourceInputFile(absolutePath, {
       sourceVersion,
     });
+    if (entry.inputHash && input.inputHash !== entry.inputHash) {
+      return {
+        id: batch.id,
+        subjectId: batch.subjectId,
+        type: batch.type,
+        path: relativePath,
+        sourceKind: entry.sourceKind,
+        sourceEvidence: entry.sourceEvidence || null,
+        status: 'failed',
+        reason: 'manifest-input-hash-mismatch',
+        expectedInputHash: entry.inputHash,
+        actualInputHash: input.inputHash,
+        error: `${batch.id} 输入文件哈希与 manifest 不一致`,
+      };
+    }
     const current = filterContentSourceCatalog(currentCatalog, {
       subjectId: batch.subjectId,
       type: batch.type,

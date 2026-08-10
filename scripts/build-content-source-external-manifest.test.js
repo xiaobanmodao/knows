@@ -6,6 +6,10 @@ const { spawnSync } = require('child_process');
 
 const { buildContentSourceCatalog, filterContentSourceCatalog } = require('./content-source-catalog');
 const { buildExternalSourceManifest } = require('./build-content-source-external-manifest');
+const {
+  buildContentSourceInputBatchAudit,
+  normalizeBatchManifest,
+} = require('./content-source-input-batches');
 
 const root = path.resolve(__dirname, '..');
 const builder = path.join(__dirname, 'build-content-source-external-manifest.js');
@@ -33,6 +37,7 @@ try {
   assert.strictEqual(result.manifest.sourceKind, 'external-source');
   assert.strictEqual(result.manifest.batches[0].id, 'english-units-v1.11');
   assert.strictEqual(result.manifest.batches[0].sourceKind, 'external-source');
+  assert.match(result.manifest.batches[0].inputHash, /^[a-f0-9]{64}$/);
   assert.deepStrictEqual(result.manifest.batches[0].sourceEvidence, {
     sourceKeys: ['pep-english-external-contract'],
     sourceUrls: ['https://example.com/english-units'],
@@ -41,6 +46,14 @@ try {
   });
   assert.strictEqual(result.manifest.batches[0].path, 'english-units.json');
   assert.ok(fs.existsSync(manifestPath));
+
+  assert.throws(
+    () => normalizeBatchManifest({
+      ...result.manifest,
+      batches: [{ ...result.manifest.batches[0], inputHash: 'invalid-hash' }],
+    }),
+    /inputHash|哈希/i,
+  );
 
   assert.throws(
     () => buildExternalSourceManifest({
@@ -79,6 +92,21 @@ try {
   assert.strictEqual(cli.status, 0, cli.stderr || cli.stdout);
   assert.match(cli.stdout, /OK external content source manifest/);
   assert.strictEqual(JSON.parse(fs.readFileSync(cliManifestPath, 'utf8')).batches[0].sourceEvidence.sourceKeys[0], 'pep-english-external-cli');
+
+  const originalInput = JSON.parse(fs.readFileSync(inputPath, 'utf8'));
+  fs.writeFileSync(inputPath, `${JSON.stringify({
+    ...originalInput,
+    entities: originalInput.entities.map((entity, index) => (
+      index === 0 ? { ...entity, title: `${entity.title}（文件被替换）` } : entity
+    )),
+  }, null, 2)}\n`, 'utf8');
+  const staleAudit = buildContentSourceInputBatchAudit({
+    manifest: normalizeBatchManifest(result.manifest),
+    baseDirectory: directory,
+    currentCatalog: catalog,
+  });
+  assert.strictEqual(staleAudit.status, 'failed');
+  assert.strictEqual(staleAudit.batches[0].reason, 'manifest-input-hash-mismatch');
 } finally {
   fs.rmSync(directory, { recursive: true, force: true });
 }

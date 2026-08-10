@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const { normalizeBatchManifest } = require('./content-source-input-batches');
+const { loadSourceInputFile } = require('./content-source-input');
 
 const DEFAULT_SOURCE_VERSION = 'external-source-v1';
 
@@ -25,21 +26,24 @@ function buildExternalSourceManifest({
   const id = requireText(batchId, 'batchId');
   const sourceFile = path.resolve(requireText(inputPath, 'inputPath'));
   const outputPath = path.resolve(requireText(manifestPath, 'manifestPath'));
+  const normalizedSourceVersion = requireText(sourceVersion, 'sourceVersion');
   if (!fs.existsSync(sourceFile) || !fs.statSync(sourceFile).isFile()) {
     throw new Error(`外部内容源输入文件不存在：${sourceFile}`);
   }
   if (sourceFile === outputPath) {
     throw new Error(`manifest 不能覆盖输入文件：${sourceFile}`);
   }
+  const input = loadSourceInputFile(sourceFile, { sourceVersion: normalizedSourceVersion });
   const relativeInputPath = path.relative(path.dirname(outputPath), sourceFile).split(path.sep).join('/');
   const manifest = normalizeBatchManifest({
     schemaVersion: 1,
-    sourceVersion: requireText(sourceVersion, 'sourceVersion'),
+    sourceVersion: normalizedSourceVersion,
     sourceKind: 'external-source',
     batches: [{
       id,
       path: relativeInputPath,
       sourceKind: 'external-source',
+      inputHash: input.inputHash,
       sourceEvidence: {
         sourceKeys,
         sourceUrls,
@@ -50,7 +54,7 @@ function buildExternalSourceManifest({
   });
   fs.mkdirSync(path.dirname(outputPath), { recursive: true });
   fs.writeFileSync(outputPath, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
-  return { manifest, manifestPath: outputPath, inputPath: sourceFile };
+  return { manifest, manifestPath: outputPath, inputPath: sourceFile, inputHash: input.inputHash };
 }
 
 function getOption(name) {

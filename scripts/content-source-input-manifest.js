@@ -53,10 +53,11 @@ function buildCurrentSourceInputManifest({
     schemaVersion: 1,
     sourceVersion,
     sourceKind: 'current-fixture',
-    batches: batches.map(({ id, path: relativePath }) => ({
+    batches: batches.map(({ id, path: relativePath, inputHash }) => ({
       id,
       path: relativePath,
       sourceKind: 'current-fixture',
+      inputHash,
     })),
   });
   fs.mkdirSync(path.dirname(absoluteManifestPath), { recursive: true });

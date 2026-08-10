@@ -27,6 +27,7 @@ try {
   assert.strictEqual(result.manifest.batches[0].id, 'english-units-v1.11');
   assert.strictEqual(result.manifest.batches[0].path, 'inputs/english-units-v1.11.json');
   assert.strictEqual(result.manifest.batches[0].sourceKind, 'current-fixture');
+  assert.match(result.manifest.batches[0].inputHash, /^[a-f0-9]{64}$/);
   assert.ok(fs.existsSync(manifestPath));
   assert.ok(fs.existsSync(path.join(outputDirectory, 'physics-knowledge-v1.11.json')));
 
