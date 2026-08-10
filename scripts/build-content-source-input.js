@@ -10,6 +10,7 @@ const {
   buildContentSourceCatalog,
   filterContentSourceCatalog,
 } = require('./content-source-catalog');
+const { getContentSourceBatch } = require('./check-content-source-batches');
 
 const root = path.resolve(__dirname, '..');
 const args = process.argv.slice(2);
@@ -23,13 +24,19 @@ function getOption(name) {
 
 function main() {
   if ((!inputPath || inputPath.startsWith('--')) && !fromCurrent) {
-    throw new Error('用法：node scripts/build-content-source-input.js <input.json|input.csv> [--output <output.json>] [--source-version <version>] 或 --from-current [--subject <subjectId>] [--type <type>]');
+    throw new Error('用法：node scripts/build-content-source-input.js <input.json|input.csv> [--output <output.json>] [--source-version <version>] [--batch <batchId>] 或 --from-current [--subject <subjectId>] [--type <type>] [--batch <batchId>]');
+  }
+  const batchId = getOption('--batch');
+  const batch = batchId ? getContentSourceBatch(batchId) : null;
+  if (batchId && !batch) throw new Error(`未知内容源批次：${batchId}`);
+  if (batch && (getOption('--subject') || getOption('--type'))) {
+    throw new Error('--batch 不得与 --subject/--type 同时使用');
   }
   const outputPath = path.resolve(getOption('--output') || 'dist/content-audit/content-source-input.json');
   const report = fromCurrent
     ? normalizeSourceInput(filterContentSourceCatalog(buildContentSourceCatalog(), {
-      subjectId: getOption('--subject'),
-      type: getOption('--type'),
+      subjectId: batch ? batch.subjectId : getOption('--subject'),
+      type: batch ? batch.type : getOption('--type'),
     }))
     : loadSourceInputFile(inputPath, { sourceVersion: getOption('--source-version') });
   checkSourceInput(report);

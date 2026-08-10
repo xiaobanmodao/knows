@@ -99,6 +99,18 @@ try {
   const englishUnitsCheck = runChecker(englishUnitsOutput, ['--subject', 'english', '--type', 'unit', '--require-no-diff']);
   assert.strictEqual(englishUnitsCheck.status, 0, englishUnitsCheck.stderr || englishUnitsCheck.stdout);
 
+  const batchOutput = path.join(directory, 'english-units-batch-input.json');
+  const batchResult = runCurrentBuilder(batchOutput, ['--batch', 'english-units-v1.11']);
+  assert.strictEqual(batchResult.status, 0, batchResult.stderr || batchResult.stdout);
+  const batchData = JSON.parse(fs.readFileSync(batchOutput, 'utf8'));
+  assert.strictEqual(batchData.entityCount, 42);
+  assert.ok(batchData.entities.every((entity) => entity.subjectId === 'english' && entity.type === 'unit'));
+  const batchCheck = runChecker(batchOutput, ['--batch', 'english-units-v1.11', '--require-no-diff']);
+  assert.strictEqual(batchCheck.status, 0, batchCheck.stderr || batchCheck.stdout);
+  const unknownBatchResult = runCurrentBuilder(path.join(directory, 'unknown-batch.json'), ['--batch', 'unknown-batch']);
+  assert.notStrictEqual(unknownBatchResult.status, 0);
+  assert.match(`${unknownBatchResult.stdout}\n${unknownBatchResult.stderr}`, /批次|batch/i);
+
   const changedCatalogInput = path.join(directory, 'changed-catalog.json');
   const changedCatalog = buildContentSourceCatalog();
   changedCatalog.entities[0] = { ...changedCatalog.entities[0], title: `${changedCatalog.entities[0].title}（输入变更）` };
