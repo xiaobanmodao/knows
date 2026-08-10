@@ -59,8 +59,11 @@ function loadContentSourceUrlAccessState(reportPath, manifestPath) {
 }
 
 function main() {
+  const releaseProject = getOption('--release-project')
+    || process.env.RELEASE_PROJECT_ROOT;
   const toolStatePath = getOption('--tool-state')
     || process.env.RELEASE_TOOL_STATE
+    || (releaseProject ? path.resolve(releaseProject, DEFAULT_TOOL_STATE_PATH) : null)
     || DEFAULT_TOOL_STATE_PATH;
   const contentReportPath = getOption('--content-report')
     || process.env.CONTENT_SOURCE_FOLLOW_UP

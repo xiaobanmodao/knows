@@ -158,6 +158,22 @@ try {
   ], { cwd: path.resolve(__dirname, '..'), encoding: 'utf8' });
   assert.strictEqual(cli.status, 0, cli.stderr || cli.stdout);
   assert.match(cli.stdout, /OK roadmap status/);
+
+  const releaseProject = path.join(tempDirectory, 'release-project');
+  const releaseToolStatePath = path.join(releaseProject, '.codex-output/release-regression-v1.10.1/tool-state.json');
+  fs.mkdirSync(path.dirname(releaseToolStatePath), { recursive: true });
+  fs.writeFileSync(releaseToolStatePath, `${JSON.stringify(readyToolState)}\n`);
+  const releaseProjectCli = spawnSync(process.execPath, [
+    path.join(__dirname, 'check-roadmap-status.js'),
+    '--release-project', releaseProject,
+    '--content-report', contentReportPath,
+    '--manifest', path.join(tempDirectory, 'missing-manifest.json'),
+    '--json',
+  ], { cwd: path.resolve(__dirname, '..'), encoding: 'utf8' });
+  assert.strictEqual(releaseProjectCli.status, 0, releaseProjectCli.stderr || releaseProjectCli.stdout);
+  const releaseProjectReport = JSON.parse(releaseProjectCli.stdout);
+  assert.strictEqual(releaseProjectReport.release.status, 'ready');
+  assert.strictEqual(releaseProjectReport.release.path, releaseToolStatePath);
 } finally {
   fs.rmSync(tempDirectory, { recursive: true, force: true });
 }

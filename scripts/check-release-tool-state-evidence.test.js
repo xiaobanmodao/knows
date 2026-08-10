@@ -25,6 +25,7 @@ const blocked = buildToolStateReport({
 const blockedCheck = validateReleaseToolStateEvidence(blocked);
 assert.strictEqual(blockedCheck.valid, false);
 assert.ok(blockedCheck.issues.some((issue) => /41002|blocked/.test(issue)));
+assert.ok(!blockedCheck.issues.some((issue) => /没有有效上传观察结果/.test(issue)));
 
 const mismatched = buildToolStateReport({
   projectRoot: '/tmp/knows',

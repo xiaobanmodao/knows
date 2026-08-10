@@ -15,7 +15,15 @@ function validateReleaseToolStateEvidence(report) {
   if (!checks.cliLogin || checks.cliLogin.loggedIn !== true) {
     issues.push('开发者工具状态中的登录检查未通过');
   }
-  if (!checks.preview || checks.preview.status !== 'observed') {
+  const previewObserved = checks.preview && (
+    checks.preview.status === 'observed'
+    || (
+      ['blocked', 'failed'].includes(checks.preview.status)
+      && checks.preview.stage === 'upload'
+      && checks.preview.uploadStarted === true
+    )
+  );
+  if (!previewObserved) {
     issues.push('开发者工具状态中的预览日志没有有效上传观察结果');
   }
   if (checks.preview && checks.preview.errorCode) {
