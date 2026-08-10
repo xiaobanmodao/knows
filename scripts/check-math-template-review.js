@@ -8,6 +8,7 @@ const {
   buildTemplateReviewSnapshot,
   getTemplateReviewMeta,
 } = require('../packages/math/data/template-review-meta');
+const { getContentSource, isAllowedContentSourceUrl } = require('../data/content-source-registry');
 
 const EXPECTED_TEMPLATE_IDS = [
   'model-hand-in-hand',
@@ -56,7 +57,10 @@ const SOURCE_KEYS = new Set([
 function assertOfficialSource(source, owner) {
   assert.ok(source && source.key && SOURCE_KEYS.has(source.key), `${owner}: source key invalid`);
   assert.ok(source.title, `${owner}: source title missing`);
-  assert.ok(/^https:\/\/(www\.)?(moe\.gov\.cn|pep\.com\.cn)\//.test(source.url || ''), `${owner}: source host invalid`);
+  const registered = getContentSource(source.key);
+  assert.ok(registered && registered.kind === 'official', `${owner}: source kind invalid`);
+  assert.strictEqual(registered.url, source.url, `${owner}: source URL drifted`);
+  assert.ok(isAllowedContentSourceUrl(registered, source.url), `${owner}: source host invalid`);
 }
 
 function assertCloneIsolation(templateId) {

@@ -35,7 +35,7 @@ const MATH_CURRICULUM_BASELINE = {
   baselineVersion: 'math-curriculum-2022-pep-2024',
   sources: [
     {
-      id: 'moe-math-standard-2022',
+      id: 'moe-math-curriculum-2022',
       title: '义务教育数学课程标准（2022年版）',
       url: 'https://www.moe.gov.cn/srcsite/A26/s8001/202204/W020220420582346895190.pdf',
       role: '课程内容边界',
@@ -80,7 +80,7 @@ const MATH_CURRICULUM_BASELINE = {
       id: 'math-function-split',
       status: 'confirmed-change',
       stableChapterId: 'ch19-linear-function',
-      sourceIds: ['moe-math-standard-2022', 'pep-math-new-textbook-2024'],
+      sourceIds: ['moe-math-curriculum-2022', 'pep-math-new-textbook-2024'],
       statement: '新版教材将原一次函数章中的函数概念与一次函数内容拆分组织。',
       currentSignals: ['19.1 函数', '19.2 一次函数'],
       evidenceLocator: '人教社官网正文“三、教科书的结构体系”→“1．数与代数”→（6）',
@@ -91,7 +91,7 @@ const MATH_CURRICULUM_BASELINE = {
       id: 'math-data-analysis-additions',
       status: 'confirmed-change',
       stableChapterId: 'ch20-data-analysis',
-      sourceIds: ['moe-math-standard-2022', 'pep-math-new-textbook-2024'],
+      sourceIds: ['moe-math-curriculum-2022', 'pep-math-new-textbook-2024'],
       statement: '人教社公开说明新版数据的分析章增加数据的四分位数和数据的分组内容。',
       currentSignals: ['20.1 数据的集中趋势', '20.2 数据的波动程度'],
       expectedSignals: ['数据的四分位数', '数据的分组'],
@@ -108,7 +108,7 @@ const MATH_CURRICULUM_BASELINE = {
   volumeMap: {
     schemaVersion: 1,
     status: 'needs-official-volume-map',
-    sourceIds: ['moe-math-standard-2022', 'moe-textbook-catalog-2024', 'pep-math-new-textbook-2024'],
+    sourceIds: ['moe-math-curriculum-2022', 'moe-textbook-catalog-2024', 'pep-math-new-textbook-2024'],
     policy: {
       unverifiedFields: ['officialGrade', 'officialVolume', 'officialChapterNo', 'officialTitle', 'officialSections'],
       requiredEvidenceFields: [
@@ -130,7 +130,7 @@ const MATH_CURRICULUM_BASELINE = {
       stableChapterId,
       mappingStatus: 'needs-official-volume-map',
       official: null,
-      sourceIds: ['moe-math-standard-2022', 'moe-textbook-catalog-2024', 'pep-math-new-textbook-2024'],
+      sourceIds: ['moe-math-curriculum-2022', 'moe-textbook-catalog-2024', 'pep-math-new-textbook-2024'],
       reviewedAt: null,
       notes: '等待对应册次的完整官方目录，当前不填写猜测的官方年级、册次、章号或小节。',
     })),

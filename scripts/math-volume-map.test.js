@@ -4,6 +4,7 @@ const {
   collectMathCurriculumAudit,
   checkMathCurriculumAudit,
 } = require('./math-curriculum-audit');
+const { getContentSource } = require('../data/content-source-registry');
 
 const report = collectMathCurriculumAudit();
 
@@ -14,9 +15,13 @@ assert.strictEqual(new Set(report.volumeMap.entries.map((entry) => entry.stableC
 
 assert.deepStrictEqual(
   report.sources.map((source) => source.id),
-  ['moe-math-standard-2022', 'moe-textbook-catalog-2024', 'pep-math-new-textbook-2024'],
+  ['moe-math-curriculum-2022', 'moe-textbook-catalog-2024', 'pep-math-new-textbook-2024'],
 );
 report.sources.forEach((source) => {
+  const registered = getContentSource(source.id);
+  assert.ok(registered, `${source.id}: 来源键必须登记在统一注册表`);
+  assert.strictEqual(registered.url, source.url, `${source.id}: URL 必须使用注册表规范值`);
+  assert.strictEqual(registered.kind, 'official', `${source.id}: 数学目录来源必须是官方来源`);
   assert.ok(source.evidence && source.evidence.locator, `${source.id}: 缺少官方证据定位`);
   assert.ok(source.evidence.scope, `${source.id}: 缺少证据范围说明`);
   assert.ok(!Number.isNaN(Date.parse(source.evidence.reviewedAt)), `${source.id}: 复核日期无效`);

@@ -23,7 +23,7 @@ const STATUS_ORDER = {
 const SOURCE_CANDIDATES = Object.freeze({
   math: [
     { key: 'moe-math-curriculum-2022', title: '义务教育数学课程标准（2022年版）', url: 'https://www.moe.gov.cn/srcsite/A26/s8001/202204/W020220420582346895190.pdf' },
-    { key: 'moe-textbook-catalog-2024', title: '2024年义务教育国家课程教学用书目录', url: 'https://www.moe.gov.cn/srcsite/A26/s8001/202408/W020250418502592948423.pdf' },
+    { key: 'moe-textbook-catalog-2024', title: '2024年义务教育国家课程教学用书目录（根据2022年版课程标准修订）', url: 'https://www.moe.gov.cn/srcsite/A26/s8001/202408/W020250418502592948423.pdf' },
     { key: 'pep-math-new-textbook-2024', title: '人教版义务教育数学（七至九年级）新教材介绍', url: 'https://www.pep.com.cn/xw/zt/hd/12/xjcjs/cz/202408/t20240826_1994351.html' },
   ],
   english: [
@@ -36,7 +36,7 @@ const SOURCE_CANDIDATES = Object.freeze({
   ],
   chemistry: [
     { key: 'moe-chemistry-2022', title: '义务教育化学课程标准（2022年版）', url: 'https://www.moe.gov.cn/srcsite/A26/s8001/202204/t20220420_619921.html' },
-    { key: 'moe-textbook-catalog-2024', title: '2024年义务教育国家课程教学用书目录', url: 'https://www.moe.gov.cn/srcsite/A26/s8001/202408/W020250418502592948423.pdf' },
+    { key: 'moe-textbook-catalog-2024', title: '2024年义务教育国家课程教学用书目录（根据2022年版课程标准修订）', url: 'https://www.moe.gov.cn/srcsite/A26/s8001/202408/W020250418502592948423.pdf' },
     { key: 'pep-chemistry-training-2024', title: '人教版义务教育化学新教材培训通知', url: 'https://www.pep.com.cn/rjdt/rjdt/202405/t20240517_1992181.shtml' },
   ],
   biology: [

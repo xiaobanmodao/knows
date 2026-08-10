@@ -7,8 +7,11 @@ const {
 } = require('../packages/math/data/math-curriculum-baseline');
 const { LEGACY_KNOWLEDGE_ALIASES } = require('../data/content-id-aliases');
 const { getStableLessonId } = require('../utils/content-ids');
-
-const OFFICIAL_HOSTS = new Set(['www.moe.gov.cn', 'moe.gov.cn', 'www.pep.com.cn', 'pep.com.cn']);
+const {
+  checkContentSourceRegistry,
+  getContentSource,
+  isAllowedContentSourceUrl,
+} = require('../data/content-source-registry');
 
 function sha256(value) {
   return crypto.createHash('sha256').update(JSON.stringify(value)).digest('hex');
@@ -221,6 +224,7 @@ function collectMathCurriculumAudit() {
 }
 
 function checkBaselineContract() {
+  checkContentSourceRegistry();
   if (MATH_CURRICULUM_BASELINE.stableContainerPolicy.currentChapterCount !== STABLE_CHAPTER_IDS.length) {
     throw new Error('数学目录基线稳定章节数量与稳定 ID 数量不一致');
   }
@@ -232,8 +236,15 @@ function checkBaselineContract() {
   MATH_CURRICULUM_BASELINE.sources.forEach((source) => {
     if (!source.id || sourceIds.has(source.id)) throw new Error(`数学目录来源 ID 重复或为空：${source.id}`);
     sourceIds.add(source.id);
-    const hostname = new URL(source.url).hostname;
-    if (!OFFICIAL_HOSTS.has(hostname)) throw new Error(`数学目录来源域名不受信任：${hostname}`);
+    const registered = getContentSource(source.id);
+    if (!registered) throw new Error(`数学目录来源未登记在统一注册表：${source.id}`);
+    if (registered.kind !== 'official') throw new Error(`数学目录来源必须是官方来源：${source.id}`);
+    if (registered.title !== source.title || registered.url !== source.url) {
+      throw new Error(`数学目录来源与统一注册表不一致：${source.id}`);
+    }
+    if (!isAllowedContentSourceUrl(registered, source.url)) {
+      throw new Error(`数学目录来源域名不受信任：${source.id}`);
+    }
     if (!source.evidence || !source.evidence.reviewedAt || Number.isNaN(Date.parse(source.evidence.reviewedAt))) {
       throw new Error(`数学目录来源缺少有效复核日期：${source.id}`);
     }
@@ -326,8 +337,13 @@ function checkMathCurriculumAudit(report) {
     throw new Error('数学目录审计必须包含三类官方来源');
   }
   report.sources.forEach((source) => {
-    const hostname = new URL(source.url).hostname;
-    if (!OFFICIAL_HOSTS.has(hostname)) throw new Error(`数学目录来源域名不受信任：${hostname}`);
+    const registered = getContentSource(source.id);
+    if (!registered || registered.kind !== 'official' || registered.title !== source.title || registered.url !== source.url) {
+      throw new Error(`数学目录报告来源与统一注册表不一致：${source.id}`);
+    }
+    if (!isAllowedContentSourceUrl(registered, source.url)) {
+      throw new Error(`数学目录来源域名不受信任：${source.id}`);
+    }
     if (!source.evidence || !source.evidence.locator || !source.evidence.scope) {
       throw new Error(`数学目录报告来源缺少证据定位：${source.id}`);
     }
