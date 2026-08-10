@@ -167,6 +167,23 @@ assert.strictEqual(labelsFor('bio-k-seed-germination').at(-1), '萌发');
 assert.deepStrictEqual(labelsFor('bio-k-respiration-growth'), [
   '光合作用制造有机物', '呼吸作用分解释放能量', '细胞活动与生长', '物质和能量变化',
 ]);
+assert.deepStrictEqual(labelsFor('bio-k-circulation'), [
+  '心脏推动血液', '血管运输', '毛细血管处物质交换', '血液回流到心脏',
+]);
+assert.deepStrictEqual(labelsFor('bio-k-digestion'), [
+  '食物摄入', '消化分解', '小肠吸收', '营养物质供身体生命活动利用',
+]);
+assert.deepStrictEqual(labelsFor('bio-k-breathing'), [
+  '空气进入呼吸道', '肺部气体交换', '氧进入血液', '细胞利用氧',
+]);
+const heredityGuide = getVisualGuideForKnowledge('bio-k-heredity-basics');
+assert.deepStrictEqual(
+  heredityGuide.items.map((item) => [item.label, item.depth]),
+  [['细胞核', 0], ['染色体', 1], ['DNA上的基因片段', 2]],
+);
+assert.match(heredityGuide.items.at(-1).note, /基因是 DNA 上有遗传效应的片段/);
+assert.match(heredityGuide.items.at(-1).note, /参与遗传信息表达/);
+assert.match(heredityGuide.items.at(-1).note, /性状还受环境影响/);
 assert.deepStrictEqual(
   getVisualGuideForKnowledge('bio-k-structure-levels').items.map((item) => [item.label, item.depth]),
   [['细胞', 0], ['组织', 1], ['器官到系统/生物体', 2]],

@@ -219,10 +219,10 @@ const visualGuidesByKnowledgeId = Object.freeze({
     title: '食物消化和吸收',
     summary: '食物被分解为可吸收的小分子并进入体内。',
     items: [
-      { label: '口腔、胃和小肠', note: '这些器官以不同方式参与食物消化。', tone: 'blue' },
-      { label: '食物分解', note: '消化系统将食物分解为可吸收的小分子。', tone: 'green' },
+      { label: '食物摄入', note: '口腔、胃和小肠等器官以不同方式参与食物消化。', tone: 'blue' },
+      { label: '消化分解', note: '消化系统将食物分解为可吸收的小分子。', tone: 'green' },
       { label: '小肠吸收', note: '小肠长且内表面积大，是营养物质吸收的重要部位。', tone: 'amber' },
-      { label: '消化健康', note: '均衡饮食、规律进食和食品卫生有助于消化健康。', tone: 'slate' },
+      { label: '营养物质供身体生命活动利用', note: '吸收后的营养物质进入体内，供身体生命活动利用。', tone: 'slate' },
     ],
   },
   'bio-k-breathing': {
@@ -231,9 +231,9 @@ const visualGuidesByKnowledgeId = Object.freeze({
     summary: '空气进出和肺部气体交换为细胞提供氧气。',
     items: [
       { label: '空气进入呼吸道', note: '鼻、咽、喉、气管和支气管形成气体通道。', tone: 'blue' },
-      { label: '肺泡气体交换', note: '肺泡壁薄且周围毛细血管丰富，适于气体交换。', tone: 'green' },
-      { label: '氧气供应细胞', note: '呼吸系统为细胞生命活动提供氧气并排出二氧化碳。', tone: 'amber' },
-      { label: '呼吸健康', note: '远离烟草烟雾和保持空气清洁有助于呼吸健康。', tone: 'slate' },
+      { label: '肺部气体交换', note: '肺泡壁薄且周围毛细血管丰富，适于气体交换。', tone: 'green' },
+      { label: '氧进入血液', note: '肺泡周围丰富的毛细血管有利于氧气进入血液。', tone: 'amber' },
+      { label: '细胞利用氧', note: '血液运输氧气，为细胞生命活动提供氧气。', tone: 'slate' },
     ],
   },
   'bio-k-circulation': {
@@ -243,8 +243,8 @@ const visualGuidesByKnowledgeId = Object.freeze({
     items: [
       { label: '心脏推动血液', note: '心脏有节律地收缩舒张，推动血液在血管中循环。', tone: 'blue' },
       { label: '血管运输', note: '动脉、静脉和毛细血管在结构和功能上不同。', tone: 'green' },
-      { label: '血液运输物质', note: '血液运输氧气、营养物质和部分废物。', tone: 'amber' },
-      { label: '维持身体联系', note: '心脏、血管和血液共同维持身体各部分联系。', tone: 'slate' },
+      { label: '毛细血管处物质交换', note: '毛细血管管壁薄，血液可与组织细胞进行物质交换。', tone: 'amber' },
+      { label: '血液回流到心脏', note: '血液在血管中循环后回流到心脏。', tone: 'slate' },
     ],
   },
   'bio-k-urinary': {
@@ -356,8 +356,7 @@ const visualGuidesByKnowledgeId = Object.freeze({
     items: [
       { label: '细胞核', note: '遗传信息主要位于细胞核的染色体上。', tone: 'blue', depth: 0 },
       { label: '染色体', note: '由DNA和蛋白质等物质组成。', tone: 'green', depth: 1 },
-      { label: 'DNA', note: 'DNA上有许多具有遗传效应的片段。', tone: 'amber', depth: 2 },
-      { label: '基因与性状', note: '通常称为基因，且性状受遗传和环境共同影响。', tone: 'slate', depth: 2 },
+      { label: 'DNA上的基因片段', note: '基因是 DNA 上有遗传效应的片段，参与遗传信息表达；性状还受环境影响。', tone: 'amber', depth: 2 },
     ],
   },
   'bio-k-variation': {
