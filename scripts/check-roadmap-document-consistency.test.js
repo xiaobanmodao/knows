@@ -19,6 +19,17 @@ const grade9UpperDirectoryStatus = '目录证据状态：partial；当前公开�
 const englishStatusNamespaces = '`book.status` 表示运行时册次可用性，目录证据状态 `verified`、`partial`、`pending` 表示官方目录核对进度；两者属于不同的状态命名空间。九年级上册的运行时 `book.status` 为 `verified`，目录证据状态为 `partial`。';
 const directoryImportBoundary = '这份独立官方目录证据记录只核对目录元数据，不核对教材正文、音频、题目、词表、图片或项目知识讲解，不是外部内容导入。';
 const roadmapDirectoryBoundary = '英语目录门禁已加强为独立官方目录证据：四册具有完整当期目录页证据，九年级上册当前页面只核对 Unit 1-2，其余既有 Unit 3-8 等待完整官方目录复核；该记录只验证目录元数据，不是外部内容来源接入，不解除全局外部资料阻断。真实外部内容来源接入的下一批阻断仍为 `math-chapters-v1.11`，它要求完整官方逐册目录。';
+const visualGuideChecks = ['生物图解契约', '生物图解内容与页面'];
+const v111ReleaseBoundaries = [
+  'math-chapters-v1.11',
+  '不在 AppID、包体和实体设备证据缺失时创建 RC',
+  '严格模式会要求 iPhone/Android 证据、当前 `packages-preview.json` 和状态为 `ready` 的开发者工具报告',
+];
+const productReleaseBoundaries = [
+  '先闭合 v1.10.1 发布证据',
+  '完成 iPhone 与 Android 实体设备 A1-A15',
+  '严格模式还要求开发者工具状态报告为 `ready`',
+];
 
 function escapeRegExp(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -26,6 +37,10 @@ function escapeRegExp(value) {
 
 function assertExactLine(source, line, message) {
   assert.match(source, new RegExp(`^${escapeRegExp(line)}$`, 'm'), message);
+}
+
+function assertIncludes(source, phrase, message) {
+  assert(source.includes(phrase), message);
 }
 
 function assertEnglishSourceContract(source) {
@@ -43,6 +58,27 @@ function assertEnglishSourceContract(source) {
 
 function assertRoadmapDirectoryBoundary(source, line, label) {
   assertExactLine(source, line, `${label} 必须保留目录证据不解除外部内容来源接入和 math-chapters-v1.11 阻断的边界`);
+}
+
+function assertActiveRoadmapBoundaries({
+  currentRoadmap = roadmap,
+  currentProductRoadmap = productRoadmap,
+} = {}) {
+  visualGuideChecks.forEach((check) => {
+    assertIncludes(currentRoadmap, check, `v1.11 路线文档必须列出 ${check}`);
+    assertIncludes(currentProductRoadmap, check, `总路线文档必须列出 ${check}`);
+  });
+  v111ReleaseBoundaries.forEach((boundary) => {
+    assertIncludes(currentRoadmap, boundary, `v1.11 路线文档必须保留 ${boundary} 边界`);
+  });
+  assertExactLine(
+    currentRoadmap,
+    '- 不在 AppID、包体和实体设备证据缺失时创建 RC；',
+    'v1.11 路线文档必须精确保留 RC 发布阻断',
+  );
+  productReleaseBoundaries.forEach((boundary) => {
+    assertIncludes(currentProductRoadmap, boundary, `总路线文档必须保留 ${boundary} 边界`);
+  });
 }
 
 function assertQualityMatrixContract({
@@ -82,6 +118,7 @@ assert.doesNotThrow(
 );
 assertRoadmapDirectoryBoundary(roadmap, roadmapDirectoryBoundary, 'v1.11 路线文档');
 assertRoadmapDirectoryBoundary(productRoadmap, `- ${roadmapDirectoryBoundary}`, '总路线文档');
+assertActiveRoadmapBoundaries();
 
 assert.throws(
   () => assertEnglishSourceContract(englishSource.replace(
@@ -131,6 +168,32 @@ assert.throws(
   assert.AssertionError,
   '替换实际外部内容来源阻断批次必须失败',
 );
+visualGuideChecks.forEach((check) => {
+  assert.throws(
+    () => assertActiveRoadmapBoundaries({ currentRoadmap: roadmap.replaceAll(check, '') }),
+    assert.AssertionError,
+    `从 v1.11 路线文档移除 ${check} 必须失败`,
+  );
+  assert.throws(
+    () => assertActiveRoadmapBoundaries({ currentProductRoadmap: productRoadmap.replaceAll(check, '') }),
+    assert.AssertionError,
+    `从总路线文档移除 ${check} 必须失败`,
+  );
+});
+v111ReleaseBoundaries.forEach((boundary) => {
+  assert.throws(
+    () => assertActiveRoadmapBoundaries({ currentRoadmap: roadmap.replaceAll(boundary, '') }),
+    assert.AssertionError,
+    `从 v1.11 路线文档移除 ${boundary} 边界必须失败`,
+  );
+});
+productReleaseBoundaries.forEach((boundary) => {
+  assert.throws(
+    () => assertActiveRoadmapBoundaries({ currentProductRoadmap: productRoadmap.replaceAll(boundary, '') }),
+    assert.AssertionError,
+    `从总路线文档移除 ${boundary} 边界必须失败`,
+  );
+});
 assert.throws(
   () => assertQualityMatrixContract({ currentRoadmap: roadmap.replace('当前共 121 项', '当前共 120 项') }),
   assert.AssertionError,
