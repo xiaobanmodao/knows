@@ -54,6 +54,7 @@ const DEFAULT_CHECKS = [
   { script: 'scripts/check-reading-display.js', label: '阅读显示设置' },
   { script: 'scripts/check-cloud-assets-runtime.js', label: '云图片降级' },
   { script: 'scripts/check-release-readiness.js', label: '发布准备' },
+  { script: 'scripts/check-release-tool-state.test.js', label: '开发者工具状态诊断契约' },
   { script: 'scripts/check-content-source-catalog.js', label: '内容源目录产物' },
 ];
 

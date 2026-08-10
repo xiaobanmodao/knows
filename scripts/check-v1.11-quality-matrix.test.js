@@ -25,6 +25,7 @@ assert.ok(defaultCommands.some((item) => item.script === 'scripts/content-source
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-content-source-batches.test.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/content-source-catalog.test.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-content-source-catalog.js'));
+assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-release-tool-state.test.js'));
 [
   'scripts/check-package-manifest.js',
   'scripts/check-student-copy.js',
