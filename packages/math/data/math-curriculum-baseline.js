@@ -39,18 +39,33 @@ const MATH_CURRICULUM_BASELINE = {
       title: '义务教育数学课程标准（2022年版）',
       url: 'https://www.moe.gov.cn/srcsite/A26/s8001/202204/W020220420582346895190.pdf',
       role: '课程内容边界',
+      evidence: {
+        reviewedAt: '2026-08-10',
+        locator: '数学课程标准正文的课程内容、学业要求与教学提示部分',
+        scope: '确认初中数学课程领域和内容边界，不确认人教版逐册章序。',
+      },
     },
     {
       id: 'moe-textbook-catalog-2024',
       title: '2024年义务教育国家课程教学用书目录（根据2022年版课程标准修订）',
       url: 'https://www.moe.gov.cn/srcsite/A26/s8001/202408/W020250418502592948423.pdf',
       role: '国家课程教材版本与册次范围',
+      evidence: {
+        reviewedAt: '2026-08-10',
+        locator: '数学条目：王长平、人民教育出版社、七年级上册至九年级下册',
+        scope: '确认国家课程目录中的出版社和册次范围，不包含完整章标题表。',
+      },
     },
     {
       id: 'pep-math-new-textbook-2024',
       title: '人教版义务教育数学（七至九年级）新教材介绍',
       url: 'https://www.pep.com.cn/xw/zt/hd/12/xjcjs/cz/202408/t20240826_1994351.html',
       role: '人教社公开结构变化说明',
+      evidence: {
+        reviewedAt: '2026-08-10',
+        locator: '正文“三、教科书的结构体系”中“数与代数”“图形与几何”“统计与概率”分节',
+        scope: '确认公开说明的结构变化，不替代逐册完整目录。',
+      },
     },
   ],
   stableContainerPolicy: {
@@ -68,6 +83,8 @@ const MATH_CURRICULUM_BASELINE = {
       sourceIds: ['moe-math-standard-2022', 'pep-math-new-textbook-2024'],
       statement: '新版教材将原一次函数章中的函数概念与一次函数内容拆分组织。',
       currentSignals: ['19.1 函数', '19.2 一次函数'],
+      evidenceLocator: '人教社官网正文“三、教科书的结构体系”→“1．数与代数”→（6）',
+      evidenceScope: '该证据确认内容拆分方向，不确认新版逐册章号。',
       requiredAction: '保留 ch19-linear-function，继续把函数与一次函数作为稳定容器内的分段映射。',
     },
     {
@@ -78,6 +95,8 @@ const MATH_CURRICULUM_BASELINE = {
       statement: '人教社公开说明新版数据的分析章增加数据的四分位数和数据的分组内容。',
       currentSignals: ['20.1 数据的集中趋势', '20.2 数据的波动程度'],
       expectedSignals: ['数据的四分位数', '数据的分组'],
+      evidenceLocator: '人教社官网正文“三、教科书的结构体系”→“3．统计与概率”→（2）',
+      evidenceScope: '该证据确认新增内容方向，不确认新版逐册章号或小节位置。',
       requiredAction: '先在逐册正式目录核对后补充小节映射，不猜测章号或直接改变稳定章节。',
     },
   ],

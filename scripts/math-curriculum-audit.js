@@ -234,6 +234,12 @@ function checkBaselineContract() {
     sourceIds.add(source.id);
     const hostname = new URL(source.url).hostname;
     if (!OFFICIAL_HOSTS.has(hostname)) throw new Error(`数学目录来源域名不受信任：${hostname}`);
+    if (!source.evidence || !source.evidence.reviewedAt || Number.isNaN(Date.parse(source.evidence.reviewedAt))) {
+      throw new Error(`数学目录来源缺少有效复核日期：${source.id}`);
+    }
+    if (!source.evidence.locator || !source.evidence.scope) {
+      throw new Error(`数学目录来源缺少证据定位或范围说明：${source.id}`);
+    }
   });
 
   const stableIds = new Set(STABLE_CHAPTER_IDS);
@@ -249,6 +255,9 @@ function checkBaselineContract() {
     mappedStableIds.add(change.stableChapterId);
     if (change.status !== 'confirmed-change' || !change.statement || !change.requiredAction) {
       throw new Error(`数学目录变化缺少确认依据：${change.id}`);
+    }
+    if (!change.evidenceLocator || !change.evidenceScope) {
+      throw new Error(`数学目录变化缺少官方证据定位或范围说明：${change.id}`);
     }
     if (!Array.isArray(change.sourceIds) || !change.sourceIds.length) {
       throw new Error(`数学目录变化缺少来源：${change.id}`);
@@ -319,6 +328,9 @@ function checkMathCurriculumAudit(report) {
   report.sources.forEach((source) => {
     const hostname = new URL(source.url).hostname;
     if (!OFFICIAL_HOSTS.has(hostname)) throw new Error(`数学目录来源域名不受信任：${hostname}`);
+    if (!source.evidence || !source.evidence.locator || !source.evidence.scope) {
+      throw new Error(`数学目录报告来源缺少证据定位：${source.id}`);
+    }
   });
   if (JSON.stringify(report.sources) !== JSON.stringify(MATH_CURRICULUM_BASELINE.sources)) {
     throw new Error('数学目录报告来源与基线不一致');
@@ -336,6 +348,9 @@ function checkMathCurriculumAudit(report) {
   report.confirmedChanges.forEach((change) => {
     if (change.status !== 'confirmed-change' || !change.stableChapterId || !change.sourceIds.length) {
       throw new Error(`数学目录变化记录不完整：${change.id}`);
+    }
+    if (!change.evidenceLocator || !change.evidenceScope) {
+      throw new Error(`数学目录变化缺少证据定位：${change.id}`);
     }
     if (!STABLE_CHAPTER_IDS.includes(change.stableChapterId)) {
       throw new Error(`数学目录变化引用未知稳定章节：${change.stableChapterId}`);

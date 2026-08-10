@@ -12,6 +12,16 @@ assert.strictEqual(report.volumeMap.status, 'needs-official-volume-map');
 assert.strictEqual(report.volumeMap.entries.length, 29);
 assert.strictEqual(new Set(report.volumeMap.entries.map((entry) => entry.stableChapterId)).size, 29);
 
+assert.deepStrictEqual(
+  report.sources.map((source) => source.id),
+  ['moe-math-standard-2022', 'moe-textbook-catalog-2024', 'pep-math-new-textbook-2024'],
+);
+report.sources.forEach((source) => {
+  assert.ok(source.evidence && source.evidence.locator, `${source.id}: 缺少官方证据定位`);
+  assert.ok(source.evidence.scope, `${source.id}: 缺少证据范围说明`);
+  assert.ok(!Number.isNaN(Date.parse(source.evidence.reviewedAt)), `${source.id}: 复核日期无效`);
+});
+
 assert.deepStrictEqual(report.sourceMap.requiredEvidenceFields, [
   'textbookEdition',
   'officialGrade',
@@ -37,6 +47,10 @@ assert.deepStrictEqual(
   report.diffSummary.modified.map((item) => item.id),
   ['math-function-split', 'math-data-analysis-additions'],
 );
+report.confirmedChanges.forEach((change) => {
+  assert.ok(change.evidenceLocator, `${change.id}: 缺少官方证据定位`);
+  assert.ok(change.evidenceScope, `${change.id}: 缺少证据范围说明`);
+});
 
 report.volumeMap.entries.forEach((entry) => {
   assert.strictEqual(entry.mappingStatus, 'needs-official-volume-map');
@@ -61,6 +75,20 @@ tamperedAliases.stability.lesson.mismatchedLegacyIds = ['ch01-rational-lesson-1'
 assert.throws(
   () => checkMathCurriculumAudit(tamperedAliases),
   /稳定 ID|旧别名|差异报告/,
+);
+
+const tamperedSourceEvidence = JSON.parse(JSON.stringify(report));
+delete tamperedSourceEvidence.sources[0].evidence.locator;
+assert.throws(
+  () => checkMathCurriculumAudit(tamperedSourceEvidence),
+  /证据定位/,
+);
+
+const tamperedChangeEvidence = JSON.parse(JSON.stringify(report));
+delete tamperedChangeEvidence.confirmedChanges[0].evidenceScope;
+assert.throws(
+  () => checkMathCurriculumAudit(tamperedChangeEvidence),
+  /证据定位/,
 );
 
 checkMathCurriculumAudit(report);

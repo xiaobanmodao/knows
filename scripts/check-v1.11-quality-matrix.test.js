@@ -20,6 +20,8 @@ assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-pure-kno
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-pure-knowledge-runtime.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-physics-formula-contract.test.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-english-depth-contract.test.js'));
+assert.ok(defaultCommands.some((item) => item.script === 'scripts/build-math-curriculum-audit.js'));
+assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-math-curriculum-audit.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-chemistry-build-contract.test.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-biology-build-contract.test.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/content-source-input.test.js'));

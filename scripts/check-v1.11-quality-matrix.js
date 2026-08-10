@@ -11,6 +11,8 @@ const DEFAULT_CHECKS = [
   { script: 'scripts/check-math-accuracy.js', label: '数学准确性' },
   { script: 'scripts/check-math-depth.js', label: '数学深度' },
   { script: 'scripts/math-volume-map.test.js', label: '数学目录映射' },
+  { script: 'scripts/build-math-curriculum-audit.js', label: '数学目录审计产物' },
+  { script: 'scripts/check-math-curriculum-audit.js', label: '数学目录审计校验' },
   { script: 'scripts/check-english-units.js', label: '英语单元' },
   { script: 'scripts/check-english-accuracy.js', label: '英语准确性' },
   { script: 'scripts/check-english-depth.js', label: '英语深度' },
