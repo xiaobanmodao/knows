@@ -102,9 +102,20 @@
   </view>
 </view>
 
+<view wx:elif="{{loading}}" class="error-state">
+  <view class="error-state__title">正在打开</view>
+  <view class="error-state__message">正在读取化学知识点</view>
+</view>
+
 <view wx:elif="{{notFound}}" class="error-state">
-  <view class="error-state__title">知识点不存在</view>
+  <view class="error-state__title">知识点暂未打开</view>
   <view class="error-state__message">{{notFound}}</view>
+  <view class="error-state__retry" bindtap="reopen">重新打开</view>
+</view>
+
+<view wx:else class="error-state">
+  <view class="error-state__title">知识点暂未打开</view>
+  <view class="error-state__message">请返回后重新打开。</view>
   <view class="error-state__retry" bindtap="reopen">重新打开</view>
 </view>
 

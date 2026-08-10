@@ -4,6 +4,7 @@ const { openChemistryContent } = require('../../content-routes');
 
 Page({
   data: {
+    loading: true,
     template: null,
     relatedTopics: [],
     isFavorite: false,
@@ -11,53 +12,62 @@ Page({
     notFound: '',
   },
 
-  async onLoad(options) {
+  async onLoad(options = {}) {
     this.pageActive = true;
     const requestToken = (this.assetRequestToken || 0) + 1;
     this.assetRequestToken = requestToken;
-    this.templateId = options.id;
-    const template = getTemplateById(options.id);
+    this.currentTemplateId = options.id || this.currentTemplateId || '';
+    this.templateId = this.currentTemplateId;
+    this.setData({ loading: true, template: null, relatedTopics: [], notFound: '' });
 
-    if (!template) {
-      this.setData({ notFound: '没有找到这个化学方法，请返回专题目录重新选择。' });
-      return;
+    try {
+      const template = getTemplateById(this.currentTemplateId);
+      if (!template) throw new Error('化学方法不存在');
+
+      wx.setNavigationBarTitle({ title: template.name });
+      const relatedTopics = template.topicIds.map((topicId) => getTopicById(topicId)).filter(Boolean);
+      const app = getApp();
+      app.refreshSession();
+      app.addRecent({
+        id: template.id,
+        title: template.name,
+        subtitle: `化学 · ${template.category}`,
+        subjectId: 'chemistry',
+        type: 'template',
+        containerId: template.containerId,
+      });
+
+      this.setData({
+        loading: false,
+        template: {
+          ...template,
+          figure: isCloudFile(template.figure) ? '' : template.figure,
+          hasFigure: Boolean(template.figure),
+        },
+        relatedTopics,
+        isFavorite: app.globalData.favorites.some((item) => (
+          item.id === template.id
+          && (item.subjectId || 'math') === 'chemistry'
+          && item.type === 'template'
+        )),
+        figureLoadFailed: false,
+        notFound: '',
+      });
+
+      try {
+        const fileMap = await getTempFileURLMap([template.figure]);
+        if (!this.pageActive || this.assetRequestToken !== requestToken || this.currentTemplateId !== template.id) return;
+        this.setData({
+          'template.figure': applyTempFileURL(template.figure, fileMap) || (isCloudFile(template.figure) ? '' : template.figure),
+          figureLoadFailed: false,
+        });
+      } catch (error) {
+        // 图片地址失败时保留已经展示的文字内容。
+      }
+    } catch (error) {
+      if (!this.pageActive || this.assetRequestToken !== requestToken) return;
+      this.setData({ loading: false, template: null, relatedTopics: [], notFound: '当前化学方法暂未打开，请重试。' });
     }
-
-    wx.setNavigationBarTitle({ title: template.name });
-    const relatedTopics = template.topicIds.map((topicId) => getTopicById(topicId)).filter(Boolean);
-    const app = getApp();
-    app.refreshSession();
-    app.addRecent({
-      id: template.id,
-      title: template.name,
-      subtitle: `化学 · ${template.category}`,
-      subjectId: 'chemistry',
-      type: 'template',
-      containerId: template.containerId,
-    });
-
-    this.setData({
-      template: {
-        ...template,
-        figure: isCloudFile(template.figure) ? '' : template.figure,
-        hasFigure: Boolean(template.figure),
-      },
-      relatedTopics,
-      isFavorite: app.globalData.favorites.some((item) => (
-        item.id === template.id
-        && (item.subjectId || 'math') === 'chemistry'
-        && item.type === 'template'
-      )),
-      figureLoadFailed: false,
-      notFound: '',
-    });
-
-    const fileMap = await getTempFileURLMap([template.figure]);
-    if (!this.pageActive || this.assetRequestToken !== requestToken || this.templateId !== template.id) return;
-    this.setData({
-      'template.figure': applyTempFileURL(template.figure, fileMap) || (isCloudFile(template.figure) ? '' : template.figure),
-      figureLoadFailed: false,
-    });
   },
 
   onShow() {
@@ -107,6 +117,6 @@ Page({
   },
 
   reopen() {
-    this.onLoad({ id: this.templateId || '' });
+    this.onLoad({ id: this.currentTemplateId || '' });
   },
 });

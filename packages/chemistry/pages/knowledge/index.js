@@ -28,6 +28,7 @@ function splitKnowledgeSections(sections) {
 
 Page({
   data: {
+    loading: true,
     knowledge: null,
     context: null,
     notFound: '',
@@ -47,7 +48,7 @@ Page({
     readingSettingsVisible: false,
   },
 
-  onLoad(options) {
+  onLoad(options = {}) {
     this.pageActive = true;
     const hasSupportedFocus = options.focusType === 'equation' || options.focusType === 'experiment';
     this.pendingFocus = hasSupportedFocus && options.focusId
@@ -55,6 +56,7 @@ Page({
       : null;
     this.shouldRestorePosition = options.restore === '1' && !this.pendingFocus;
     this.currentScrollTop = 0;
+    this.setData({ loading: true, notFound: '' });
     this.syncReadingPreferences();
     this.loadKnowledge(options.id);
   },
@@ -111,85 +113,100 @@ Page({
     const requestToken = (this.assetRequestToken || 0) + 1;
     this.assetRequestToken = requestToken;
     this.currentKnowledgeId = knowledgeId;
-    const knowledge = getKnowledgeById(knowledgeId);
+    this.setData({ loading: true, notFound: '', knowledge: null });
 
-    if (!knowledge) {
+    try {
+      const knowledge = getKnowledgeById(knowledgeId);
+      if (!knowledge) throw new Error('化学知识点不存在');
+
+      const context = getKnowledgeContext(knowledge);
+      const navigation = getKnowledgeNavigation(knowledge.id);
+      const relatedItems = getRelatedKnowledge(knowledge, 4);
+      const sectionGroups = splitKnowledgeSections(knowledge.sections);
+      const app = getApp();
+      const readingPosition = app.getReadingPosition('chemistry', knowledge.id);
+      const restorePosition = this.shouldRestorePosition ? readingPosition : null;
+      const viewState = restorePosition && restorePosition.viewState ? restorePosition.viewState : {};
+      const note = app.getKnowledgeNote('chemistry', knowledge.id);
+      const directFocus = Boolean(this.pendingFocus);
+
+      app.refreshSession();
+      app.addRecent({
+        id: knowledge.id,
+        title: knowledge.title,
+        subtitle: context ? `化学 · ${context.title}` : '化学知识点',
+        subjectId: 'chemistry',
+        type: 'knowledge',
+        containerId: knowledge.topicId,
+      });
+
+      wx.setNavigationBarTitle({ title: knowledge.title });
+      this.readingItem = {
+        id: knowledge.id,
+        title: knowledge.title,
+        subtitle: context ? `化学 · ${context.title}` : '化学知识点',
+        subjectId: 'chemistry',
+        containerId: knowledge.topicId,
+      };
+      this.currentScrollTop = restorePosition ? restorePosition.scrollTop : 0;
+
+      this.setData({
+        loading: false,
+        knowledge: {
+          ...knowledge,
+          coverImage: isCloudFile(knowledge.coverImage) ? '' : knowledge.coverImage,
+          hasCoverImage: Boolean(knowledge.coverImage),
+        },
+        context,
+        notFound: '',
+        relatedItems,
+        navigation,
+        essentialSections: sectionGroups.essentialSections,
+        detailSections: sectionGroups.detailSections,
+        detailsExpanded: directFocus ? true : viewState.detailsExpanded !== false,
+        coverImageLoadFailed: false,
+        noteDraft: note ? note.content : '',
+        noteTags: note ? note.tags : [],
+        noteTagDraft: '',
+        noteDirty: false,
+        isFavorite: app.globalData.favorites.some((item) => (
+          item.id === knowledge.id
+          && (item.subjectId || 'math') === 'chemistry'
+          && (item.type || 'knowledge') === 'knowledge'
+        )),
+      }, () => {
+        this.scrollToPendingFocus();
+      });
+      this.persistReadingPosition();
+
+      try {
+        const fileMap = await getTempFileURLMap([knowledge.coverImage]);
+        if (!this.pageActive || this.assetRequestToken !== requestToken || this.currentKnowledgeId !== knowledgeId) return;
+        this.setData({
+          'knowledge.coverImage': applyTempFileURL(knowledge.coverImage, fileMap) || (isCloudFile(knowledge.coverImage) ? '' : knowledge.coverImage),
+          coverImageLoadFailed: false,
+        }, () => {
+          this.restoreReadingPosition();
+        });
+      } catch (error) {
+        if (this.pageActive && this.assetRequestToken === requestToken && this.currentKnowledgeId === knowledgeId) {
+          this.restoreReadingPosition();
+        }
+      }
+    } catch (error) {
+      if (!this.pageActive || this.assetRequestToken !== requestToken) return;
       this.readingItem = null;
       this.setData({
+        loading: false,
         knowledge: null,
         context: null,
-        notFound: '没有找到这个化学知识点，请返回专题目录重新选择。',
+        relatedItems: [],
+        navigation: null,
+        essentialSections: [],
+        detailSections: [],
+        notFound: '当前化学知识点暂未打开，请重试。',
       });
-      return;
     }
-
-    const context = getKnowledgeContext(knowledge);
-    const navigation = getKnowledgeNavigation(knowledge.id);
-    const relatedItems = getRelatedKnowledge(knowledge, 4);
-    const sectionGroups = splitKnowledgeSections(knowledge.sections);
-    const app = getApp();
-    const readingPosition = app.getReadingPosition('chemistry', knowledge.id);
-    const restorePosition = this.shouldRestorePosition ? readingPosition : null;
-    const viewState = restorePosition && restorePosition.viewState ? restorePosition.viewState : {};
-    const note = app.getKnowledgeNote('chemistry', knowledge.id);
-    const directFocus = Boolean(this.pendingFocus);
-
-    app.refreshSession();
-    app.addRecent({
-      id: knowledge.id,
-      title: knowledge.title,
-      subtitle: context ? `化学 · ${context.title}` : '化学知识点',
-      subjectId: 'chemistry',
-      type: 'knowledge',
-      containerId: knowledge.topicId,
-    });
-
-    wx.setNavigationBarTitle({ title: knowledge.title });
-    this.readingItem = {
-      id: knowledge.id,
-      title: knowledge.title,
-      subtitle: context ? `化学 · ${context.title}` : '化学知识点',
-      subjectId: 'chemistry',
-      containerId: knowledge.topicId,
-    };
-    this.currentScrollTop = restorePosition ? restorePosition.scrollTop : 0;
-
-    this.setData({
-      knowledge: {
-        ...knowledge,
-        coverImage: isCloudFile(knowledge.coverImage) ? '' : knowledge.coverImage,
-        hasCoverImage: Boolean(knowledge.coverImage),
-      },
-      context,
-      notFound: '',
-      relatedItems,
-      navigation,
-      essentialSections: sectionGroups.essentialSections,
-      detailSections: sectionGroups.detailSections,
-      detailsExpanded: directFocus ? true : viewState.detailsExpanded !== false,
-      coverImageLoadFailed: false,
-      noteDraft: note ? note.content : '',
-      noteTags: note ? note.tags : [],
-      noteTagDraft: '',
-      noteDirty: false,
-      isFavorite: app.globalData.favorites.some((item) => (
-        item.id === knowledge.id
-        && (item.subjectId || 'math') === 'chemistry'
-        && (item.type || 'knowledge') === 'knowledge'
-      )),
-    }, () => {
-      this.scrollToPendingFocus();
-    });
-    this.persistReadingPosition();
-
-    const fileMap = await getTempFileURLMap([knowledge.coverImage]);
-    if (!this.pageActive || this.assetRequestToken !== requestToken || this.currentKnowledgeId !== knowledgeId) return;
-    this.setData({
-      'knowledge.coverImage': applyTempFileURL(knowledge.coverImage, fileMap) || (isCloudFile(knowledge.coverImage) ? '' : knowledge.coverImage),
-      coverImageLoadFailed: false,
-    }, () => {
-      this.restoreReadingPosition();
-    });
   },
 
   scrollToPendingFocus() {
