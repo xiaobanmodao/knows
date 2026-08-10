@@ -33,6 +33,9 @@ function buildExternalSourceManifest({
   if (sourceFile === outputPath) {
     throw new Error(`manifest 不能覆盖输入文件：${sourceFile}`);
   }
+  if (!Array.isArray(sourceUrls) || !sourceUrls.length) {
+    throw new Error('外部内容源 manifest 至少需要一个 sourceUrls 来源 URL');
+  }
   const input = loadSourceInputFile(sourceFile, { sourceVersion: normalizedSourceVersion });
   const relativeInputPath = path.relative(path.dirname(outputPath), sourceFile).split(path.sep).join('/');
   const manifest = normalizeBatchManifest({

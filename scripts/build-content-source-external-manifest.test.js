@@ -64,7 +64,19 @@ try {
       reviewedAt: '2026-08-10',
       note: 'missing source key',
     }),
-    /sourceEvidence|来源凭证/i,
+    /sourceEvidence|sourceUrls|来源凭证/i,
+  );
+  assert.throws(
+    () => buildExternalSourceManifest({
+      batchId: 'english-units-v1.11',
+      inputPath,
+      manifestPath,
+      sourceKeys: ['source-without-url'],
+      sourceUrls: [],
+      reviewedAt: '2026-08-10',
+      note: 'missing source URL',
+    }),
+    /sourceUrls|来源 URL/i,
   );
   assert.throws(
     () => buildExternalSourceManifest({

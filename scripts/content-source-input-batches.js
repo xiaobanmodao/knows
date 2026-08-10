@@ -250,15 +250,34 @@ function buildContentSourceInputBatchAudit({
   }
   const externalSourceIssues = requireExternalSource
     ? entries
-      .filter((entry) => entry.sourceKind !== 'external-source' || !entry.sourceEvidence)
-      .map((entry) => ({
-        id: entry.id,
-        path: entry.path || null,
-        sourceKind: entry.sourceKind || 'unknown',
-        reason: entry.sourceKind !== 'external-source'
-          ? 'source-kind-not-external'
-          : 'source-evidence-missing',
-      }))
+      .map((entry) => {
+        if (entry.sourceKind !== 'external-source') {
+          return {
+            id: entry.id,
+            path: entry.path || null,
+            sourceKind: entry.sourceKind || 'unknown',
+            reason: 'source-kind-not-external',
+          };
+        }
+        if (!entry.sourceEvidence) {
+          return {
+            id: entry.id,
+            path: entry.path || null,
+            sourceKind: entry.sourceKind,
+            reason: 'source-evidence-missing',
+          };
+        }
+        if (!entry.sourceEvidence.sourceUrls || !entry.sourceEvidence.sourceUrls.length) {
+          return {
+            id: entry.id,
+            path: entry.path || null,
+            sourceKind: entry.sourceKind,
+            reason: 'source-evidence-url-missing',
+          };
+        }
+        return null;
+      })
+      .filter(Boolean)
     : [];
 
   const batches = entries.map((entry) => (
