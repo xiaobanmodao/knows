@@ -23,8 +23,28 @@ const NOT_VERIFIED = [
   '教材册次映射',
   '教材正文与原始插图',
 ];
+const ROOT_FIELDS = new Set(['schemaVersion', 'reviewId', 'reviewedAt', 'evidenceKind', 'scope', 'sources', 'topics']);
+const SCOPE_FIELDS = new Set(['supports', 'notVerified']);
+const SOURCE_FIELDS = new Set(['key', 'title', 'url', 'role', 'observation']);
+const TOPIC_FIELDS = new Set(['id', 'title', 'reviewSnapshotHash', 'frameworkDomains']);
 const PROHIBITED_FIELD_TOKENS = ['chapter', 'volume', 'lesson', 'body', 'sourceinput', 'externalsource'];
 const RETIRED_FIELDS = new Set(['explicitexclusions', 'topicid', 'snapshothash']);
+const EXPECTED_SOURCE_CONTRACTS = new Map([
+  [
+    'moe-physics-2022',
+    {
+      role: 'curriculum-baseline',
+      observation: '作为义务教育物理课程标准的官方基线，用于宏观课程框架观察。',
+    },
+  ],
+  [
+    'pep-physics-public',
+    {
+      role: 'textbook-framework-summary',
+      observation: '公开介绍提及全套共 22 章，并概述声光热、力学、能量与电磁等宏观进程。',
+    },
+  ],
+]);
 const EXPECTED_FRAMEWORK_DOMAINS = new Map([
   ['phy-topic-motion-sound', ['movement/sound']],
   ['phy-topic-light', ['light/imaging']],
@@ -61,21 +81,32 @@ function assertNoProhibitedFields(value, location = 'record') {
   });
 }
 
+function assertAllowedFields(value, allowedFields, location) {
+  Object.keys(value).forEach((key) => {
+    assert.ok(allowedFields.has(key), `${location}: 不支持字段：${key}`);
+  });
+}
+
 function assertSources(sources) {
   assert.ok(Array.isArray(sources), 'sources 必须为数组');
   assert.strictEqual(sources.length, EXPECTED_SOURCE_KEYS.length, 'sources 必须恰好包含两条官方来源');
 
   const sourceKeys = sources.map((source) => source && source.key).sort();
   assert.deepStrictEqual(sourceKeys, EXPECTED_SOURCE_KEYS, 'sources 官方来源键不匹配');
-  sources.forEach((source) => {
+  sources.forEach((source, index) => {
     assert.ok(source && typeof source === 'object', 'sources 条目必须为对象');
+    assertAllowedFields(source, SOURCE_FIELDS, `sources[${index}]`);
     const registered = getContentSource(source.key);
+    const expected = EXPECTED_SOURCE_CONTRACTS.get(source.key);
     assert.ok(registered && registered.kind === 'official', `${source.key}: 必须为已登记官方来源`);
+    assert.ok(expected, `${source.key}: 不是允许的官方来源`);
     assert.strictEqual(source.title, registered.title, `${source.key}: 来源标题漂移`);
     assert.strictEqual(source.url, registered.url, `${source.key}: 来源 URL 漂移`);
     assert.ok(isAllowedContentSourceUrl(registered, source.url), `${source.key}: 来源域名不受信任`);
     assert.ok(typeof source.observation === 'string' && source.observation.trim(), `${source.key}: observation 必须为非空文本`);
     assert.ok(source.observation.trim().length <= 240, `${source.key}: observation 必须为简短文本`);
+    assert.strictEqual(source.role, expected.role, `${source.key}: role 不匹配`);
+    assert.strictEqual(source.observation, expected.observation, `${source.key}: observation 不匹配`);
   });
 
   return sourceKeys;
@@ -89,8 +120,9 @@ function assertTopics(topicEvidence) {
 
   const currentTopics = new Map(topics.map((topic) => [topic.id, topic]));
   const seen = new Set();
-  topicEvidence.forEach((item) => {
+  topicEvidence.forEach((item, index) => {
     assert.ok(item && typeof item === 'object', 'topics 条目必须为对象');
+    assertAllowedFields(item, TOPIC_FIELDS, `topics[${index}]`);
     assert.ok(!seen.has(item.id), `${item.id}: 专题佐证重复`);
     seen.add(item.id);
 
@@ -114,15 +146,17 @@ function assertTopics(topicEvidence) {
 function checkPhysicsTopicFrameworkEvidence({ evidencePath = DEFAULT_EVIDENCE_PATH } = {}) {
   const evidence = readEvidence(path.resolve(evidencePath));
   assert.ok(evidence && typeof evidence === 'object' && !Array.isArray(evidence), '佐证记录必须为对象');
+  assertNoProhibitedFields(evidence);
+  assertAllowedFields(evidence, ROOT_FIELDS, 'record');
   assert.strictEqual(evidence.schemaVersion, SCHEMA_VERSION, 'schemaVersion 不匹配');
   assert.strictEqual(evidence.reviewId, REVIEW_ID, 'reviewId 不匹配');
   assert.strictEqual(evidence.reviewedAt, REVIEWED_AT, 'reviewedAt 不匹配');
   assert.strictEqual(evidence.evidenceKind, EVIDENCE_KIND, 'evidenceKind 不匹配');
   assert.ok(evidence.scope && typeof evidence.scope === 'object' && !Array.isArray(evidence.scope), 'scope 必须为对象');
+  assertAllowedFields(evidence.scope, SCOPE_FIELDS, 'scope');
   assert.ok(Array.isArray(evidence.scope.supports), 'scope.supports 必须为数组');
   assert.ok(evidence.scope.supports.length > 0 && evidence.scope.supports.every((item) => typeof item === 'string' && item.trim()), 'scope.supports 必须只包含非空文本');
   assert.deepStrictEqual(evidence.scope.notVerified, NOT_VERIFIED, 'scope.notVerified 不匹配');
-  assertNoProhibitedFields(evidence);
 
   const sourceKeys = assertSources(evidence.sources);
   assertTopics(evidence.topics);
