@@ -48,6 +48,7 @@ const DEFAULT_CHECKS = [
   { script: 'scripts/check-physics-accuracy.js', label: '物理准确性' },
   { script: 'scripts/check-physics-depth.js', label: '物理深度' },
   { script: 'scripts/check-physics-formula-contract.test.js', label: '物理公式契约' },
+  { script: 'scripts/check-physics-topic-framework-evidence.test.js', label: '物理专题官方框架佐证契约' },
   { script: 'scripts/check-physics-topic-review.js', label: '物理专题复核' },
   { script: 'scripts/check-physics-template-review.js', label: '物理方法复核' },
   { script: 'scripts/check-subject-high-risk-batches.test.js', label: '英语物理高风险批次契约' },
