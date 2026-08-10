@@ -3,9 +3,14 @@ const path = require('path');
 
 const ALLOWED_HOTFIX_FILES = Object.freeze([
   'app.js',
+  'data/search-aliases.js',
   'docs/v1.10规格确认记录.md',
+  'packages/catalog/data/search-aliases.js',
+  'packages/catalog/utils/search-index.js',
   'scripts/check-cloud-user-trace.js',
   'scripts/check-cloud-user-trace.test.js',
+  'scripts/check-search-aliases-package-boundary.test.js',
+  'scripts/check-search-semantics.js',
   'scripts/check-release-readiness.js',
   'scripts/check-release-hotfix-scope.js',
   'scripts/check-release-hotfix-scope.test.js',

@@ -1,4 +1,4 @@
-const { SEARCH_ALIAS_GROUPS } = require('../data/search-aliases');
+const { SEARCH_ALIAS_GROUPS } = require('../packages/catalog/data/search-aliases');
 const {
   buildHighlightSegments,
   normalizeSearchText,

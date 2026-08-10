@@ -5,7 +5,7 @@ const {
   SEARCH_INDEX_ROWS,
 } = require('../data/search-index');
 const { SUBJECT_LABELS } = require('../../../data/subject-manifest');
-const { SEARCH_ALIAS_GROUPS } = require('../../../data/search-aliases');
+const { SEARCH_ALIAS_GROUPS } = require('../data/search-aliases');
 const { normalizeSubjectId } = require('../../../utils/content-routes');
 const { normalizeSearchText } = require('../../../utils/search-text');
 
