@@ -55,7 +55,8 @@ function normalizeBatchManifest(input) {
     if (path.isAbsolute(inputPath)) {
       throw new Error(`内容源输入批次 manifest 路径必须为相对路径：${inputPath}`);
     }
-    return { id, path: inputPath };
+    const sourceKind = normalizeSourceKind(entry.sourceKind === undefined ? input.sourceKind : entry.sourceKind);
+    return { id, path: inputPath, sourceKind };
   });
 
   return {
@@ -81,6 +82,7 @@ function buildPendingResult(entry, reason) {
     subjectId: batch.subjectId,
     type: batch.type,
     path: entry.path || null,
+    sourceKind: entry.sourceKind || 'unknown',
     status: 'pending',
     reason,
   };
@@ -126,6 +128,7 @@ function auditBatchInput(entry, baseDirectory, currentCatalog, sourceVersion) {
       subjectId: batch.subjectId,
       type: batch.type,
       path: relativePath,
+      sourceKind: entry.sourceKind,
       status: report.status,
       inputSourceVersion: input.sourceVersion,
       inputHash: report.inputHash,
@@ -157,15 +160,19 @@ function buildContentSourceInputBatchAudit({
   requireExternalSource = false,
 } = {}) {
   const normalized = normalizeBatchManifest(manifest);
-  if (requireExternalSource && normalized.sourceKind !== 'external-source') {
-    throw new Error(`内容源输入批次 manifest 不是外部资料：sourceKind=${normalized.sourceKind}`);
-  }
   const entries = [...normalized.batches];
   if (requireAllBatches) {
     const registeredIds = new Set(entries.map((entry) => entry.id));
     SOURCE_BATCHES.forEach((batch) => {
-      if (!registeredIds.has(batch.id)) entries.push({ id: batch.id, path: null });
+      if (!registeredIds.has(batch.id)) entries.push({ id: batch.id, path: null, sourceKind: 'unknown' });
     });
+  }
+  if (requireExternalSource) {
+    const nonExternal = entries.filter((entry) => entry.sourceKind !== 'external-source');
+    if (nonExternal.length > 0) {
+      const ids = nonExternal.map((entry) => `${entry.id}:${entry.sourceKind}`).join(', ');
+      throw new Error(`内容源输入批次 manifest 含非外部批次：${ids}`);
+    }
   }
 
   const batches = entries.map((entry) => (

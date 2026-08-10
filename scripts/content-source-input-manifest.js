@@ -53,7 +53,11 @@ function buildCurrentSourceInputManifest({
     schemaVersion: 1,
     sourceVersion,
     sourceKind: 'current-fixture',
-    batches: batches.map(({ id, path: relativePath }) => ({ id, path: relativePath })),
+    batches: batches.map(({ id, path: relativePath }) => ({
+      id,
+      path: relativePath,
+      sourceKind: 'current-fixture',
+    })),
   });
   fs.mkdirSync(path.dirname(absoluteManifestPath), { recursive: true });
   fs.writeFileSync(absoluteManifestPath, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');

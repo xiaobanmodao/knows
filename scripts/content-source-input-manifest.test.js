@@ -26,6 +26,7 @@ try {
   assert.strictEqual(result.files.length, 23);
   assert.strictEqual(result.manifest.batches[0].id, 'english-units-v1.11');
   assert.strictEqual(result.manifest.batches[0].path, 'inputs/english-units-v1.11.json');
+  assert.strictEqual(result.manifest.batches[0].sourceKind, 'current-fixture');
   assert.ok(fs.existsSync(manifestPath));
   assert.ok(fs.existsSync(path.join(outputDirectory, 'physics-knowledge-v1.11.json')));
 
@@ -71,6 +72,10 @@ try {
   fs.writeFileSync(externalManifestPath, `${JSON.stringify({
     ...result.manifest,
     sourceKind: 'external-source',
+    batches: result.manifest.batches.map((batch) => ({
+      ...batch,
+      sourceKind: 'external-source',
+    })),
   }, null, 2)}\n`, 'utf8');
   const externalAuditResult = spawnSync(process.execPath, [
     checker,
@@ -87,7 +92,20 @@ try {
     '--require-external-source',
   ], { cwd: root, encoding: 'utf8' });
   assert.notStrictEqual(fixtureStrictResult.status, 0);
-  assert.match(`${fixtureStrictResult.stderr}${fixtureStrictResult.stdout}`, /不是外部资料|external-source/);
+  assert.match(`${fixtureStrictResult.stderr}${fixtureStrictResult.stdout}`, /非外部批次|current-fixture/);
+
+  const relabeledFixtureManifestPath = path.join(tempDirectory, 'relabeled-fixture-manifest.json');
+  fs.writeFileSync(relabeledFixtureManifestPath, `${JSON.stringify({
+    ...result.manifest,
+    sourceKind: 'external-source',
+  }, null, 2)}\n`, 'utf8');
+  const relabeledFixtureResult = spawnSync(process.execPath, [
+    checker,
+    relabeledFixtureManifestPath,
+    '--require-external-source',
+  ], { cwd: root, encoding: 'utf8' });
+  assert.notStrictEqual(relabeledFixtureResult.status, 0);
+  assert.match(`${relabeledFixtureResult.stderr}${relabeledFixtureResult.stdout}`, /非外部批次|current-fixture/);
 } finally {
   fs.rmSync(tempDirectory, { recursive: true, force: true });
 }
