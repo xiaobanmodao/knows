@@ -3,6 +3,7 @@ const assert = require('assert');
 const {
   SOURCE_BATCHES,
   auditContentSourceBatch,
+  checkContentSourceBatchCoverage,
   getContentSourceBatch,
 } = require('./check-content-source-batches');
 
@@ -33,6 +34,11 @@ const expectedBatches = [
 ];
 
 assert.deepStrictEqual(SOURCE_BATCHES.map((batch) => batch.id), expectedBatches.map(([id]) => id));
+assert.deepStrictEqual(checkContentSourceBatchCoverage(), {
+  batchCount: 23,
+  entityCount: 948,
+  scopes: 23,
+});
 assert.deepStrictEqual(getContentSourceBatch('english-units-v1.11'), SOURCE_BATCHES[0]);
 assert.strictEqual(getContentSourceBatch('unknown-batch'), null);
 

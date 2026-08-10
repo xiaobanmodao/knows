@@ -3,6 +3,7 @@ const assert = require('assert');
 const {
   buildContentSourceCatalog,
   buildContentSourceCatalogFromInput,
+  checkContentSourceCatalog,
   diffContentSourceCatalog,
   filterContentSourceCatalog,
 } = require('./content-source-catalog');
@@ -58,6 +59,10 @@ function getContentSourceBatch(batchId) {
   return SOURCE_BATCHES.find((batch) => batch.id === batchId) || null;
 }
 
+function scopeKey(value) {
+  return `${value.subjectId}/${value.type}`;
+}
+
 function validateBatchDefinition(batch) {
   if (!batch || typeof batch !== 'object') throw new Error('内容源批次定义必须为对象');
   if (!batch.id || !batch.subjectId || !batch.type) throw new Error('内容源批次定义字段不完整');
@@ -72,6 +77,28 @@ function validateBatchDefinition(batch) {
       throw new Error(`内容源批次 ${batch.id} ${field} 无效`);
     }
   });
+}
+
+function checkContentSourceBatchCoverage(catalog = buildContentSourceCatalog()) {
+  checkContentSourceCatalog(catalog);
+  const registeredScopes = new Set();
+  SOURCE_BATCHES.forEach((batch) => {
+    validateBatchDefinition(batch);
+    const key = scopeKey(batch);
+    if (registeredScopes.has(key)) throw new Error(`内容源批次范围重复：${key}`);
+    registeredScopes.add(key);
+  });
+  const sourceScopes = new Set(catalog.entities.map(scopeKey));
+  const missing = [...sourceScopes].filter((key) => !registeredScopes.has(key)).sort();
+  const stale = [...registeredScopes].filter((key) => !sourceScopes.has(key)).sort();
+  if (missing.length || stale.length) {
+    throw new Error(`内容源批次覆盖不完整：missing=${missing.join('|') || '-'}; stale=${stale.join('|') || '-'}`);
+  }
+  return {
+    batchCount: SOURCE_BATCHES.length,
+    entityCount: catalog.entities.length,
+    scopes: sourceScopes.size,
+  };
 }
 
 function auditContentSourceBatch(batch, catalog = buildContentSourceCatalog()) {
@@ -125,6 +152,7 @@ function auditContentSourceBatch(batch, catalog = buildContentSourceCatalog()) {
 }
 
 function main() {
+  checkContentSourceBatchCoverage();
   SOURCE_BATCHES.forEach((batch) => {
     const result = auditContentSourceBatch(batch);
     console.log(`OK content source batch ${batch.id}: ${result.counts.entities} entities, ${result.metrics.examples} examples, ${result.metrics.experiments} experiments, ${result.metrics.assets} assets, diff +0 ~0 -0`);
@@ -136,5 +164,6 @@ if (require.main === module) main();
 module.exports = {
   SOURCE_BATCHES,
   auditContentSourceBatch,
+  checkContentSourceBatchCoverage,
   getContentSourceBatch,
 };
