@@ -22,6 +22,8 @@ const report = scanPrivacyInterfaces(repoRoot);
 assert.strictEqual(report.status, 'passed');
 assert.strictEqual(report.clipboard.readCalls, 0);
 assert.strictEqual(report.clipboard.writeCalls, 8);
+assert.strictEqual(report.cloud.userTraceCalls, 0);
+assert.deepStrictEqual(report.cloud.userTraceFiles, {});
 assert.strictEqual(report.file.calls, 2);
 assert.deepStrictEqual(report.file.callsByApi, {
   'wx.chooseMessageFile': 1,
@@ -88,6 +90,16 @@ assert.strictEqual(report.errors.length, 0);
   try {
     const fixtureReport = scanPrivacyInterfaces(fixture.fixtureRoot, { files: [fixture.relativeFile] });
     assert.ok(fixtureReport.errors.includes('file-api-not-registered'));
+  } finally {
+    removeFixture(fixture.fixtureRoot);
+  }
+}
+
+{
+  const fixture = makeFixture('app.js', 'wx.cloud.init({ env: "demo", traceUser: true });');
+  try {
+    const fixtureReport = scanPrivacyInterfaces(fixture.fixtureRoot, { files: [fixture.relativeFile] });
+    assert.ok(fixtureReport.errors.includes('cloud-user-trace-forbidden'));
   } finally {
     removeFixture(fixture.fixtureRoot);
   }

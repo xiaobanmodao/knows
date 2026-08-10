@@ -27,6 +27,7 @@ const FILE_INTERFACE_POLICY = Object.freeze({
 const RUNTIME_ROOTS = ['pages', 'packages', 'components', 'utils'];
 const CLIPBOARD_READ_PATTERN = /\bwx\.getClipboardData\s*\(/g;
 const CLIPBOARD_WRITE_PATTERN = /\bwx\.setClipboardData\s*\(/g;
+const CLOUD_USER_TRACE_PATTERN = /\btraceUser\s*:\s*true\b/g;
 const FILE_INTERFACE_PATTERNS = Object.freeze([
   ['wx.chooseMessageFile', /\bwx\.chooseMessageFile\s*\(/g],
   ['wx.shareFileMessage', /\bwx\.shareFileMessage\s*\(/g],
@@ -76,11 +77,13 @@ function sortRecord(record) {
 function scanPrivacyInterfaces(rootDir, options = {}) {
   const files = options.files ? [...options.files].sort() : getRuntimeFiles(rootDir);
   const writesByFile = {};
+  const userTraceFiles = {};
   const callsByApi = {};
   const callsByFile = {};
   const errors = new Set();
   let readCalls = 0;
   let writeCalls = 0;
+  let userTraceCalls = 0;
   let fileCalls = 0;
 
   files.forEach((relativePath) => {
@@ -89,14 +92,20 @@ function scanPrivacyInterfaces(rootDir, options = {}) {
     const source = fs.readFileSync(absolutePath, 'utf8');
     const fileReadCalls = countMatches(source, CLIPBOARD_READ_PATTERN);
     const fileWriteCalls = countMatches(source, CLIPBOARD_WRITE_PATTERN);
+    const fileUserTraceCalls = countMatches(source, CLOUD_USER_TRACE_PATTERN);
     readCalls += fileReadCalls;
     writeCalls += fileWriteCalls;
+    userTraceCalls += fileUserTraceCalls;
     if (fileReadCalls) errors.add('clipboard-read-forbidden');
     if (fileWriteCalls) {
       writesByFile[relativePath] = fileWriteCalls;
       if (!Object.prototype.hasOwnProperty.call(PRIVACY_INTERFACE_POLICY, relativePath)) {
         errors.add('clipboard-write-file-not-registered');
       }
+    }
+    if (fileUserTraceCalls) {
+      userTraceFiles[relativePath] = fileUserTraceCalls;
+      errors.add('cloud-user-trace-forbidden');
     }
 
     let fileCallsInFile = 0;
@@ -133,6 +142,10 @@ function scanPrivacyInterfaces(rootDir, options = {}) {
       writeCalls,
       writesByFile,
       allowedFiles: Object.keys(PRIVACY_INTERFACE_POLICY).sort(),
+    },
+    cloud: {
+      userTraceCalls,
+      userTraceFiles: sortRecord(userTraceFiles),
     },
     file: {
       calls: fileCalls,
