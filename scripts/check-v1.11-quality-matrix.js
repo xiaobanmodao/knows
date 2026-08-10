@@ -60,6 +60,8 @@ const DEFAULT_CHECKS = [
   { script: 'scripts/check-content-source-follow-up.js', args: ['dist/content-audit/content-source-input-batches/manifest.json', 'dist/content-audit/content-source-follow-up.json'], label: '内容源跟进报告产物校验' },
   { script: 'scripts/content-source-intake-pack.test.js', label: '内容源接入包契约' },
   { script: 'scripts/build-content-source-intake-pack.js', args: ['dist/content-audit/content-source-follow-up.json', '--report', 'dist/content-audit/content-source-intake-pack.json'], label: '内容源接入包产物' },
+  { script: 'scripts/content-source-intake-guide.test.js', label: '内容源接入清单契约' },
+  { script: 'scripts/build-content-source-intake-guide.js', args: ['dist/content-audit/content-source-follow-up.json', '--output', 'dist/content-audit/content-source-intake-guide.md'], label: '内容源接入清单产物' },
   { script: 'scripts/content-source-url-access.test.js', label: '内容源 URL 可访问性契约' },
   { script: 'scripts/check-content-source-batches.test.js', label: '内容源批次审计' },
   { script: 'scripts/check-content-source-batches.js', args: ['--report', 'dist/content-audit/content-source-batches.json'], label: '内容源批次报告' },
