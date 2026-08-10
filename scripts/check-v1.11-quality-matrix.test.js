@@ -1,4 +1,6 @@
 const assert = require('assert');
+const fs = require('fs');
+const path = require('path');
 
 const {
   DEFAULT_CHECKS,
@@ -64,5 +66,21 @@ assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-roadmap-
 assert.ok(!defaultCommands.some((item) => item.script === 'scripts/check-package-sizes.js'));
 assert.ok(strictCommands.some((item) => item.script === 'scripts/check-release-readiness.js'));
 assert.ok(strictCommands.some((item) => item.args.includes('--require-device-evidence')));
+
+const matrixScripts = new Set(defaultCommands.map((item) => item.script));
+const testScripts = fs.readdirSync(__dirname)
+  .filter((file) => file.endsWith('.test.js'))
+  .map((file) => `scripts/${file}`)
+  .sort();
+assert.deepStrictEqual(
+  testScripts.filter((script) => !matrixScripts.has(script)),
+  [],
+  'scripts 目录中的契约测试必须全部纳入默认质量矩阵',
+);
+assert.deepStrictEqual(
+  defaultCommands.filter((item) => !fs.existsSync(path.resolve(__dirname, '..', item.script))),
+  [],
+  '质量矩阵不得登记不存在的脚本',
+);
 
 console.log('OK v1.11 quality matrix contract');
