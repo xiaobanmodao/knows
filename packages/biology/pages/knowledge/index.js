@@ -26,6 +26,24 @@ function splitKnowledgeSections(sections) {
   return { essentialSections, detailSections };
 }
 
+function prepareVisualGuide(guide) {
+  if (!guide || !Array.isArray(guide.items) || !guide.items.length) return null;
+
+  const isSequential = guide.type === 'flow';
+  const isCycle = guide.type === 'cycle';
+  return {
+    ...guide,
+    isSequential,
+    isCycle,
+    cycleHint: isCycle ? '这些环节持续关联，不表示单一因果链。' : '',
+    items: guide.items.map((item, index, items) => ({
+      ...item,
+      displayIndex: index + 1,
+      isLast: index === items.length - 1,
+    })),
+  };
+}
+
 Page({
   data: {
     loading: true,
@@ -123,6 +141,7 @@ Page({
       const navigation = getKnowledgeNavigation(knowledge.id);
       const relatedItems = getRelatedKnowledge(knowledge, 4);
       const sectionGroups = splitKnowledgeSections(knowledge.sections);
+      const visualGuide = prepareVisualGuide(knowledge.visualGuide);
       const app = getApp();
       const readingPosition = app.getReadingPosition('biology', knowledge.id);
       const restorePosition = this.shouldRestorePosition ? readingPosition : null;
@@ -156,6 +175,7 @@ Page({
           ...knowledge,
           coverImage: isCloudFile(knowledge.coverImage) ? '' : knowledge.coverImage,
           hasCoverImage: Boolean(knowledge.coverImage),
+          visualGuide,
           examples: knowledge.examples || [],
           safetyObservation: knowledge.safetyObservation || null,
         },
