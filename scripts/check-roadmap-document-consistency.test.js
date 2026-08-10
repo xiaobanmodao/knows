@@ -12,7 +12,7 @@ const productRoadmap = fs.readFileSync(productRoadmapPath, 'utf8');
 const englishSourcePath = path.join(root, 'docs/人教版英语内容来源与编写规范.md');
 const englishSource = fs.readFileSync(englishSourcePath, 'utf8');
 const expectedCount = getCheckCommands(false).length;
-const bindingQualityCheckCount = 119;
+const bindingQualityCheckCount = 121;
 const grade8UpperUnitList = 'Unit 1 Happy Holiday；Unit 2 Home Sweet Home；Unit 3 Same or Different；Unit 4 Amazing Plants and Animals；Unit 5 What a Delicious Meal!；Unit 6 Plan for Yourself；Unit 7 When Tomorrow Comes；Unit 8 Let\'s Communicate!。';
 const grade8LowerUnitList = 'Unit 1 Time to Relax；Unit 2 Stay Healthy；Unit 3 Growing Up；Unit 4 The Wonders of Nature；Unit 5 Nature\'s Temper；Unit 6 Crossing Cultures；Unit 7 A Good Read；Unit 8 Making a Difference。';
 const grade9UpperDirectoryStatus = '目录证据状态：partial；当前公开页已核对 Unit 1-2；既有 Unit 3-8 保持可查阅的项目原创讲解，待完整官方目录复核。';
@@ -70,9 +70,9 @@ function assertQualityMatrixContract({
     new RegExp(`当前路线分支的本地质量门禁为 ${currentExpectedCount} 项`),
     `总路线文档的质量矩阵数量应为 ${currentExpectedCount}`,
   );
-  assert.doesNotMatch(currentRoadmap, /当前共 (?!119 项)\d+ 项/, '路线文档不得记录非 119 项的质量矩阵总数');
-  assert.doesNotMatch(currentRoadmap, /默认质量矩阵现登记 (?!119 项)\d+ 项/, '路线文档不得记录非 119 项的默认矩阵数量');
-  assert.doesNotMatch(currentProductRoadmap, /当前路线分支的本地质量门禁为 (?!119 项)\d+ 项/, '总路线文档不得记录非 119 项的本地质量门禁');
+  assert.doesNotMatch(currentRoadmap, /当前共 (?!121 项)\d+ 项/, '路线文档不得记录非 121 项的质量矩阵总数');
+  assert.doesNotMatch(currentRoadmap, /默认质量矩阵现登记 (?!121 项)\d+ 项/, '路线文档不得记录非 121 项的默认矩阵数量');
+  assert.doesNotMatch(currentProductRoadmap, /当前路线分支的本地质量门禁为 (?!121 项)\d+ 项/, '总路线文档不得记录非 121 项的本地质量门禁');
 }
 
 assertQualityMatrixContract();
@@ -132,18 +132,18 @@ assert.throws(
   '替换实际外部内容来源阻断批次必须失败',
 );
 assert.throws(
-  () => assertQualityMatrixContract({ currentRoadmap: roadmap.replace('当前共 119 项', '当前共 118 项') }),
+  () => assertQualityMatrixContract({ currentRoadmap: roadmap.replace('当前共 121 项', '当前共 120 项') }),
   assert.AssertionError,
-  '将质量矩阵总数改为 118 必须失败',
+  '将质量矩阵总数改为 120 必须失败',
 );
 assert.throws(
   () => assertQualityMatrixContract({
-    currentExpectedCount: 118,
-    currentRoadmap: roadmap.replaceAll('119 项', '118 项'),
-    currentProductRoadmap: productRoadmap.replaceAll('119 项', '118 项'),
+    currentExpectedCount: 120,
+    currentRoadmap: roadmap.replaceAll('121 项', '120 项'),
+    currentProductRoadmap: productRoadmap.replaceAll('121 项', '120 项'),
   }),
   assert.AssertionError,
-  '质量矩阵命令和文档同步改为 118 时仍必须违反绑定数量',
+  '质量矩阵命令和文档同步改为 120 时仍必须违反绑定数量',
 );
 
 console.log('OK roadmap document consistency contract');

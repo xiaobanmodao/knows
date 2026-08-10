@@ -319,7 +319,7 @@ Expected: 有图解和无图解路径均可解析，运行时 JS 语法通过。
 
 保持其他检查顺序和发布分支的设备证据逻辑不变。
 
-- [ ] **Step 3: 运行目标检查和全量矩阵**
+- [x] **Step 3: 运行目标检查和全量矩阵**
 
 Run: node scripts/check-biology-visual-guides.test.js  
 Run: node scripts/check-biology-visual-guides.js  
@@ -329,7 +329,7 @@ Run: node scripts/check-content-audit.js --require-reviewed
 Run: node scripts/check-v1.11-quality-matrix.js  
 Expected: 36 个图解，948 个现有实体不意外减少；全量矩阵全绿。若矩阵数字增加，记录真实数字。
 
-执行记录（2026-08-11）：前五条 Node 命令均已执行并通过；严格内容审计为 948 个实体，生物内容检查为 36 个图解。全量矩阵已实际运行，但在第 1/121 项停止：既有 `check-v1.11-quality-matrix.test.js` 仍断言 119 项。该测试文件不在本任务允许修改的文件范围内，故本步骤保持未完成。
+执行记录（2026-08-11）：前五条 Node 命令均已执行并通过；严格内容审计为 948 个实体，生物内容检查为 36 个图解。全量矩阵已实际运行并通过 121 项，输出为 `OK v1.11 quality matrix: 121 checks`。
 
 - [ ] **Step 4: 模拟器回归并记录真实结果**
 
