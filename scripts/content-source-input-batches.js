@@ -158,6 +158,7 @@ function buildContentSourceInputBatchAudit({
   currentCatalog = buildContentSourceCatalog(),
   requireAllBatches = false,
   requireExternalSource = false,
+  requireReviewed = false,
 } = {}) {
   const normalized = normalizeBatchManifest(manifest);
   const entries = [...normalized.batches];
@@ -183,6 +184,16 @@ function buildContentSourceInputBatchAudit({
       ? auditBatchInput(entry, baseDirectory, currentCatalog, normalized.sourceVersion)
       : buildPendingResult(entry, 'manifest-missing')
   ));
+  const reviewIssues = requireReviewed
+    ? batches
+      .filter((batch) => batch.review && batch.review.untracked > 0)
+      .map((batch) => ({
+        id: batch.id,
+        path: batch.path || null,
+        untracked: batch.review.untracked,
+        reason: 'untracked-review-status',
+      }))
+    : [];
   const summary = batches.reduce((counts, batch) => ({
     ...counts,
     [batch.status]: counts[batch.status] + 1,
@@ -191,6 +202,8 @@ function buildContentSourceInputBatchAudit({
     ? 'failed'
     : externalSourceIssues.length > 0
       ? 'blocked'
+      : reviewIssues.length > 0
+        ? 'blocked'
       : summary.pending > 0
       ? 'pending'
       : summary.changed > 0
@@ -205,7 +218,9 @@ function buildContentSourceInputBatchAudit({
     requireAllBatches,
     requirements: {
       requireExternalSource,
+      requireReviewed,
       externalSourceIssues,
+      reviewIssues,
     },
     summary,
     batches,

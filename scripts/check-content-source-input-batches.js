@@ -41,6 +41,7 @@ function main() {
     baseDirectory: path.dirname(manifestPath),
     requireAllBatches: process.argv.includes('--require-all-batches'),
     requireExternalSource: process.argv.includes('--require-external-source'),
+    requireReviewed: process.argv.includes('--require-reviewed'),
   });
   const reportPath = getOption('--report');
   if (reportPath) console.log(`Report: ${writeReport(report, reportPath)}`);
@@ -55,6 +56,10 @@ function main() {
     const ids = report.requirements.externalSourceIssues.map((item) => `${item.id}:${item.sourceKind}`).join(', ');
     console.log(`External source blockers: ${ids}`);
   }
+  if (report.requirements.reviewIssues.length) {
+    const ids = report.requirements.reviewIssues.map((item) => `${item.id}:untracked=${item.untracked}`).join(', ');
+    console.log(`Review status blockers: ${ids}`);
+  }
   console.log(`Status: ${report.status}; batches ${report.summary.passed}/${report.summary.total} passed`);
 
   if (process.argv.includes('--require-all-batches')) {
@@ -65,6 +70,9 @@ function main() {
   }
   if (process.argv.includes('--require-external-source')) {
     assert.strictEqual(report.requirements.externalSourceIssues.length, 0, '内容源输入 manifest 未满足外部来源证据要求');
+  }
+  if (process.argv.includes('--require-reviewed')) {
+    assert.strictEqual(report.requirements.reviewIssues.length, 0, '内容源输入 manifest 含未复核实体');
   }
 }
 

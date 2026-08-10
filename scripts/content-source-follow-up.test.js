@@ -35,6 +35,7 @@ try {
   assert.strictEqual(report.summary.blocked, 23);
   assert.strictEqual(report.summary.externalSourceMissing, 23);
   assert.strictEqual(report.summary.nextBatchId, 'math-chapters-v1.11');
+  assert.deepStrictEqual(report.requirements.reviewIssues, []);
   const englishUnitsBatch = report.batches.find((batch) => batch.id === 'english-units-v1.11');
   assert.strictEqual(englishUnitsBatch.action, 'provide-external-source');
   assert.strictEqual(englishUnitsBatch.status, 'passed');

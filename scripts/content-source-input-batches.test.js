@@ -148,6 +148,50 @@ try {
   assert.strictEqual(externalGateCliReport.status, 'blocked');
   assert.match(externalGateCliResult.stdout, /External source blockers/);
 
+  const untrackedInput = {
+    ...englishUnits,
+    entities: englishUnits.entities.map((entity, index) => (
+      index === 0 ? { ...entity, review: { ...entity.review, status: 'untracked' } } : entity
+    )),
+  };
+  const untrackedInputPath = path.join(tempDirectory, 'english-units-untracked.json');
+  fs.writeFileSync(untrackedInputPath, `${JSON.stringify(untrackedInput, null, 2)}\n`, 'utf8');
+  const reviewGateReport = buildContentSourceInputBatchAudit({
+    manifest: normalizeBatchManifest({
+      schemaVersion: 1,
+      sourceVersion: 'external-review-fixture-v1',
+      sourceKind: 'external-source',
+      batches: [{ id: 'english-units-v1.11', path: 'english-units-untracked.json' }],
+    }),
+    baseDirectory: tempDirectory,
+    currentCatalog: source,
+    requireReviewed: true,
+  });
+  assert.strictEqual(reviewGateReport.status, 'blocked');
+  assert.deepStrictEqual(reviewGateReport.requirements.reviewIssues, [{
+    id: 'english-units-v1.11',
+    path: 'english-units-untracked.json',
+    untracked: 1,
+    reason: 'untracked-review-status',
+  }]);
+  const reviewGateManifestPath = path.join(tempDirectory, 'review-gate-manifest.json');
+  const reviewGateReportPath = path.join(tempDirectory, 'review-gate-report.json');
+  fs.writeFileSync(reviewGateManifestPath, `${JSON.stringify({
+    schemaVersion: 1,
+    sourceVersion: 'external-review-fixture-v1',
+    sourceKind: 'external-source',
+    batches: [{ id: 'english-units-v1.11', path: 'english-units-untracked.json' }],
+  }, null, 2)}\n`, 'utf8');
+  const reviewGateCliResult = spawnSync(process.execPath, [
+    checker,
+    reviewGateManifestPath,
+    '--report',
+    reviewGateReportPath,
+    '--require-reviewed',
+  ], { cwd: root, encoding: 'utf8' });
+  assert.notStrictEqual(reviewGateCliResult.status, 0);
+  assert.match(reviewGateCliResult.stdout, /Review status blockers/);
+
   const changedInput = {
     ...englishUnits,
     entities: englishUnits.entities.map((entity, index) => (

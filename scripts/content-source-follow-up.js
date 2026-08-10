@@ -31,10 +31,11 @@ function hashManifest(manifest) {
 
 const ACTION_ORDER = {
   'fix-input': 0,
-  'provide-external-source': 1,
-  'review-diff': 2,
-  'attach-input-file': 3,
-  'no-action': 4,
+  'complete-review-status': 1,
+  'provide-external-source': 2,
+  'review-diff': 3,
+  'attach-input-file': 4,
+  'no-action': 5,
 };
 
 function indexOfOrEnd(values, value) {
@@ -42,7 +43,8 @@ function indexOfOrEnd(values, value) {
   return index < 0 ? values.length : index;
 }
 
-function getAction(batch, externalSourceIssueIds) {
+function getAction(batch, externalSourceIssueIds, reviewIssueIds) {
+  if (reviewIssueIds.has(batch.id)) return 'complete-review-status';
   if (externalSourceIssueIds.has(batch.id)) return 'provide-external-source';
   if (batch.status === 'failed') return 'fix-input';
   if (batch.status === 'changed') return 'review-diff';
@@ -61,6 +63,7 @@ function buildContentSourceFollowUpReport({
   baseDirectory = process.cwd(),
   currentCatalog = buildContentSourceCatalog(),
   requireExternalSource = true,
+  requireReviewed = true,
 } = {}) {
   const normalized = normalizeBatchManifest(manifest);
   const audit = buildContentSourceInputBatchAudit({
@@ -69,14 +72,18 @@ function buildContentSourceFollowUpReport({
     currentCatalog,
     requireAllBatches: true,
     requireExternalSource,
+    requireReviewed,
   });
   const externalSourceIssueIds = new Set(
     audit.requirements.externalSourceIssues.map((item) => item.id),
   );
+  const reviewIssueIds = new Set(
+    audit.requirements.reviewIssues.map((item) => item.id),
+  );
 
   const batches = audit.batches.map((batch) => {
     const definition = getContentSourceBatch(batch.id);
-    const action = getAction(batch, externalSourceIssueIds);
+    const action = getAction(batch, externalSourceIssueIds, reviewIssueIds);
     return {
       id: batch.id,
       subjectId: batch.subjectId,
@@ -94,6 +101,7 @@ function buildContentSourceFollowUpReport({
       inputHash: batch.inputHash || null,
       importedSourceHash: batch.importedSourceHash || null,
       currentSourceHash: batch.currentSourceHash || null,
+      review: batch.review || null,
       expected: definition ? {
         entities: definition.expectedCount,
         examples: definition.expectedExampleCount,
@@ -112,7 +120,7 @@ function buildContentSourceFollowUpReport({
   const summary = batches.reduce((result, batch) => {
     result.total += 1;
     if (batch.action === 'no-action') result.ready += 1;
-    if (batch.status === 'blocked' || batch.action === 'provide-external-source') result.blocked += 1;
+    if (batch.status === 'blocked' || batch.action === 'complete-review-status' || batch.action === 'provide-external-source') result.blocked += 1;
     if (batch.status === 'pending') result.pending += 1;
     if (batch.status === 'changed') result.changed += 1;
     if (batch.status === 'failed') result.failed += 1;
@@ -143,7 +151,9 @@ function buildContentSourceFollowUpReport({
     status,
     requirements: {
       requireExternalSource,
+      requireReviewed,
       externalSourceIssues: audit.requirements.externalSourceIssues,
+      reviewIssues: audit.requirements.reviewIssues,
     },
     summary: {
       ...summary,
