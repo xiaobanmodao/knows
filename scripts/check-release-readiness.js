@@ -7,6 +7,7 @@ const {
   getPreviewStatusPath,
   readPreviewStatus,
 } = require('./check-release-package-evidence');
+const { shouldRequireHotfixScope } = require('./check-release-hotfix-scope');
 
 const root = path.resolve(__dirname, '..');
 const issues = [];
@@ -271,6 +272,10 @@ function checkCloudPrivacyTooling() {
 }
 
 function checkReleaseHotfixScopeTooling() {
+  if (!shouldRequireHotfixScope(process.argv.slice(2))) {
+    return;
+  }
+
   const scripts = [
     'scripts/check-release-hotfix-scope.test.js',
     'scripts/check-release-hotfix-scope.js',

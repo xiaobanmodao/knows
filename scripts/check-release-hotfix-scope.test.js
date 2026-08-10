@@ -1,9 +1,30 @@
 const assert = require('assert');
+const fs = require('fs');
+const path = require('path');
 
 const {
   ALLOWED_HOTFIX_FILES,
+  shouldRequireHotfixScope,
   validateReleaseHotfixScope,
 } = require('./check-release-hotfix-scope');
+
+assert.strictEqual(shouldRequireHotfixScope([]), false);
+assert.strictEqual(shouldRequireHotfixScope(['--require-device-evidence']), false);
+assert.strictEqual(shouldRequireHotfixScope(['--require-hotfix-scope']), true);
+assert.strictEqual(
+  shouldRequireHotfixScope(['--require-device-evidence', '--require-hotfix-scope']),
+  true,
+);
+
+const readinessSource = fs.readFileSync(
+  path.join(__dirname, 'check-release-readiness.js'),
+  'utf8',
+);
+assert.ok(readinessSource.includes('shouldRequireHotfixScope(process.argv.slice(2))'));
+assert.match(
+  readinessSource,
+  /function checkReleaseHotfixScopeTooling\(\) \{\s*if \(!shouldRequireHotfixScope\(process\.argv\.slice\(2\)\)\) \{\s*return;\s*\}/s,
+);
 
 const allowedReport = validateReleaseHotfixScope([
   'scripts/check-release-readiness.js',

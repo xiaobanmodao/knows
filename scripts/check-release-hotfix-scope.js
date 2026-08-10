@@ -30,6 +30,10 @@ function validateReleaseHotfixScope(changedFiles = []) {
   };
 }
 
+function shouldRequireHotfixScope(args = process.argv.slice(2)) {
+  return args.includes('--require-hotfix-scope');
+}
+
 function readBaseRef(args) {
   const index = args.indexOf('--base');
   if (index >= 0 && args[index + 1]) return args[index + 1];
@@ -72,5 +76,6 @@ if (require.main === module) main();
 
 module.exports = {
   ALLOWED_HOTFIX_FILES,
+  shouldRequireHotfixScope,
   validateReleaseHotfixScope,
 };
