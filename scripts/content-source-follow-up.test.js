@@ -34,7 +34,7 @@ try {
   assert.strictEqual(report.summary.ready, 0);
   assert.strictEqual(report.summary.blocked, 23);
   assert.strictEqual(report.summary.externalSourceMissing, 23);
-  assert.strictEqual(report.summary.nextBatchId, 'math-chapters-v1.11');
+  assert.strictEqual(report.summary.nextBatchId, 'english-units-v1.11');
   assert.deepStrictEqual(report.requirements.reviewIssues, []);
   const englishUnitsBatch = report.batches.find((batch) => batch.id === 'english-units-v1.11');
   assert.strictEqual(englishUnitsBatch.action, 'provide-external-source');
@@ -68,7 +68,7 @@ try {
   });
   assert.strictEqual(cli.status, 0, cli.stderr || cli.stdout);
   assert.match(cli.stdout, /BLOCKED content source follow-up/);
-  assert.strictEqual(JSON.parse(fs.readFileSync(reportPath, 'utf8')).summary.nextBatchId, 'math-chapters-v1.11');
+  assert.strictEqual(JSON.parse(fs.readFileSync(reportPath, 'utf8')).summary.nextBatchId, 'english-units-v1.11');
 
   const strictCli = spawnSync(process.execPath, [builder, manifestPath, '--require-ready'], {
     cwd: root,

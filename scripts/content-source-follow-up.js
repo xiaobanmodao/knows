@@ -43,6 +43,10 @@ function indexOfOrEnd(values, value) {
   return index < 0 ? values.length : index;
 }
 
+function inputAvailabilityOrder(batch) {
+  return batch.path ? 0 : 1;
+}
+
 function getAction(batch, externalSourceIssueIds, reviewIssueIds) {
   if (reviewIssueIds.has(batch.id)) return 'complete-review-status';
   if (externalSourceIssueIds.has(batch.id)) return 'provide-external-source';
@@ -111,6 +115,7 @@ function buildContentSourceFollowUpReport({
     };
   }).sort((left, right) => (
     ACTION_ORDER[left.action] - ACTION_ORDER[right.action]
+      || inputAvailabilityOrder(left) - inputAvailabilityOrder(right)
       || STATUS_ORDER[left.status] - STATUS_ORDER[right.status]
       || indexOfOrEnd(SUBJECT_ORDER, left.subjectId) - indexOfOrEnd(SUBJECT_ORDER, right.subjectId)
       || indexOfOrEnd(TYPE_ORDER, left.type) - indexOfOrEnd(TYPE_ORDER, right.type)
