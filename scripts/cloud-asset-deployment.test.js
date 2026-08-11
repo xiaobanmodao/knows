@@ -38,12 +38,14 @@ const sourceCommit = '1010edcb9c1a4427b7b2822b9f41728850091b6b';
 const otherSourceCommit = 'fedcba9876543210fedcba9876543210fedcba98';
 const invalidSourceCommit = 'https://signed.example/?token=secret';
 const hostilePayload = 'https://signed.example/asset.png?token=secret';
-const credentialErrMsgs = [
-  'Bearer top-secret',
-  'Basic Zm9vOmJhcg==',
-  'Authorization: Bearer top-secret',
-  'api_key=top-secret',
-  encodeURIComponent('Authorization: Bearer top-secret'),
+const rawCloudErrorMetadata = [
+  { errMsg: 'Resource available' },
+  { errMsg: 'token parsing failed' },
+  { errMsg: 'Bearer top-secret' },
+  { errMsg: 'password top-secret' },
+  { errMsg: 'client_secret top-secret' },
+  { errCode: 'SAFE_ERROR' },
+  { errCode: 'AKIAIOSFODNN7EXAMPLE' },
 ];
 
 function assertSanitizedReject(action, expectedPattern, payloads = [hostilePayload]) {
@@ -311,43 +313,21 @@ assert.throws(
   }),
   /批次/,
 );
-assert.strictEqual(validateCloudAssetEvidence({
-  plan,
-  evidence: buildEvidence({ results: [{ ...buildEvidence().results[0], errMsg: '资源校验完成' }, ...buildEvidence().results.slice(1)] }),
-  expectedCommit: sourceCommit,
-}), true);
-assert.strictEqual(validateCloudAssetEvidence({
-  plan,
-  evidence: buildEvidence({ results: [{ ...buildEvidence().results[0], errCode: 'ERR_TOKEN_PARSE', errMsg: 'token parsing failed' }, ...buildEvidence().results.slice(1)] }),
-  expectedCommit: sourceCommit,
-}), true);
-credentialErrMsgs.forEach((errMsg) => {
+rawCloudErrorMetadata.forEach((metadata) => {
+  const payload = Object.values(metadata)[0];
   assert.throws(
     () => validateCloudAssetEvidence({
       plan,
       evidence: buildEvidence({
-        results: [{ ...buildEvidence().results[0], errMsg }, ...buildEvidence().results.slice(1)],
+        results: [{ ...buildEvidence().results[0], ...metadata }, ...buildEvidence().results.slice(1)],
       }),
       expectedCommit: sourceCommit,
     }),
-    (error) => /安全文本/.test(error.message)
-      && !error.message.includes(errMsg)
-      && !/Bearer|Basic|Authorization|api_key|top-secret|Zm9vOmJhcg/i.test(error.message),
+    (error) => /证据结果\[0\].*未批准字段/.test(error.message)
+      && !error.message.includes(payload)
+      && !/Bearer|password|client_secret|AKIA|top-secret/i.test(error.message),
   );
 });
-assert.strictEqual(validateCloudAssetEvidence({
-  plan,
-  evidence: buildEvidence({ results: [{ ...buildEvidence().results[0], errMsg: 'a'.repeat(512) }, ...buildEvidence().results.slice(1)] }),
-  expectedCommit: sourceCommit,
-}), true);
-assert.throws(
-  () => validateCloudAssetEvidence({
-    plan,
-    evidence: buildEvidence({ results: [{ ...buildEvidence().results[0], errMsg: 'a'.repeat(513) }, ...buildEvidence().results.slice(1)] }),
-    expectedCommit: sourceCommit,
-  }),
-  /安全文本/,
-);
 assert.throws(
   () => validateCloudAssetEvidence({
     plan: { ...plan, sourceCommit: invalidSourceCommit },
@@ -531,60 +511,6 @@ assertSanitizedReject(
 assert.throws(
   () => validateCloudAssetEvidence({
     plan,
-    evidence: buildEvidence({ results: [{ ...buildEvidence().results[0], errMsg: { token: 'secret' } }, ...buildEvidence().results.slice(1)] }),
-    expectedCommit: sourceCommit,
-  }),
-  /错误字段必须为标量/,
-);
-[
-  'https://signed.example/asset.png?X-Amz-Signature=secret',
-  'https%3A%2F%2Fsigned.example%2Fasset.png%3Ftoken%3Dsecret',
-  '签名失败：credential=secret',
-  'https%25253A%25252F%25252Fsigned.example%25252Fasset.png%25253Ftoken%25253Dsecret',
-  'request failed: access_token=secret',
-  'request failed: sig=secret',
-  '%FF%68%74%74%70%73%3A%2F%2Fsigned.example%2Fasset.png%3Ftoken%3Dsecret',
-  'ftp://signed.example/asset.png',
-  'ftp:',
-  '//signed.example/asset.png',
-  'https:/signed.example/asset.png',
-  'https%ZZ://signed.example/asset.png',
-].forEach((errMsg) => {
-  assert.throws(
-    () => validateCloudAssetEvidence({
-      plan,
-      evidence: buildEvidence({ results: [{ ...buildEvidence().results[0], errMsg }, ...buildEvidence().results.slice(1)] }),
-      expectedCommit: sourceCommit,
-    }),
-    /安全文本/,
-  );
-});
-const fiveTimesEncodedSignedUrl = Array.from(
-  { length: 5 },
-  () => null,
-).reduce(
-  (value) => encodeURIComponent(value),
-  'https://signed.example/asset.png?token=secret',
-);
-assert.throws(
-  () => validateCloudAssetEvidence({
-    plan,
-    evidence: buildEvidence({ results: [{ ...buildEvidence().results[0], errMsg: fiveTimesEncodedSignedUrl }, ...buildEvidence().results.slice(1)] }),
-    expectedCommit: sourceCommit,
-  }),
-  /安全文本/,
-);
-assert.throws(
-  () => validateCloudAssetEvidence({
-    plan,
-    evidence: buildEvidence({ results: [{ ...buildEvidence().results[0], errCode: 'https://signed.example/?token=secret' }, ...buildEvidence().results.slice(1)] }),
-    expectedCommit: sourceCommit,
-  }),
-  /errCode/,
-);
-assert.throws(
-  () => validateCloudAssetEvidence({
-    plan,
     evidence: buildEvidence({ results: [{ ...buildEvidence().results[0], tempFileURL: 'https://secret.example/' }, ...buildEvidence().results.slice(1)] }),
     expectedCommit: sourceCommit,
   }),
@@ -596,6 +522,7 @@ assert.match(consoleScript, /getImageTempUrls/);
 assert.match(consoleScript, /hasTempFileURL/);
 assert.doesNotMatch(consoleScript, /JSON\.stringify\([^)]*tempFileURL/);
 assert.doesNotMatch(consoleScript, /uploadFile|getTempFileURL/);
+assert.doesNotMatch(consoleScript, /errCode|errMsg/);
 
 const manifestFixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'knows-remote-asset-manifest-'));
 const sourceRoot = path.join(manifestFixtureRoot, 'source');
@@ -913,8 +840,8 @@ vm.runInNewContext(buildConsoleVerificationScript(fullPlan), {
             fileID,
             status: 0,
             tempFileURL: `https://signed.example/asset.png?token=${encodeURIComponent(fileID)}&signature=secret`,
-            errCode: 'SAFE_ERROR',
-            errMsg: credentialErrMsgs[index],
+            errCode: index % 2 === 0 ? 'AKIAIOSFODNN7EXAMPLE' : 'ASIAIOSFODNN7EXAMPLE',
+            errMsg: index % 2 === 0 ? 'password top-secret' : 'client_secret top-secret',
           })),
         },
       }),
@@ -941,8 +868,11 @@ vm.runInNewContext(buildConsoleVerificationScript(fullPlan), {
     parsedEvidence.results.map((result) => result.fileID).sort(),
     fullPlan.assets.map((asset) => asset.fileID).sort(),
   );
+  assert.deepStrictEqual(
+    parsedEvidence.results.map((result) => Object.keys(result).sort()),
+    parsedEvidence.results.map(() => ['fileID', 'hasTempFileURL', 'status']),
+  );
   assert.strictEqual(parsedEvidence.results.every((result) => result.hasTempFileURL === true), true);
-  assert.strictEqual(parsedEvidence.results.every((result) => result.errMsg === undefined), true);
   assert.strictEqual(validateCloudAssetEvidence({
     plan: fullPlan,
     evidence: parsedEvidence,
@@ -952,7 +882,7 @@ vm.runInNewContext(buildConsoleVerificationScript(fullPlan), {
   assert.doesNotMatch(loggedEvidence, /tempFileURL/);
   assert.doesNotMatch(loggedEvidence, /token=/i);
   assert.doesNotMatch(loggedEvidence, /signature=/i);
-  assert.doesNotMatch(loggedEvidence, /Bearer|Basic|Authorization|api_key|top-secret|Zm9vOmJhcg/i);
+  assert.doesNotMatch(loggedEvidence, /errCode|errMsg|AKIA|ASIA|password|client_secret|top-secret/i);
   console.log('OK cloud asset deployment contract');
 }).catch((error) => {
   console.error(error);

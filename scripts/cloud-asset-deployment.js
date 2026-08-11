@@ -39,13 +39,9 @@ const EVIDENCE_FIELDS = new Set([
   'planSnapshotHash',
   'results',
 ]);
-const RESULT_FIELDS = new Set(['fileID', 'status', 'errCode', 'errMsg', 'hasTempFileURL']);
+const RESULT_FIELDS = new Set(['fileID', 'status', 'hasTempFileURL']);
 const ISO_TIMESTAMP_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
-const SAFE_PLAIN_TEXT_PATTERN = /^[\p{L}\p{N}\p{M}\p{Zs}.,!;'"()_\-，。！；：、（）？]*$/u;
-const SENSITIVE_CREDENTIAL_PATTERN = /(?:\b(?:access_token|api[_-]?key|token|signature|x-amz-signature|credential|expires|q-sign-[a-z0-9._-]*|sign|sig)\s*=|\bauthorization\s*:|\b(?:bearer|basic)\s+\S+)/i;
 const SOURCE_COMMIT_PATTERN = /^[a-f0-9]{7,64}$/i;
-const MAX_ERROR_CODE_LENGTH = 128;
-const MAX_ERROR_MESSAGE_LENGTH = 512;
 
 function buildVerificationBatches(assets, batchSize = 50) {
   if (!Array.isArray(assets)) throw new Error('资源列表必须为数组');
@@ -228,62 +224,12 @@ function buildConsoleVerificationScript(plan) {
   return `/* Paste this script into the WeChat DevTools console after cloud setup. */
 (async () => {
   const plan = ${JSON.stringify(verificationInput, null, 2)};
-  const safePlainTextPattern = new RegExp(${JSON.stringify(SAFE_PLAIN_TEXT_PATTERN.source)}, 'u');
-  const sensitiveCredentialPattern = new RegExp(${JSON.stringify(SENSITIVE_CREDENTIAL_PATTERN.source)}, 'i');
-  const safeErrorCode = (value) => (
-    (typeof value === 'number' && Number.isFinite(value))
-    || (typeof value === 'string' && value.length > 0 && value.length <= 128 && /^[A-Za-z0-9._-]+$/.test(value))
-      ? value
-      : undefined
-  );
-  const safePlainText = (value) => (
-    typeof value === 'string' && value.length <= 512 && safePlainTextPattern.test(value)
-  );
-  const decodePercentEscapes = (value) => {
-    if (/%[0-9A-Fa-f](?![0-9A-Fa-f])/.test(value)) return null;
-    let invalid = false;
-    const decoded = value.replace(/(?:%[0-9A-Fa-f]{2})+/g, (encoded) => {
-      try {
-        return decodeURIComponent(encoded);
-      } catch (error) {
-        invalid = true;
-        return encoded;
-      }
-    });
-    return invalid ? null : decoded;
-  };
-  const decodeRepeatedly = (value) => {
-    let decoded = value;
-    const maxPasses = Math.max(1, Math.min(512, value.length));
-    for (let pass = 0; pass < maxPasses; pass += 1) {
-      const next = decodePercentEscapes(decoded);
-      if (next === null) return null;
-      if (next === decoded) return decoded;
-      decoded = next;
-    }
-    return null;
-  };
-  const safeErrorMessage = (value) => {
-    if (!safePlainText(value)) return undefined;
-    const decoded = decodeRepeatedly(value);
-    return decoded !== null
-      && safePlainText(decoded)
-      && !sensitiveCredentialPattern.test(value)
-      && !sensitiveCredentialPattern.test(decoded)
-        ? value
-        : undefined;
-  };
   const resultFor = (fileID, item) => {
-    const result = {
+    return {
       fileID,
       status: item && Number.isFinite(item.status) ? item.status : -1,
       hasTempFileURL: Boolean(item && typeof item.tempFileURL === 'string' && item.tempFileURL.length > 0),
     };
-    const errCode = safeErrorCode(item && item.errCode);
-    const errMsg = safeErrorMessage(item && item.errMsg);
-    if (errCode !== undefined) result.errCode = errCode;
-    if (errMsg !== undefined) result.errMsg = errMsg;
-    return result;
   };
   const results = [];
   for (const fileIDs of plan.batches) {
@@ -298,8 +244,6 @@ function buildConsoleVerificationScript(plan) {
       fileIDs.forEach((fileID) => results.push({
         fileID,
         status: -1,
-        errCode: 'CALL_FUNCTION_FAILED',
-        errMsg: 'Verification request failed',
         hasTempFileURL: false,
       }));
     }
@@ -348,58 +292,6 @@ function isValidSourceCommit(value) {
   return typeof value === 'string' && SOURCE_COMMIT_PATTERN.test(value);
 }
 
-function isValidErrorCode(value) {
-  if (value === undefined || value === null) return true;
-  if (typeof value === 'number') return Number.isFinite(value);
-  return typeof value === 'string'
-    && value.length > 0
-    && value.length <= MAX_ERROR_CODE_LENGTH
-    && /^[A-Za-z0-9._-]+$/.test(value);
-}
-
-function decodePercentEscapes(value) {
-  if (/%[0-9A-Fa-f](?![0-9A-Fa-f])/.test(value)) return null;
-
-  let invalid = false;
-  const decoded = value.replace(/(?:%[0-9A-Fa-f]{2})+/g, (encoded) => {
-    try {
-      return decodeURIComponent(encoded);
-    } catch (error) {
-      invalid = true;
-      return encoded;
-    }
-  });
-  return invalid ? null : decoded;
-}
-
-function decodeRepeatedly(value) {
-  let decoded = value;
-  const maxPasses = Math.max(1, Math.min(MAX_ERROR_MESSAGE_LENGTH, value.length));
-  for (let pass = 0; pass < maxPasses; pass += 1) {
-    const next = decodePercentEscapes(decoded);
-    if (next === null) return null;
-    if (next === decoded) return decoded;
-    decoded = next;
-  }
-  return null;
-}
-
-function isSafeErrorMessage(value) {
-  if (value === undefined || value === null) return true;
-  if (!isSafePlainText(value)) return false;
-  const decoded = decodeRepeatedly(value);
-  return decoded !== null
-    && isSafePlainText(decoded)
-    && !SENSITIVE_CREDENTIAL_PATTERN.test(value)
-    && !SENSITIVE_CREDENTIAL_PATTERN.test(decoded);
-}
-
-function isSafePlainText(value) {
-  return typeof value === 'string'
-    && value.length <= MAX_ERROR_MESSAGE_LENGTH
-    && SAFE_PLAIN_TEXT_PATTERN.test(value);
-}
-
 function assertPlanHasAssets(plan) {
   if (!Number.isInteger(plan.assetCount) || plan.assetCount <= 0) {
     throw new Error('计划资源数量必须大于 0');
@@ -439,15 +331,6 @@ function validateCloudAssetEvidence({ plan, evidence, expectedCommit }) {
   evidence.results.forEach((result, index) => {
     const label = `证据结果[${index}]`;
     assertAllowedKeys(result, RESULT_FIELDS, label);
-    if (!isValidErrorCode(result.errCode)) {
-      throw new Error(`${label} errCode 无效`);
-    }
-    if (result.errMsg !== undefined && result.errMsg !== null && typeof result.errMsg !== 'string') {
-      throw new Error(`${label}错误字段必须为标量`);
-    }
-    if (!isSafeErrorMessage(result.errMsg)) {
-      throw new Error(`${label} errMsg 必须为安全文本`);
-    }
     if (resultFileIDs.has(result.fileID)) throw new Error(`${label} fileID 重复`);
     resultFileIDs.add(result.fileID);
     if (!expectedFileIDs.has(result.fileID)) throw new Error(`${label}含未知 fileID`);
