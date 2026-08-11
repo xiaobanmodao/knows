@@ -385,11 +385,11 @@ Run:
 git status --short
 git diff --check
 git status --short
-git log --oneline --parents -3
+git log --format='%H %P %s' --first-parent --grep='^merge: integrate v1.13 content quality stack$' -1
 git diff --name-only codex/release-regression-v1.10.1...HEAD
 ```
 
-Expected: 最近历史同时包含 `merge: integrate v1.13 content quality stack` 和 `test(quality): restore release privacy gates`；`git status --short` 只允许显示被忽略的可再生产物，不能有暂存的生成文件、设备日志或开发者工具格式化噪声。
+Expected: 精确主题查询返回一个 merge 记录，且其第二父提交为 `7339c30`；最近历史仍包含 `test(quality): restore release privacy gates`。`git status --short` 只允许显示被忽略的可再生产物，不能有暂存的生成文件、设备日志或开发者工具格式化噪声。
 
 ### Task 5: 模拟器回归、记录证据并推送集成分支
 
