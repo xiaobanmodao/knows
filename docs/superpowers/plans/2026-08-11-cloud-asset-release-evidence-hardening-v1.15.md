@@ -129,19 +129,19 @@ git commit -m "fix(release): canonicalize cloud asset plans"
 - Strict release continues to use `CLOUD_ASSET_DEPLOYMENT_EVIDENCE`, but it accepts only full plan evidence derived from all current assets.
 - Targeted biology plan output is `dist/cloud-asset-deployment/biology-plan.json`; full proof output is `dist/cloud-asset-deployment/release-plan.json`; each builder invocation writes the adjacent `verify-in-devtools.js` for that exact plan.
 
-- [ ] **Step 1: 写入失败的严格门禁与全量流程测试**
+- [x] **Step 1: 写入失败的严格门禁与全量流程测试**
 
 扩展 `scripts/cloud-asset-deployment.test.js`，生成同一 current manifest 的 biology 与 full plan。断言它们的 `assetCount` 和 `snapshotHash` 不同；把 biology evidence 传给 `validateStrictCloudAssetEvidence()` 时必须因快照不一致失败；把完整 fake success evidence 传入时必须通过云资源子门禁。
 
 构造截断 current manifest、错误 `sourceSha256` 与错误压缩 `sha256`，确认 `validateStrictCloudAssetEvidence()` 都在 evidence 对比前拒绝。通过 `child_process.spawnSync` 调用严格 release readiness 时，使用当前 full evidence 临时文件并断言输出不含 `云资源部署证据`；随后以 biology evidence 调用并断言输出含该问题。其他实体机、包体和工具状态问题允许继续存在。
 
-- [ ] **Step 2: 运行测试并确认失败**
+- [x] **Step 2: 运行测试并确认失败**
 
 Run: `node scripts/cloud-asset-deployment.test.js`
 
 Expected: FAIL，因为现有严格门禁直接构造全量计划却没有 current manifest 校验，且未对 biology/full evidence 区分。
 
-- [ ] **Step 3: 接入严格门禁并修正文档**
+- [x] **Step 3: 接入严格门禁并修正文档**
 
 在 `check-release-readiness.js` 的严格路径中，解析 manifest/evidence 后调用 `validateStrictCloudAssetEvidence()`；manifest JSON 失败只追加固定脱敏 issue，不拼接 parser message。它不得生成 evidence 或调用云端。
 
@@ -171,7 +171,7 @@ node scripts/check-release-readiness.js --require-device-evidence
 
 明确 `verify-in-devtools.js` 会被第二次 full-plan 生成覆盖，必须在第二阶段重新粘贴；不将任何当前本地 fake evidence 写成云端成功。更新现有 Verification Record，只补充实际执行的本地加固检查与未执行外部动作。
 
-- [ ] **Step 4: 运行严格边界与文档契约**
+- [x] **Step 4: 运行严格边界与文档契约**
 
 Run:
 
@@ -184,7 +184,7 @@ git diff --check
 
 Expected: 所有命令通过；full evidence 子门禁可通过、biology evidence 被严格 cloud 子门禁拒绝；默认矩阵仍为 126 项且不需要现场 evidence。
 
-- [ ] **Step 5: 提交严格流程**
+- [x] **Step 5: 提交严格流程**
 
 ```bash
 git add scripts/check-release-readiness.js scripts/cloud-asset-deployment.test.js README.md docs/v1.11后续开发路线.md docs/后续开发与发布路线.md docs/v1.10发布前实体设备回归清单.md docs/superpowers/plans/2026-08-11-cloud-asset-release-evidence-v1.15.md
