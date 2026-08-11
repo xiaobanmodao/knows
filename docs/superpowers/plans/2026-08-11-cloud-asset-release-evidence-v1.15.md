@@ -316,12 +316,13 @@ Expected: 仅新增开发分支，不创建 PR、标签、RC、体验版或审�
 
 ## Verification Record
 
-- `node scripts/prepare-remote-assets.js`：通过，生成 `231` 个本地远程资源清单项到 ignored `dist/remote-assets/`。
-- `node scripts/build-cloud-asset-deployment-plan.js --subject biology --output dist/cloud-asset-deployment/biology-plan.json --commit "$(git rev-parse HEAD)"`：通过；基于 `1ff70f1bdf9fa87e8a984d57a68b4d22e8c6abe8` 生成 biology 人工补传清单，实际资产数为 `12`，不构成严格发布证明。
-- 当时尚未生成全量 `release-plan.json` 或保存真实云端 evidence；后续严格证明必须基于不带 `--subject` 的全量计划、重新生成的 `verify-in-devtools.js` 和本地保存的脱敏 evidence。
-- `node scripts/check-cloud-asset-deployment-evidence.js dist/cloud-asset-deployment/release-plan.json /tmp/missing-cloud-evidence.json --commit "$(git rev-parse HEAD)"`：预期阻断，退出码 `1`，精确输出为 `FOUND_CLOUD_ASSET_DEPLOYMENT_ISSUES: 证据 必须为可读取的 JSON 文件`；`/tmp/missing-cloud-evidence.json` 未被创建。
-- `node scripts/check-v1.11-quality-matrix.js`：首次运行在 `[122/126] 路线文档一致性契约` 因既有发布边界的连续字串被文档扩展打断而失败；恢复该既有边界并保留云资源要求后，第二次运行通过，输出 `OK v1.11 quality matrix: 126 checks`。
+- 此前的 `biology-plan.json` 是基于 `1ff70f1bdf9fa87e8a984d57a68b4d22e8c6abe8` 生成的 `12` 项 biology 人工补传清单，只用于定位待补传资源，不构成严格发布证明。
+- 在当前提交 `d712ba8b4a6a5a62f12eff6f2f30ce75b37f14ab` 上，`node scripts/prepare-remote-assets.js` 通过，生成 `231` 个本地远程资源清单项到 ignored `dist/remote-assets/`。
+- 在同一当前提交上，`node scripts/build-cloud-asset-deployment-plan.js --output dist/cloud-asset-deployment/release-plan.json --commit "$(git rev-parse HEAD)"` 通过；不带 `--subject` 的 `release-plan.json` 为当前完整的 `231` 项严格发布计划。
+- `node scripts/check-cloud-asset-deployment-evidence.js dist/cloud-asset-deployment/release-plan.json /tmp/missing-cloud-evidence.json --commit "$(git rev-parse HEAD)"`：按预期阻断，退出码 `1`，输出 `FOUND_CLOUD_ASSET_DEPLOYMENT_ISSUES: 证据 必须为可读取的 JSON 文件`；`/tmp/missing-cloud-evidence.json` 未被创建。
+- `node scripts/check-release-readiness.js --require-device-evidence`：按预期阻断，包含 `云资源部署证据: 部署证据文件不存在`，并同时保留实体设备回归、包体报告和开发者工具状态报告等已知发布前置条件。
+- `node scripts/check-v1.11-quality-matrix.js`：通过，输出 `OK v1.11 quality matrix: 126 checks`。其中的内容源 URL 可访问性检查可能发出只读 HTTP 探测，不构成任何部署动作。
 - `node scripts/check-roadmap-document-consistency.test.js`：在上述文档修正后通过，输出 `OK roadmap document consistency contract`。
-- `git diff --check`：通过，无输出；`git status --short`：当时仅列出五份获准的文档修改，`dist/` 与 `.codex-output/` 未进入暂存区。
+- `git diff --check`：本次文档更新前通过，无输出；`git status --short`：本次验证完成时为空，`dist/` 与 `.codex-output/` 仅保留 ignored 本地产物。
 
-未执行任何云存储上传、绑定 AppID 的 DevTools 云存储面板操作、DevTools 控制台 `verify-in-devtools.js` 调用、微信开发者工具/云端调用、实体机或弱网回归、当前构建包体/体验版/小程序上传、RC、标签、PR 或审核请求。当前 `assets/figures/generated/subjects/biology/topics/bio-unit-cells/cover.png` 的云对象仍未确认；文字降级可读不构成部署成功。Task 4 复选框保持未完成，等待独立审查。
+未执行任何云存储上传、绑定 AppID 的 DevTools 云存储面板操作、DevTools 控制台 `verify-in-devtools.js` 调用、微信开发者工具/云端调用、实体机或弱网回归、当前构建包体/体验版/小程序上传、RC、标签、PR 或审核请求。当前 `assets/figures/generated/subjects/biology/topics/bio-unit-cells/cover.png` 的云对象仍未确认；文字降级可读不构成部署成功。发布前必须在最终提交上重新生成全量 `release-plan.json`，在绑定 AppID 的 DevTools 控制台实际运行其重新生成的 `verify-in-devtools.js`，保存脱敏真实证据后再次执行严格门禁。Task 4 推送复选框保持未完成，等待独立审查。
