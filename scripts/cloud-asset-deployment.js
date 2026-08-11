@@ -13,7 +13,7 @@ const EVIDENCE_FIELDS = new Set([
 ]);
 const RESULT_FIELDS = new Set(['fileID', 'status', 'errCode', 'errMsg', 'hasTempFileURL']);
 const ISO_TIMESTAMP_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
-const URL_SCHEME_PATTERN = /(?:https?|cloud):\/\//i;
+const SAFE_PLAIN_TEXT_PATTERN = /^[\p{L}\p{N}\p{M}\p{Zs}.,!;'"()_\-，。！；：、（）？]*$/u;
 const SENSITIVE_PARAMETER_PATTERN = /\b(?:access_token|token|signature|x-amz-signature|credential|expires|q-sign-[a-z0-9._-]*|sign|sig)\s*=/i;
 const SOURCE_COMMIT_PATTERN = /^[a-f0-9]{7,64}$/i;
 const MAX_ERROR_CODE_LENGTH = 128;
@@ -56,11 +56,31 @@ function snapshotInput(plan) {
         fileID: asset.fileID,
       }))
       .sort((left, right) => left.fileID.localeCompare(right.fileID)),
+    batches: batchFileIDs(plan.batches),
   };
 }
 
 function getPlanSnapshotHash(plan) {
   return crypto.createHash('sha256').update(JSON.stringify(snapshotInput(plan))).digest('hex');
+}
+
+function batchFileIDs(batches) {
+  if (!Array.isArray(batches)) return null;
+  return batches.map((batch) => {
+    if (!Array.isArray(batch)) return null;
+    return batch.map((asset) => (asset && typeof asset.fileID === 'string' ? asset.fileID : null));
+  });
+}
+
+function hasDeterministicVerificationBatches(plan) {
+  if (!Array.isArray(plan.assets) || !Array.isArray(plan.batches)) return false;
+  const expected = buildVerificationBatches(plan.assets);
+  const actual = batchFileIDs(plan.batches);
+  return actual.length === expected.length && actual.every((batch, index) => (
+    Array.isArray(batch)
+    && batch.length === expected[index].length
+    && batch.every((fileID, itemIndex) => fileID === expected[index][itemIndex].fileID)
+  ));
 }
 
 function buildCloudAssetPlan({ manifest, sourceCommit = null, subject = null }) {
@@ -155,14 +175,18 @@ function decodeRepeatedly(value) {
 
 function isSafeErrorMessage(value) {
   if (value === undefined || value === null) return true;
-  if (typeof value !== 'string' || value.length > MAX_ERROR_MESSAGE_LENGTH || /[\u0000-\u001F\u007F]/.test(value)) {
-    return false;
-  }
+  if (!isSafePlainText(value)) return false;
   const decoded = decodeRepeatedly(value);
   return decoded !== null
-    && !/[\u0000-\u001F\u007F]/.test(decoded)
-    && !URL_SCHEME_PATTERN.test(decoded)
+    && isSafePlainText(decoded)
+    && !SENSITIVE_PARAMETER_PATTERN.test(value)
     && !SENSITIVE_PARAMETER_PATTERN.test(decoded);
+}
+
+function isSafePlainText(value) {
+  return typeof value === 'string'
+    && value.length <= MAX_ERROR_MESSAGE_LENGTH
+    && SAFE_PLAIN_TEXT_PATTERN.test(value);
 }
 
 function validateCloudAssetEvidence({ plan, evidence, expectedCommit }) {
@@ -174,6 +198,10 @@ function validateCloudAssetEvidence({ plan, evidence, expectedCommit }) {
   if (!isValidDateString(evidence.verifiedAt)) throw new Error('证据 verifiedAt 必须为有效日期字符串');
   if (!isValidSourceCommit(evidence.sourceCommit)) throw new Error('证据 sourceCommit 无效');
   if (!isValidSourceCommit(expectedCommit)) throw new Error('expectedCommit sourceCommit 无效');
+  if (!Array.isArray(plan.assets) || plan.assetCount !== plan.assets.length) {
+    throw new Error('计划资源集合无效');
+  }
+  if (!hasDeterministicVerificationBatches(plan)) throw new Error('计划验证批次无效');
   if (plan.cloudEnvId !== CLOUD_ENV_ID || evidence.cloudEnvId !== plan.cloudEnvId) {
     throw new Error('证据环境与计划不一致');
   }
@@ -182,9 +210,6 @@ function validateCloudAssetEvidence({ plan, evidence, expectedCommit }) {
   }
   if (plan.snapshotHash !== getPlanSnapshotHash(plan) || evidence.planSnapshotHash !== plan.snapshotHash) {
     throw new Error('证据快照哈希与计划不一致');
-  }
-  if (!Array.isArray(plan.assets) || plan.assetCount !== plan.assets.length) {
-    throw new Error('计划资源集合无效');
   }
   if (!Array.isArray(evidence.results)) throw new Error('证据结果必须为数组');
 

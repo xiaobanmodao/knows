@@ -37,6 +37,12 @@ assert.throws(
   () => buildCloudAssetPlan({ manifest, sourceCommit: invalidSourceCommit, subject: 'biology' }),
   /sourceCommit/,
 );
+['abcdef', 'a'.repeat(65), 'g'.repeat(7)].forEach((invalidCommit) => {
+  assert.throws(
+    () => buildCloudAssetPlan({ manifest, sourceCommit: invalidCommit, subject: 'biology' }),
+    /sourceCommit/,
+  );
+});
 assert.throws(
   () => validateCloudAssetEvidence({ plan, evidence: { tempFileURL: 'https://secret.example/' }, expectedCommit: sourceCommit }),
   /临时 URL/,
@@ -89,11 +95,21 @@ assert.throws(
 
 const laterPlan = { ...plan, generatedAt: '2030-01-01T00:00:00.000Z' };
 assert.strictEqual(getPlanSnapshotHash(laterPlan), plan.snapshotHash);
+const planWithTamperedBatches = { ...plan, batches: [] };
+assert.notStrictEqual(getPlanSnapshotHash(planWithTamperedBatches), plan.snapshotHash);
 assert.strictEqual(validateCloudAssetEvidence({
   plan,
   evidence: buildEvidence(),
   expectedCommit: sourceCommit,
 }), true);
+assert.throws(
+  () => validateCloudAssetEvidence({
+    plan: planWithTamperedBatches,
+    evidence: buildEvidence(),
+    expectedCommit: sourceCommit,
+  }),
+  /批次/,
+);
 assert.strictEqual(validateCloudAssetEvidence({
   plan,
   evidence: buildEvidence({ results: [{ ...buildEvidence().results[0], errMsg: '资源校验完成' }, ...buildEvidence().results.slice(1)] }),
@@ -104,6 +120,19 @@ assert.strictEqual(validateCloudAssetEvidence({
   evidence: buildEvidence({ results: [{ ...buildEvidence().results[0], errCode: 'ERR_TOKEN_PARSE', errMsg: 'token parsing failed' }, ...buildEvidence().results.slice(1)] }),
   expectedCommit: sourceCommit,
 }), true);
+assert.strictEqual(validateCloudAssetEvidence({
+  plan,
+  evidence: buildEvidence({ results: [{ ...buildEvidence().results[0], errMsg: 'a'.repeat(512) }, ...buildEvidence().results.slice(1)] }),
+  expectedCommit: sourceCommit,
+}), true);
+assert.throws(
+  () => validateCloudAssetEvidence({
+    plan,
+    evidence: buildEvidence({ results: [{ ...buildEvidence().results[0], errMsg: 'a'.repeat(513) }, ...buildEvidence().results.slice(1)] }),
+    expectedCommit: sourceCommit,
+  }),
+  /安全文本/,
+);
 assert.throws(
   () => validateCloudAssetEvidence({
     plan: { ...plan, sourceCommit: invalidSourceCommit },
@@ -228,6 +257,19 @@ assert.throws(
   /verifiedAt/,
 );
 [
+  '2026-08-11T00:00:00.000+00:00',
+  '2026-08-11T00:00:00Z',
+].forEach((verifiedAt) => {
+  assert.throws(
+    () => validateCloudAssetEvidence({
+      plan,
+      evidence: buildEvidence({ verifiedAt }),
+      expectedCommit: sourceCommit,
+    }),
+    /verifiedAt/,
+  );
+});
+[
   buildEvidence({ signedUrl: 'https://secret.example/' }),
   buildEvidence({ results: [{ ...buildEvidence().results[0], url: 'https://secret.example/' }, ...buildEvidence().results.slice(1)] }),
   buildEvidence({ results: [{ ...buildEvidence().results[0], token: 'secret' }, ...buildEvidence().results.slice(1)] }),
@@ -254,6 +296,11 @@ assert.throws(
   'request failed: access_token=secret',
   'request failed: sig=secret',
   '%FF%68%74%74%70%73%3A%2F%2Fsigned.example%2Fasset.png%3Ftoken%3Dsecret',
+  'ftp://signed.example/asset.png',
+  'ftp:',
+  '//signed.example/asset.png',
+  'https:/signed.example/asset.png',
+  'https%ZZ://signed.example/asset.png',
 ].forEach((errMsg) => {
   assert.throws(
     () => validateCloudAssetEvidence({
