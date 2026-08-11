@@ -33,7 +33,7 @@
 - Produces `validateCloudAssetPlan(plan)` and `validateStrictCloudAssetEvidence({ manifest, evidence, sourceCommit, manifestOptions })` from `cloud-asset-deployment.js`.
 - A canonical v2 asset has exactly `source`, `cloudPath`, `width`, `height`, `bytes`, `sha256`, `sourceSha256`; a canonical plan asset additionally has exactly `subject` and `fileID`.
 
-- [ ] **Step 1: 写入失败的 canonical 契约测试**
+- [x] **Step 1: 写入失败的 canonical 契约测试**
 
 在 `scripts/cloud-asset-deployment.test.js` 先引用尚不存在的 manifest 函数和计划验证器，并添加以下行为断言：
 
@@ -65,13 +65,13 @@ assert.throws(
 
 使用 `vm` 运行 `buildConsoleVerificationScript(fullPlan)`，模拟 `wx.cloud.callFunction` 返回含真实样式 `tempFileURL` 与安全错误字段的 `fileList`。捕获 `console.log` 后断言仅有一个 JSON 字符串、结果含 `hasTempFileURL: true`、不含 `https://`、`tempFileURL`、`token=` 或 `signature=`。
 
-- [ ] **Step 2: 运行测试并确认失败**
+- [x] **Step 2: 运行测试并确认失败**
 
 Run: `node scripts/cloud-asset-deployment.test.js`
 
 Expected: FAIL，错误为缺少 `./remote-asset-manifest` 或 `validateCloudAssetPlan`，或现有计划接受伪造 signed URL。
 
-- [ ] **Step 3: 实现最小 canonical 层**
+- [x] **Step 3: 实现最小 canonical 层**
 
 创建 `scripts/remote-asset-manifest.js`：
 
@@ -94,7 +94,7 @@ module.exports = {
 
 修改 `cloud-asset-deployment.js`：不再展开 `...asset`；只从 canonical manifest 复制允许字段，写入 `subject` 和由 `REMOTE_ASSET_BASE + cloudPath` 推导的 `fileID`。新增 `validateCloudAssetPlan(plan)`，它拒绝额外字段、非 canonical `fileID`、未知/跨学科资源、重复值和不规范批次。`buildConsoleVerificationScript()` 与 `validateCloudAssetEvidence()` 必须先调用它。所有 evidence result 拒绝信息按结果索引报告，不拼接不可信 fileID 或 JSON 解析内容。`validateStrictCloudAssetEvidence()` 必须先调用 current manifest 校验，再构造 `subject: null` 的全量 plan 并验证 evidence。
 
-- [ ] **Step 4: 运行契约与资源校验**
+- [x] **Step 4: 运行契约与资源校验**
 
 Run:
 
@@ -106,7 +106,7 @@ node scripts/check-remote-assets.js
 
 Expected: cloud 契约通过；准备出的 manifest 为 version 2、231 项且五科学科均可归属；远程资源检查通过。
 
-- [ ] **Step 5: 提交 canonical 层**
+- [x] **Step 5: 提交 canonical 层**
 
 ```bash
 git add scripts/remote-asset-manifest.js scripts/prepare-remote-assets.js scripts/cloud-asset-deployment.js scripts/cloud-asset-deployment.test.js
