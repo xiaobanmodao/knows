@@ -111,7 +111,7 @@ git commit -m "feat(release): model cloud asset evidence"
 
 **Interfaces:**
 - Consumes: `dist/remote-assets/manifest.json` 与 Task 1 的领域模型。
-- Produces: `dist/cloud-asset-deployment/plan.json`、`dist/cloud-asset-deployment/verify-in-devtools.js`，后者只调用现有 `getImageTempUrls`。
+- Produces: `dist/cloud-asset-deployment/release-plan.json`、`dist/cloud-asset-deployment/verify-in-devtools.js`，后者只调用现有 `getImageTempUrls`。
 - Validates: `node scripts/check-cloud-asset-deployment-evidence.js <plan> <evidence> --commit <sha>` 成功时输出已验证资产数量，失败时输出 `FOUND_CLOUD_ASSET_DEPLOYMENT_ISSUES`。
 
 - [x] **Step 1: 写入失败的 CLI 与控制台脚本断言**
@@ -141,8 +141,7 @@ Expected: FAIL，提示缺少 `buildConsoleVerificationScript` 或 CLI 文件。
 ```bash
 node scripts/build-cloud-asset-deployment-plan.js \
   --manifest dist/remote-assets/manifest.json \
-  --output dist/cloud-asset-deployment/plan.json \
-  --subject biology \
+  --output dist/cloud-asset-deployment/release-plan.json \
   --commit "$(git rev-parse HEAD)"
 ```
 
@@ -164,7 +163,9 @@ Run:
 
 ```bash
 node scripts/prepare-remote-assets.js
-node scripts/build-cloud-asset-deployment-plan.js --subject biology --commit "$(git rev-parse HEAD)"
+node scripts/build-cloud-asset-deployment-plan.js \
+  --output dist/cloud-asset-deployment/release-plan.json \
+  --commit "$(git rev-parse HEAD)"
 node scripts/cloud-asset-deployment.test.js
 ```
 
@@ -217,7 +218,7 @@ const evidencePath = process.env.CLOUD_ASSET_DEPLOYMENT_EVIDENCE
   || '.codex-output/release-regression-v1.10.1/cloud-asset-evidence.json';
 ```
 
-它必须读取现有 `dist/remote-assets/manifest.json`，通过 `execFileSync('git', ['rev-parse', 'HEAD'])` 取得提交，并调用 `validateCloudAssetEvidence`。失败只追加 `issues`，不得生成或改写证据。
+它必须读取现有 `dist/remote-assets/manifest.json`，通过 `execFileSync('git', ['rev-parse', 'HEAD'])` 取得提交，并调用 `validateStrictCloudAssetEvidence({ manifest, evidence, sourceCommit })`。失败只追加脱敏 `issues`，不得生成或改写证据；manifest 或 evidence 的 JSON 解析失败只记录固定的云资源问题，不拼接解析器原文。
 
 在 `DEFAULT_CHECKS` 登记离线 `scripts/cloud-asset-deployment.test.js` 并将计数改为 126；不能将真实 evidence CLI 登记为默认检查。
 
@@ -256,18 +257,28 @@ git commit -m "test(release): require cloud asset evidence strictly"
 
 - [x] **Step 1: 写入真实操作说明**
 
-将默认质量矩阵数量更新为 126，并加入如下操作顺序：
+将默认质量矩阵数量更新为 126，并加入两个不可混用的操作阶段：
 
 ```bash
+# 阶段一：仅用于 biology 手动补传定位，不是严格发布证明。
 node scripts/prepare-remote-assets.js
-node scripts/build-cloud-asset-deployment-plan.js --subject biology --commit "$(git rev-parse HEAD)"
-# 在绑定 AppID 的开发者工具云存储面板按 plan.json 上传 biology 路径；此步骤不是脚本自动上传。
-# 在开发者工具控制台运行 dist/cloud-asset-deployment/verify-in-devtools.js，把去除临时 URL 的输出保存为本地 evidence JSON。
+node scripts/build-cloud-asset-deployment-plan.js \
+  --subject biology \
+  --output dist/cloud-asset-deployment/biology-plan.json \
+  --commit "$(git rev-parse HEAD)"
+
+# 阶段二：所有运行时云资源的严格发布证明。
+node scripts/prepare-remote-assets.js
+node scripts/build-cloud-asset-deployment-plan.js \
+  --output dist/cloud-asset-deployment/release-plan.json \
+  --commit "$(git rev-parse HEAD)"
+# 此次全量生成会覆盖 verify-in-devtools.js，必须在开发者工具控制台重新运行它。
 export CLOUD_ASSET_DEPLOYMENT_EVIDENCE=.codex-output/release-regression-v1.10.1/cloud-asset-evidence.json
 node scripts/check-cloud-asset-deployment-evidence.js \
-  dist/cloud-asset-deployment/plan.json \
+  dist/cloud-asset-deployment/release-plan.json \
   "$CLOUD_ASSET_DEPLOYMENT_EVIDENCE" \
   --commit "$(git rev-parse HEAD)"
+node scripts/check-release-readiness.js --require-device-evidence
 ```
 
 明确当前分支尚未上传 biology 资源，也尚未取得实体机、弱网、包体、体验版证据。
@@ -278,8 +289,10 @@ Run:
 
 ```bash
 node scripts/prepare-remote-assets.js
-node scripts/build-cloud-asset-deployment-plan.js --subject biology --commit "$(git rev-parse HEAD)"
-node scripts/check-cloud-asset-deployment-evidence.js dist/cloud-asset-deployment/plan.json /tmp/missing-cloud-evidence.json --commit "$(git rev-parse HEAD)"
+node scripts/build-cloud-asset-deployment-plan.js \
+  --output dist/cloud-asset-deployment/release-plan.json \
+  --commit "$(git rev-parse HEAD)"
+node scripts/check-cloud-asset-deployment-evidence.js dist/cloud-asset-deployment/release-plan.json /tmp/missing-cloud-evidence.json --commit "$(git rev-parse HEAD)"
 node scripts/check-v1.11-quality-matrix.js
 git diff --check
 git status --short
@@ -304,8 +317,9 @@ Expected: 仅新增开发分支，不创建 PR、标签、RC、体验版或审�
 ## Verification Record
 
 - `node scripts/prepare-remote-assets.js`：通过，生成 `231` 个本地远程资源清单项到 ignored `dist/remote-assets/`。
-- `node scripts/build-cloud-asset-deployment-plan.js --subject biology --commit "$(git rev-parse HEAD)"`：通过；基于 `1ff70f1bdf9fa87e8a984d57a68b4d22e8c6abe8` 生成 biology 计划，实际资产数为 `12`。
-- `node scripts/check-cloud-asset-deployment-evidence.js dist/cloud-asset-deployment/plan.json /tmp/missing-cloud-evidence.json --commit "$(git rev-parse HEAD)"`：预期阻断，退出码 `1`，精确输出为 `FOUND_CLOUD_ASSET_DEPLOYMENT_ISSUES: 证据 必须为可读取的 JSON 文件`；`/tmp/missing-cloud-evidence.json` 未被创建。
+- `node scripts/build-cloud-asset-deployment-plan.js --subject biology --output dist/cloud-asset-deployment/biology-plan.json --commit "$(git rev-parse HEAD)"`：通过；基于 `1ff70f1bdf9fa87e8a984d57a68b4d22e8c6abe8` 生成 biology 人工补传清单，实际资产数为 `12`，不构成严格发布证明。
+- 当时尚未生成全量 `release-plan.json` 或保存真实云端 evidence；后续严格证明必须基于不带 `--subject` 的全量计划、重新生成的 `verify-in-devtools.js` 和本地保存的脱敏 evidence。
+- `node scripts/check-cloud-asset-deployment-evidence.js dist/cloud-asset-deployment/release-plan.json /tmp/missing-cloud-evidence.json --commit "$(git rev-parse HEAD)"`：预期阻断，退出码 `1`，精确输出为 `FOUND_CLOUD_ASSET_DEPLOYMENT_ISSUES: 证据 必须为可读取的 JSON 文件`；`/tmp/missing-cloud-evidence.json` 未被创建。
 - `node scripts/check-v1.11-quality-matrix.js`：首次运行在 `[122/126] 路线文档一致性契约` 因既有发布边界的连续字串被文档扩展打断而失败；恢复该既有边界并保留云资源要求后，第二次运行通过，输出 `OK v1.11 quality matrix: 126 checks`。
 - `node scripts/check-roadmap-document-consistency.test.js`：在上述文档修正后通过，输出 `OK roadmap document consistency contract`。
 - `git diff --check`：通过，无输出；`git status --short`：当时仅列出五份获准的文档修改，`dist/` 与 `.codex-output/` 未进入暂存区。

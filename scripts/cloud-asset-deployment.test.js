@@ -796,6 +796,7 @@ try {
 }
 
 const readinessScript = path.join(__dirname, 'check-release-readiness.js');
+const repositoryRoot = path.resolve(__dirname, '..');
 const missingEvidencePath = path.join(
   os.tmpdir(),
   `knows-missing-cloud-asset-evidence-${process.pid}-${Date.now()}.json`,
@@ -829,6 +830,205 @@ assert.match(
   '严格发布检查必须明确报告缺少云资源部署证据',
 );
 assert.ok(!fs.existsSync(missingEvidencePath), '严格发布检查不得生成伪造云资源部署证据');
+
+const currentManifestPath = path.join(repositoryRoot, 'dist/remote-assets/manifest.json');
+if (!fs.existsSync(currentManifestPath)) {
+  childProcess.execFileSync(process.execPath, [path.join(__dirname, 'prepare-remote-assets.js')], {
+    cwd: repositoryRoot,
+    stdio: 'pipe',
+  });
+}
+const originalCurrentManifest = fs.readFileSync(currentManifestPath, 'utf8');
+const currentManifest = JSON.parse(originalCurrentManifest);
+const currentSourceCommit = childProcess.execFileSync('git', ['rev-parse', 'HEAD'], {
+  cwd: repositoryRoot,
+  encoding: 'utf8',
+}).trim();
+const currentFullPlan = buildCloudAssetPlan({ manifest: currentManifest, sourceCommit: currentSourceCommit });
+const currentBiologyPlan = buildCloudAssetPlan({
+  manifest: currentManifest,
+  sourceCommit: currentSourceCommit,
+  subject: 'biology',
+});
+const currentFullEvidence = buildEvidenceForPlan(currentFullPlan);
+const currentBiologyEvidence = buildEvidenceForPlan(currentBiologyPlan);
+const currentManifestOptions = {
+  sourcePaths: currentManifest.assets.map((asset) => asset.source),
+  sourceRoot: repositoryRoot,
+  outputRoot: path.join(repositoryRoot, 'dist/remote-assets'),
+};
+
+assert.notStrictEqual(currentFullPlan.assetCount, currentBiologyPlan.assetCount);
+assert.notStrictEqual(currentFullPlan.snapshotHash, currentBiologyPlan.snapshotHash);
+assert.strictEqual(validateStrictCloudAssetEvidence({
+  manifest: currentManifest,
+  evidence: currentFullEvidence,
+  sourceCommit: currentSourceCommit,
+  manifestOptions: currentManifestOptions,
+}), true);
+assert.throws(
+  () => validateStrictCloudAssetEvidence({
+    manifest: currentManifest,
+    evidence: currentBiologyEvidence,
+    sourceCommit: currentSourceCommit,
+    manifestOptions: currentManifestOptions,
+  }),
+  /快照哈希/,
+);
+[
+  {
+    name: 'truncated',
+    manifest: {
+      ...currentManifest,
+      assetCount: currentManifest.assetCount - 1,
+      assets: currentManifest.assets.slice(0, -1),
+    },
+    pattern: /资源集合/,
+  },
+  {
+    name: 'sourceSha256',
+    manifest: {
+      ...currentManifest,
+      assets: currentManifest.assets.map((asset, index) => (
+        index === 0 ? { ...asset, sourceSha256: '0'.repeat(64) } : asset
+      )),
+    },
+    pattern: /sourceSha256/,
+  },
+  {
+    name: 'sha256',
+    manifest: {
+      ...currentManifest,
+      assets: currentManifest.assets.map((asset, index) => (
+        index === 0 ? { ...asset, sha256: '0'.repeat(64) } : asset
+      )),
+    },
+    pattern: /sha256/,
+  },
+].forEach(({ manifest: invalidManifest, pattern }) => {
+  const invalidPlan = buildCloudAssetPlan({
+    manifest: invalidManifest,
+    sourceCommit: currentSourceCommit,
+  });
+  assert.throws(
+    () => validateStrictCloudAssetEvidence({
+      manifest: invalidManifest,
+      evidence: buildEvidenceForPlan(invalidPlan),
+      sourceCommit: currentSourceCommit,
+      manifestOptions: currentManifestOptions,
+    }),
+    pattern,
+  );
+});
+
+const currentFullEvidencePath = path.join(
+  os.tmpdir(),
+  `knows-current-full-cloud-evidence-${process.pid}-${Date.now()}.json`,
+);
+const currentBiologyEvidencePath = path.join(
+  os.tmpdir(),
+  `knows-current-biology-cloud-evidence-${process.pid}-${Date.now()}.json`,
+);
+const malformedEvidencePath = path.join(
+  os.tmpdir(),
+  `knows-malformed-cloud-evidence-${process.pid}-${Date.now()}.json`,
+);
+try {
+  fs.writeFileSync(currentFullEvidencePath, `${JSON.stringify(currentFullEvidence, null, 2)}\n`);
+  fs.writeFileSync(currentBiologyEvidencePath, `${JSON.stringify(currentBiologyEvidence, null, 2)}\n`);
+
+  const fullEvidenceReadiness = childProcess.spawnSync(
+    process.execPath,
+    [readinessScript, '--require-device-evidence'],
+    {
+      cwd: repositoryRoot,
+      encoding: 'utf8',
+      env: { ...process.env, CLOUD_ASSET_DEPLOYMENT_EVIDENCE: currentFullEvidencePath },
+    },
+  );
+  assert.doesNotMatch(
+    `${fullEvidenceReadiness.stdout}${fullEvidenceReadiness.stderr}`,
+    /云资源部署证据/,
+    '当前全量 evidence 必须通过严格云资源子门禁',
+  );
+
+  fs.writeFileSync(malformedEvidencePath, '{"url":"https://host/a?token=top-secret"\n');
+  const malformedEvidenceReadiness = childProcess.spawnSync(
+    process.execPath,
+    [readinessScript, '--require-device-evidence'],
+    {
+      cwd: repositoryRoot,
+      encoding: 'utf8',
+      env: { ...process.env, CLOUD_ASSET_DEPLOYMENT_EVIDENCE: malformedEvidencePath },
+    },
+  );
+  const malformedEvidenceOutput = `${malformedEvidenceReadiness.stdout}${malformedEvidenceReadiness.stderr}`;
+  assert.match(malformedEvidenceOutput, /云资源部署证据: 当前清单或部署证据 JSON 无效/);
+  assert.doesNotMatch(malformedEvidenceOutput, /https:\/\/|token=|top-secret/i);
+
+  const biologyEvidenceReadiness = childProcess.spawnSync(
+    process.execPath,
+    [readinessScript, '--require-device-evidence'],
+    {
+      cwd: repositoryRoot,
+      encoding: 'utf8',
+      env: { ...process.env, CLOUD_ASSET_DEPLOYMENT_EVIDENCE: currentBiologyEvidencePath },
+    },
+  );
+  assert.match(
+    `${biologyEvidenceReadiness.stdout}${biologyEvidenceReadiness.stderr}`,
+    /云资源部署证据/,
+    'biology evidence 不得满足严格全量云资源子门禁',
+  );
+
+  const truncatedCurrentManifest = {
+    ...currentManifest,
+    assetCount: currentManifest.assetCount - 1,
+    assets: currentManifest.assets.slice(0, -1),
+  };
+  const truncatedPlan = buildCloudAssetPlan({
+    manifest: truncatedCurrentManifest,
+    sourceCommit: currentSourceCommit,
+  });
+  fs.writeFileSync(
+    currentFullEvidencePath,
+    `${JSON.stringify(buildEvidenceForPlan(truncatedPlan), null, 2)}\n`,
+  );
+  fs.writeFileSync(currentManifestPath, `${JSON.stringify(truncatedCurrentManifest, null, 2)}\n`);
+  const truncatedManifestReadiness = childProcess.spawnSync(
+    process.execPath,
+    [readinessScript, '--require-device-evidence'],
+    {
+      cwd: repositoryRoot,
+      encoding: 'utf8',
+      env: { ...process.env, CLOUD_ASSET_DEPLOYMENT_EVIDENCE: currentFullEvidencePath },
+    },
+  );
+  assert.match(
+    `${truncatedManifestReadiness.stdout}${truncatedManifestReadiness.stderr}`,
+    /云资源部署证据/,
+    '严格门禁必须拒绝被截断的当前 manifest，即使 evidence 与其自洽',
+  );
+} finally {
+  fs.writeFileSync(currentManifestPath, originalCurrentManifest);
+  fs.rmSync(currentFullEvidencePath, { force: true });
+  fs.rmSync(currentBiologyEvidencePath, { force: true });
+  fs.rmSync(malformedEvidencePath, { force: true });
+}
+
+[
+  'README.md',
+  'docs/v1.11后续开发路线.md',
+  'docs/后续开发与发布路线.md',
+  'docs/v1.10发布前实体设备回归清单.md',
+  'docs/superpowers/plans/2026-08-11-cloud-asset-release-evidence-v1.15.md',
+].forEach((file) => {
+  assert.doesNotMatch(
+    fs.readFileSync(path.join(repositoryRoot, file), 'utf8'),
+    /dist\/cloud-asset-deployment\/plan\.json/,
+    `${file} 不得把 plan.json 说明为严格发布证据`,
+  );
+});
 
 const consoleLogs = [];
 vm.runInNewContext(buildConsoleVerificationScript(fullPlan), {

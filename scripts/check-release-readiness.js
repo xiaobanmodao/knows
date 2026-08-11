@@ -8,8 +8,7 @@ const {
   readPreviewStatus,
 } = require('./check-release-package-evidence');
 const {
-  buildCloudAssetPlan,
-  validateCloudAssetEvidence,
+  validateStrictCloudAssetEvidence,
 } = require('./cloud-asset-deployment');
 const { validateReleaseToolStateEvidence } = require('./release-tool-state-evidence');
 const { shouldRequireHotfixScope } = require('./check-release-hotfix-scope');
@@ -720,14 +719,9 @@ function checkCloudAssetDeploymentEvidence() {
   let evidence;
   try {
     manifest = JSON.parse(fs.readFileSync(resolveRepoPath(manifestPath), 'utf8'));
-  } catch (error) {
-    issues.push(`云资源部署证据: ${manifestPath} JSON 解析失败 -> ${error.message}`);
-    return;
-  }
-  try {
     evidence = JSON.parse(fs.readFileSync(resolveRepoPath(evidencePath), 'utf8'));
   } catch (error) {
-    issues.push(`云资源部署证据: ${evidencePath} JSON 解析失败 -> ${error.message}`);
+    issues.push('云资源部署证据: 当前清单或部署证据 JSON 无效');
     return;
   }
 
@@ -739,15 +733,14 @@ function checkCloudAssetDeploymentEvidence() {
       stdio: 'pipe',
     }).trim();
   } catch (error) {
-    issues.push(`云资源部署证据: 无法读取当前 Git 提交 -> ${error.message}`);
+    issues.push('云资源部署证据: 无法读取当前 Git 提交');
     return;
   }
 
   try {
-    const plan = buildCloudAssetPlan({ manifest, sourceCommit, subject: null });
-    validateCloudAssetEvidence({ plan, evidence, expectedCommit: sourceCommit });
+    validateStrictCloudAssetEvidence({ manifest, evidence, sourceCommit });
   } catch (error) {
-    issues.push(`云资源部署证据: ${error.message}`);
+    issues.push('云资源部署证据: 当前清单、全量计划或部署证据无效');
   }
 }
 
