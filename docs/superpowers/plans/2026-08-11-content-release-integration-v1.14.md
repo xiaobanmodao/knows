@@ -265,7 +265,7 @@ Expected: 提交具有两个父提交，第二父提交为 `7339c30`。若 `git 
 - Produces: 默认质量矩阵 125 项；热修复范围测试明确不属于默认内容矩阵。
 - Preserves: 历史 v1.13 验证记录中的 `123 checks` 文案，不做全局数字替换。
 
-- [ ] **Step 1: 扩展矩阵契约的失败断言**
+- [x] **Step 1: 扩展矩阵契约的失败断言**
 
 在 `scripts/check-v1.11-quality-matrix.test.js` 增加：
 
@@ -286,13 +286,13 @@ assert.deepStrictEqual(
 
 替换原来的“所有测试脚本”断言，不要保留两份冲突的 coverage 断言。
 
-- [ ] **Step 2: 运行矩阵契约确认失败**
+- [x] **Step 2: 运行矩阵契约确认失败**
 
 Run: `node scripts/check-v1.11-quality-matrix.test.js`
 
 Expected: 失败并指出云用户追踪脚本尚未加入默认矩阵或总数仍为 123。
 
-- [ ] **Step 3: 把两项隐私检查加入默认矩阵**
+- [x] **Step 3: 把两项隐私检查加入默认矩阵**
 
 在 `DEFAULT_CHECKS` 中、`check-privacy-interfaces` 之前插入：
 
@@ -303,7 +303,7 @@ Expected: 失败并指出云用户追踪脚本尚未加入默认矩阵或总数�
 
 不要把 `scripts/check-release-hotfix-scope.test.js` 加入 `DEFAULT_CHECKS`，它由 `--require-hotfix-scope` 运行。更新矩阵契约中的全部 123 计数为 125，仅限当前实时矩阵断言。
 
-- [ ] **Step 4: 同步路线数量与检查名称**
+- [x] **Step 4: 同步路线数量与检查名称**
 
 在 `scripts/check-roadmap-document-consistency.test.js` 中把绑定数量更新为 `125`，要求两个路线文档同时出现：
 
@@ -314,7 +314,7 @@ Expected: 失败并指出云用户追踪脚本尚未加入默认矩阵或总数�
 
 在 `docs/v1.11后续开发路线.md` 与 `docs/后续开发与发布路线.md` 的“当前/默认质量矩阵”段落把实时计数从 123 改为 125，并加入上述两项名称。不得修改历史实施记录和 v1.13 的验证结果。
 
-- [ ] **Step 5: 验证 125 项契约与文档一致性**
+- [x] **Step 5: 验证 125 项契约与文档一致性**
 
 Run:
 
@@ -327,7 +327,7 @@ node scripts/check-cloud-user-trace.js
 
 Expected: 全部通过；矩阵契约明确要求 125 项，路线文档和可执行命令数量一致。
 
-- [ ] **Step 6: 提交质量矩阵和路线同步**
+- [x] **Step 6: 提交质量矩阵和路线同步**
 
 ```bash
 git add scripts/check-v1.11-quality-matrix.js scripts/check-v1.11-quality-matrix.test.js scripts/check-roadmap-document-consistency.test.js docs/v1.11后续开发路线.md docs/后续开发与发布路线.md
