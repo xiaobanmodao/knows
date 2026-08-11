@@ -16,7 +16,10 @@ const manifest = {
     { source: 'assets/figures/generated/subjects/biology/topics/bio-unit-cells/diagram.png', cloudPath: '/assets/figures/generated/subjects/biology/topics/bio-unit-cells/diagram.png', width: 960, height: 675, bytes: 512, sha256: 'c'.repeat(64) },
   ],
 };
-const plan = buildCloudAssetPlan({ manifest, sourceCommit: 'abc123', subject: 'biology' });
+const sourceCommit = '1010edcb9c1a4427b7b2822b9f41728850091b6b';
+const otherSourceCommit = 'fedcba9876543210fedcba9876543210fedcba98';
+const invalidSourceCommit = 'https://signed.example/?token=secret';
+const plan = buildCloudAssetPlan({ manifest, sourceCommit, subject: 'biology' });
 
 assert.strictEqual(plan.assetCount, 2);
 assert.strictEqual(plan.batches.length, 1);
@@ -29,7 +32,11 @@ assert.deepStrictEqual(
 );
 assert(plan.assets.some((asset) => asset.source.endsWith('bio-unit-cells/cover.png')));
 assert.throws(
-  () => validateCloudAssetEvidence({ plan, evidence: { tempFileURL: 'https://secret.example/' }, expectedCommit: 'abc123' }),
+  () => buildCloudAssetPlan({ manifest, sourceCommit: invalidSourceCommit, subject: 'biology' }),
+  /sourceCommit/,
+);
+assert.throws(
+  () => validateCloudAssetEvidence({ plan, evidence: { tempFileURL: 'https://secret.example/' }, expectedCommit: sourceCommit }),
   /临时 URL/,
 );
 
@@ -74,32 +81,56 @@ assert.strictEqual(getPlanSnapshotHash(laterPlan), plan.snapshotHash);
 assert.strictEqual(validateCloudAssetEvidence({
   plan,
   evidence: buildEvidence(),
-  expectedCommit: 'abc123',
+  expectedCommit: sourceCommit,
 }), true);
 assert.strictEqual(validateCloudAssetEvidence({
   plan,
   evidence: buildEvidence({ results: [{ ...buildEvidence().results[0], errMsg: '资源校验完成' }, ...buildEvidence().results.slice(1)] }),
-  expectedCommit: 'abc123',
+  expectedCommit: sourceCommit,
 }), true);
 assert.strictEqual(validateCloudAssetEvidence({
   plan,
   evidence: buildEvidence({ results: [{ ...buildEvidence().results[0], errCode: 'ERR_TOKEN_PARSE', errMsg: 'token parsing failed' }, ...buildEvidence().results.slice(1)] }),
-  expectedCommit: 'abc123',
+  expectedCommit: sourceCommit,
 }), true);
+assert.throws(
+  () => validateCloudAssetEvidence({
+    plan: { ...plan, sourceCommit: invalidSourceCommit },
+    evidence: buildEvidence(),
+    expectedCommit: sourceCommit,
+  }),
+  /sourceCommit/,
+);
+assert.throws(
+  () => validateCloudAssetEvidence({
+    plan,
+    evidence: buildEvidence({ sourceCommit: invalidSourceCommit }),
+    expectedCommit: sourceCommit,
+  }),
+  /sourceCommit/,
+);
+assert.throws(
+  () => validateCloudAssetEvidence({
+    plan,
+    evidence: buildEvidence(),
+    expectedCommit: invalidSourceCommit,
+  }),
+  /sourceCommit/,
+);
 
 assert.throws(
   () => validateCloudAssetEvidence({
     plan,
     evidence: buildEvidence({ cloudEnvId: 'cloud1-wrong' }),
-    expectedCommit: 'abc123',
+    expectedCommit: sourceCommit,
   }),
   /环境/,
 );
 assert.throws(
   () => validateCloudAssetEvidence({
     plan,
-    evidence: buildEvidence({ sourceCommit: 'def456' }),
-    expectedCommit: 'abc123',
+    evidence: buildEvidence({ sourceCommit: otherSourceCommit }),
+    expectedCommit: sourceCommit,
   }),
   /提交/,
 );
@@ -107,7 +138,7 @@ assert.throws(
   () => validateCloudAssetEvidence({
     plan,
     evidence: buildEvidence({ planSnapshotHash: '0'.repeat(64) }),
-    expectedCommit: 'abc123',
+    expectedCommit: sourceCommit,
   }),
   /快照哈希/,
 );
@@ -115,7 +146,7 @@ assert.throws(
   () => validateCloudAssetEvidence({
     plan,
     evidence: buildEvidence({ results: buildEvidence().results.slice(1) }),
-    expectedCommit: 'abc123',
+    expectedCommit: sourceCommit,
   }),
   /遗漏/,
 );
@@ -123,7 +154,7 @@ assert.throws(
   () => validateCloudAssetEvidence({
     plan,
     evidence: buildEvidence({ results: [...buildEvidence().results, buildEvidence().results[0]] }),
-    expectedCommit: 'abc123',
+    expectedCommit: sourceCommit,
   }),
   /重复/,
 );
@@ -135,7 +166,7 @@ assert.throws(
       status: 0,
       hasTempFileURL: true,
     }] }),
-    expectedCommit: 'abc123',
+    expectedCommit: sourceCommit,
   }),
   /未知/,
 );
@@ -143,7 +174,7 @@ assert.throws(
   () => validateCloudAssetEvidence({
     plan,
     evidence: buildEvidence({ results: [{ ...buildEvidence().results[0], status: -1 }, ...buildEvidence().results.slice(1)] }),
-    expectedCommit: 'abc123',
+    expectedCommit: sourceCommit,
   }),
   /status/,
 );
@@ -151,7 +182,7 @@ assert.throws(
   () => validateCloudAssetEvidence({
     plan,
     evidence: buildEvidence({ results: [{ ...buildEvidence().results[0], hasTempFileURL: false }, ...buildEvidence().results.slice(1)] }),
-    expectedCommit: 'abc123',
+    expectedCommit: sourceCommit,
   }),
   /临时 URL 标记/,
 );
@@ -159,21 +190,21 @@ assert.throws(
   () => validateCloudAssetEvidence({
     plan,
     evidence: buildEvidence({ schemaVersion: 2 }),
-    expectedCommit: 'abc123',
+    expectedCommit: sourceCommit,
   }),
   /schemaVersion/,
 );
 const evidenceWithoutVerifiedAt = buildEvidence();
 delete evidenceWithoutVerifiedAt.verifiedAt;
 assert.throws(
-  () => validateCloudAssetEvidence({ plan, evidence: evidenceWithoutVerifiedAt, expectedCommit: 'abc123' }),
+  () => validateCloudAssetEvidence({ plan, evidence: evidenceWithoutVerifiedAt, expectedCommit: sourceCommit }),
   /verifiedAt/,
 );
 assert.throws(
   () => validateCloudAssetEvidence({
     plan,
     evidence: buildEvidence({ verifiedAt: 'not-a-date' }),
-    expectedCommit: 'abc123',
+    expectedCommit: sourceCommit,
   }),
   /verifiedAt/,
 );
@@ -181,7 +212,7 @@ assert.throws(
   () => validateCloudAssetEvidence({
     plan,
     evidence: buildEvidence({ verifiedAt: '2026-02-30T00:00:00.000Z' }),
-    expectedCommit: 'abc123',
+    expectedCommit: sourceCommit,
   }),
   /verifiedAt/,
 );
@@ -192,7 +223,7 @@ assert.throws(
   buildEvidence({ results: [{ ...buildEvidence().results[0], metadata: { signedUrl: 'https://secret.example/' } }, ...buildEvidence().results.slice(1)] }),
 ].forEach((evidence) => {
   assert.throws(
-    () => validateCloudAssetEvidence({ plan, evidence, expectedCommit: 'abc123' }),
+    () => validateCloudAssetEvidence({ plan, evidence, expectedCommit: sourceCommit }),
     /未批准字段/,
   );
 });
@@ -200,7 +231,7 @@ assert.throws(
   () => validateCloudAssetEvidence({
     plan,
     evidence: buildEvidence({ results: [{ ...buildEvidence().results[0], errMsg: { token: 'secret' } }, ...buildEvidence().results.slice(1)] }),
-    expectedCommit: 'abc123',
+    expectedCommit: sourceCommit,
   }),
   /错误字段必须为标量/,
 );
@@ -210,12 +241,14 @@ assert.throws(
   '签名失败：credential=secret',
   'https%25253A%25252F%25252Fsigned.example%25252Fasset.png%25253Ftoken%25253Dsecret',
   'request failed: access_token=secret',
+  'request failed: sig=secret',
+  '%FF%68%74%74%70%73%3A%2F%2Fsigned.example%2Fasset.png%3Ftoken%3Dsecret',
 ].forEach((errMsg) => {
   assert.throws(
     () => validateCloudAssetEvidence({
       plan,
       evidence: buildEvidence({ results: [{ ...buildEvidence().results[0], errMsg }, ...buildEvidence().results.slice(1)] }),
-      expectedCommit: 'abc123',
+      expectedCommit: sourceCommit,
     }),
     /安全文本/,
   );
@@ -231,7 +264,7 @@ assert.throws(
   () => validateCloudAssetEvidence({
     plan,
     evidence: buildEvidence({ results: [{ ...buildEvidence().results[0], errMsg: fiveTimesEncodedSignedUrl }, ...buildEvidence().results.slice(1)] }),
-    expectedCommit: 'abc123',
+    expectedCommit: sourceCommit,
   }),
   /安全文本/,
 );
@@ -239,7 +272,7 @@ assert.throws(
   () => validateCloudAssetEvidence({
     plan,
     evidence: buildEvidence({ results: [{ ...buildEvidence().results[0], errCode: 'https://signed.example/?token=secret' }, ...buildEvidence().results.slice(1)] }),
-    expectedCommit: 'abc123',
+    expectedCommit: sourceCommit,
   }),
   /errCode/,
 );
@@ -247,7 +280,7 @@ assert.throws(
   () => validateCloudAssetEvidence({
     plan,
     evidence: buildEvidence({ results: [{ ...buildEvidence().results[0], tempFileURL: 'https://secret.example/' }, ...buildEvidence().results.slice(1)] }),
-    expectedCommit: 'abc123',
+    expectedCommit: sourceCommit,
   }),
   /临时 URL/,
 );

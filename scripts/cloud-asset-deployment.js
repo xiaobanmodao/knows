@@ -14,7 +14,8 @@ const EVIDENCE_FIELDS = new Set([
 const RESULT_FIELDS = new Set(['fileID', 'status', 'errCode', 'errMsg', 'hasTempFileURL']);
 const ISO_TIMESTAMP_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
 const URL_SCHEME_PATTERN = /(?:https?|cloud):\/\//i;
-const SENSITIVE_PARAMETER_PATTERN = /\b(?:access_token|token|signature|x-amz-signature|credential|expires|q-sign-[a-z0-9._-]*|sign)\s*=/i;
+const SENSITIVE_PARAMETER_PATTERN = /\b(?:access_token|token|signature|x-amz-signature|credential|expires|q-sign-[a-z0-9._-]*|sign|sig)\s*=/i;
+const SOURCE_COMMIT_PATTERN = /^[a-f0-9]{7,64}$/i;
 const MAX_ERROR_CODE_LENGTH = 128;
 const MAX_ERROR_MESSAGE_LENGTH = 512;
 
@@ -64,6 +65,7 @@ function getPlanSnapshotHash(plan) {
 
 function buildCloudAssetPlan({ manifest, sourceCommit = null, subject = null }) {
   if (!manifest || !Array.isArray(manifest.assets)) throw new Error('资源 manifest 必须包含 assets 数组');
+  if (!isValidSourceCommit(sourceCommit)) throw new Error('sourceCommit 必须为 7 到 64 位十六进制 Git 提交标识');
 
   const assets = manifest.assets
     .filter((asset) => !subject || getSubjectFromAsset(asset.source) === subject)
@@ -109,6 +111,10 @@ function isValidDateString(value) {
   return !Number.isNaN(date.getTime()) && date.toISOString() === value;
 }
 
+function isValidSourceCommit(value) {
+  return typeof value === 'string' && SOURCE_COMMIT_PATTERN.test(value);
+}
+
 function isValidErrorCode(value) {
   if (value === undefined || value === null) return true;
   if (typeof value === 'number') return Number.isFinite(value);
@@ -119,13 +125,18 @@ function isValidErrorCode(value) {
 }
 
 function decodePercentEscapes(value) {
-  return value.replace(/(?:%[0-9A-Fa-f]{2})+/g, (encoded) => {
+  if (/%[0-9A-Fa-f](?![0-9A-Fa-f])/.test(value)) return null;
+
+  let invalid = false;
+  const decoded = value.replace(/(?:%[0-9A-Fa-f]{2})+/g, (encoded) => {
     try {
       return decodeURIComponent(encoded);
     } catch (error) {
+      invalid = true;
       return encoded;
     }
   });
+  return invalid ? null : decoded;
 }
 
 function decodeRepeatedly(value) {
@@ -133,6 +144,7 @@ function decodeRepeatedly(value) {
   const maxPasses = Math.max(1, Math.min(MAX_ERROR_MESSAGE_LENGTH, value.length));
   for (let pass = 0; pass < maxPasses; pass += 1) {
     const next = decodePercentEscapes(decoded);
+    if (next === null) return null;
     if (next === decoded) return decoded;
     decoded = next;
   }
@@ -154,9 +166,12 @@ function isSafeErrorMessage(value) {
 function validateCloudAssetEvidence({ plan, evidence, expectedCommit }) {
   if (containsTempFileURL(evidence)) throw new Error('证据不得包含临时 URL');
   if (!plan || plan.schemaVersion !== 1) throw new Error('计划 schemaVersion 必须为 1');
+  if (!isValidSourceCommit(plan.sourceCommit)) throw new Error('计划 sourceCommit 无效');
   assertAllowedKeys(evidence, EVIDENCE_FIELDS, '证据');
   if (!evidence || evidence.schemaVersion !== 1) throw new Error('证据 schemaVersion 必须为 1');
   if (!isValidDateString(evidence.verifiedAt)) throw new Error('证据 verifiedAt 必须为有效日期字符串');
+  if (!isValidSourceCommit(evidence.sourceCommit)) throw new Error('证据 sourceCommit 无效');
+  if (!isValidSourceCommit(expectedCommit)) throw new Error('expectedCommit sourceCommit 无效');
   if (plan.cloudEnvId !== CLOUD_ENV_ID || evidence.cloudEnvId !== plan.cloudEnvId) {
     throw new Error('证据环境与计划不一致');
   }
