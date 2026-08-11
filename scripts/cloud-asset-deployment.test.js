@@ -20,7 +20,18 @@ const {
   validateCurrentRemoteAssetManifest,
   validateRemoteAssetManifest,
 } = require('./remote-asset-manifest');
+const { collectRemoteAssets } = require('./asset-inventory');
 const { REMOTE_ASSET_BASE } = require('../utils/asset-config');
+
+const currentRemoteAssetSources = collectRemoteAssets();
+assert.strictEqual(currentRemoteAssetSources.length, 231);
+assert.throws(
+  () => collectRemoteAssets({
+    existsSync: (source) => source !== currentRemoteAssetSources[0],
+  }),
+  /远程资源原图缺失/,
+  '缺失的已引用原图不得从严格发布集合中静默消失',
+);
 
 const manifest = {
   version: 2,
