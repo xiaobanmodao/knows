@@ -65,7 +65,9 @@ function getPlanSnapshotHash(plan) {
 
 function buildCloudAssetPlan({ manifest, sourceCommit = null, subject = null }) {
   if (!manifest || !Array.isArray(manifest.assets)) throw new Error('资源 manifest 必须包含 assets 数组');
-  if (!isValidSourceCommit(sourceCommit)) throw new Error('sourceCommit 必须为 7 到 64 位十六进制 Git 提交标识');
+  if (sourceCommit !== null && !isValidSourceCommit(sourceCommit)) {
+    throw new Error('sourceCommit 必须为 null 或 7 到 64 位十六进制 Git 提交标识');
+  }
 
   const assets = manifest.assets
     .filter((asset) => !subject || getSubjectFromAsset(asset.source) === subject)

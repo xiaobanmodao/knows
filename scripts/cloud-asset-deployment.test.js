@@ -20,8 +20,10 @@ const sourceCommit = '1010edcb9c1a4427b7b2822b9f41728850091b6b';
 const otherSourceCommit = 'fedcba9876543210fedcba9876543210fedcba98';
 const invalidSourceCommit = 'https://signed.example/?token=secret';
 const plan = buildCloudAssetPlan({ manifest, sourceCommit, subject: 'biology' });
+const diagnosticPlan = buildCloudAssetPlan({ manifest, subject: 'biology' });
 
 assert.strictEqual(plan.assetCount, 2);
+assert.strictEqual(diagnosticPlan.sourceCommit, null);
 assert.strictEqual(plan.batches.length, 1);
 assert.deepStrictEqual(
   plan.assets.map((asset) => asset.fileID),
@@ -55,6 +57,15 @@ function buildEvidence(overrides = {}) {
     ...overrides,
   };
 }
+
+assert.throws(
+  () => validateCloudAssetEvidence({
+    plan: diagnosticPlan,
+    evidence: buildEvidence(),
+    expectedCommit: sourceCommit,
+  }),
+  /sourceCommit/,
+);
 
 assert.strictEqual(
   getSubjectFromAsset('assets/figures/generated/subjects/biology/topics/bio-unit-cells/cover.png'),
