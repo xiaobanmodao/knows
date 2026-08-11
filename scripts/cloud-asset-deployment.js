@@ -118,18 +118,25 @@ function isValidErrorCode(value) {
     && /^[A-Za-z0-9._-]+$/.test(value);
 }
 
-function decodeRepeatedly(value, maxPasses = 4) {
-  let decoded = value;
-  for (let pass = 0; pass < maxPasses; pass += 1) {
+function decodePercentEscapes(value) {
+  return value.replace(/(?:%[0-9A-Fa-f]{2})+/g, (encoded) => {
     try {
-      const next = decodeURIComponent(decoded);
-      if (next === decoded) break;
-      decoded = next;
+      return decodeURIComponent(encoded);
     } catch (error) {
-      break;
+      return encoded;
     }
+  });
+}
+
+function decodeRepeatedly(value) {
+  let decoded = value;
+  const maxPasses = Math.max(1, Math.min(MAX_ERROR_MESSAGE_LENGTH, value.length));
+  for (let pass = 0; pass < maxPasses; pass += 1) {
+    const next = decodePercentEscapes(decoded);
+    if (next === decoded) return decoded;
+    decoded = next;
   }
-  return decoded;
+  return null;
 }
 
 function isSafeErrorMessage(value) {
@@ -138,7 +145,10 @@ function isSafeErrorMessage(value) {
     return false;
   }
   const decoded = decodeRepeatedly(value);
-  return !URL_SCHEME_PATTERN.test(decoded) && !SENSITIVE_PARAMETER_PATTERN.test(decoded);
+  return decoded !== null
+    && !/[\u0000-\u001F\u007F]/.test(decoded)
+    && !URL_SCHEME_PATTERN.test(decoded)
+    && !SENSITIVE_PARAMETER_PATTERN.test(decoded);
 }
 
 function validateCloudAssetEvidence({ plan, evidence, expectedCommit }) {

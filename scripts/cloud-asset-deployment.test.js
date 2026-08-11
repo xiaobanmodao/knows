@@ -220,6 +220,21 @@ assert.throws(
     /安全文本/,
   );
 });
+const fiveTimesEncodedSignedUrl = Array.from(
+  { length: 5 },
+  () => null,
+).reduce(
+  (value) => encodeURIComponent(value),
+  'https://signed.example/asset.png?token=secret',
+);
+assert.throws(
+  () => validateCloudAssetEvidence({
+    plan,
+    evidence: buildEvidence({ results: [{ ...buildEvidence().results[0], errMsg: fiveTimesEncodedSignedUrl }, ...buildEvidence().results.slice(1)] }),
+    expectedCommit: 'abc123',
+  }),
+  /安全文本/,
+);
 assert.throws(
   () => validateCloudAssetEvidence({
     plan,
