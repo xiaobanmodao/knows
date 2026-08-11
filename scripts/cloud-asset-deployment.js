@@ -3,6 +3,15 @@ const crypto = require('crypto');
 const { CLOUD_ENV_ID, REMOTE_ASSET_BASE } = require('../utils/asset-config');
 
 const SUBJECTS = new Set(['biology', 'chemistry', 'english', 'math', 'physics']);
+const EVIDENCE_FIELDS = new Set([
+  'schemaVersion',
+  'verifiedAt',
+  'cloudEnvId',
+  'sourceCommit',
+  'planSnapshotHash',
+  'results',
+]);
+const RESULT_FIELDS = new Set(['fileID', 'status', 'errCode', 'errMsg', 'hasTempFileURL']);
 
 function getSubjectFromAsset(source) {
   const normalized = String(source || '').replace(/^\/+/, '');
@@ -80,10 +89,29 @@ function containsTempFileURL(value) {
   return Object.values(value).some((item) => containsTempFileURL(item));
 }
 
+function assertAllowedKeys(value, allowedKeys, label) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new Error(`${label}必须为对象`);
+  }
+  Object.keys(value).forEach((key) => {
+    if (!allowedKeys.has(key)) throw new Error(`${label}含未批准字段：${key}`);
+  });
+}
+
+function isValidDateString(value) {
+  return typeof value === 'string' && value.trim().length > 0 && !Number.isNaN(Date.parse(value));
+}
+
+function isOptionalScalar(value) {
+  return value === undefined || value === null || ['string', 'number', 'boolean'].includes(typeof value);
+}
+
 function validateCloudAssetEvidence({ plan, evidence, expectedCommit }) {
   if (containsTempFileURL(evidence)) throw new Error('证据不得包含临时 URL');
   if (!plan || plan.schemaVersion !== 1) throw new Error('计划 schemaVersion 必须为 1');
+  assertAllowedKeys(evidence, EVIDENCE_FIELDS, '证据');
   if (!evidence || evidence.schemaVersion !== 1) throw new Error('证据 schemaVersion 必须为 1');
+  if (!isValidDateString(evidence.verifiedAt)) throw new Error('证据 verifiedAt 必须为有效日期字符串');
   if (plan.cloudEnvId !== CLOUD_ENV_ID || evidence.cloudEnvId !== plan.cloudEnvId) {
     throw new Error('证据环境与计划不一致');
   }
@@ -103,7 +131,10 @@ function validateCloudAssetEvidence({ plan, evidence, expectedCommit }) {
 
   const resultFileIDs = new Set();
   evidence.results.forEach((result) => {
-    if (!result || typeof result !== 'object') throw new Error('证据结果无效');
+    assertAllowedKeys(result, RESULT_FIELDS, '证据结果');
+    if (!isOptionalScalar(result.errCode) || !isOptionalScalar(result.errMsg)) {
+      throw new Error(`证据结果错误字段必须为标量：${result.fileID || '(empty)'}`);
+    }
     if (resultFileIDs.has(result.fileID)) throw new Error(`证据结果 fileID 重复：${result.fileID}`);
     resultFileIDs.add(result.fileID);
     if (!expectedFileIDs.has(result.fileID)) throw new Error(`证据结果含未知 fileID：${result.fileID}`);

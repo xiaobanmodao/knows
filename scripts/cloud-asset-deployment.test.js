@@ -7,6 +7,7 @@ const {
   getSubjectFromAsset,
   validateCloudAssetEvidence,
 } = require('./cloud-asset-deployment');
+const { REMOTE_ASSET_BASE } = require('../utils/asset-config');
 
 const manifest = {
   assets: [
@@ -19,7 +20,13 @@ const plan = buildCloudAssetPlan({ manifest, sourceCommit: 'abc123', subject: 'b
 
 assert.strictEqual(plan.assetCount, 2);
 assert.strictEqual(plan.batches.length, 1);
-assert(plan.assets.every((asset) => asset.fileID.includes('cloud1-d3gm5t961d46590c3')));
+assert.deepStrictEqual(
+  plan.assets.map((asset) => asset.fileID),
+  [
+    `${REMOTE_ASSET_BASE}${manifest.assets[0].cloudPath}`,
+    `${REMOTE_ASSET_BASE}${manifest.assets[2].cloudPath}`,
+  ],
+);
 assert(plan.assets.some((asset) => asset.source.endsWith('bio-unit-cells/cover.png')));
 assert.throws(
   () => validateCloudAssetEvidence({ plan, evidence: { tempFileURL: 'https://secret.example/' }, expectedCommit: 'abc123' }),
@@ -29,6 +36,7 @@ assert.throws(
 function buildEvidence(overrides = {}) {
   return {
     schemaVersion: 1,
+    verifiedAt: '2026-08-11T00:00:00.000Z',
     cloudEnvId: plan.cloudEnvId,
     sourceCommit: plan.sourceCommit,
     planSnapshotHash: plan.snapshotHash,
@@ -128,6 +136,55 @@ assert.throws(
     expectedCommit: 'abc123',
   }),
   /status/,
+);
+assert.throws(
+  () => validateCloudAssetEvidence({
+    plan,
+    evidence: buildEvidence({ results: [{ ...buildEvidence().results[0], hasTempFileURL: false }, ...buildEvidence().results.slice(1)] }),
+    expectedCommit: 'abc123',
+  }),
+  /临时 URL 标记/,
+);
+assert.throws(
+  () => validateCloudAssetEvidence({
+    plan,
+    evidence: buildEvidence({ schemaVersion: 2 }),
+    expectedCommit: 'abc123',
+  }),
+  /schemaVersion/,
+);
+const evidenceWithoutVerifiedAt = buildEvidence();
+delete evidenceWithoutVerifiedAt.verifiedAt;
+assert.throws(
+  () => validateCloudAssetEvidence({ plan, evidence: evidenceWithoutVerifiedAt, expectedCommit: 'abc123' }),
+  /verifiedAt/,
+);
+assert.throws(
+  () => validateCloudAssetEvidence({
+    plan,
+    evidence: buildEvidence({ verifiedAt: 'not-a-date' }),
+    expectedCommit: 'abc123',
+  }),
+  /verifiedAt/,
+);
+[
+  buildEvidence({ signedUrl: 'https://secret.example/' }),
+  buildEvidence({ results: [{ ...buildEvidence().results[0], url: 'https://secret.example/' }, ...buildEvidence().results.slice(1)] }),
+  buildEvidence({ results: [{ ...buildEvidence().results[0], token: 'secret' }, ...buildEvidence().results.slice(1)] }),
+  buildEvidence({ results: [{ ...buildEvidence().results[0], metadata: { signedUrl: 'https://secret.example/' } }, ...buildEvidence().results.slice(1)] }),
+].forEach((evidence) => {
+  assert.throws(
+    () => validateCloudAssetEvidence({ plan, evidence, expectedCommit: 'abc123' }),
+    /未批准字段/,
+  );
+});
+assert.throws(
+  () => validateCloudAssetEvidence({
+    plan,
+    evidence: buildEvidence({ results: [{ ...buildEvidence().results[0], errMsg: { token: 'secret' } }, ...buildEvidence().results.slice(1)] }),
+    expectedCommit: 'abc123',
+  }),
+  /错误字段必须为标量/,
 );
 assert.throws(
   () => validateCloudAssetEvidence({
