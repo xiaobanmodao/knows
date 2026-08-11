@@ -101,6 +101,24 @@ node scripts/english-curriculum-map.test.js
 node scripts/check-v1.11-quality-matrix.js
 ```
 
+## 云资源部署证据交接
+
+biology 云图须先按当前提交生成计划，再由具有项目 AppID 开发权限的人员在已绑定 AppID 的微信开发者工具云存储面板中，依照 `dist/cloud-asset-deployment/plan.json` 的 biology 路径手动上传。脚本只生成上传计划并检查已保存的证据，不会自动上传云存储；生成的 `verify-in-devtools.js` 只输出状态和 `hasTempFileURL` 标记，不保留临时 URL。
+
+```bash
+node scripts/prepare-remote-assets.js
+node scripts/build-cloud-asset-deployment-plan.js --subject biology --commit "$(git rev-parse HEAD)"
+# 在绑定 AppID 的开发者工具云存储面板按 plan.json 上传 biology 路径；此步骤不是脚本自动上传。
+# 在开发者工具控制台运行 verify-in-devtools.js，把去除临时 URL 的输出保存为本地 evidence JSON。
+CLOUD_ASSET_DEPLOYMENT_EVIDENCE=.codex-output/release-regression-v1.10.1/cloud-asset-evidence.json \
+node scripts/check-cloud-asset-deployment-evidence.js \
+  dist/cloud-asset-deployment/plan.json \
+  "$CLOUD_ASSET_DEPLOYMENT_EVIDENCE" \
+  --commit "$(git rev-parse HEAD)"
+```
+
+当前分支尚未上传 biology 资源；`assets/figures/generated/subjects/biology/topics/bio-unit-cells/cover.png` 在 v1.14 检查中仍是云对象未确认，文字降级可读不等于部署成功。实体机、弱网、当前构建包体和体验版证据也均未取得，仍按下方发布门禁独立执行。
+
 生物学 v1.8 的实体设备回归步骤和发布门禁见：`docs/v1.8实体设备回归清单.md`。模拟器通过不等于真机通过；实体 iPhone 与 Android 回归完成前不创建 RC。
 
 复核队列只暴露尚未登记复核的内容，不会自动把内容标记为已复核；`--require-reviewed` 在来源和人工复核记录补齐后再作为严格门禁。

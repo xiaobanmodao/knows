@@ -303,4 +303,11 @@ Expected: 仅新增开发分支，不创建 PR、标签、RC、体验版或审�
 
 ## Verification Record
 
-在 Task 4 完成后只记录实际发生的静态检查、计划生成、开发者工具/云端动作与未执行发布步骤。
+- `node scripts/prepare-remote-assets.js`：通过，生成 `231` 个本地远程资源清单项到 ignored `dist/remote-assets/`。
+- `node scripts/build-cloud-asset-deployment-plan.js --subject biology --commit "$(git rev-parse HEAD)"`：通过；基于 `1ff70f1bdf9fa87e8a984d57a68b4d22e8c6abe8` 生成 biology 计划，实际资产数为 `12`。
+- `node scripts/check-cloud-asset-deployment-evidence.js dist/cloud-asset-deployment/plan.json /tmp/missing-cloud-evidence.json --commit "$(git rev-parse HEAD)"`：预期阻断，退出码 `1`，精确输出为 `FOUND_CLOUD_ASSET_DEPLOYMENT_ISSUES: 证据 必须为可读取的 JSON 文件`；`/tmp/missing-cloud-evidence.json` 未被创建。
+- `node scripts/check-v1.11-quality-matrix.js`：首次运行在 `[122/126] 路线文档一致性契约` 因既有发布边界的连续字串被文档扩展打断而失败；恢复该既有边界并保留云资源要求后，第二次运行通过，输出 `OK v1.11 quality matrix: 126 checks`。
+- `node scripts/check-roadmap-document-consistency.test.js`：在上述文档修正后通过，输出 `OK roadmap document consistency contract`。
+- `git diff --check`：通过，无输出；`git status --short`：当时仅列出获准的 `README.md` 与三份路线/回归文档修改，`dist/` 与 `.codex-output/` 未进入暂存区。
+
+未执行任何云存储上传、绑定 AppID 的 DevTools 云存储面板操作、DevTools 控制台 `verify-in-devtools.js` 调用、微信开发者工具/云端调用、实体机或弱网回归、当前构建包体/体验版/小程序上传、RC、标签、PR 或审核请求。当前 `assets/figures/generated/subjects/biology/topics/bio-unit-cells/cover.png` 的云对象仍未确认；文字降级可读不构成部署成功。Task 4 复选框保持未完成，等待独立审查。
