@@ -29,7 +29,7 @@
 - Produces: `buildCloudAssetPlan({ manifest, sourceCommit, subject })`、`getPlanSnapshotHash(plan)`、`buildVerificationBatches(assets)`、`validateCloudAssetEvidence({ plan, evidence, expectedCommit })`。
 - Invariants: 计划的 `fileID` 由固定云基址和 `cloudPath` 构成；批次最多 50 项；哈希不受生成时间影响；证据禁止临时 URL。
 
-- [ ] **Step 1: 写入失败的领域模型测试**
+- [x] **Step 1: 写入失败的领域模型测试**
 
 创建 `scripts/cloud-asset-deployment.test.js`，先引用尚不存在的模块并使用合成 manifest：
 
@@ -59,13 +59,13 @@ assert.throws(
 console.log('OK cloud asset deployment contract');
 ```
 
-- [ ] **Step 2: 运行测试并确认失败**
+- [x] **Step 2: 运行测试并确认失败**
 
 Run: `node scripts/cloud-asset-deployment.test.js`
 
 Expected: FAIL，错误为找不到 `./cloud-asset-deployment`。
 
-- [ ] **Step 3: 实现最小领域模型**
+- [x] **Step 3: 实现最小领域模型**
 
 创建 `scripts/cloud-asset-deployment.js` 并导出：
 
@@ -86,7 +86,7 @@ module.exports = {
 
 验证器必须要求 `schemaVersion === 1`、环境/提交/快照哈希一致、结果 `fileID` 集合严格等于计划、每项 `status === 0` 且 `hasTempFileURL === true`；拒绝重复、未知、遗漏结果和任何 `tempFileURL` 键。
 
-- [ ] **Step 4: 扩展边界测试并确认通过**
+- [x] **Step 4: 扩展边界测试并确认通过**
 
 补充 51 项资源分为 `50 + 1`、不同 `generatedAt` 的同一资产哈希不变、错误环境、错误提交、遗漏、重复、非零状态和临时 URL 均失败。
 
@@ -94,7 +94,7 @@ Run: `node scripts/cloud-asset-deployment.test.js`
 
 Expected: `OK cloud asset deployment contract`。
 
-- [ ] **Step 5: 提交领域模型**
+- [x] **Step 5: 提交领域模型**
 
 ```bash
 git add scripts/cloud-asset-deployment.js scripts/cloud-asset-deployment.test.js
