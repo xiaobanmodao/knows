@@ -209,6 +209,10 @@ assert.throws(() => getSubjectFromAsset('assets/figures/generated/other/topic.pn
   'assets/figures/generated/topics/g9-topic-circle\\cover.png',
   'assets/figures/generated/topics/g9-topic-circle/cover.png?token=secret',
   'assets/figures/generated/topics/g9-topic-circle/cover.png#signature=secret',
+  'assets/figures/generated/topics/https://host/a.png?token=top-secret',
+  'assets/figures/generated/topics/g9-topic-circle/cover.jpg',
+  'assets/figures/generated/topics/g9 topic circle/cover.png',
+  'assets/figures/generated/topics/g9%2Dtopic-circle/cover.png',
 ].forEach((source) => {
   assertSanitizedReject(() => getSubjectFromAsset(source), /资源路径无效/, [source]);
 });
@@ -610,6 +614,23 @@ try {
   assert.strictEqual(validateRemoteAssetManifest(currentManifest), true);
   assert.strictEqual(validateCurrentRemoteAssetManifest(currentManifest, fixtureOptions), true);
 
+  assertSanitizedReject(
+    () => createRemoteAssetManifest([{
+      source: sourcePaths[0],
+      sourcePath: hostilePayload,
+      out: path.join(outputRoot, sourcePaths[0]),
+    }]),
+    /资源项\[0\].*原图不可读取/,
+  );
+  assertSanitizedReject(
+    () => createRemoteAssetManifest([{
+      source: sourcePaths[0],
+      sourcePath: path.join(sourceRoot, sourcePaths[0]),
+      out: hostilePayload,
+    }]),
+    /资源项\[0\].*压缩产物不可读取/,
+  );
+
   const crossPathManifest = JSON.parse(JSON.stringify(currentManifest));
   crossPathManifest.assets[0].cloudPath = `/${sourcePaths[1]}`;
   assert.throws(
@@ -712,6 +733,14 @@ try {
     '--commit', sourceCommit,
   ]);
   assert.match(buildOutput, /cloud asset deployment plan/);
+  const hostileCliArgument = '--https://host/a?token=top-secret';
+  assert.throws(
+    () => runCli('build-cloud-asset-deployment-plan.js', [hostileCliArgument]),
+    (error) => /FOUND_CLOUD_ASSET_DEPLOYMENT_ISSUES/.test(error.stderr)
+      && /未知命令行参数/.test(error.stderr)
+      && !error.stderr.includes(hostileCliArgument)
+      && !/https:\/\/|token=|top-secret/i.test(error.stderr),
+  );
 
   const cliPlan = JSON.parse(fs.readFileSync(cliPlanPath, 'utf8'));
   assert(cliPlan.assets.some((asset) => asset.source.endsWith('bio-unit-cells/cover.png')));

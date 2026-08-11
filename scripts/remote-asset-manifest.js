@@ -77,8 +77,18 @@ function createRemoteAssetManifest(items) {
     if (!item || typeof item !== 'object') throw new Error(`${label}必须为对象`);
     const source = item.source;
     getSubjectFromAsset(source);
-    const sourceBuffer = fs.readFileSync(item.sourcePath || source);
-    const outputBuffer = fs.readFileSync(item.out);
+    let sourceBuffer;
+    let outputBuffer;
+    try {
+      sourceBuffer = fs.readFileSync(item.sourcePath || source);
+    } catch (error) {
+      throw new Error(`${label}原图不可读取`);
+    }
+    try {
+      outputBuffer = fs.readFileSync(item.out);
+    } catch (error) {
+      throw new Error(`${label}压缩产物不可读取`);
+    }
     const { width, height } = readPngDimensions(outputBuffer, label);
     return {
       source,

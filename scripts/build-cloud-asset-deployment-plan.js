@@ -18,7 +18,7 @@ function readOption(args, name, defaultValue = undefined) {
 function assertKnownArguments(args) {
   const known = new Set(['--manifest', '--output', '--subject', '--commit']);
   args.forEach((argument) => {
-    if (argument.startsWith('--') && !known.has(argument)) throw new Error(`未知参数：${argument}`);
+    if (argument.startsWith('--') && !known.has(argument)) throw new Error('未知命令行参数');
   });
 }
 
