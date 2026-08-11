@@ -12,7 +12,7 @@ const productRoadmap = fs.readFileSync(productRoadmapPath, 'utf8');
 const englishSourcePath = path.join(root, 'docs/人教版英语内容来源与编写规范.md');
 const englishSource = fs.readFileSync(englishSourcePath, 'utf8');
 const expectedCount = getCheckCommands(false).length;
-const bindingQualityCheckCount = 123;
+const bindingQualityCheckCount = 125;
 const grade8UpperUnitList = 'Unit 1 Happy Holiday；Unit 2 Home Sweet Home；Unit 3 Same or Different；Unit 4 Amazing Plants and Animals；Unit 5 What a Delicious Meal!；Unit 6 Plan for Yourself；Unit 7 When Tomorrow Comes；Unit 8 Let\'s Communicate!。';
 const grade8LowerUnitList = 'Unit 1 Time to Relax；Unit 2 Stay Healthy；Unit 3 Growing Up；Unit 4 The Wonders of Nature；Unit 5 Nature\'s Temper；Unit 6 Crossing Cultures；Unit 7 A Good Read；Unit 8 Making a Difference。';
 const grade9UpperDirectoryStatus = '目录证据状态：partial；当前公开页已核对 Unit 1-2；既有 Unit 3-8 保持可查阅的项目原创讲解，待完整官方目录复核。';
@@ -24,6 +24,10 @@ const visualGuideChecks = [
   '化学图解内容与页面',
   '生物图解契约',
   '生物图解内容与页面',
+];
+const releasePrivacyChecks = [
+  '云开发用户追踪契约',
+  '云开发用户追踪隐私审计',
 ];
 const v111ReleaseBoundaries = [
   'math-chapters-v1.11',
@@ -74,6 +78,10 @@ function assertActiveRoadmapBoundaries({
     assertIncludes(currentRoadmap, check, `v1.11 路线文档必须列出 ${check}`);
     assertIncludes(currentProductRoadmap, check, `总路线文档必须列出 ${check}`);
   });
+  releasePrivacyChecks.forEach((check) => {
+    assertIncludes(currentRoadmap, check, `v1.11 路线文档必须列出 ${check}`);
+    assertIncludes(currentProductRoadmap, check, `总路线文档必须列出 ${check}`);
+  });
   v111ReleaseBoundaries.forEach((boundary) => {
     assertIncludes(currentRoadmap, boundary, `v1.11 路线文档必须保留 ${boundary} 边界`);
   });
@@ -118,9 +126,9 @@ function assertQualityMatrixContract({
     new RegExp(`当前路线分支的本地质量门禁为 ${currentExpectedCount} 项`),
     `总路线文档的质量矩阵数量应为 ${currentExpectedCount}`,
   );
-  assert.doesNotMatch(currentRoadmap, /当前共 (?!123 项)\d+ 项/, '路线文档不得记录非 123 项的质量矩阵总数');
-  assert.doesNotMatch(currentRoadmap, /默认质量矩阵现登记 (?!123 项)\d+ 项/, '路线文档不得记录非 123 项的默认矩阵数量');
-  assert.doesNotMatch(currentProductRoadmap, /当前路线分支的本地质量门禁为 (?!123 项)\d+ 项/, '总路线文档不得记录非 123 项的本地质量门禁');
+  assert.doesNotMatch(currentRoadmap, /当前共 (?!125 项)\d+ 项/, '路线文档不得记录非 125 项的质量矩阵总数');
+  assert.doesNotMatch(currentRoadmap, /默认质量矩阵现登记 (?!125 项)\d+ 项/, '路线文档不得记录非 125 项的默认矩阵数量');
+  assert.doesNotMatch(currentProductRoadmap, /当前路线分支的本地质量门禁为 (?!125 项)\d+ 项/, '总路线文档不得记录非 125 项的本地质量门禁');
 }
 
 assertQualityMatrixContract();
@@ -224,18 +232,18 @@ assert.throws(
   '弱化总路线文档严格门禁通过后再创建 RC 的关系必须失败',
 );
 assert.throws(
-  () => assertQualityMatrixContract({ currentRoadmap: roadmap.replace('当前共 123 项', '当前共 122 项') }),
+  () => assertQualityMatrixContract({ currentRoadmap: roadmap.replace('当前共 125 项', '当前共 124 项') }),
   assert.AssertionError,
-  '将质量矩阵总数改为 122 必须失败',
+  '将质量矩阵总数改为 124 必须失败',
 );
 assert.throws(
   () => assertQualityMatrixContract({
-    currentExpectedCount: 122,
-    currentRoadmap: roadmap.replaceAll('123 项', '122 项'),
-    currentProductRoadmap: productRoadmap.replaceAll('123 项', '122 项'),
+    currentExpectedCount: 124,
+    currentRoadmap: roadmap.replaceAll('125 项', '124 项'),
+    currentProductRoadmap: productRoadmap.replaceAll('125 项', '124 项'),
   }),
   assert.AssertionError,
-  '质量矩阵命令和文档同步改为 122 时仍必须违反绑定数量',
+  '质量矩阵命令和文档同步改为 124 时仍必须违反绑定数量',
 );
 
 console.log('OK roadmap document consistency contract');

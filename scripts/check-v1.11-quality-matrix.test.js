@@ -113,6 +113,8 @@ assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-catalog-
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-package-source-estimate.test.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-package-source-estimate.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-search-aliases-package-boundary.test.js'));
+assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-cloud-user-trace.test.js'));
+assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-cloud-user-trace.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-privacy-interfaces.test.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-privacy-interfaces.js'));
 [
@@ -128,7 +130,7 @@ assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-privacy-
   assert.ok(defaultCommands.some((item) => item.script === script), `质量矩阵缺少 ${script}`);
 });
 assert.ok(!defaultCommands.some((item) => item.script === 'scripts/check-package-sizes.js'));
-assert.strictEqual(defaultCommands.length, 123, '默认质量矩阵必须保持 123 项');
+assert.strictEqual(defaultCommands.length, 125, '默认质量矩阵必须保持 125 项');
 const strictContentAudit = defaultCommands.find((item) => item.script === 'scripts/check-content-audit.js');
 assert.strictEqual(strictContentAudit.before.length, 1, '严格内容审计必须恰有一个前置检查');
 assert.strictEqual(
@@ -190,10 +192,13 @@ const testScripts = fs.readdirSync(__dirname)
   .filter((file) => file.endsWith('.test.js'))
   .map((file) => `scripts/${file}`)
   .sort();
+const nonDefaultTestScripts = new Set([
+  'scripts/check-release-hotfix-scope.test.js',
+]);
 assert.deepStrictEqual(
-  testScripts.filter((script) => !matrixScripts.has(script)),
+  testScripts.filter((script) => !matrixScripts.has(script) && !nonDefaultTestScripts.has(script)),
   [],
-  'scripts 目录中的契约测试必须全部纳入默认质量矩阵',
+  '除显式热修复模式测试外，scripts 目录中的契约测试必须全部纳入默认质量矩阵',
 );
 assert.deepStrictEqual(
   defaultCommands.filter((item) => !fs.existsSync(path.resolve(__dirname, '..', item.script))),

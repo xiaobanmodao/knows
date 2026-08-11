@@ -118,6 +118,8 @@ const DEFAULT_CHECKS = [
   { script: 'scripts/check-runtime-js-syntax.js', label: '运行时 JavaScript 语法' },
   { script: 'scripts/check-pure-knowledge-runtime.test.js', label: '纯知识运行层契约' },
   { script: 'scripts/check-pure-knowledge-runtime.js', label: '纯知识运行层文案' },
+  { script: 'scripts/check-cloud-user-trace.test.js', label: '云开发用户追踪契约' },
+  { script: 'scripts/check-cloud-user-trace.js', label: '云开发用户追踪隐私审计' },
   { script: 'scripts/check-privacy-interfaces.test.js', label: '隐私接口契约' },
   { script: 'scripts/check-privacy-interfaces.js', label: '隐私接口审计' },
   { script: 'scripts/check-student-copy.js', label: '学生可见文案' },
