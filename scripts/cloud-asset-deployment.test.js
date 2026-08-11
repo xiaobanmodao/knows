@@ -784,9 +784,12 @@ try {
     {
       cwd: path.resolve(__dirname, '..'),
       encoding: 'utf8',
+      timeout: 30000,
     },
   );
   const prepareFailureOutput = `${prepareFailure.stdout}${prepareFailure.stderr}`;
+  assert.strictEqual(prepareFailure.error, undefined, '恶意输出路径夹具不得超时');
+  assert.strictEqual(prepareFailure.signal, null, '恶意输出路径夹具不得被终止');
   assert.notStrictEqual(prepareFailure.status, 0);
   assert.match(prepareFailureOutput, /FOUND_REMOTE_ASSET_PREPARATION_ISSUES/);
   assert.doesNotMatch(prepareFailureOutput, /https:\/\/|token=|signature=|top-secret/i);
