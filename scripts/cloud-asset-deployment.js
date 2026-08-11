@@ -95,6 +95,11 @@ function buildCloudAssetPlan({ manifest, sourceCommit = null, subject = null }) 
       ...asset,
       fileID: `${REMOTE_ASSET_BASE}${String(asset.cloudPath || '').startsWith('/') ? asset.cloudPath : `/${asset.cloudPath || ''}`}`,
     }));
+  if (assets.length === 0) {
+    throw new Error(subject
+      ? `主题 ${subject} 计划资源数量必须大于 0`
+      : '计划资源数量必须大于 0');
+  }
   const plan = {
     schemaVersion: 1,
     generatedAt: new Date().toISOString(),
@@ -118,6 +123,7 @@ function buildConsoleVerificationScript(plan) {
   if (!Array.isArray(plan.assets) || plan.assetCount !== plan.assets.length) {
     throw new Error('计划资源集合无效');
   }
+  assertPlanHasAssets(plan);
   if (!hasDeterministicVerificationBatches(plan)) throw new Error('计划验证批次无效');
   if (plan.snapshotHash !== getPlanSnapshotHash(plan)) throw new Error('计划快照哈希无效');
 
@@ -266,6 +272,12 @@ function isSafePlainText(value) {
     && SAFE_PLAIN_TEXT_PATTERN.test(value);
 }
 
+function assertPlanHasAssets(plan) {
+  if (!Number.isInteger(plan.assetCount) || plan.assetCount <= 0) {
+    throw new Error('计划资源数量必须大于 0');
+  }
+}
+
 function validateCloudAssetEvidence({ plan, evidence, expectedCommit }) {
   if (containsTempFileURL(evidence)) throw new Error('证据不得包含临时 URL');
   if (!plan || plan.schemaVersion !== 1) throw new Error('计划 schemaVersion 必须为 1');
@@ -278,6 +290,7 @@ function validateCloudAssetEvidence({ plan, evidence, expectedCommit }) {
   if (!Array.isArray(plan.assets) || plan.assetCount !== plan.assets.length) {
     throw new Error('计划资源集合无效');
   }
+  assertPlanHasAssets(plan);
   if (!hasDeterministicVerificationBatches(plan)) throw new Error('计划验证批次无效');
   if (plan.cloudEnvId !== CLOUD_ENV_ID || evidence.cloudEnvId !== plan.cloudEnvId) {
     throw new Error('证据环境与计划不一致');

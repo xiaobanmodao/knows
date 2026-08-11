@@ -39,6 +39,14 @@ assert.deepStrictEqual(
 );
 assert(plan.assets.some((asset) => asset.source.endsWith('bio-unit-cells/cover.png')));
 assert.throws(
+  () => buildCloudAssetPlan({ manifest, sourceCommit, subject: 'biologgy' }),
+  /biologgy/,
+);
+assert.throws(
+  () => buildCloudAssetPlan({ manifest: { assets: [] }, sourceCommit }),
+  /资源数量/,
+);
+assert.throws(
   () => buildCloudAssetPlan({ manifest, sourceCommit: invalidSourceCommit, subject: 'biology' }),
   /sourceCommit/,
 );
@@ -51,6 +59,34 @@ assert.throws(
 assert.throws(
   () => validateCloudAssetEvidence({ plan, evidence: { tempFileURL: 'https://secret.example/' }, expectedCommit: sourceCommit }),
   /临时 URL/,
+);
+
+const zeroAssetPlan = {
+  schemaVersion: 1,
+  generatedAt: '2026-08-11T00:00:00.000Z',
+  cloudEnvId: plan.cloudEnvId,
+  sourceCommit,
+  subject: 'biology',
+  assetCount: 0,
+  assets: [],
+  batches: [],
+};
+zeroAssetPlan.snapshotHash = getPlanSnapshotHash(zeroAssetPlan);
+const zeroAssetEvidence = {
+  schemaVersion: 1,
+  verifiedAt: '2026-08-11T00:00:00.000Z',
+  cloudEnvId: zeroAssetPlan.cloudEnvId,
+  sourceCommit,
+  planSnapshotHash: zeroAssetPlan.snapshotHash,
+  results: [],
+};
+assert.throws(
+  () => buildConsoleVerificationScript(zeroAssetPlan),
+  /资源数量/,
+);
+assert.throws(
+  () => validateCloudAssetEvidence({ plan: zeroAssetPlan, evidence: zeroAssetEvidence, expectedCommit: sourceCommit }),
+  /资源数量/,
 );
 
 function buildEvidence(overrides = {}) {
@@ -381,6 +417,15 @@ try {
   assert(cliPlan.assets.some((asset) => asset.source.endsWith('bio-unit-cells/cover.png')));
   assert(cliPlan.assets.every((asset) => asset.source.includes('/biology/')));
   assert(fs.existsSync(path.join(path.dirname(cliPlanPath), 'verify-in-devtools.js')));
+  assert.throws(
+    () => runCli('build-cloud-asset-deployment-plan.js', [
+      '--manifest', cliManifestPath,
+      '--output', cliPlanPath,
+      '--subject', 'biologgy',
+      '--commit', sourceCommit,
+    ]),
+    (error) => /FOUND_CLOUD_ASSET_DEPLOYMENT_ISSUES/.test(error.stderr) && /biologgy/.test(error.stderr),
+  );
 
   fs.writeFileSync(cliEvidencePath, `${JSON.stringify({
     schemaVersion: 1,
@@ -414,6 +459,12 @@ try {
   assert.throws(
     () => runCli('check-cloud-asset-deployment-evidence.js', [cliPlanPath, cliEvidencePath, '--commit', sourceCommit]),
     (error) => /FOUND_CLOUD_ASSET_DEPLOYMENT_ISSUES/.test(error.stderr),
+  );
+  fs.writeFileSync(cliPlanPath, `${JSON.stringify(zeroAssetPlan, null, 2)}\n`);
+  fs.writeFileSync(cliEvidencePath, `${JSON.stringify(zeroAssetEvidence, null, 2)}\n`);
+  assert.throws(
+    () => runCli('check-cloud-asset-deployment-evidence.js', [cliPlanPath, cliEvidencePath, '--commit', sourceCommit]),
+    (error) => /FOUND_CLOUD_ASSET_DEPLOYMENT_ISSUES/.test(error.stderr) && /资源数量/.test(error.stderr),
   );
 } finally {
   fs.rmSync(cliFixtureRoot, { recursive: true, force: true });
