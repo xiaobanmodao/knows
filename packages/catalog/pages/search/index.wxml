@@ -40,7 +40,7 @@
   <view wx:else>
     <view class="section-title top-gap">
       <view class="section-title__main">搜索结果</view>
-      <view class="section-title__sub">{{results.length}} 条</view>
+      <view class="section-title__sub">{{displayedResultCount}} / {{totalResultCount}} 条</view>
     </view>
 
     <scroll-view wx:if="{{typeFilters.length > 1}}" class="type-filter" scroll-x enable-flex>
@@ -58,7 +58,7 @@
       <view wx:for="{{groupedResults}}" wx:key="key" wx:for-item="group" class="result-group">
         <view class="result-group__header">
           <view class="result-group__title">{{group.title}}</view>
-          <view class="result-group__count">{{group.count}} 条</view>
+          <view class="result-group__count">{{group.displayedCount}} / {{group.count}} 条</view>
         </view>
         <view class="grid">
           <view

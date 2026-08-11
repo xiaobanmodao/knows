@@ -1,23 +1,12 @@
-const { getSubjectRegistry, SUBJECT_LABELS } = require('../../../../data/subject-manifest');
+const { getSubjectRegistry } = require('../../../../data/subject-manifest');
 const { searchAllSubjects } = require('../../utils/search-index');
+const { buildSearchDisplay } = require('../../utils/search-display');
 const { openContent } = require('../../../../utils/content-routes');
-
-const RESULT_GROUPS = [
-  { type: 'unit', title: '教材单元' },
-  { type: 'word', title: '单词' },
-  { type: 'grammar', title: '单元语法' },
-  { type: 'chapter', title: '章节' },
-  { type: 'topic', title: '专题' },
-  { type: 'knowledge', title: '知识点' },
-  { type: 'template', title: '方法模板' },
-];
 
 const SUBJECT_FILTERS = [
   { id: 'all', title: '全部' },
   ...getSubjectRegistry().map((subject) => ({ id: subject.id, title: subject.shortName })),
 ];
-
-const TYPE_LABELS = RESULT_GROUPS.reduce((map, item) => ({ ...map, [item.type]: item.title }), {});
 
 const RECOMMENDED_KEYWORDS = [
   '二次函数',
@@ -37,44 +26,6 @@ const RECOMMENDED_KEYWORDS = [
   '欧姆定律',
 ];
 
-function groupSearchResults(results) {
-  const groupMap = new Map();
-
-  results.forEach((item) => {
-    const key = `${item.subjectId}-${item.type}`;
-
-    if (!groupMap.has(key)) {
-      groupMap.set(key, {
-        key,
-        type: item.type,
-        title: `${SUBJECT_LABELS[item.subjectId]} · ${TYPE_LABELS[item.type]}`,
-        items: [],
-        count: 0,
-      });
-    }
-
-    const group = groupMap.get(key);
-    group.items.push(item);
-    group.count += 1;
-  });
-
-  return [...groupMap.values()];
-}
-
-function buildTypeFilters(results) {
-  const counts = results.reduce((map, item) => ({
-    ...map,
-    [item.type]: (map[item.type] || 0) + 1,
-  }), {});
-
-  return [
-    { id: 'all', title: '全部类型', count: results.length },
-    ...RESULT_GROUPS
-      .filter((item) => counts[item.type])
-      .map((item) => ({ id: item.type, title: TYPE_LABELS[item.type], count: counts[item.type] })),
-  ];
-}
-
 function decodeQueryValue(value) {
   const text = String(value || '');
 
@@ -90,8 +41,9 @@ Page({
     loading: true,
     notFound: '',
     query: '',
-    results: [],
     groupedResults: [],
+    totalResultCount: 0,
+    displayedResultCount: 0,
     hasSearched: false,
     searchHistory: [],
     recommendedKeywords: RECOMMENDED_KEYWORDS,
@@ -103,6 +55,7 @@ Page({
 
   onLoad(options = {}) {
     this.pageActive = true;
+    this.allResults = [];
     this.setData({ loading: true, notFound: '' });
 
     try {
@@ -156,10 +109,12 @@ Page({
     this.lastSearchKeyword = keyword;
 
     if (!keyword) {
+      this.allResults = [];
       this.setData({
         query: '',
-        results: [],
         groupedResults: [],
+        totalResultCount: 0,
+        displayedResultCount: 0,
         hasSearched: false,
         typeFilters: [],
         selectedType: 'all',
@@ -182,21 +137,21 @@ Page({
       const selectedType = this.data.selectedType !== 'all' && results.some((item) => item.type === this.data.selectedType)
         ? this.data.selectedType
         : 'all';
-      const visibleResults = selectedType === 'all'
-        ? results
-        : results.filter((item) => item.type === selectedType);
+      const display = buildSearchDisplay(results, selectedType);
       if (saveHistory) {
         const app = getApp();
         app.addSearchKeyword(keyword);
       }
 
+      this.allResults = results;
       this.setData({
         loading: false,
         notFound: '',
         query: keyword,
-        results,
-        groupedResults: groupSearchResults(visibleResults),
-        typeFilters: buildTypeFilters(results),
+        groupedResults: display.groupedResults,
+        typeFilters: display.typeFilters,
+        totalResultCount: display.totalResultCount,
+        displayedResultCount: display.displayedResultCount,
         selectedType,
         hasSearched: true,
       });
@@ -206,11 +161,13 @@ Page({
   },
 
   showFailure() {
+    this.allResults = [];
     this.setData({
       loading: false,
       notFound: '搜索暂未打开，请重试。',
-      results: [],
       groupedResults: [],
+      totalResultCount: 0,
+      displayedResultCount: 0,
       hasSearched: false,
       typeFilters: [],
       selectedType: 'all',
@@ -226,6 +183,7 @@ Page({
 
   selectSubject(event) {
     const selectedSubjectId = event.currentTarget.dataset.id;
+    this.allResults = [];
     this.setData({ selectedSubjectId, selectedType: 'all' });
 
     if (this.data.query) {
@@ -235,13 +193,13 @@ Page({
 
   selectType(event) {
     const selectedType = event.currentTarget.dataset.id;
-    const visibleResults = selectedType === 'all'
-      ? this.data.results
-      : this.data.results.filter((item) => item.type === selectedType);
+    const display = buildSearchDisplay(this.allResults || [], selectedType);
 
     this.setData({
       selectedType,
-      groupedResults: groupSearchResults(visibleResults),
+      groupedResults: display.groupedResults,
+      totalResultCount: display.totalResultCount,
+      displayedResultCount: display.displayedResultCount,
     });
   },
 
@@ -257,6 +215,7 @@ Page({
 
   onUnload() {
     this.pageActive = false;
+    this.allResults = [];
     clearTimeout(this.searchTimer);
   },
 });

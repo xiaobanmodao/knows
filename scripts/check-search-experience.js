@@ -1,4 +1,11 @@
+const assert = require('assert');
+const fs = require('fs');
+const path = require('path');
 const { searchAllSubjects } = require('../packages/catalog/utils/search-index');
+const {
+  MAX_RENDERED_RESULTS,
+  buildSearchDisplay,
+} = require('../packages/catalog/utils/search-display');
 
 const rankingChecks = [
   ['手拉手模型', 'math', 'template'],
@@ -93,5 +100,44 @@ const subjectOnly = searchAllSubjects('函数', 'math');
 if (!subjectOnly.length || subjectOnly.some((item) => item.subjectId !== 'math')) {
   throw new Error('学科筛选未将结果限制为数学');
 }
+
+const budgetResults = searchAllSubjects('s');
+assert.ok(budgetResults.length > MAX_RENDERED_RESULTS, '预算回归搜索必须超过展示上限');
+
+const budgetDisplay = buildSearchDisplay(budgetResults);
+assert.strictEqual(budgetDisplay.totalResultCount, budgetResults.length, '展示总数必须保留完整命中数');
+
+const expectedTypeCounts = budgetResults.reduce((counts, item) => ({
+  ...counts,
+  [item.type]: (counts[item.type] || 0) + 1,
+}), {});
+const actualTypeCounts = budgetDisplay.typeFilters.reduce((counts, item) => ({
+  ...counts,
+  [item.id]: item.count,
+}), {});
+assert.strictEqual(actualTypeCounts.all, budgetResults.length, '全部类型计数必须保留完整命中数');
+Object.keys(expectedTypeCounts).forEach((type) => {
+  assert.strictEqual(actualTypeCounts[type], expectedTypeCounts[type], `${type} 类型计数必须保留完整命中数`);
+});
+
+const displayedItems = budgetDisplay.groupedResults.flatMap((group) => group.items);
+assert.ok(displayedItems.length <= MAX_RENDERED_RESULTS, '渲染条目不得超过展示上限');
+assert.strictEqual(displayedItems[0].id, budgetResults[0].id, '首条渲染结果必须保留完整排序首条');
+
+const expectedGroupCounts = budgetResults.reduce((counts, item) => ({
+  ...counts,
+  [`${item.subjectId}-${item.type}`]: (counts[`${item.subjectId}-${item.type}`] || 0) + 1,
+}), {});
+budgetDisplay.groupedResults.forEach((group) => {
+  assert.strictEqual(group.count, expectedGroupCounts[group.key], `${group.key} 分组必须保留完整数量`);
+  assert.strictEqual(group.displayedCount, group.items.length, `${group.key} 分组必须记录已显示数量`);
+});
+
+const searchPageSource = fs.readFileSync(path.join(__dirname, '../packages/catalog/pages/search/index.js'), 'utf8');
+assert.doesNotMatch(searchPageSource, /setData\(\{[\s\S]*?\bresults\s*:/, '搜索页 setData 不得保存完整 results');
+assert.match(searchPageSource, /this\.allResults/, '搜索页必须将完整结果保存在页面实例缓存');
+assert.match(searchPageSource, /if \(!keyword\) \{\s*this\.allResults = \[\];/, '清空搜索时必须重置页面实例缓存');
+const selectTypeSource = searchPageSource.slice(searchPageSource.indexOf('selectType(event)'));
+assert.match(selectTypeSource, /this\.allResults/, '类型切换必须从页面实例缓存读取完整结果');
 
 console.log(`OK ${rankingChecks.length} search rankings, English/physics/math anchors and subject filtering checked`);
