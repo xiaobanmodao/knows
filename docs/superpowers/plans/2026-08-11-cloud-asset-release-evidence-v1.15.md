@@ -326,5 +326,6 @@ Expected: 仅新增开发分支，不创建 PR、标签、RC、体验版或审�
 - `node scripts/check-v1.11-quality-matrix.js`：通过，输出 `OK v1.11 quality matrix: 126 checks`。其中的内容源 URL 可访问性检查可能发出只读 HTTP 探测，不构成任何部署动作。
 - `node scripts/check-roadmap-document-consistency.test.js`：在上述文档修正后通过，输出 `OK roadmap document consistency contract`。
 - `git diff --check`：本次文档更新前通过，无输出；`git status --short`：本次验证完成时为空，`dist/` 与 `.codex-output/` 仅保留 ignored 本地产物。
+- 在提交 `427e242471d40eb2d01247993fcb3bf3cf0c0571` 上，终审修复后重新生成了 231 项 source-managed full plan，故意缺失 evidence 仍按预期阻断，`node scripts/check-v1.11-quality-matrix.js` 再次输出 `OK v1.11 quality matrix: 126 checks`；独立只读复核无新发现。该范围同时锁定了 801 条运行时图片引用，其中 570 条历史 cloud-only 路径仍需独立存量核验，不能写成已由 231 项本地源计划证明。
 
 未执行任何云存储上传、绑定 AppID 的 DevTools 云存储面板操作、DevTools 控制台 `verify-in-devtools.js` 调用、微信开发者工具/云端调用、实体机或弱网回归、当前构建包体/体验版/小程序上传、RC、标签、PR 或审核请求。当前 `assets/figures/generated/subjects/biology/topics/bio-unit-cells/cover.png` 的云对象仍未确认；文字降级可读不构成部署成功。发布前必须在最终提交上重新生成全量 `release-plan.json`，在绑定 AppID 的 DevTools 控制台实际运行其重新生成的 `verify-in-devtools.js`，保存脱敏真实证据后再次执行严格门禁。Task 4 推送复选框保持未完成，等待独立审查。

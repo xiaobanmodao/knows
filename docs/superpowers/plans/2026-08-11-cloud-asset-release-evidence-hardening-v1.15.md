@@ -250,14 +250,14 @@ git commit -m "docs(release): record hardened cloud evidence checks"
 
 **Goal:** 处理终审发现的资源集合、Git 提交绑定、测试隔离和证据字段说明缺口，不扩大到没有本地原图的历史 cloud-only 存量核验。
 
-- [ ] **Step 1: 锁定 source-managed 资源范围**
+- [x] **Step 1: 锁定 source-managed 资源范围**
 
 先收集全部运行时图片引用，再以稳定数量与指纹区分 231 项本地 source-managed 资源和 570 条历史 cloud-only 引用；本地原图缺失必须阻断，不能再由 `existsSync` 静默缩减清单。
 
-- [ ] **Step 2: 绑定当前 Git 输入并隔离测试产物**
+- [x] **Step 2: 绑定当前 Git 输入并隔离测试产物**
 
 严格门禁必须要求资源数据、资源选择器、云配置和所有 source-managed 原图均与当前 Git 提交一致；截断 manifest 测试只能使用临时副本。不可创建的输出目录必须在启动图像处理器前失败。
 
-- [ ] **Step 3: 统一脱敏文档并复核**
+- [x] **Step 3: 统一脱敏文档并复核**
 
 证据结果固定为 `{ fileID, status, hasTempFileURL }`。运行针对性契约、完整质量矩阵和独立终审；只有通过终审后才标记本任务，原计划的推送步骤继续保持未完成。
