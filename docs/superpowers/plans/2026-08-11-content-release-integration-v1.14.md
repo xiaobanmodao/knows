@@ -234,7 +234,7 @@ node scripts/check-v1.11-quality-matrix.test.js
 node scripts/check-release-readiness.js
 ```
 
-Expected: 未解决冲突列表为空；两个脚本和矩阵契约通过；默认发布检查不再把内容集成视为热修复范围违规。此阶段矩阵总数断言仍可能等待 Task 3 更新，不运行完整矩阵。
+Expected: 未解决冲突列表为空；热修复范围、搜索语义和默认发布检查通过；矩阵契约此时只能因为 Task 3 尚未注册的 `check-cloud-user-trace.test.js` 与 `check-release-hotfix-scope.test.js` 而失败，不能有其他失败。默认发布检查不再把内容集成视为热修复范围违规，不运行完整矩阵。
 
 - [ ] **Step 6: 创建内容线 merge commit**
 
