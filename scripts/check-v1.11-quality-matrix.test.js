@@ -195,6 +195,10 @@ const testScripts = fs.readdirSync(__dirname)
 const nonDefaultTestScripts = new Set([
   'scripts/check-release-hotfix-scope.test.js',
 ]);
+assert.ok(
+  !defaultCommands.some((item) => item.script === 'scripts/check-release-hotfix-scope.test.js'),
+  '热修复范围测试只能由显式热修复模式执行，不能进入默认质量矩阵',
+);
 assert.deepStrictEqual(
   testScripts.filter((script) => !matrixScripts.has(script) && !nonDefaultTestScripts.has(script)),
   [],
