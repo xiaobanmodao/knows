@@ -18,26 +18,51 @@ const ASSET_FIELDS = new Set([
   'sourceSha256',
 ]);
 const CURRENT_OPTIONS = new Set(['sourcePaths', 'sourceRoot', 'outputRoot']);
+const GENERATED_ASSET_PREFIX = 'assets/figures/generated/';
+const POSIX_SEGMENT_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
 const SHA256_PATTERN = /^[a-f0-9]{64}$/;
 const ISO_TIMESTAMP_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
 
 function getSubjectFromAsset(source) {
-  if (typeof source !== 'string') throw new Error('未知资源路径');
+  assertCanonicalAssetSource(source);
   if (/^assets\/figures\/generated\/(?:topics|templates)\//.test(source)) return 'math';
 
   const subjectMatch = source.match(/^assets\/figures\/generated\/subjects\/([^/]+)\//);
   if (subjectMatch && SUBJECTS.has(subjectMatch[1])) return subjectMatch[1];
   if (/^assets\/figures\/generated\/chemistry\//.test(source)) return 'chemistry';
-  throw new Error(`未知资源路径：${source}`);
+  throw new Error('未知资源路径');
+}
+
+function assertCanonicalAssetSource(source) {
+  if (
+    typeof source !== 'string'
+    || !source.startsWith(GENERATED_ASSET_PREFIX)
+    || !source.endsWith('.png')
+    || source.includes('\\')
+    || source.includes('?')
+    || source.includes('#')
+    || path.posix.normalize(source) !== source
+  ) {
+    throw new Error('资源路径无效');
+  }
+  const segments = source.split('/');
+  if (segments.some((segment) => (
+    segment === ''
+    || segment === '.'
+    || segment === '..'
+    || !POSIX_SEGMENT_PATTERN.test(segment)
+  ))) {
+    throw new Error('资源路径无效');
+  }
 }
 
 function sha256(buffer) {
   return crypto.createHash('sha256').update(buffer).digest('hex');
 }
 
-function readPngDimensions(buffer, source) {
+function readPngDimensions(buffer, label) {
   if (buffer.length < 24 || buffer.subarray(0, 8).toString('hex') !== '89504e470d0a1a0a') {
-    throw new Error(`${source}: 压缩产物必须为有效 PNG`);
+    throw new Error(`${label}压缩产物必须为有效 PNG`);
   }
   return {
     width: buffer.readUInt32BE(16),
@@ -48,12 +73,13 @@ function readPngDimensions(buffer, source) {
 function createRemoteAssetManifest(items) {
   if (!Array.isArray(items)) throw new Error('资源列表必须为数组');
   const assets = items.map((item, index) => {
-    if (!item || typeof item !== 'object') throw new Error(`资源项[${index}]必须为对象`);
+    const label = `资源项[${index}]`;
+    if (!item || typeof item !== 'object') throw new Error(`${label}必须为对象`);
     const source = item.source;
     getSubjectFromAsset(source);
     const sourceBuffer = fs.readFileSync(item.sourcePath || source);
     const outputBuffer = fs.readFileSync(item.out);
-    const { width, height } = readPngDimensions(outputBuffer, source);
+    const { width, height } = readPngDimensions(outputBuffer, label);
     return {
       source,
       cloudPath: `/${source}`,
@@ -80,10 +106,10 @@ function assertExactKeys(value, fields, label) {
   }
   const keys = Object.keys(value);
   keys.forEach((key) => {
-    if (!fields.has(key)) throw new Error(`${label}含未批准字段：${key}`);
+    if (!fields.has(key)) throw new Error(`${label}含未批准字段`);
   });
   fields.forEach((key) => {
-    if (!Object.prototype.hasOwnProperty.call(value, key)) throw new Error(`${label}缺少字段：${key}`);
+    if (!Object.prototype.hasOwnProperty.call(value, key)) throw new Error(`${label}缺少必要字段`);
   });
 }
 
@@ -145,16 +171,23 @@ function validateCurrentRemoteAssetManifest(manifest, options = {}) {
   }
 
   const records = new Map(manifest.assets.map((asset) => [asset.source, asset]));
-  expectedSources.forEach((source) => {
+  expectedSources.forEach((source, index) => {
+    const label = `current manifest assets[${index}]`;
     const record = records.get(source);
-    const sourceBuffer = fs.readFileSync(path.join(sourceRoot, source));
-    const outputBuffer = fs.readFileSync(path.join(outputRoot, source));
-    const { width, height } = readPngDimensions(outputBuffer, source);
-    if (record.sourceSha256 !== sha256(sourceBuffer)) throw new Error(`${source}: sourceSha256 与当前原图不一致`);
-    if (record.sha256 !== sha256(outputBuffer)) throw new Error(`${source}: sha256 与当前压缩产物不一致`);
-    if (record.bytes !== outputBuffer.length) throw new Error(`${source}: bytes 与当前压缩产物不一致`);
+    let sourceBuffer;
+    let outputBuffer;
+    try {
+      sourceBuffer = fs.readFileSync(path.join(sourceRoot, source));
+      outputBuffer = fs.readFileSync(path.join(outputRoot, source));
+    } catch (error) {
+      throw new Error(`${label}文件不可读取`);
+    }
+    const { width, height } = readPngDimensions(outputBuffer, label);
+    if (record.sourceSha256 !== sha256(sourceBuffer)) throw new Error(`${label} sourceSha256 与当前原图不一致`);
+    if (record.sha256 !== sha256(outputBuffer)) throw new Error(`${label} sha256 与当前压缩产物不一致`);
+    if (record.bytes !== outputBuffer.length) throw new Error(`${label} bytes 与当前压缩产物不一致`);
     if (record.width !== width || record.height !== height) {
-      throw new Error(`${source}: width/height 与当前压缩产物不一致`);
+      throw new Error(`${label} width/height 与当前压缩产物不一致`);
     }
   });
   return true;
@@ -165,7 +198,7 @@ function assertAllowedOptions(options) {
     throw new Error('current manifest options 必须为对象');
   }
   Object.keys(options).forEach((key) => {
-    if (!CURRENT_OPTIONS.has(key)) throw new Error(`current manifest options 含未批准字段：${key}`);
+    if (!CURRENT_OPTIONS.has(key)) throw new Error('current manifest options 含未批准字段');
   });
 }
 

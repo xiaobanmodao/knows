@@ -36,6 +36,16 @@ const manifest = {
 const sourceCommit = '1010edcb9c1a4427b7b2822b9f41728850091b6b';
 const otherSourceCommit = 'fedcba9876543210fedcba9876543210fedcba98';
 const invalidSourceCommit = 'https://signed.example/?token=secret';
+const hostilePayload = 'https://signed.example/asset.png?token=secret';
+
+function assertSanitizedReject(action, expectedPattern, payloads = [hostilePayload]) {
+  assert.throws(action, (error) => (
+    expectedPattern.test(error.message)
+    && payloads.every((payload) => !error.message.includes(payload))
+    && !/https:\/\/|token=|signature=/i.test(error.message)
+  ));
+}
+
 const plan = buildCloudAssetPlan({ manifest, sourceCommit, subject: 'biology' });
 const diagnosticPlan = buildCloudAssetPlan({ manifest, subject: 'biology' });
 const fullPlan = buildCloudAssetPlan({ manifest, sourceCommit });
@@ -68,9 +78,10 @@ assert.deepStrictEqual(
   ],
 );
 assert(plan.assets.some((asset) => asset.source.endsWith('bio-unit-cells/cover.png')));
-assert.throws(
+assertSanitizedReject(
   () => buildCloudAssetPlan({ manifest, sourceCommit, subject: 'biologgy' }),
-  /subject.*biologgy/,
+  /subject 无效/,
+  ['biologgy'],
 );
 assert.throws(
   () => buildCloudAssetPlan({ manifest: { ...manifest, assetCount: 0, assets: [] }, sourceCommit }),
@@ -143,17 +154,19 @@ const typoSubjectPlan = { ...plan, subject: 'biologgy' };
 typoSubjectPlan.snapshotHash = getPlanSnapshotHash(typoSubjectPlan);
 const wrongKnownSubjectPlan = { ...plan, subject: 'chemistry' };
 wrongKnownSubjectPlan.snapshotHash = getPlanSnapshotHash(wrongKnownSubjectPlan);
-assert.throws(
+assertSanitizedReject(
   () => buildConsoleVerificationScript(typoSubjectPlan),
-  /subject.*biologgy/,
+  /subject 无效/,
+  ['biologgy'],
 );
-assert.throws(
+assertSanitizedReject(
   () => validateCloudAssetEvidence({
     plan: typoSubjectPlan,
     evidence: buildEvidenceForPlan(typoSubjectPlan),
     expectedCommit: sourceCommit,
   }),
-  /subject.*biologgy/,
+  /subject 无效/,
+  ['biologgy'],
 );
 assert.throws(
   () => buildConsoleVerificationScript(wrongKnownSubjectPlan),
@@ -189,12 +202,23 @@ assert.strictEqual(
 assert.strictEqual(getSubjectFromAsset('assets/figures/generated/topics/g9-topic-circle/cover.png'), 'math');
 assert.strictEqual(getSubjectFromAsset('assets/figures/generated/templates/model-factorization.png'), 'math');
 assert.throws(() => getSubjectFromAsset('assets/figures/generated/other/topic.png'), /未知资源路径/);
+[
+  'assets/figures/generated/topics/../../secrets/cover.png',
+  'assets/figures/generated/topics//g9-topic-circle/cover.png',
+  'assets/figures/generated/topics/./g9-topic-circle/cover.png',
+  'assets/figures/generated/topics/g9-topic-circle\\cover.png',
+  'assets/figures/generated/topics/g9-topic-circle/cover.png?token=secret',
+  'assets/figures/generated/topics/g9-topic-circle/cover.png#signature=secret',
+].forEach((source) => {
+  assertSanitizedReject(() => getSubjectFromAsset(source), /资源路径无效/, [source]);
+});
+assertSanitizedReject(() => getSubjectFromAsset(hostilePayload), /资源路径无效/);
 
 const forgedSignedUrlPlan = JSON.parse(JSON.stringify(plan));
-forgedSignedUrlPlan.assets[0].fileID = 'https://signed.example/asset.png?token=secret';
+forgedSignedUrlPlan.assets[0].fileID = hostilePayload;
 forgedSignedUrlPlan.batches[0][0].fileID = forgedSignedUrlPlan.assets[0].fileID;
 forgedSignedUrlPlan.snapshotHash = getPlanSnapshotHash(forgedSignedUrlPlan);
-assert.throws(
+assertSanitizedReject(
   () => validateCloudAssetPlan(forgedSignedUrlPlan),
   /fileID/,
 );
@@ -202,6 +226,11 @@ assert.throws(
   () => validateCloudAssetPlan({ ...plan, signedUrl: 'https://signed.example/?token=secret' }),
   /未批准字段/,
 );
+const hostilePlanKey = { ...plan, [hostilePayload]: true };
+assertSanitizedReject(() => validateCloudAssetPlan(hostilePlanKey), /未批准字段/);
+const hostileSubjectPlan = { ...plan, subject: hostilePayload };
+hostileSubjectPlan.snapshotHash = getPlanSnapshotHash(hostileSubjectPlan);
+assertSanitizedReject(() => validateCloudAssetPlan(hostileSubjectPlan), /subject 无效/);
 const extraAssetFieldPlan = JSON.parse(JSON.stringify(plan));
 extraAssetFieldPlan.assets[0].signedUrl = 'https://signed.example/?token=secret';
 assert.throws(() => validateCloudAssetPlan(extraAssetFieldPlan), /未批准字段/);
@@ -210,6 +239,38 @@ duplicateAssetPlan.assets[1] = { ...duplicateAssetPlan.assets[0] };
 duplicateAssetPlan.batches = buildVerificationBatches(duplicateAssetPlan.assets);
 duplicateAssetPlan.snapshotHash = getPlanSnapshotHash(duplicateAssetPlan);
 assert.throws(() => validateCloudAssetPlan(duplicateAssetPlan), /重复/);
+const traversalPlan = JSON.parse(JSON.stringify(plan));
+traversalPlan.assets[0].source = 'assets/figures/generated/topics/../../secrets/cover.png';
+traversalPlan.assets[0].cloudPath = `/${traversalPlan.assets[0].source}`;
+traversalPlan.assets[0].subject = 'math';
+traversalPlan.assets[0].fileID = `${REMOTE_ASSET_BASE}${traversalPlan.assets[0].cloudPath}`;
+traversalPlan.batches = buildVerificationBatches(traversalPlan.assets);
+traversalPlan.snapshotHash = getPlanSnapshotHash(traversalPlan);
+assertSanitizedReject(
+  () => validateCloudAssetPlan(traversalPlan),
+  /资源路径无效/,
+  [traversalPlan.assets[0].source],
+);
+const repeatedSlashPlan = JSON.parse(JSON.stringify(plan));
+repeatedSlashPlan.assets[0].source = 'assets/figures/generated/topics//g9-topic-circle/cover.png';
+repeatedSlashPlan.assets[0].cloudPath = `/${repeatedSlashPlan.assets[0].source}`;
+repeatedSlashPlan.assets[0].subject = 'math';
+repeatedSlashPlan.assets[0].fileID = `${REMOTE_ASSET_BASE}${repeatedSlashPlan.assets[0].cloudPath}`;
+repeatedSlashPlan.batches = buildVerificationBatches(repeatedSlashPlan.assets);
+repeatedSlashPlan.snapshotHash = getPlanSnapshotHash(repeatedSlashPlan);
+assertSanitizedReject(
+  () => validateCloudAssetPlan(repeatedSlashPlan),
+  /资源路径无效/,
+  [repeatedSlashPlan.assets[0].source],
+);
+const hostileSourcePlan = JSON.parse(JSON.stringify(plan));
+hostileSourcePlan.assets[0].source = hostilePayload;
+hostileSourcePlan.assets[0].cloudPath = `/${hostilePayload}`;
+hostileSourcePlan.assets[0].subject = 'math';
+hostileSourcePlan.assets[0].fileID = `${REMOTE_ASSET_BASE}${hostileSourcePlan.assets[0].cloudPath}`;
+hostileSourcePlan.batches = buildVerificationBatches(hostileSourcePlan.assets);
+hostileSourcePlan.snapshotHash = getPlanSnapshotHash(hostileSourcePlan);
+assertSanitizedReject(() => validateCloudAssetPlan(hostileSourcePlan), /资源路径无效/);
 
 assert.deepStrictEqual(
   buildVerificationBatches(Array.from({ length: 51 }, (_, index) => ({ fileID: `cloud://asset-${index}` })))
@@ -423,6 +484,24 @@ assert.throws(
     /未批准字段/,
   );
 });
+assertSanitizedReject(
+  () => validateCloudAssetEvidence({
+    plan,
+    evidence: buildEvidence({ [hostilePayload]: true }),
+    expectedCommit: sourceCommit,
+  }),
+  /未批准字段/,
+);
+assertSanitizedReject(
+  () => validateCloudAssetEvidence({
+    plan,
+    evidence: buildEvidence({
+      results: [{ ...buildEvidence().results[0], [hostilePayload]: true }, ...buildEvidence().results.slice(1)],
+    }),
+    expectedCommit: sourceCommit,
+  }),
+  /证据结果\[0\].*未批准字段/,
+);
 assert.throws(
   () => validateCloudAssetEvidence({
     plan,
@@ -538,6 +617,31 @@ try {
     /cloudPath/,
   );
 
+  const hostileSourceManifest = JSON.parse(JSON.stringify(currentManifest));
+  hostileSourceManifest.assets[0].source = hostilePayload;
+  hostileSourceManifest.assets[0].cloudPath = `/${hostilePayload}`;
+  assertSanitizedReject(() => validateRemoteAssetManifest(hostileSourceManifest), /资源路径无效/);
+  assertSanitizedReject(
+    () => validateRemoteAssetManifest({ ...currentManifest, [hostilePayload]: true }),
+    /未批准字段/,
+  );
+  const hostileAssetKeyManifest = JSON.parse(JSON.stringify(currentManifest));
+  hostileAssetKeyManifest.assets[0][hostilePayload] = true;
+  assertSanitizedReject(() => validateRemoteAssetManifest(hostileAssetKeyManifest), /未批准字段/);
+  [
+    'assets/figures/generated/topics/../../secrets/cover.png',
+    'assets/figures/generated/topics//g9-topic-circle/cover.png',
+  ].forEach((source) => {
+    const invalidPathManifest = JSON.parse(JSON.stringify(currentManifest));
+    invalidPathManifest.assets[0].source = source;
+    invalidPathManifest.assets[0].cloudPath = `/${source}`;
+    assertSanitizedReject(
+      () => validateRemoteAssetManifest(invalidPathManifest),
+      /资源路径无效/,
+      [source],
+    );
+  });
+
   const truncatedManifest = {
     ...currentManifest,
     assetCount: 1,
@@ -620,7 +724,9 @@ try {
       '--subject', 'biologgy',
       '--commit', sourceCommit,
     ]),
-    (error) => /FOUND_CLOUD_ASSET_DEPLOYMENT_ISSUES/.test(error.stderr) && /biologgy/.test(error.stderr),
+    (error) => /FOUND_CLOUD_ASSET_DEPLOYMENT_ISSUES/.test(error.stderr)
+      && /subject 无效/.test(error.stderr)
+      && !/biologgy/.test(error.stderr),
   );
 
   fs.writeFileSync(cliEvidencePath, `${JSON.stringify({
@@ -666,7 +772,9 @@ try {
   fs.writeFileSync(cliEvidencePath, `${JSON.stringify(buildEvidenceForPlan(typoSubjectPlan), null, 2)}\n`);
   assert.throws(
     () => runCli('check-cloud-asset-deployment-evidence.js', [cliPlanPath, cliEvidencePath, '--commit', sourceCommit]),
-    (error) => /FOUND_CLOUD_ASSET_DEPLOYMENT_ISSUES/.test(error.stderr) && /subject.*biologgy/.test(error.stderr),
+    (error) => /FOUND_CLOUD_ASSET_DEPLOYMENT_ISSUES/.test(error.stderr)
+      && /subject 无效/.test(error.stderr)
+      && !/biologgy/.test(error.stderr),
   );
 } finally {
   fs.rmSync(cliFixtureRoot, { recursive: true, force: true });
@@ -739,7 +847,18 @@ vm.runInNewContext(buildConsoleVerificationScript(fullPlan), {
   assert.strictEqual(consoleLogs[0].length, 1);
   assert.strictEqual(typeof consoleLogs[0][0], 'string');
   const loggedEvidence = consoleLogs[0][0];
-  assert.strictEqual(JSON.parse(loggedEvidence).results.every((result) => result.hasTempFileURL === true), true);
+  const parsedEvidence = JSON.parse(loggedEvidence);
+  assert.strictEqual(parsedEvidence.results.length, fullPlan.assetCount);
+  assert.deepStrictEqual(
+    parsedEvidence.results.map((result) => result.fileID).sort(),
+    fullPlan.assets.map((asset) => asset.fileID).sort(),
+  );
+  assert.strictEqual(parsedEvidence.results.every((result) => result.hasTempFileURL === true), true);
+  assert.strictEqual(validateCloudAssetEvidence({
+    plan: fullPlan,
+    evidence: parsedEvidence,
+    expectedCommit: sourceCommit,
+  }), true);
   assert.doesNotMatch(loggedEvidence, /https:\/\//);
   assert.doesNotMatch(loggedEvidence, /tempFileURL/);
   assert.doesNotMatch(loggedEvidence, /token=/i);

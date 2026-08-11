@@ -136,7 +136,7 @@ function buildCloudAssetPlan({ manifest, sourceCommit = null, subject = null }) 
     });
   if (assets.length === 0) {
     throw new Error(subject
-      ? `主题 ${subject} 计划资源数量必须大于 0`
+      ? '主题计划资源数量必须大于 0'
       : '计划资源数量必须大于 0');
   }
   const plan = {
@@ -182,7 +182,7 @@ function validateCloudAssetPlan(plan) {
     const assetSubject = getSubjectFromAsset(asset.source);
     if (asset.subject !== assetSubject) throw new Error(`${label} subject 与资源不匹配`);
     if (plan.subject !== null && asset.subject !== plan.subject) {
-      throw new Error(`计划 subject 与资源不匹配：${plan.subject}`);
+      throw new Error('计划 subject 与资源不匹配');
     }
     if (asset.fileID !== `${REMOTE_ASSET_BASE}${asset.cloudPath}`) throw new Error(`${label} fileID 无效`);
     Object.keys(identities).forEach((field) => {
@@ -296,14 +296,14 @@ function assertAllowedKeys(value, allowedKeys, label) {
     throw new Error(`${label}必须为对象`);
   }
   Object.keys(value).forEach((key) => {
-    if (!allowedKeys.has(key)) throw new Error(`${label}含未批准字段：${key}`);
+    if (!allowedKeys.has(key)) throw new Error(`${label}含未批准字段`);
   });
 }
 
 function assertExactKeys(value, allowedKeys, label) {
   assertAllowedKeys(value, allowedKeys, label);
   allowedKeys.forEach((key) => {
-    if (!Object.prototype.hasOwnProperty.call(value, key)) throw new Error(`${label}缺少字段：${key}`);
+    if (!Object.prototype.hasOwnProperty.call(value, key)) throw new Error(`${label}缺少必要字段`);
   });
 }
 
@@ -377,7 +377,7 @@ function assertPlanHasAssets(plan) {
 
 function assertValidSubject(subject) {
   if (subject !== null && !SUBJECTS.has(subject)) {
-    throw new Error(`计划 subject 无效：${subject}`);
+    throw new Error('计划 subject 无效');
   }
 }
 
