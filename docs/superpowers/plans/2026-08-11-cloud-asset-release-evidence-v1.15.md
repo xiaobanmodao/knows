@@ -114,7 +114,7 @@ git commit -m "feat(release): model cloud asset evidence"
 - Produces: `dist/cloud-asset-deployment/plan.json`、`dist/cloud-asset-deployment/verify-in-devtools.js`，后者只调用现有 `getImageTempUrls`。
 - Validates: `node scripts/check-cloud-asset-deployment-evidence.js <plan> <evidence> --commit <sha>` 成功时输出已验证资产数量，失败时输出 `FOUND_CLOUD_ASSET_DEPLOYMENT_ISSUES`。
 
-- [ ] **Step 1: 写入失败的 CLI 与控制台脚本断言**
+- [x] **Step 1: 写入失败的 CLI 与控制台脚本断言**
 
 扩展领域模型测试：
 
@@ -128,13 +128,13 @@ assert.doesNotMatch(script, /JSON\\.stringify\\([^)]*tempFileURL/);
 
 用 `child_process.execFileSync` 调用尚不存在的 CLI，断言 biology 计划包含 cells cover，验证 CLI 拒绝 `status: 1` 的证据。
 
-- [ ] **Step 2: 运行测试并确认失败**
+- [x] **Step 2: 运行测试并确认失败**
 
 Run: `node scripts/cloud-asset-deployment.test.js`
 
 Expected: FAIL，提示缺少 `buildConsoleVerificationScript` 或 CLI 文件。
 
-- [ ] **Step 3: 实现 CLI 与控制台脚本**
+- [x] **Step 3: 实现 CLI 与控制台脚本**
 
 `build-cloud-asset-deployment-plan.js` 支持：
 
@@ -158,7 +158,7 @@ wx.cloud.callFunction({ name: 'getImageTempUrls', data: { fileIDs } })
 OK cloud asset deployment evidence: <count> assets verified
 ```
 
-- [ ] **Step 4: 运行 CLI 与测试验证**
+- [x] **Step 4: 运行 CLI 与测试验证**
 
 Run:
 
@@ -170,7 +170,7 @@ node scripts/cloud-asset-deployment.test.js
 
 Expected: biology 计划包含 `bio-unit-cells/cover.png`，不含 chemistry 路径；测试通过；`dist/` 产物不进入 Git。
 
-- [ ] **Step 5: 提交 CLI**
+- [x] **Step 5: 提交 CLI**
 
 ```bash
 git add scripts/cloud-asset-deployment.js scripts/cloud-asset-deployment.test.js scripts/build-cloud-asset-deployment-plan.js scripts/check-cloud-asset-deployment-evidence.js
