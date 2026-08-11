@@ -262,8 +262,8 @@ git commit -m "test(release): require cloud asset evidence strictly"
 node scripts/prepare-remote-assets.js
 node scripts/build-cloud-asset-deployment-plan.js --subject biology --commit "$(git rev-parse HEAD)"
 # 在绑定 AppID 的开发者工具云存储面板按 plan.json 上传 biology 路径；此步骤不是脚本自动上传。
-# 在开发者工具控制台运行 verify-in-devtools.js，把去除临时 URL 的输出保存为本地 evidence JSON。
-CLOUD_ASSET_DEPLOYMENT_EVIDENCE=.codex-output/release-regression-v1.10.1/cloud-asset-evidence.json \
+# 在开发者工具控制台运行 dist/cloud-asset-deployment/verify-in-devtools.js，把去除临时 URL 的输出保存为本地 evidence JSON。
+export CLOUD_ASSET_DEPLOYMENT_EVIDENCE=.codex-output/release-regression-v1.10.1/cloud-asset-evidence.json
 node scripts/check-cloud-asset-deployment-evidence.js \
   dist/cloud-asset-deployment/plan.json \
   "$CLOUD_ASSET_DEPLOYMENT_EVIDENCE" \
