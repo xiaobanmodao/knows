@@ -1,0 +1,141 @@
+const assert = require('assert');
+
+const {
+  buildCloudAssetPlan,
+  buildVerificationBatches,
+  getPlanSnapshotHash,
+  getSubjectFromAsset,
+  validateCloudAssetEvidence,
+} = require('./cloud-asset-deployment');
+
+const manifest = {
+  assets: [
+    { source: 'assets/figures/generated/subjects/biology/topics/bio-unit-cells/cover.png', cloudPath: '/assets/figures/generated/subjects/biology/topics/bio-unit-cells/cover.png', width: 1280, height: 900, bytes: 1024, sha256: 'a'.repeat(64) },
+    { source: 'assets/figures/generated/chemistry/topics/chem-topic/cover.png', cloudPath: '/assets/figures/generated/chemistry/topics/chem-topic/cover.png', width: 1280, height: 900, bytes: 1024, sha256: 'b'.repeat(64) },
+    { source: 'assets/figures/generated/subjects/biology/topics/bio-unit-cells/diagram.png', cloudPath: '/assets/figures/generated/subjects/biology/topics/bio-unit-cells/diagram.png', width: 960, height: 675, bytes: 512, sha256: 'c'.repeat(64) },
+  ],
+};
+const plan = buildCloudAssetPlan({ manifest, sourceCommit: 'abc123', subject: 'biology' });
+
+assert.strictEqual(plan.assetCount, 2);
+assert.strictEqual(plan.batches.length, 1);
+assert(plan.assets.every((asset) => asset.fileID.includes('cloud1-d3gm5t961d46590c3')));
+assert(plan.assets.some((asset) => asset.source.endsWith('bio-unit-cells/cover.png')));
+assert.throws(
+  () => validateCloudAssetEvidence({ plan, evidence: { tempFileURL: 'https://secret.example/' }, expectedCommit: 'abc123' }),
+  /临时 URL/,
+);
+
+function buildEvidence(overrides = {}) {
+  return {
+    schemaVersion: 1,
+    cloudEnvId: plan.cloudEnvId,
+    sourceCommit: plan.sourceCommit,
+    planSnapshotHash: plan.snapshotHash,
+    results: plan.assets.map((asset) => ({
+      fileID: asset.fileID,
+      status: 0,
+      hasTempFileURL: true,
+    })),
+    ...overrides,
+  };
+}
+
+assert.strictEqual(
+  getSubjectFromAsset('assets/figures/generated/subjects/biology/topics/bio-unit-cells/cover.png'),
+  'biology',
+);
+assert.strictEqual(
+  getSubjectFromAsset('assets/figures/generated/chemistry/topics/chem-topic/cover.png'),
+  'chemistry',
+);
+assert.strictEqual(getSubjectFromAsset('assets/figures/generated/other/topic.png'), null);
+
+assert.deepStrictEqual(
+  buildVerificationBatches(Array.from({ length: 51 }, (_, index) => ({ fileID: `cloud://asset-${index}` })))
+    .map((batch) => batch.length),
+  [50, 1],
+);
+assert.throws(
+  () => buildVerificationBatches([{ fileID: 'cloud://asset-1' }], 51),
+  /50/,
+);
+
+const laterPlan = { ...plan, generatedAt: '2030-01-01T00:00:00.000Z' };
+assert.strictEqual(getPlanSnapshotHash(laterPlan), plan.snapshotHash);
+assert.strictEqual(validateCloudAssetEvidence({
+  plan,
+  evidence: buildEvidence(),
+  expectedCommit: 'abc123',
+}), true);
+
+assert.throws(
+  () => validateCloudAssetEvidence({
+    plan,
+    evidence: buildEvidence({ cloudEnvId: 'cloud1-wrong' }),
+    expectedCommit: 'abc123',
+  }),
+  /环境/,
+);
+assert.throws(
+  () => validateCloudAssetEvidence({
+    plan,
+    evidence: buildEvidence({ sourceCommit: 'def456' }),
+    expectedCommit: 'abc123',
+  }),
+  /提交/,
+);
+assert.throws(
+  () => validateCloudAssetEvidence({
+    plan,
+    evidence: buildEvidence({ planSnapshotHash: '0'.repeat(64) }),
+    expectedCommit: 'abc123',
+  }),
+  /快照哈希/,
+);
+assert.throws(
+  () => validateCloudAssetEvidence({
+    plan,
+    evidence: buildEvidence({ results: buildEvidence().results.slice(1) }),
+    expectedCommit: 'abc123',
+  }),
+  /遗漏/,
+);
+assert.throws(
+  () => validateCloudAssetEvidence({
+    plan,
+    evidence: buildEvidence({ results: [...buildEvidence().results, buildEvidence().results[0]] }),
+    expectedCommit: 'abc123',
+  }),
+  /重复/,
+);
+assert.throws(
+  () => validateCloudAssetEvidence({
+    plan,
+    evidence: buildEvidence({ results: [...buildEvidence().results, {
+      fileID: 'cloud://unknown',
+      status: 0,
+      hasTempFileURL: true,
+    }] }),
+    expectedCommit: 'abc123',
+  }),
+  /未知/,
+);
+assert.throws(
+  () => validateCloudAssetEvidence({
+    plan,
+    evidence: buildEvidence({ results: [{ ...buildEvidence().results[0], status: -1 }, ...buildEvidence().results.slice(1)] }),
+    expectedCommit: 'abc123',
+  }),
+  /status/,
+);
+assert.throws(
+  () => validateCloudAssetEvidence({
+    plan,
+    evidence: buildEvidence({ results: [{ ...buildEvidence().results[0], tempFileURL: 'https://secret.example/' }, ...buildEvidence().results.slice(1)] }),
+    expectedCommit: 'abc123',
+  }),
+  /临时 URL/,
+);
+
+console.log('OK cloud asset deployment contract');
