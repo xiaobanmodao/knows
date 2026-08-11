@@ -19,6 +19,7 @@ const readinessSource = fs.readFileSync(
   'checkPureKnowledgeRuntimeTooling();',
   'checkEnglishCurriculumMapTooling();',
   'checkReleaseToolStateEvidence();',
+  'checkCloudAssetDeploymentEvidence();',
   'content-source-catalog.js',
 ].forEach((marker) => {
   assert.ok(readinessSource.includes(marker), `集成发布检查缺少 ${marker}`);
@@ -117,6 +118,7 @@ assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-cloud-us
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-cloud-user-trace.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-privacy-interfaces.test.js'));
 assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-privacy-interfaces.js'));
+assert.ok(defaultCommands.some((item) => item.script === 'scripts/cloud-asset-deployment.test.js'));
 [
   'scripts/check-package-manifest.js',
   'scripts/check-student-copy.js',
@@ -130,7 +132,8 @@ assert.ok(defaultCommands.some((item) => item.script === 'scripts/check-privacy-
   assert.ok(defaultCommands.some((item) => item.script === script), `质量矩阵缺少 ${script}`);
 });
 assert.ok(!defaultCommands.some((item) => item.script === 'scripts/check-package-sizes.js'));
-assert.strictEqual(defaultCommands.length, 125, '默认质量矩阵必须保持 125 项');
+assert.ok(!defaultCommands.some((item) => item.script === 'scripts/check-cloud-asset-deployment-evidence.js'));
+assert.strictEqual(defaultCommands.length, 126, '默认质量矩阵必须保持 126 项');
 const strictContentAudit = defaultCommands.find((item) => item.script === 'scripts/check-content-audit.js');
 assert.strictEqual(strictContentAudit.before.length, 1, '严格内容审计必须恰有一个前置检查');
 assert.strictEqual(
@@ -148,6 +151,7 @@ const inheritedReleaseEnvironment = {
   RELEASE_TOOL_STATE: '/tmp/tool-state.json',
   RELEASE_REGRESSION_EVIDENCE: '/tmp/evidence.json',
   PACKAGE_SIZE_REPORT: '/tmp/packages-preview.json',
+  CLOUD_ASSET_DEPLOYMENT_EVIDENCE: '/tmp/cloud-asset-evidence.json',
 };
 const contractEnvironment = getCheckEnvironment(
   { script: 'scripts/check-roadmap-status.test.js' },
@@ -181,6 +185,10 @@ assert.strictEqual(
 assert.strictEqual(
   matrixEnvironment.PACKAGE_SIZE_REPORT,
   '/tmp/knows-release-project/.codex-output/release-regression-v1.10.1/packages-preview.json',
+);
+assert.strictEqual(
+  matrixEnvironment.CLOUD_ASSET_DEPLOYMENT_EVIDENCE,
+  '/tmp/knows-release-project/.codex-output/release-regression-v1.10.1/cloud-asset-evidence.json',
 );
 assert.throws(
   () => getMatrixEnvironment(['node', 'matrix.js', '--release-project']),

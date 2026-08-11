@@ -7,6 +7,7 @@ const RELEASE_ENV_KEYS = Object.freeze([
   'RELEASE_TOOL_STATE',
   'RELEASE_REGRESSION_EVIDENCE',
   'PACKAGE_SIZE_REPORT',
+  'CLOUD_ASSET_DEPLOYMENT_EVIDENCE',
 ]);
 
 const DEFAULT_CHECKS = [
@@ -128,6 +129,7 @@ const DEFAULT_CHECKS = [
   { script: 'scripts/check-local-backup.js', label: '本地备份恢复' },
   { script: 'scripts/check-reading-display.js', label: '阅读显示设置' },
   { script: 'scripts/check-cloud-assets-runtime.js', label: '云图片降级' },
+  { script: 'scripts/cloud-asset-deployment.test.js', label: '云资源部署证据契约' },
   { script: 'scripts/check-release-readiness.js', label: '发布准备' },
   { script: 'scripts/check-release-package-evidence.test.js', label: '发布包体证据契约' },
   { script: 'scripts/check-release-regression-evidence.test.js', label: '实体回归证据契约' },
@@ -175,6 +177,7 @@ function getMatrixEnvironment(args = process.argv, baseEnvironment = process.env
     RELEASE_TOOL_STATE: path.join(outputDirectory, 'tool-state.json'),
     RELEASE_REGRESSION_EVIDENCE: path.join(outputDirectory, 'evidence.json'),
     PACKAGE_SIZE_REPORT: path.join(outputDirectory, 'packages-preview.json'),
+    CLOUD_ASSET_DEPLOYMENT_EVIDENCE: path.join(outputDirectory, 'cloud-asset-evidence.json'),
   };
 }
 

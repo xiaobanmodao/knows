@@ -7,6 +7,10 @@ const {
   getPreviewStatusPath,
   readPreviewStatus,
 } = require('./check-release-package-evidence');
+const {
+  buildCloudAssetPlan,
+  validateCloudAssetEvidence,
+} = require('./cloud-asset-deployment');
 const { validateReleaseToolStateEvidence } = require('./release-tool-state-evidence');
 const { shouldRequireHotfixScope } = require('./check-release-hotfix-scope');
 
@@ -695,6 +699,58 @@ function checkReleaseToolStateEvidence() {
   });
 }
 
+function checkCloudAssetDeploymentEvidence() {
+  if (!process.argv.includes('--require-device-evidence')) {
+    return;
+  }
+
+  const manifestPath = 'dist/remote-assets/manifest.json';
+  const evidencePath = process.env.CLOUD_ASSET_DEPLOYMENT_EVIDENCE
+    || '.codex-output/release-regression-v1.10.1/cloud-asset-evidence.json';
+  if (!fileExists(manifestPath)) {
+    issues.push(`云资源部署证据: 文件不存在 -> ${manifestPath}`);
+    return;
+  }
+  if (!fileExists(evidencePath)) {
+    issues.push(`云资源部署证据: 文件不存在 -> ${evidencePath}`);
+    return;
+  }
+
+  let manifest;
+  let evidence;
+  try {
+    manifest = JSON.parse(fs.readFileSync(resolveRepoPath(manifestPath), 'utf8'));
+  } catch (error) {
+    issues.push(`云资源部署证据: ${manifestPath} JSON 解析失败 -> ${error.message}`);
+    return;
+  }
+  try {
+    evidence = JSON.parse(fs.readFileSync(resolveRepoPath(evidencePath), 'utf8'));
+  } catch (error) {
+    issues.push(`云资源部署证据: ${evidencePath} JSON 解析失败 -> ${error.message}`);
+    return;
+  }
+
+  let sourceCommit;
+  try {
+    sourceCommit = execFileSync('git', ['rev-parse', 'HEAD'], {
+      cwd: root,
+      encoding: 'utf8',
+      stdio: 'pipe',
+    }).trim();
+  } catch (error) {
+    issues.push(`云资源部署证据: 无法读取当前 Git 提交 -> ${error.message}`);
+    return;
+  }
+
+  try {
+    const plan = buildCloudAssetPlan({ manifest, sourceCommit, subject: null });
+    validateCloudAssetEvidence({ plan, evidence, expectedCommit: sourceCommit });
+  } catch (error) {
+    issues.push(`云资源部署证据: ${error.message}`);
+  }
+}
+
 function checkAssetConfig() {
   const assetConfigPath = 'utils/asset-config.js';
   assertFile(assetConfigPath, '云图片配置');
@@ -773,6 +829,7 @@ checkReleaseRegressionEvidenceTooling();
 checkRuntimePackageDependencyTooling();
 checkReleasePackageEvidenceTooling();
 checkReleaseToolStateEvidence();
+checkCloudAssetDeploymentEvidence();
 checkAssetConfig();
 checkReleaseInfo();
 

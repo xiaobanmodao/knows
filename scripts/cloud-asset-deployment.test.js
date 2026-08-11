@@ -513,4 +513,39 @@ try {
   fs.rmSync(cliFixtureRoot, { recursive: true, force: true });
 }
 
+const readinessScript = path.join(__dirname, 'check-release-readiness.js');
+const missingEvidencePath = path.join(
+  os.tmpdir(),
+  `knows-missing-cloud-asset-evidence-${process.pid}-${Date.now()}.json`,
+);
+fs.rmSync(missingEvidencePath, { force: true });
+const readinessEnvironment = {
+  ...process.env,
+  CLOUD_ASSET_DEPLOYMENT_EVIDENCE: missingEvidencePath,
+};
+const defaultReadiness = childProcess.spawnSync(process.execPath, [readinessScript], {
+  cwd: path.resolve(__dirname, '..'),
+  encoding: 'utf8',
+  env: readinessEnvironment,
+});
+assert.doesNotMatch(
+  `${defaultReadiness.stdout}${defaultReadiness.stderr}`,
+  /云资源部署证据/,
+  '默认发布检查不得要求云资源部署证据',
+);
+assert.ok(!fs.existsSync(missingEvidencePath), '默认发布检查不得生成云资源部署证据');
+
+const strictReadiness = childProcess.spawnSync(process.execPath, [readinessScript, '--require-device-evidence'], {
+  cwd: path.resolve(__dirname, '..'),
+  encoding: 'utf8',
+  env: readinessEnvironment,
+});
+assert.notStrictEqual(strictReadiness.status, 0, '严格发布检查必须在缺少云资源部署证据时阻断');
+assert.match(
+  `${strictReadiness.stdout}${strictReadiness.stderr}`,
+  /云资源部署证据:.*文件不存在/,
+  '严格发布检查必须明确报告缺少云资源部署证据',
+);
+assert.ok(!fs.existsSync(missingEvidencePath), '严格发布检查不得生成伪造云资源部署证据');
+
 console.log('OK cloud asset deployment contract');
