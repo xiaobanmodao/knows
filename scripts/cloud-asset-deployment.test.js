@@ -3,22 +3,34 @@ const childProcess = require('child_process');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const vm = require('vm');
 
 const {
   buildCloudAssetPlan,
   buildConsoleVerificationScript,
   buildVerificationBatches,
   getPlanSnapshotHash,
-  getSubjectFromAsset,
+  validateCloudAssetPlan,
   validateCloudAssetEvidence,
+  validateStrictCloudAssetEvidence,
 } = require('./cloud-asset-deployment');
+const {
+  createRemoteAssetManifest,
+  getSubjectFromAsset,
+  validateCurrentRemoteAssetManifest,
+  validateRemoteAssetManifest,
+} = require('./remote-asset-manifest');
 const { REMOTE_ASSET_BASE } = require('../utils/asset-config');
 
 const manifest = {
+  version: 2,
+  generatedAt: '2026-08-11T00:00:00.000Z',
+  assetCount: 4,
   assets: [
-    { source: 'assets/figures/generated/subjects/biology/topics/bio-unit-cells/cover.png', cloudPath: '/assets/figures/generated/subjects/biology/topics/bio-unit-cells/cover.png', width: 1280, height: 900, bytes: 1024, sha256: 'a'.repeat(64) },
-    { source: 'assets/figures/generated/chemistry/topics/chem-topic/cover.png', cloudPath: '/assets/figures/generated/chemistry/topics/chem-topic/cover.png', width: 1280, height: 900, bytes: 1024, sha256: 'b'.repeat(64) },
-    { source: 'assets/figures/generated/subjects/biology/topics/bio-unit-cells/diagram.png', cloudPath: '/assets/figures/generated/subjects/biology/topics/bio-unit-cells/diagram.png', width: 960, height: 675, bytes: 512, sha256: 'c'.repeat(64) },
+    { source: 'assets/figures/generated/subjects/biology/topics/bio-unit-cells/cover.png', cloudPath: '/assets/figures/generated/subjects/biology/topics/bio-unit-cells/cover.png', width: 1280, height: 900, bytes: 1024, sha256: 'a'.repeat(64), sourceSha256: '1'.repeat(64) },
+    { source: 'assets/figures/generated/chemistry/topics/chem-topic/cover.png', cloudPath: '/assets/figures/generated/chemistry/topics/chem-topic/cover.png', width: 1280, height: 900, bytes: 1024, sha256: 'b'.repeat(64), sourceSha256: '2'.repeat(64) },
+    { source: 'assets/figures/generated/subjects/biology/topics/bio-unit-cells/diagram.png', cloudPath: '/assets/figures/generated/subjects/biology/topics/bio-unit-cells/diagram.png', width: 960, height: 675, bytes: 512, sha256: 'c'.repeat(64), sourceSha256: '3'.repeat(64) },
+    { source: 'assets/figures/generated/templates/model-factorization.png', cloudPath: '/assets/figures/generated/templates/model-factorization.png', width: 960, height: 675, bytes: 768, sha256: 'd'.repeat(64), sourceSha256: '4'.repeat(64) },
   ],
 };
 const sourceCommit = '1010edcb9c1a4427b7b2822b9f41728850091b6b';
@@ -32,7 +44,22 @@ assert.strictEqual(plan.assetCount, 2);
 assert.strictEqual(diagnosticPlan.sourceCommit, null);
 assert.strictEqual(plan.batches.length, 1);
 assert.strictEqual(fullPlan.subject, null);
-assert.strictEqual(fullPlan.assetCount, 3);
+assert.strictEqual(fullPlan.assetCount, 4);
+assert.strictEqual(buildCloudAssetPlan({ manifest, sourceCommit, subject: 'math' }).assetCount, 1);
+assert.deepStrictEqual(
+  plan.assets.map((asset) => Object.keys(asset).sort()),
+  plan.assets.map(() => [
+    'bytes',
+    'cloudPath',
+    'fileID',
+    'height',
+    'sha256',
+    'source',
+    'sourceSha256',
+    'subject',
+    'width',
+  ]),
+);
 assert.deepStrictEqual(
   plan.assets.map((asset) => asset.fileID),
   [
@@ -46,7 +73,7 @@ assert.throws(
   /subject.*biologgy/,
 );
 assert.throws(
-  () => buildCloudAssetPlan({ manifest: { assets: [] }, sourceCommit }),
+  () => buildCloudAssetPlan({ manifest: { ...manifest, assetCount: 0, assets: [] }, sourceCommit }),
   /资源数量/,
 );
 assert.throws(
@@ -159,7 +186,30 @@ assert.strictEqual(
   getSubjectFromAsset('assets/figures/generated/chemistry/topics/chem-topic/cover.png'),
   'chemistry',
 );
-assert.strictEqual(getSubjectFromAsset('assets/figures/generated/other/topic.png'), null);
+assert.strictEqual(getSubjectFromAsset('assets/figures/generated/topics/g9-topic-circle/cover.png'), 'math');
+assert.strictEqual(getSubjectFromAsset('assets/figures/generated/templates/model-factorization.png'), 'math');
+assert.throws(() => getSubjectFromAsset('assets/figures/generated/other/topic.png'), /未知资源路径/);
+
+const forgedSignedUrlPlan = JSON.parse(JSON.stringify(plan));
+forgedSignedUrlPlan.assets[0].fileID = 'https://signed.example/asset.png?token=secret';
+forgedSignedUrlPlan.batches[0][0].fileID = forgedSignedUrlPlan.assets[0].fileID;
+forgedSignedUrlPlan.snapshotHash = getPlanSnapshotHash(forgedSignedUrlPlan);
+assert.throws(
+  () => validateCloudAssetPlan(forgedSignedUrlPlan),
+  /fileID/,
+);
+assert.throws(
+  () => validateCloudAssetPlan({ ...plan, signedUrl: 'https://signed.example/?token=secret' }),
+  /未批准字段/,
+);
+const extraAssetFieldPlan = JSON.parse(JSON.stringify(plan));
+extraAssetFieldPlan.assets[0].signedUrl = 'https://signed.example/?token=secret';
+assert.throws(() => validateCloudAssetPlan(extraAssetFieldPlan), /未批准字段/);
+const duplicateAssetPlan = JSON.parse(JSON.stringify(plan));
+duplicateAssetPlan.assets[1] = { ...duplicateAssetPlan.assets[0] };
+duplicateAssetPlan.batches = buildVerificationBatches(duplicateAssetPlan.assets);
+duplicateAssetPlan.snapshotHash = getPlanSnapshotHash(duplicateAssetPlan);
+assert.throws(() => validateCloudAssetPlan(duplicateAssetPlan), /重复/);
 
 assert.deepStrictEqual(
   buildVerificationBatches(Array.from({ length: 51 }, (_, index) => ({ fileID: `cloud://asset-${index}` })))
@@ -287,6 +337,21 @@ assert.throws(
     expectedCommit: sourceCommit,
   }),
   /未知/,
+);
+const untrustedResultFileID = 'https://signed.example/asset.png?token=secret';
+assert.throws(
+  () => validateCloudAssetEvidence({
+    plan,
+    evidence: buildEvidence({ results: [...buildEvidence().results, {
+      fileID: untrustedResultFileID,
+      status: 0,
+      hasTempFileURL: true,
+    }] }),
+    expectedCommit: sourceCommit,
+  }),
+  (error) => /证据结果\[2\].*未知 fileID/.test(error.message)
+    && !error.message.includes(untrustedResultFileID)
+    && !/token=|https:\/\//i.test(error.message),
 );
 assert.throws(
   () => validateCloudAssetEvidence({
@@ -427,6 +492,100 @@ assert.match(consoleScript, /hasTempFileURL/);
 assert.doesNotMatch(consoleScript, /JSON\.stringify\([^)]*tempFileURL/);
 assert.doesNotMatch(consoleScript, /uploadFile|getTempFileURL/);
 
+const manifestFixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'knows-remote-asset-manifest-'));
+const sourceRoot = path.join(manifestFixtureRoot, 'source');
+const outputRoot = path.join(manifestFixtureRoot, 'output');
+const sourcePaths = [
+  'assets/figures/generated/subjects/biology/topics/fixture/cover.png',
+  'assets/figures/generated/templates/model-factorization.png',
+];
+const fixtureOptions = { sourcePaths, sourceRoot, outputRoot };
+
+function writeFixtureFile(root, relativePath, buffer) {
+  const filePath = path.join(root, relativePath);
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(filePath, buffer);
+  return filePath;
+}
+
+function fakePng(width, height, fill) {
+  const buffer = Buffer.alloc(32, fill);
+  Buffer.from('89504e470d0a1a0a', 'hex').copy(buffer, 0);
+  buffer.writeUInt32BE(width, 16);
+  buffer.writeUInt32BE(height, 20);
+  return buffer;
+}
+
+try {
+  sourcePaths.forEach((source, index) => {
+    writeFixtureFile(sourceRoot, source, Buffer.from(`fixture-source-${index}`));
+    writeFixtureFile(outputRoot, source, fakePng(40 + index, 30 + index, index + 1));
+  });
+  const currentManifest = createRemoteAssetManifest(sourcePaths.map((source) => ({
+    source,
+    sourcePath: path.join(sourceRoot, source),
+    out: path.join(outputRoot, source),
+  })));
+  assert.strictEqual(currentManifest.version, 2);
+  assert.strictEqual(currentManifest.assetCount, 2);
+  assert.strictEqual(validateRemoteAssetManifest(currentManifest), true);
+  assert.strictEqual(validateCurrentRemoteAssetManifest(currentManifest, fixtureOptions), true);
+
+  const crossPathManifest = JSON.parse(JSON.stringify(currentManifest));
+  crossPathManifest.assets[0].cloudPath = `/${sourcePaths[1]}`;
+  assert.throws(
+    () => validateRemoteAssetManifest(crossPathManifest),
+    /cloudPath/,
+  );
+
+  const truncatedManifest = {
+    ...currentManifest,
+    assetCount: 1,
+    assets: currentManifest.assets.slice(0, 1),
+  };
+  assert.throws(
+    () => validateCurrentRemoteAssetManifest(truncatedManifest, fixtureOptions),
+    /资源集合/,
+  );
+
+  const sourceTamperedManifest = JSON.parse(JSON.stringify(currentManifest));
+  sourceTamperedManifest.assets[0].sourceSha256 = '0'.repeat(64);
+  assert.throws(
+    () => validateCurrentRemoteAssetManifest(sourceTamperedManifest, fixtureOptions),
+    /sourceSha256/,
+  );
+
+  const outputTamperedManifest = JSON.parse(JSON.stringify(currentManifest));
+  outputTamperedManifest.assets[0].sha256 = '0'.repeat(64);
+  assert.throws(
+    () => validateCurrentRemoteAssetManifest(outputTamperedManifest, fixtureOptions),
+    /sha256/,
+  );
+
+  writeFixtureFile(sourceRoot, sourcePaths[0], Buffer.from('rewritten-source'));
+  assert.throws(
+    () => validateCurrentRemoteAssetManifest(currentManifest, fixtureOptions),
+    /sourceSha256/,
+  );
+  writeFixtureFile(sourceRoot, sourcePaths[0], Buffer.from('fixture-source-0'));
+  writeFixtureFile(outputRoot, sourcePaths[0], fakePng(99, 88, 9));
+  assert.throws(
+    () => validateCurrentRemoteAssetManifest(currentManifest, fixtureOptions),
+    /sha256/,
+  );
+  writeFixtureFile(outputRoot, sourcePaths[0], fakePng(40, 30, 1));
+
+  const fixturePlan = buildCloudAssetPlan({ manifest: currentManifest, sourceCommit });
+  assert.strictEqual(validateStrictCloudAssetEvidence({
+    manifest: currentManifest,
+    evidence: buildEvidenceForPlan(fixturePlan),
+    sourceCommit,
+    manifestOptions: fixtureOptions,
+  }), true);
+} finally {
+  fs.rmSync(manifestFixtureRoot, { recursive: true, force: true });
+}
+
 const cliFixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'knows-cloud-asset-deployment-'));
 const cliManifestPath = path.join(cliFixtureRoot, 'manifest.json');
 const cliPlanPath = path.join(cliFixtureRoot, 'plan.json');
@@ -548,4 +707,45 @@ assert.match(
 );
 assert.ok(!fs.existsSync(missingEvidencePath), '严格发布检查不得生成伪造云资源部署证据');
 
-console.log('OK cloud asset deployment contract');
+const consoleLogs = [];
+vm.runInNewContext(buildConsoleVerificationScript(fullPlan), {
+  wx: {
+    cloud: {
+      callFunction: async ({ data }) => ({
+        result: {
+          fileList: data.fileIDs.map((fileID) => ({
+            fileID,
+            status: 0,
+            tempFileURL: `https://signed.example/asset.png?token=${encodeURIComponent(fileID)}&signature=secret`,
+            errCode: 'SAFE_ERROR',
+            errMsg: 'Resource available',
+          })),
+        },
+      }),
+    },
+  },
+  console: {
+    log: (...args) => consoleLogs.push(args),
+  },
+  Map,
+  Date,
+  JSON,
+  Boolean,
+  Number,
+  Array,
+  String,
+}).then(() => {
+  assert.strictEqual(consoleLogs.length, 1);
+  assert.strictEqual(consoleLogs[0].length, 1);
+  assert.strictEqual(typeof consoleLogs[0][0], 'string');
+  const loggedEvidence = consoleLogs[0][0];
+  assert.strictEqual(JSON.parse(loggedEvidence).results.every((result) => result.hasTempFileURL === true), true);
+  assert.doesNotMatch(loggedEvidence, /https:\/\//);
+  assert.doesNotMatch(loggedEvidence, /tempFileURL/);
+  assert.doesNotMatch(loggedEvidence, /token=/i);
+  assert.doesNotMatch(loggedEvidence, /signature=/i);
+  console.log('OK cloud asset deployment contract');
+}).catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});

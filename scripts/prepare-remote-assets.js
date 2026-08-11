@@ -1,8 +1,8 @@
 const fs = require('fs');
 const path = require('path');
-const crypto = require('crypto');
 const { spawnSync } = require('child_process');
 const { collectRemoteAssets } = require('./asset-inventory');
+const { createRemoteAssetManifest } = require('./remote-asset-manifest');
 
 const outRoot = process.argv[2] || 'dist/remote-assets';
 const python = process.env.PYTHON || '/Users/hht/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3';
@@ -95,22 +95,7 @@ if (result.status !== 0) {
   process.exit(result.status || 1);
 }
 
-const manifest = {
-  version: 1,
-  generatedAt: new Date().toISOString(),
-  assetCount: items.length,
-  assets: items.map((item) => {
-    const buffer = fs.readFileSync(item.out);
-    return {
-      source: item.source,
-      cloudPath: `/${item.source}`,
-      width: buffer.readUInt32BE(16),
-      height: buffer.readUInt32BE(20),
-      bytes: buffer.length,
-      sha256: crypto.createHash('sha256').update(buffer).digest('hex'),
-    };
-  }),
-};
+const manifest = createRemoteAssetManifest(items);
 const manifestPath = path.join(outRoot, 'manifest.json');
 fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
 

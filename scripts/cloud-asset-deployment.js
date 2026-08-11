@@ -1,8 +1,36 @@
 const crypto = require('crypto');
+const { isDeepStrictEqual } = require('util');
 
 const { CLOUD_ENV_ID, REMOTE_ASSET_BASE } = require('../utils/asset-config');
+const {
+  getSubjectFromAsset,
+  validateCurrentRemoteAssetManifest,
+  validateRemoteAssetManifest,
+} = require('./remote-asset-manifest');
 
 const SUBJECTS = new Set(['biology', 'chemistry', 'english', 'math', 'physics']);
+const PLAN_FIELDS = new Set([
+  'schemaVersion',
+  'generatedAt',
+  'cloudEnvId',
+  'sourceCommit',
+  'subject',
+  'assetCount',
+  'assets',
+  'batches',
+  'snapshotHash',
+]);
+const PLAN_ASSET_FIELDS = new Set([
+  'source',
+  'cloudPath',
+  'width',
+  'height',
+  'bytes',
+  'sha256',
+  'sourceSha256',
+  'subject',
+  'fileID',
+]);
 const EVIDENCE_FIELDS = new Set([
   'schemaVersion',
   'verifiedAt',
@@ -18,12 +46,6 @@ const SENSITIVE_PARAMETER_PATTERN = /\b(?:access_token|token|signature|x-amz-sig
 const SOURCE_COMMIT_PATTERN = /^[a-f0-9]{7,64}$/i;
 const MAX_ERROR_CODE_LENGTH = 128;
 const MAX_ERROR_MESSAGE_LENGTH = 512;
-
-function getSubjectFromAsset(source) {
-  const normalized = String(source || '').replace(/^\/+/, '');
-  const match = normalized.match(/^assets\/figures\/generated\/(?:subjects\/)?([^/]+)\//);
-  return match && SUBJECTS.has(match[1]) ? match[1] : null;
-}
 
 function buildVerificationBatches(assets, batchSize = 50) {
   if (!Array.isArray(assets)) throw new Error('资源列表必须为数组');
@@ -53,6 +75,8 @@ function snapshotInput(plan) {
         height: asset.height,
         bytes: asset.bytes,
         sha256: asset.sha256,
+        sourceSha256: asset.sourceSha256,
+        subject: asset.subject,
         fileID: asset.fileID,
       }))
       .sort((left, right) => left.fileID.localeCompare(right.fileID)),
@@ -75,16 +99,20 @@ function batchFileIDs(batches) {
 function hasDeterministicVerificationBatches(plan) {
   if (!Array.isArray(plan.assets) || !Array.isArray(plan.batches)) return false;
   const expected = buildVerificationBatches(plan.assets);
-  const actual = batchFileIDs(plan.batches);
-  return actual.length === expected.length && actual.every((batch, index) => (
+  return plan.batches.length === expected.length && plan.batches.every((batch, index) => (
     Array.isArray(batch)
     && batch.length === expected[index].length
-    && batch.every((fileID, itemIndex) => fileID === expected[index][itemIndex].fileID)
+    && batch.every((asset, itemIndex) => (
+      asset
+      && typeof asset === 'object'
+      && !Array.isArray(asset)
+      && isDeepStrictEqual(asset, expected[index][itemIndex])
+    ))
   ));
 }
 
 function buildCloudAssetPlan({ manifest, sourceCommit = null, subject = null }) {
-  if (!manifest || !Array.isArray(manifest.assets)) throw new Error('资源 manifest 必须包含 assets 数组');
+  validateRemoteAssetManifest(manifest);
   if (sourceCommit !== null && !isValidSourceCommit(sourceCommit)) {
     throw new Error('sourceCommit 必须为 null 或 7 到 64 位十六进制 Git 提交标识');
   }
@@ -92,10 +120,20 @@ function buildCloudAssetPlan({ manifest, sourceCommit = null, subject = null }) 
 
   const assets = manifest.assets
     .filter((asset) => !subject || getSubjectFromAsset(asset.source) === subject)
-    .map((asset) => ({
-      ...asset,
-      fileID: `${REMOTE_ASSET_BASE}${String(asset.cloudPath || '').startsWith('/') ? asset.cloudPath : `/${asset.cloudPath || ''}`}`,
-    }));
+    .map((asset) => {
+      const assetSubject = getSubjectFromAsset(asset.source);
+      return {
+        source: asset.source,
+        cloudPath: asset.cloudPath,
+        width: asset.width,
+        height: asset.height,
+        bytes: asset.bytes,
+        sha256: asset.sha256,
+        sourceSha256: asset.sourceSha256,
+        subject: assetSubject,
+        fileID: `${REMOTE_ASSET_BASE}${asset.cloudPath}`,
+      };
+    });
   if (assets.length === 0) {
     throw new Error(subject
       ? `主题 ${subject} 计划资源数量必须大于 0`
@@ -111,24 +149,73 @@ function buildCloudAssetPlan({ manifest, sourceCommit = null, subject = null }) 
     assets,
     batches: buildVerificationBatches(assets),
   };
-  assertPlanSubjectScope(plan);
-
-  return {
+  const canonicalPlan = {
     ...plan,
     snapshotHash: getPlanSnapshotHash(plan),
   };
+  validateCloudAssetPlan(canonicalPlan);
+  return canonicalPlan;
 }
 
-function buildConsoleVerificationScript(plan) {
-  if (!plan || plan.schemaVersion !== 1) throw new Error('计划 schemaVersion 必须为 1');
-  if (!isValidSourceCommit(plan.sourceCommit)) throw new Error('计划 sourceCommit 无效');
+function validateCloudAssetPlan(plan) {
+  assertExactKeys(plan, PLAN_FIELDS, '计划');
+  if (plan.schemaVersion !== 1) throw new Error('计划 schemaVersion 必须为 1');
+  if (!isValidDateString(plan.generatedAt)) throw new Error('计划 generatedAt 必须为有效日期字符串');
+  if (plan.cloudEnvId !== CLOUD_ENV_ID) throw new Error('计划 cloudEnvId 无效');
+  if (plan.sourceCommit !== null && !isValidSourceCommit(plan.sourceCommit)) {
+    throw new Error('计划 sourceCommit 无效');
+  }
+  assertValidSubject(plan.subject);
   if (!Array.isArray(plan.assets) || plan.assetCount !== plan.assets.length) {
     throw new Error('计划资源集合无效');
   }
-  assertPlanSubjectScope(plan);
   assertPlanHasAssets(plan);
+
+  const identities = {
+    source: new Set(),
+    cloudPath: new Set(),
+    fileID: new Set(),
+  };
+  plan.assets.forEach((asset, index) => {
+    const label = `计划 assets[${index}]`;
+    assertExactKeys(asset, PLAN_ASSET_FIELDS, label);
+    const assetSubject = getSubjectFromAsset(asset.source);
+    if (asset.subject !== assetSubject) throw new Error(`${label} subject 与资源不匹配`);
+    if (plan.subject !== null && asset.subject !== plan.subject) {
+      throw new Error(`计划 subject 与资源不匹配：${plan.subject}`);
+    }
+    if (asset.fileID !== `${REMOTE_ASSET_BASE}${asset.cloudPath}`) throw new Error(`${label} fileID 无效`);
+    Object.keys(identities).forEach((field) => {
+      if (identities[field].has(asset[field])) throw new Error(`${label} ${field} 重复`);
+      identities[field].add(asset[field]);
+    });
+  });
+
+  validateRemoteAssetManifest({
+    version: 2,
+    generatedAt: plan.generatedAt,
+    assetCount: plan.assetCount,
+    assets: plan.assets.map((asset) => ({
+      source: asset.source,
+      cloudPath: asset.cloudPath,
+      width: asset.width,
+      height: asset.height,
+      bytes: asset.bytes,
+      sha256: asset.sha256,
+      sourceSha256: asset.sourceSha256,
+    })),
+  });
   if (!hasDeterministicVerificationBatches(plan)) throw new Error('计划验证批次无效');
+  if (typeof plan.snapshotHash !== 'string' || !/^[a-f0-9]{64}$/.test(plan.snapshotHash)) {
+    throw new Error('计划快照哈希无效');
+  }
   if (plan.snapshotHash !== getPlanSnapshotHash(plan)) throw new Error('计划快照哈希无效');
+  return true;
+}
+
+function buildConsoleVerificationScript(plan) {
+  validateCloudAssetPlan(plan);
+  if (!isValidSourceCommit(plan.sourceCommit)) throw new Error('计划 sourceCommit 无效');
 
   const verificationInput = {
     schemaVersion: plan.schemaVersion,
@@ -213,6 +300,13 @@ function assertAllowedKeys(value, allowedKeys, label) {
   });
 }
 
+function assertExactKeys(value, allowedKeys, label) {
+  assertAllowedKeys(value, allowedKeys, label);
+  allowedKeys.forEach((key) => {
+    if (!Object.prototype.hasOwnProperty.call(value, key)) throw new Error(`${label}缺少字段：${key}`);
+  });
+}
+
 function isValidDateString(value) {
   if (typeof value !== 'string' || !ISO_TIMESTAMP_PATTERN.test(value)) return false;
   const date = new Date(value);
@@ -287,36 +381,22 @@ function assertValidSubject(subject) {
   }
 }
 
-function assertPlanSubjectScope(plan) {
-  assertValidSubject(plan.subject);
-  if (plan.subject === null) return;
-  if (!Array.isArray(plan.assets) || plan.assets.some((asset) => getSubjectFromAsset(asset && asset.source) !== plan.subject)) {
-    throw new Error(`计划 subject 与资源不匹配：${plan.subject}`);
-  }
-}
-
 function validateCloudAssetEvidence({ plan, evidence, expectedCommit }) {
+  validateCloudAssetPlan(plan);
   if (containsTempFileURL(evidence)) throw new Error('证据不得包含临时 URL');
-  if (!plan || plan.schemaVersion !== 1) throw new Error('计划 schemaVersion 必须为 1');
   if (!isValidSourceCommit(plan.sourceCommit)) throw new Error('计划 sourceCommit 无效');
   assertAllowedKeys(evidence, EVIDENCE_FIELDS, '证据');
   if (!evidence || evidence.schemaVersion !== 1) throw new Error('证据 schemaVersion 必须为 1');
   if (!isValidDateString(evidence.verifiedAt)) throw new Error('证据 verifiedAt 必须为有效日期字符串');
   if (!isValidSourceCommit(evidence.sourceCommit)) throw new Error('证据 sourceCommit 无效');
   if (!isValidSourceCommit(expectedCommit)) throw new Error('expectedCommit sourceCommit 无效');
-  if (!Array.isArray(plan.assets) || plan.assetCount !== plan.assets.length) {
-    throw new Error('计划资源集合无效');
-  }
-  assertPlanSubjectScope(plan);
-  assertPlanHasAssets(plan);
-  if (!hasDeterministicVerificationBatches(plan)) throw new Error('计划验证批次无效');
   if (plan.cloudEnvId !== CLOUD_ENV_ID || evidence.cloudEnvId !== plan.cloudEnvId) {
     throw new Error('证据环境与计划不一致');
   }
   if (plan.sourceCommit !== expectedCommit || evidence.sourceCommit !== plan.sourceCommit) {
     throw new Error('证据提交与计划不一致');
   }
-  if (plan.snapshotHash !== getPlanSnapshotHash(plan) || evidence.planSnapshotHash !== plan.snapshotHash) {
+  if (evidence.planSnapshotHash !== plan.snapshotHash) {
     throw new Error('证据快照哈希与计划不一致');
   }
   if (!Array.isArray(evidence.results)) throw new Error('证据结果必须为数组');
@@ -325,26 +405,33 @@ function validateCloudAssetEvidence({ plan, evidence, expectedCommit }) {
   if (expectedFileIDs.size !== plan.assets.length) throw new Error('计划 fileID 重复');
 
   const resultFileIDs = new Set();
-  evidence.results.forEach((result) => {
-    assertAllowedKeys(result, RESULT_FIELDS, '证据结果');
+  evidence.results.forEach((result, index) => {
+    const label = `证据结果[${index}]`;
+    assertAllowedKeys(result, RESULT_FIELDS, label);
     if (!isValidErrorCode(result.errCode)) {
-      throw new Error(`证据结果 errCode 无效：${result.fileID || '(empty)'}`);
+      throw new Error(`${label} errCode 无效`);
     }
     if (result.errMsg !== undefined && result.errMsg !== null && typeof result.errMsg !== 'string') {
-      throw new Error(`证据结果错误字段必须为标量：${result.fileID || '(empty)'}`);
+      throw new Error(`${label}错误字段必须为标量`);
     }
     if (!isSafeErrorMessage(result.errMsg)) {
-      throw new Error(`证据结果 errMsg 必须为安全文本：${result.fileID || '(empty)'}`);
+      throw new Error(`${label} errMsg 必须为安全文本`);
     }
-    if (resultFileIDs.has(result.fileID)) throw new Error(`证据结果 fileID 重复：${result.fileID}`);
+    if (resultFileIDs.has(result.fileID)) throw new Error(`${label} fileID 重复`);
     resultFileIDs.add(result.fileID);
-    if (!expectedFileIDs.has(result.fileID)) throw new Error(`证据结果含未知 fileID：${result.fileID}`);
-    if (result.status !== 0) throw new Error(`证据结果 status 不为 0：${result.fileID}`);
-    if (result.hasTempFileURL !== true) throw new Error(`证据结果缺少临时 URL 标记：${result.fileID}`);
+    if (!expectedFileIDs.has(result.fileID)) throw new Error(`${label}含未知 fileID`);
+    if (result.status !== 0) throw new Error(`${label} status 不为 0`);
+    if (result.hasTempFileURL !== true) throw new Error(`${label}缺少临时 URL 标记`);
   });
 
   if (resultFileIDs.size !== expectedFileIDs.size) throw new Error('证据结果遗漏计划 fileID');
   return true;
+}
+
+function validateStrictCloudAssetEvidence({ manifest, evidence, sourceCommit, manifestOptions }) {
+  validateCurrentRemoteAssetManifest(manifest, manifestOptions);
+  const plan = buildCloudAssetPlan({ manifest, sourceCommit, subject: null });
+  return validateCloudAssetEvidence({ plan, evidence, expectedCommit: sourceCommit });
 }
 
 module.exports = {
@@ -353,5 +440,7 @@ module.exports = {
   buildVerificationBatches,
   getPlanSnapshotHash,
   getSubjectFromAsset,
+  validateCloudAssetPlan,
   validateCloudAssetEvidence,
+  validateStrictCloudAssetEvidence,
 };
