@@ -112,6 +112,83 @@ function buildCloudAssetPlan({ manifest, sourceCommit = null, subject = null }) 
   };
 }
 
+function buildConsoleVerificationScript(plan) {
+  if (!plan || plan.schemaVersion !== 1) throw new Error('计划 schemaVersion 必须为 1');
+  if (!isValidSourceCommit(plan.sourceCommit)) throw new Error('计划 sourceCommit 无效');
+  if (!Array.isArray(plan.assets) || plan.assetCount !== plan.assets.length) {
+    throw new Error('计划资源集合无效');
+  }
+  if (!hasDeterministicVerificationBatches(plan)) throw new Error('计划验证批次无效');
+  if (plan.snapshotHash !== getPlanSnapshotHash(plan)) throw new Error('计划快照哈希无效');
+
+  const verificationInput = {
+    schemaVersion: plan.schemaVersion,
+    cloudEnvId: plan.cloudEnvId,
+    sourceCommit: plan.sourceCommit,
+    planSnapshotHash: plan.snapshotHash,
+    batches: batchFileIDs(plan.batches),
+  };
+
+  return `/* Paste this script into the WeChat DevTools console after cloud setup. */
+(async () => {
+  const plan = ${JSON.stringify(verificationInput, null, 2)};
+  const safeErrorCode = (value) => (
+    (typeof value === 'number' && Number.isFinite(value))
+    || (typeof value === 'string' && value.length > 0 && value.length <= 128 && /^[A-Za-z0-9._-]+$/.test(value))
+      ? value
+      : undefined
+  );
+  const safeErrorMessage = (value) => (
+    typeof value === 'string'
+    && value.length <= 512
+    && /^[\\p{L}\\p{N}\\p{M}\\p{Zs}.,!;'"()_\\-，。！；：、（）？]*$/u.test(value)
+    && !/\\b(?:access_token|token|signature|x-amz-signature|credential|expires|q-sign-[a-z0-9._-]*|sign|sig)\\s*=/i.test(value)
+      ? value
+      : undefined
+  );
+  const resultFor = (fileID, item) => {
+    const result = {
+      fileID,
+      status: item && Number.isFinite(item.status) ? item.status : -1,
+      hasTempFileURL: Boolean(item && typeof item.tempFileURL === 'string' && item.tempFileURL.length > 0),
+    };
+    const errCode = safeErrorCode(item && item.errCode);
+    const errMsg = safeErrorMessage(item && item.errMsg);
+    if (errCode !== undefined) result.errCode = errCode;
+    if (errMsg !== undefined) result.errMsg = errMsg;
+    return result;
+  };
+  const results = [];
+  for (const fileIDs of plan.batches) {
+    try {
+      const response = await wx.cloud.callFunction({ name: 'getImageTempUrls', data: { fileIDs } });
+      const fileList = response && response.result && Array.isArray(response.result.fileList)
+        ? response.result.fileList
+        : [];
+      const resultByFileID = new Map(fileList.map((item) => [item && item.fileID, item]));
+      fileIDs.forEach((fileID) => results.push(resultFor(fileID, resultByFileID.get(fileID))));
+    } catch (error) {
+      fileIDs.forEach((fileID) => results.push({
+        fileID,
+        status: -1,
+        errCode: 'CALL_FUNCTION_FAILED',
+        errMsg: 'Verification request failed',
+        hasTempFileURL: false,
+      }));
+    }
+  }
+  console.log(JSON.stringify({
+    schemaVersion: 1,
+    verifiedAt: new Date().toISOString(),
+    cloudEnvId: plan.cloudEnvId,
+    sourceCommit: plan.sourceCommit,
+    planSnapshotHash: plan.planSnapshotHash,
+    results,
+  }, null, 2));
+})().catch(() => {});
+`;
+}
+
 function containsTempFileURL(value) {
   if (!value || typeof value !== 'object') return false;
   if (Object.prototype.hasOwnProperty.call(value, 'tempFileURL')) return true;
@@ -241,6 +318,7 @@ function validateCloudAssetEvidence({ plan, evidence, expectedCommit }) {
 
 module.exports = {
   buildCloudAssetPlan,
+  buildConsoleVerificationScript,
   buildVerificationBatches,
   getPlanSnapshotHash,
   getSubjectFromAsset,

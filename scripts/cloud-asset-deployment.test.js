@@ -1,7 +1,12 @@
 const assert = require('assert');
+const childProcess = require('child_process');
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
 
 const {
   buildCloudAssetPlan,
+  buildConsoleVerificationScript,
   buildVerificationBatches,
   getPlanSnapshotHash,
   getSubjectFromAsset,
@@ -342,5 +347,76 @@ assert.throws(
   }),
   /临时 URL/,
 );
+
+const consoleScript = buildConsoleVerificationScript(plan);
+assert.match(consoleScript, /getImageTempUrls/);
+assert.match(consoleScript, /hasTempFileURL/);
+assert.doesNotMatch(consoleScript, /JSON\.stringify\([^)]*tempFileURL/);
+assert.doesNotMatch(consoleScript, /uploadFile|getTempFileURL/);
+
+const cliFixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'knows-cloud-asset-deployment-'));
+const cliManifestPath = path.join(cliFixtureRoot, 'manifest.json');
+const cliPlanPath = path.join(cliFixtureRoot, 'plan.json');
+const cliEvidencePath = path.join(cliFixtureRoot, 'evidence.json');
+
+function runCli(script, args) {
+  return childProcess.execFileSync(process.execPath, [path.join(__dirname, script), ...args], {
+    cwd: path.resolve(__dirname, '..'),
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+}
+
+try {
+  fs.writeFileSync(cliManifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+  const buildOutput = runCli('build-cloud-asset-deployment-plan.js', [
+    '--manifest', cliManifestPath,
+    '--output', cliPlanPath,
+    '--subject', 'biology',
+    '--commit', sourceCommit,
+  ]);
+  assert.match(buildOutput, /cloud asset deployment plan/);
+
+  const cliPlan = JSON.parse(fs.readFileSync(cliPlanPath, 'utf8'));
+  assert(cliPlan.assets.some((asset) => asset.source.endsWith('bio-unit-cells/cover.png')));
+  assert(cliPlan.assets.every((asset) => asset.source.includes('/biology/')));
+  assert(fs.existsSync(path.join(path.dirname(cliPlanPath), 'verify-in-devtools.js')));
+
+  fs.writeFileSync(cliEvidencePath, `${JSON.stringify({
+    schemaVersion: 1,
+    verifiedAt: '2026-08-11T00:00:00.000Z',
+    cloudEnvId: cliPlan.cloudEnvId,
+    sourceCommit,
+    planSnapshotHash: cliPlan.snapshotHash,
+    results: cliPlan.assets.map((asset) => ({
+      fileID: asset.fileID,
+      status: 0,
+      hasTempFileURL: true,
+    })),
+  }, null, 2)}\n`);
+  assert.strictEqual(
+    runCli('check-cloud-asset-deployment-evidence.js', [cliPlanPath, cliEvidencePath, '--commit', sourceCommit]),
+    `OK cloud asset deployment evidence: ${cliPlan.assetCount} assets verified\n`,
+  );
+
+  const failedEvidence = JSON.parse(fs.readFileSync(cliEvidencePath, 'utf8'));
+  failedEvidence.results[0].status = 1;
+  fs.writeFileSync(cliEvidencePath, `${JSON.stringify(failedEvidence, null, 2)}\n`);
+  assert.throws(
+    () => runCli('check-cloud-asset-deployment-evidence.js', [cliPlanPath, cliEvidencePath, '--commit', sourceCommit]),
+    (error) => /FOUND_CLOUD_ASSET_DEPLOYMENT_ISSUES/.test(error.stderr),
+  );
+  assert.throws(
+    () => runCli('check-cloud-asset-deployment-evidence.js', [cliPlanPath, cliEvidencePath]),
+    (error) => /FOUND_CLOUD_ASSET_DEPLOYMENT_ISSUES/.test(error.stderr),
+  );
+  fs.writeFileSync(cliEvidencePath, '{ invalid json\n');
+  assert.throws(
+    () => runCli('check-cloud-asset-deployment-evidence.js', [cliPlanPath, cliEvidencePath, '--commit', sourceCommit]),
+    (error) => /FOUND_CLOUD_ASSET_DEPLOYMENT_ISSUES/.test(error.stderr),
+  );
+} finally {
+  fs.rmSync(cliFixtureRoot, { recursive: true, force: true });
+}
 
 console.log('OK cloud asset deployment contract');
