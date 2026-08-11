@@ -120,7 +120,7 @@ git commit -m "fix(release): scope hotfix validation explicitly"
 - Produces: 第二父提交为 `7339c30` 的 Git merge commit；所有 v1.13 模块可由当前工作树加载。
 - Preserves: `checkCloudPrivacyTooling()`、`checkPureKnowledgeRuntimeTooling()`、`checkReleasePackageEvidenceTooling()`、`checkReleaseToolStateEvidence()`、catalog 分包别名路径。
 
-- [ ] **Step 1: 启动无提交三方合并并确认冲突范围**
+- [x] **Step 1: 启动无提交三方合并并确认冲突范围**
 
 Run:
 
@@ -131,7 +131,7 @@ git diff --name-only --diff-filter=U
 
 Expected: `scripts/check-release-readiness.js` 和 `scripts/check-search-semantics.js` 是冲突文件。若出现其他冲突，运行 `git merge --abort`，记录新冲突文件与三方基线，不进行猜测式解决。
 
-- [ ] **Step 2: 先写联合发布检查的失败断言**
+- [x] **Step 2: 先写联合发布检查的失败断言**
 
 在合并状态中把 `scripts/check-v1.11-quality-matrix.test.js` 加入以下源文件断言；先保留 `check-release-readiness.js` 的发布侧版本，因此该测试必须失败：
 
@@ -159,7 +159,7 @@ Run: `node scripts/check-v1.11-quality-matrix.test.js`
 
 Expected: 失败并明确指出缺少内容线的 `checkEnglishCurriculumMapTooling()`、`checkReleaseToolStateEvidence()` 或 `content-source-catalog.js` 标记，而不是因未解决冲突标记导致语法错误。
 
-- [ ] **Step 3: 解决 `check-release-readiness.js` 冲突并保留双方门禁**
+- [x] **Step 3: 解决 `check-release-readiness.js` 冲突并保留双方门禁**
 
 以内容线的 `resolveRepoPath()`、结构化内容源目录、数学 `math-volume-map.test.js`、英语目录和工具状态逻辑为基础，同时保留发布侧的以下内容：
 
@@ -200,7 +200,7 @@ scripts/check-release-hotfix-scope.js
 scripts/check-release-hotfix-scope.test.js
 ```
 
-- [ ] **Step 4: 解决搜索语义冲突**
+- [x] **Step 4: 解决搜索语义冲突**
 
 `scripts/check-search-semantics.js` 的最终开头固定为：
 
@@ -222,7 +222,7 @@ assert.strictEqual(oldSingularTitle.title, 'Unit 4 The Wonders of Nature');
 
 不得恢复 `../data/search-aliases`，不得丢弃任何原有公式、化学或英语词形搜索检查。
 
-- [ ] **Step 5: 运行冲突解决的最小回归**
+- [x] **Step 5: 运行冲突解决的最小回归**
 
 Run:
 
@@ -236,7 +236,7 @@ node scripts/check-release-readiness.js
 
 Expected: 未解决冲突列表为空；热修复范围、搜索语义和默认发布检查通过；矩阵契约此时只能因为 Task 3 尚未注册的 `check-cloud-user-trace.test.js` 与 `check-release-hotfix-scope.test.js` 而失败，不能有其他失败。默认发布检查不再把内容集成视为热修复范围违规，不运行完整矩阵。
 
-- [ ] **Step 6: 创建内容线 merge commit**
+- [x] **Step 6: 创建内容线 merge commit**
 
 Run:
 
