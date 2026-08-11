@@ -26,10 +26,13 @@ const otherSourceCommit = 'fedcba9876543210fedcba9876543210fedcba98';
 const invalidSourceCommit = 'https://signed.example/?token=secret';
 const plan = buildCloudAssetPlan({ manifest, sourceCommit, subject: 'biology' });
 const diagnosticPlan = buildCloudAssetPlan({ manifest, subject: 'biology' });
+const fullPlan = buildCloudAssetPlan({ manifest, sourceCommit });
 
 assert.strictEqual(plan.assetCount, 2);
 assert.strictEqual(diagnosticPlan.sourceCommit, null);
 assert.strictEqual(plan.batches.length, 1);
+assert.strictEqual(fullPlan.subject, null);
+assert.strictEqual(fullPlan.assetCount, 3);
 assert.deepStrictEqual(
   plan.assets.map((asset) => asset.fileID),
   [
@@ -40,7 +43,7 @@ assert.deepStrictEqual(
 assert(plan.assets.some((asset) => asset.source.endsWith('bio-unit-cells/cover.png')));
 assert.throws(
   () => buildCloudAssetPlan({ manifest, sourceCommit, subject: 'biologgy' }),
-  /biologgy/,
+  /subject.*biologgy/,
 );
 assert.throws(
   () => buildCloudAssetPlan({ manifest: { assets: [] }, sourceCommit }),
@@ -90,13 +93,17 @@ assert.throws(
 );
 
 function buildEvidence(overrides = {}) {
+  return buildEvidenceForPlan(plan, overrides);
+}
+
+function buildEvidenceForPlan(targetPlan, overrides = {}) {
   return {
     schemaVersion: 1,
     verifiedAt: '2026-08-11T00:00:00.000Z',
-    cloudEnvId: plan.cloudEnvId,
-    sourceCommit: plan.sourceCommit,
-    planSnapshotHash: plan.snapshotHash,
-    results: plan.assets.map((asset) => ({
+    cloudEnvId: targetPlan.cloudEnvId,
+    sourceCommit: targetPlan.sourceCommit,
+    planSnapshotHash: targetPlan.snapshotHash,
+    results: targetPlan.assets.map((asset) => ({
       fileID: asset.fileID,
       status: 0,
       hasTempFileURL: true,
@@ -104,6 +111,36 @@ function buildEvidence(overrides = {}) {
     ...overrides,
   };
 }
+
+const typoSubjectPlan = { ...plan, subject: 'biologgy' };
+typoSubjectPlan.snapshotHash = getPlanSnapshotHash(typoSubjectPlan);
+const wrongKnownSubjectPlan = { ...plan, subject: 'chemistry' };
+wrongKnownSubjectPlan.snapshotHash = getPlanSnapshotHash(wrongKnownSubjectPlan);
+assert.throws(
+  () => buildConsoleVerificationScript(typoSubjectPlan),
+  /subject.*biologgy/,
+);
+assert.throws(
+  () => validateCloudAssetEvidence({
+    plan: typoSubjectPlan,
+    evidence: buildEvidenceForPlan(typoSubjectPlan),
+    expectedCommit: sourceCommit,
+  }),
+  /subject.*biologgy/,
+);
+assert.throws(
+  () => buildConsoleVerificationScript(wrongKnownSubjectPlan),
+  /subject.*不匹配/,
+);
+assert.throws(
+  () => validateCloudAssetEvidence({
+    plan: wrongKnownSubjectPlan,
+    evidence: buildEvidenceForPlan(wrongKnownSubjectPlan),
+    expectedCommit: sourceCommit,
+  }),
+  /subject.*不匹配/,
+);
+assert.doesNotThrow(() => buildConsoleVerificationScript(fullPlan));
 
 assert.throws(
   () => validateCloudAssetEvidence({
@@ -465,6 +502,12 @@ try {
   assert.throws(
     () => runCli('check-cloud-asset-deployment-evidence.js', [cliPlanPath, cliEvidencePath, '--commit', sourceCommit]),
     (error) => /FOUND_CLOUD_ASSET_DEPLOYMENT_ISSUES/.test(error.stderr) && /资源数量/.test(error.stderr),
+  );
+  fs.writeFileSync(cliPlanPath, `${JSON.stringify(typoSubjectPlan, null, 2)}\n`);
+  fs.writeFileSync(cliEvidencePath, `${JSON.stringify(buildEvidenceForPlan(typoSubjectPlan), null, 2)}\n`);
+  assert.throws(
+    () => runCli('check-cloud-asset-deployment-evidence.js', [cliPlanPath, cliEvidencePath, '--commit', sourceCommit]),
+    (error) => /FOUND_CLOUD_ASSET_DEPLOYMENT_ISSUES/.test(error.stderr) && /subject.*biologgy/.test(error.stderr),
   );
 } finally {
   fs.rmSync(cliFixtureRoot, { recursive: true, force: true });

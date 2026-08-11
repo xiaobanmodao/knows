@@ -88,6 +88,7 @@ function buildCloudAssetPlan({ manifest, sourceCommit = null, subject = null }) 
   if (sourceCommit !== null && !isValidSourceCommit(sourceCommit)) {
     throw new Error('sourceCommit 必须为 null 或 7 到 64 位十六进制 Git 提交标识');
   }
+  assertValidSubject(subject);
 
   const assets = manifest.assets
     .filter((asset) => !subject || getSubjectFromAsset(asset.source) === subject)
@@ -110,6 +111,7 @@ function buildCloudAssetPlan({ manifest, sourceCommit = null, subject = null }) 
     assets,
     batches: buildVerificationBatches(assets),
   };
+  assertPlanSubjectScope(plan);
 
   return {
     ...plan,
@@ -123,6 +125,7 @@ function buildConsoleVerificationScript(plan) {
   if (!Array.isArray(plan.assets) || plan.assetCount !== plan.assets.length) {
     throw new Error('计划资源集合无效');
   }
+  assertPlanSubjectScope(plan);
   assertPlanHasAssets(plan);
   if (!hasDeterministicVerificationBatches(plan)) throw new Error('计划验证批次无效');
   if (plan.snapshotHash !== getPlanSnapshotHash(plan)) throw new Error('计划快照哈希无效');
@@ -278,6 +281,20 @@ function assertPlanHasAssets(plan) {
   }
 }
 
+function assertValidSubject(subject) {
+  if (subject !== null && !SUBJECTS.has(subject)) {
+    throw new Error(`计划 subject 无效：${subject}`);
+  }
+}
+
+function assertPlanSubjectScope(plan) {
+  assertValidSubject(plan.subject);
+  if (plan.subject === null) return;
+  if (!Array.isArray(plan.assets) || plan.assets.some((asset) => getSubjectFromAsset(asset && asset.source) !== plan.subject)) {
+    throw new Error(`计划 subject 与资源不匹配：${plan.subject}`);
+  }
+}
+
 function validateCloudAssetEvidence({ plan, evidence, expectedCommit }) {
   if (containsTempFileURL(evidence)) throw new Error('证据不得包含临时 URL');
   if (!plan || plan.schemaVersion !== 1) throw new Error('计划 schemaVersion 必须为 1');
@@ -290,6 +307,7 @@ function validateCloudAssetEvidence({ plan, evidence, expectedCommit }) {
   if (!Array.isArray(plan.assets) || plan.assetCount !== plan.assets.length) {
     throw new Error('计划资源集合无效');
   }
+  assertPlanSubjectScope(plan);
   assertPlanHasAssets(plan);
   if (!hasDeterministicVerificationBatches(plan)) throw new Error('计划验证批次无效');
   if (plan.cloudEnvId !== CLOUD_ENV_ID || evidence.cloudEnvId !== plan.cloudEnvId) {
