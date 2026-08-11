@@ -81,6 +81,11 @@ assert.strictEqual(validateCloudAssetEvidence({
   evidence: buildEvidence({ results: [{ ...buildEvidence().results[0], errMsg: '资源校验完成' }, ...buildEvidence().results.slice(1)] }),
   expectedCommit: 'abc123',
 }), true);
+assert.strictEqual(validateCloudAssetEvidence({
+  plan,
+  evidence: buildEvidence({ results: [{ ...buildEvidence().results[0], errCode: 'ERR_TOKEN_PARSE', errMsg: 'token parsing failed' }, ...buildEvidence().results.slice(1)] }),
+  expectedCommit: 'abc123',
+}), true);
 
 assert.throws(
   () => validateCloudAssetEvidence({
@@ -172,6 +177,14 @@ assert.throws(
   }),
   /verifiedAt/,
 );
+assert.throws(
+  () => validateCloudAssetEvidence({
+    plan,
+    evidence: buildEvidence({ verifiedAt: '2026-02-30T00:00:00.000Z' }),
+    expectedCommit: 'abc123',
+  }),
+  /verifiedAt/,
+);
 [
   buildEvidence({ signedUrl: 'https://secret.example/' }),
   buildEvidence({ results: [{ ...buildEvidence().results[0], url: 'https://secret.example/' }, ...buildEvidence().results.slice(1)] }),
@@ -195,6 +208,8 @@ assert.throws(
   'https://signed.example/asset.png?X-Amz-Signature=secret',
   'https%3A%2F%2Fsigned.example%2Fasset.png%3Ftoken%3Dsecret',
   '签名失败：credential=secret',
+  'https%25253A%25252F%25252Fsigned.example%25252Fasset.png%25253Ftoken%25253Dsecret',
+  'request failed: access_token=secret',
 ].forEach((errMsg) => {
   assert.throws(
     () => validateCloudAssetEvidence({
@@ -205,6 +220,14 @@ assert.throws(
     /安全文本/,
   );
 });
+assert.throws(
+  () => validateCloudAssetEvidence({
+    plan,
+    evidence: buildEvidence({ results: [{ ...buildEvidence().results[0], errCode: 'https://signed.example/?token=secret' }, ...buildEvidence().results.slice(1)] }),
+    expectedCommit: 'abc123',
+  }),
+  /errCode/,
+);
 assert.throws(
   () => validateCloudAssetEvidence({
     plan,

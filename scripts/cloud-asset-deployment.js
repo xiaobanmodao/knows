@@ -12,11 +12,11 @@ const EVIDENCE_FIELDS = new Set([
   'results',
 ]);
 const RESULT_FIELDS = new Set(['fileID', 'status', 'errCode', 'errMsg', 'hasTempFileURL']);
-const UNSAFE_ERROR_MESSAGE_PATTERNS = [
-  /(?:https?|cloud):\/\//i,
-  /(?:https?|cloud)%3a%2f%2f/i,
-  /\b(?:signature|x-amz-signature|token|credential|expires)\b/i,
-];
+const ISO_TIMESTAMP_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
+const URL_SCHEME_PATTERN = /(?:https?|cloud):\/\//i;
+const SENSITIVE_PARAMETER_PATTERN = /\b(?:access_token|token|signature|x-amz-signature|credential|expires|q-sign-[a-z0-9._-]*|sign)\s*=/i;
+const MAX_ERROR_CODE_LENGTH = 128;
+const MAX_ERROR_MESSAGE_LENGTH = 512;
 
 function getSubjectFromAsset(source) {
   const normalized = String(source || '').replace(/^\/+/, '');
@@ -104,26 +104,41 @@ function assertAllowedKeys(value, allowedKeys, label) {
 }
 
 function isValidDateString(value) {
-  return typeof value === 'string' && value.trim().length > 0 && !Number.isNaN(Date.parse(value));
+  if (typeof value !== 'string' || !ISO_TIMESTAMP_PATTERN.test(value)) return false;
+  const date = new Date(value);
+  return !Number.isNaN(date.getTime()) && date.toISOString() === value;
 }
 
-function isOptionalScalar(value) {
-  return value === undefined || value === null || ['string', 'number', 'boolean'].includes(typeof value);
+function isValidErrorCode(value) {
+  if (value === undefined || value === null) return true;
+  if (typeof value === 'number') return Number.isFinite(value);
+  return typeof value === 'string'
+    && value.length > 0
+    && value.length <= MAX_ERROR_CODE_LENGTH
+    && /^[A-Za-z0-9._-]+$/.test(value);
+}
+
+function decodeRepeatedly(value, maxPasses = 4) {
+  let decoded = value;
+  for (let pass = 0; pass < maxPasses; pass += 1) {
+    try {
+      const next = decodeURIComponent(decoded);
+      if (next === decoded) break;
+      decoded = next;
+    } catch (error) {
+      break;
+    }
+  }
+  return decoded;
 }
 
 function isSafeErrorMessage(value) {
   if (value === undefined || value === null) return true;
-  if (typeof value !== 'string') return false;
-
-  let decoded = value;
-  try {
-    decoded = decodeURIComponent(value);
-  } catch (error) {
-    decoded = value;
+  if (typeof value !== 'string' || value.length > MAX_ERROR_MESSAGE_LENGTH || /[\u0000-\u001F\u007F]/.test(value)) {
+    return false;
   }
-  return ![value, decoded].some((text) => (
-    UNSAFE_ERROR_MESSAGE_PATTERNS.some((pattern) => pattern.test(text))
-  ));
+  const decoded = decodeRepeatedly(value);
+  return !URL_SCHEME_PATTERN.test(decoded) && !SENSITIVE_PARAMETER_PATTERN.test(decoded);
 }
 
 function validateCloudAssetEvidence({ plan, evidence, expectedCommit }) {
@@ -152,7 +167,10 @@ function validateCloudAssetEvidence({ plan, evidence, expectedCommit }) {
   const resultFileIDs = new Set();
   evidence.results.forEach((result) => {
     assertAllowedKeys(result, RESULT_FIELDS, '证据结果');
-    if (!isOptionalScalar(result.errCode) || !isOptionalScalar(result.errMsg)) {
+    if (!isValidErrorCode(result.errCode)) {
+      throw new Error(`证据结果 errCode 无效：${result.fileID || '(empty)'}`);
+    }
+    if (result.errMsg !== undefined && result.errMsg !== null && typeof result.errMsg !== 'string') {
       throw new Error(`证据结果错误字段必须为标量：${result.fileID || '(empty)'}`);
     }
     if (!isSafeErrorMessage(result.errMsg)) {
