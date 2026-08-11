@@ -43,10 +43,14 @@ function main(args = process.argv.slice(2)) {
     subject: readOption(args, '--subject', null),
   });
   const verifyScriptPath = path.join(path.dirname(outputPath), 'verify-in-devtools.js');
-  fs.mkdirSync(path.dirname(outputPath), { recursive: true });
-  fs.writeFileSync(outputPath, `${JSON.stringify(plan, null, 2)}\n`, 'utf8');
-  fs.writeFileSync(verifyScriptPath, buildConsoleVerificationScript(plan), 'utf8');
-  console.log(`OK cloud asset deployment plan: ${plan.assetCount} assets written to ${outputPath}`);
+  try {
+    fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+    fs.writeFileSync(outputPath, `${JSON.stringify(plan, null, 2)}\n`, 'utf8');
+    fs.writeFileSync(verifyScriptPath, buildConsoleVerificationScript(plan), 'utf8');
+  } catch (error) {
+    throw new Error('部署计划输出写入失败');
+  }
+  console.log(`OK cloud asset deployment plan: ${plan.assetCount} assets written`);
 }
 
 try {

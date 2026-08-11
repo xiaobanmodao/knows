@@ -25,18 +25,26 @@ const { REMOTE_ASSET_BASE } = require('../utils/asset-config');
 const manifest = {
   version: 2,
   generatedAt: '2026-08-11T00:00:00.000Z',
-  assetCount: 4,
+  assetCount: 5,
   assets: [
     { source: 'assets/figures/generated/subjects/biology/topics/bio-unit-cells/cover.png', cloudPath: '/assets/figures/generated/subjects/biology/topics/bio-unit-cells/cover.png', width: 1280, height: 900, bytes: 1024, sha256: 'a'.repeat(64), sourceSha256: '1'.repeat(64) },
     { source: 'assets/figures/generated/chemistry/topics/chem-topic/cover.png', cloudPath: '/assets/figures/generated/chemistry/topics/chem-topic/cover.png', width: 1280, height: 900, bytes: 1024, sha256: 'b'.repeat(64), sourceSha256: '2'.repeat(64) },
     { source: 'assets/figures/generated/subjects/biology/topics/bio-unit-cells/diagram.png', cloudPath: '/assets/figures/generated/subjects/biology/topics/bio-unit-cells/diagram.png', width: 960, height: 675, bytes: 512, sha256: 'c'.repeat(64), sourceSha256: '3'.repeat(64) },
     { source: 'assets/figures/generated/templates/model-factorization.png', cloudPath: '/assets/figures/generated/templates/model-factorization.png', width: 960, height: 675, bytes: 768, sha256: 'd'.repeat(64), sourceSha256: '4'.repeat(64) },
+    { source: 'assets/figures/generated/subjects/english/topics/eng-topic-reading/cover.png', cloudPath: '/assets/figures/generated/subjects/english/topics/eng-topic-reading/cover.png', width: 960, height: 675, bytes: 640, sha256: 'e'.repeat(64), sourceSha256: '5'.repeat(64) },
   ],
 };
 const sourceCommit = '1010edcb9c1a4427b7b2822b9f41728850091b6b';
 const otherSourceCommit = 'fedcba9876543210fedcba9876543210fedcba98';
 const invalidSourceCommit = 'https://signed.example/?token=secret';
 const hostilePayload = 'https://signed.example/asset.png?token=secret';
+const credentialErrMsgs = [
+  'Bearer top-secret',
+  'Basic Zm9vOmJhcg==',
+  'Authorization: Bearer top-secret',
+  'api_key=top-secret',
+  encodeURIComponent('Authorization: Bearer top-secret'),
+];
 
 function assertSanitizedReject(action, expectedPattern, payloads = [hostilePayload]) {
   assert.throws(action, (error) => (
@@ -54,7 +62,7 @@ assert.strictEqual(plan.assetCount, 2);
 assert.strictEqual(diagnosticPlan.sourceCommit, null);
 assert.strictEqual(plan.batches.length, 1);
 assert.strictEqual(fullPlan.subject, null);
-assert.strictEqual(fullPlan.assetCount, 4);
+assert.strictEqual(fullPlan.assetCount, 5);
 assert.strictEqual(buildCloudAssetPlan({ manifest, sourceCommit, subject: 'math' }).assetCount, 1);
 assert.deepStrictEqual(
   plan.assets.map((asset) => Object.keys(asset).sort()),
@@ -313,6 +321,20 @@ assert.strictEqual(validateCloudAssetEvidence({
   evidence: buildEvidence({ results: [{ ...buildEvidence().results[0], errCode: 'ERR_TOKEN_PARSE', errMsg: 'token parsing failed' }, ...buildEvidence().results.slice(1)] }),
   expectedCommit: sourceCommit,
 }), true);
+credentialErrMsgs.forEach((errMsg) => {
+  assert.throws(
+    () => validateCloudAssetEvidence({
+      plan,
+      evidence: buildEvidence({
+        results: [{ ...buildEvidence().results[0], errMsg }, ...buildEvidence().results.slice(1)],
+      }),
+      expectedCommit: sourceCommit,
+    }),
+    (error) => /安全文本/.test(error.message)
+      && !error.message.includes(errMsg)
+      && !/Bearer|Basic|Authorization|api_key|top-secret|Zm9vOmJhcg/i.test(error.message),
+  );
+});
 assert.strictEqual(validateCloudAssetEvidence({
   plan,
   evidence: buildEvidence({ results: [{ ...buildEvidence().results[0], errMsg: 'a'.repeat(512) }, ...buildEvidence().results.slice(1)] }),
@@ -726,6 +748,21 @@ function runCli(script, args) {
 
 try {
   fs.writeFileSync(cliManifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+  const blockedPlanParent = path.join(cliFixtureRoot, 'blocked-plan-parent');
+  fs.writeFileSync(blockedPlanParent, 'not a directory');
+  const hostilePlanOutput = `${blockedPlanParent}/https://host/a?token=top-secret&signature=x/plan.json`;
+  assert.throws(
+    () => runCli('build-cloud-asset-deployment-plan.js', [
+      '--manifest', cliManifestPath,
+      '--output', hostilePlanOutput,
+      '--subject', 'biology',
+      '--commit', sourceCommit,
+    ]),
+    (error) => /FOUND_CLOUD_ASSET_DEPLOYMENT_ISSUES/.test(error.stderr)
+      && /部署计划输出写入失败/.test(error.stderr)
+      && !error.stderr.includes(hostilePlanOutput)
+      && !/https:\/\/|token=|signature=|top-secret/i.test(error.stderr),
+  );
   const buildOutput = runCli('build-cloud-asset-deployment-plan.js', [
     '--manifest', cliManifestPath,
     '--output', cliPlanPath,
@@ -809,6 +846,28 @@ try {
   fs.rmSync(cliFixtureRoot, { recursive: true, force: true });
 }
 
+const prepareFixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'knows-prepare-remote-assets-'));
+try {
+  const blockedPrepareParent = path.join(prepareFixtureRoot, 'blocked-prepare-parent');
+  fs.writeFileSync(blockedPrepareParent, 'not a directory');
+  const hostilePrepareOutput = `${blockedPrepareParent}/https://host/a?token=top-secret&signature=x`;
+  const prepareFailure = childProcess.spawnSync(
+    process.execPath,
+    [path.join(__dirname, 'prepare-remote-assets.js'), hostilePrepareOutput],
+    {
+      cwd: path.resolve(__dirname, '..'),
+      encoding: 'utf8',
+    },
+  );
+  const prepareFailureOutput = `${prepareFailure.stdout}${prepareFailure.stderr}`;
+  assert.notStrictEqual(prepareFailure.status, 0);
+  assert.match(prepareFailureOutput, /FOUND_REMOTE_ASSET_PREPARATION_ISSUES/);
+  assert.doesNotMatch(prepareFailureOutput, /https:\/\/|token=|signature=|top-secret/i);
+  assert.ok(!prepareFailureOutput.includes(hostilePrepareOutput));
+} finally {
+  fs.rmSync(prepareFixtureRoot, { recursive: true, force: true });
+}
+
 const readinessScript = path.join(__dirname, 'check-release-readiness.js');
 const missingEvidencePath = path.join(
   os.tmpdir(),
@@ -850,12 +909,12 @@ vm.runInNewContext(buildConsoleVerificationScript(fullPlan), {
     cloud: {
       callFunction: async ({ data }) => ({
         result: {
-          fileList: data.fileIDs.map((fileID) => ({
+          fileList: data.fileIDs.map((fileID, index) => ({
             fileID,
             status: 0,
             tempFileURL: `https://signed.example/asset.png?token=${encodeURIComponent(fileID)}&signature=secret`,
             errCode: 'SAFE_ERROR',
-            errMsg: 'Resource available',
+            errMsg: credentialErrMsgs[index],
           })),
         },
       }),
@@ -883,6 +942,7 @@ vm.runInNewContext(buildConsoleVerificationScript(fullPlan), {
     fullPlan.assets.map((asset) => asset.fileID).sort(),
   );
   assert.strictEqual(parsedEvidence.results.every((result) => result.hasTempFileURL === true), true);
+  assert.strictEqual(parsedEvidence.results.every((result) => result.errMsg === undefined), true);
   assert.strictEqual(validateCloudAssetEvidence({
     plan: fullPlan,
     evidence: parsedEvidence,
@@ -892,6 +952,7 @@ vm.runInNewContext(buildConsoleVerificationScript(fullPlan), {
   assert.doesNotMatch(loggedEvidence, /tempFileURL/);
   assert.doesNotMatch(loggedEvidence, /token=/i);
   assert.doesNotMatch(loggedEvidence, /signature=/i);
+  assert.doesNotMatch(loggedEvidence, /Bearer|Basic|Authorization|api_key|top-secret|Zm9vOmJhcg/i);
   console.log('OK cloud asset deployment contract');
 }).catch((error) => {
   console.error(error);

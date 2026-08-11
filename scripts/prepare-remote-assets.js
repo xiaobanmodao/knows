@@ -65,21 +65,17 @@ def save_under_limit(src, out):
                 return last
     return last
 
-oversize = []
-for item in items:
+for index, item in enumerate(items):
     try:
         size = save_under_limit(item['source'], item['out'])
         if size > limit:
-            oversize.append((item['out'], size))
-    except Exception as error:
-        oversize.append((item['out'], str(error)))
+            print(f'asset[{index}] preparation failed')
+            sys.exit(2)
+    except Exception:
+        print(f'asset[{index}] preparation failed')
+        sys.exit(2)
 
 print(f'prepared {len(items)} remote assets')
-if oversize:
-    print('oversize:')
-    for out, detail in oversize:
-        print(detail, out)
-    sys.exit(2)
 `;
 
 const result = spawnSync(python, ['-c', script], {
@@ -88,16 +84,23 @@ const result = spawnSync(python, ['-c', script], {
   maxBuffer: 1024 * 1024 * 20,
 });
 
-process.stdout.write(result.stdout || '');
-process.stderr.write(result.stderr || '');
-
 if (result.status !== 0) {
+  process.stdout.write(result.stdout || '');
+  console.error('FOUND_REMOTE_ASSET_PREPARATION_ISSUES');
   process.exit(result.status || 1);
 }
+process.stdout.write(result.stdout || '');
 
-const manifest = createRemoteAssetManifest(items);
-const manifestPath = path.join(outRoot, 'manifest.json');
-fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+let manifest;
+try {
+  manifest = createRemoteAssetManifest(items);
+  fs.writeFileSync(
+    path.join(outRoot, 'manifest.json'),
+    `${JSON.stringify(manifest, null, 2)}\n`,
+  );
+} catch (error) {
+  console.error('FOUND_REMOTE_ASSET_MANIFEST_ISSUES');
+  process.exit(1);
+}
 
-console.log(`output: ${outRoot}`);
-console.log(`manifest: ${manifestPath}`);
+console.log(`OK remote asset manifest: ${manifest.assetCount} assets written`);

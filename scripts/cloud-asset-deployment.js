@@ -42,7 +42,7 @@ const EVIDENCE_FIELDS = new Set([
 const RESULT_FIELDS = new Set(['fileID', 'status', 'errCode', 'errMsg', 'hasTempFileURL']);
 const ISO_TIMESTAMP_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
 const SAFE_PLAIN_TEXT_PATTERN = /^[\p{L}\p{N}\p{M}\p{Zs}.,!;'"()_\-，。！；：、（）？]*$/u;
-const SENSITIVE_PARAMETER_PATTERN = /\b(?:access_token|token|signature|x-amz-signature|credential|expires|q-sign-[a-z0-9._-]*|sign|sig)\s*=/i;
+const SENSITIVE_CREDENTIAL_PATTERN = /(?:\b(?:access_token|api[_-]?key|token|signature|x-amz-signature|credential|expires|q-sign-[a-z0-9._-]*|sign|sig)\s*=|\bauthorization\s*:|\b(?:bearer|basic)\s+\S+)/i;
 const SOURCE_COMMIT_PATTERN = /^[a-f0-9]{7,64}$/i;
 const MAX_ERROR_CODE_LENGTH = 128;
 const MAX_ERROR_MESSAGE_LENGTH = 512;
@@ -228,20 +228,51 @@ function buildConsoleVerificationScript(plan) {
   return `/* Paste this script into the WeChat DevTools console after cloud setup. */
 (async () => {
   const plan = ${JSON.stringify(verificationInput, null, 2)};
+  const safePlainTextPattern = new RegExp(${JSON.stringify(SAFE_PLAIN_TEXT_PATTERN.source)}, 'u');
+  const sensitiveCredentialPattern = new RegExp(${JSON.stringify(SENSITIVE_CREDENTIAL_PATTERN.source)}, 'i');
   const safeErrorCode = (value) => (
     (typeof value === 'number' && Number.isFinite(value))
     || (typeof value === 'string' && value.length > 0 && value.length <= 128 && /^[A-Za-z0-9._-]+$/.test(value))
       ? value
       : undefined
   );
-  const safeErrorMessage = (value) => (
-    typeof value === 'string'
-    && value.length <= 512
-    && /^[\\p{L}\\p{N}\\p{M}\\p{Zs}.,!;'"()_\\-，。！；：、（）？]*$/u.test(value)
-    && !/\\b(?:access_token|token|signature|x-amz-signature|credential|expires|q-sign-[a-z0-9._-]*|sign|sig)\\s*=/i.test(value)
-      ? value
-      : undefined
+  const safePlainText = (value) => (
+    typeof value === 'string' && value.length <= 512 && safePlainTextPattern.test(value)
   );
+  const decodePercentEscapes = (value) => {
+    if (/%[0-9A-Fa-f](?![0-9A-Fa-f])/.test(value)) return null;
+    let invalid = false;
+    const decoded = value.replace(/(?:%[0-9A-Fa-f]{2})+/g, (encoded) => {
+      try {
+        return decodeURIComponent(encoded);
+      } catch (error) {
+        invalid = true;
+        return encoded;
+      }
+    });
+    return invalid ? null : decoded;
+  };
+  const decodeRepeatedly = (value) => {
+    let decoded = value;
+    const maxPasses = Math.max(1, Math.min(512, value.length));
+    for (let pass = 0; pass < maxPasses; pass += 1) {
+      const next = decodePercentEscapes(decoded);
+      if (next === null) return null;
+      if (next === decoded) return decoded;
+      decoded = next;
+    }
+    return null;
+  };
+  const safeErrorMessage = (value) => {
+    if (!safePlainText(value)) return undefined;
+    const decoded = decodeRepeatedly(value);
+    return decoded !== null
+      && safePlainText(decoded)
+      && !sensitiveCredentialPattern.test(value)
+      && !sensitiveCredentialPattern.test(decoded)
+        ? value
+        : undefined;
+  };
   const resultFor = (fileID, item) => {
     const result = {
       fileID,
@@ -359,8 +390,8 @@ function isSafeErrorMessage(value) {
   const decoded = decodeRepeatedly(value);
   return decoded !== null
     && isSafePlainText(decoded)
-    && !SENSITIVE_PARAMETER_PATTERN.test(value)
-    && !SENSITIVE_PARAMETER_PATTERN.test(decoded);
+    && !SENSITIVE_CREDENTIAL_PATTERN.test(value)
+    && !SENSITIVE_CREDENTIAL_PATTERN.test(decoded);
 }
 
 function isSafePlainText(value) {
