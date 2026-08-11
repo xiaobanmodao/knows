@@ -201,7 +201,7 @@ git commit -m "fix(release): require canonical full cloud evidence"
 - Uses the current full `release-plan.json` only as an ignored local artifact; no real evidence JSON is generated.
 - Preserves the existing Task 4 push step as pending until all final review gates pass.
 
-- [ ] **Step 1: 生成当前 full plan 并确认缺失证据阻断**
+- [x] **Step 1: 生成当前 full plan 并确认缺失证据阻断**
 
 Run:
 
@@ -214,7 +214,7 @@ node scripts/check-release-readiness.js --require-device-evidence
 
 Expected: full plan 为 231 项；前一条 evidence CLI 和严格 release 都以缺失 evidence 阻断，且不创建 `/tmp/missing-cloud-evidence.json` 或 `.codex-output` evidence。
 
-- [ ] **Step 2: 运行完整质量矩阵与 Git 验证**
+- [x] **Step 2: 运行完整质量矩阵与 Git 验证**
 
 Run:
 
@@ -226,7 +226,7 @@ git status --short
 
 Expected: 输出 `OK v1.11 quality matrix: 126 checks`；仅 ignored `dist/` 产物变化，不出现未提交文件。
 
-- [ ] **Step 3: 记录真实加固状态并提交**
+- [x] **Step 3: 记录真实加固状态并提交**
 
 在原 v1.15 计划的 Verification Record 中记录实际 full-plan 数量、缺失证据阻断和未执行的外部动作。只在本加固计划三个任务全部通过独立审查后标记其复选框；不要标记原计划中“推送开发分支”完成。
 
