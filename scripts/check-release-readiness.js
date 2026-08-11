@@ -707,11 +707,11 @@ function checkCloudAssetDeploymentEvidence() {
   const evidencePath = process.env.CLOUD_ASSET_DEPLOYMENT_EVIDENCE
     || '.codex-output/release-regression-v1.10.1/cloud-asset-evidence.json';
   if (!fileExists(manifestPath)) {
-    issues.push(`云资源部署证据: 文件不存在 -> ${manifestPath}`);
+    issues.push('云资源部署证据: 当前资源清单文件不存在');
     return;
   }
   if (!fileExists(evidencePath)) {
-    issues.push(`云资源部署证据: 文件不存在 -> ${evidencePath}`);
+    issues.push('云资源部署证据: 部署证据文件不存在');
     return;
   }
 

@@ -826,10 +826,25 @@ const strictReadiness = childProcess.spawnSync(process.execPath, [readinessScrip
 assert.notStrictEqual(strictReadiness.status, 0, '严格发布检查必须在缺少云资源部署证据时阻断');
 assert.match(
   `${strictReadiness.stdout}${strictReadiness.stderr}`,
-  /云资源部署证据:.*文件不存在/,
+  /云资源部署证据: 部署证据文件不存在/,
   '严格发布检查必须明确报告缺少云资源部署证据',
 );
 assert.ok(!fs.existsSync(missingEvidencePath), '严格发布检查不得生成伪造云资源部署证据');
+
+const hostileEvidencePath = 'https://host/a?token=top-secret&signature=x';
+const hostileEvidenceReadiness = childProcess.spawnSync(
+  process.execPath,
+  [readinessScript, '--require-device-evidence'],
+  {
+    cwd: repositoryRoot,
+    encoding: 'utf8',
+    env: { ...process.env, CLOUD_ASSET_DEPLOYMENT_EVIDENCE: hostileEvidencePath },
+  },
+);
+const hostileEvidenceOutput = `${hostileEvidenceReadiness.stdout}${hostileEvidenceReadiness.stderr}`;
+assert.notStrictEqual(hostileEvidenceReadiness.status, 0);
+assert.match(hostileEvidenceOutput, /云资源部署证据: 部署证据文件不存在/);
+assert.doesNotMatch(hostileEvidenceOutput, /https:\/\/|token=|signature=|top-secret/i);
 
 const currentManifestPath = path.join(repositoryRoot, 'dist/remote-assets/manifest.json');
 if (!fs.existsSync(currentManifestPath)) {
