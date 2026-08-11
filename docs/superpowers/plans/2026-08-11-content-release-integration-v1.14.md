@@ -419,7 +419,7 @@ Expected: 精确主题查询返回一个 merge 记录，且其第二父提交为
 
 在本计划末尾增加 `## Verification Record`，记录实际命令末行、两个模拟器、访问页面、控制台结果、云图降级结果与未执行动作。只写已发生的事实；若某台模拟器未完成，明确写为未完成并保留该项，不用推断补齐。
 
-- [ ] **Step 3: 提交验证文档并推送**
+- [x] **Step 3: 提交验证文档并推送**
 
 Run:
 
@@ -535,4 +535,4 @@ git commit -m "fix(search): bound rendered result payload"
 ### Not executed
 
 - 未进行 iPhone/Android 实体机、弱网、二维码真机调试、体验版预览、上传、审核或正式发布。
-- 尚未推送集成分支；该动作只在最终全分支审查完成、并保留上述云资源缺失说明后执行。
+- 已完成最终全分支审查并推送 `codex/content-release-integration-v1.14`；远端仅新增该集成分支，没有创建 PR、标签、RC、体验版或审核请求。
