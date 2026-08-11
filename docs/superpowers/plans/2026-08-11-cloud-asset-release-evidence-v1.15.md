@@ -254,7 +254,7 @@ git commit -m "test(release): require cloud asset evidence strictly"
 - Produces: 精确的 biology 上传/全量签名验证步骤；不写入未发生的云端结果。
 - Preserves: 体验版、实体机、弱网、上传和审核仍是独立发布前置，不因工具完成而通过。
 
-- [ ] **Step 1: 写入真实操作说明**
+- [x] **Step 1: 写入真实操作说明**
 
 将默认质量矩阵数量更新为 126，并加入如下操作顺序：
 
@@ -272,7 +272,7 @@ node scripts/check-cloud-asset-deployment-evidence.js \
 
 明确当前分支尚未上传 biology 资源，也尚未取得实体机、弱网、包体、体验版证据。
 
-- [ ] **Step 2: 运行最终静态与 Git 验证**
+- [x] **Step 2: 运行最终静态与 Git 验证**
 
 Run:
 
@@ -287,7 +287,7 @@ git status --short
 
 Expected: 前两个构建成功；第三条明确失败但不产生文件；矩阵 126 项通过；`dist/` 与 `.codex-output/` 不进入暂存区。
 
-- [ ] **Step 3: 记录真实验证状态**
+- [x] **Step 3: 记录真实验证状态**
 
 在本计划末尾添加 `## Verification Record`，记录实际命令、biology 计划资产数量和严格证据缺失的预期阻断。只有云存储上传和控制台实际调用发生后才记录云端成功。
 
