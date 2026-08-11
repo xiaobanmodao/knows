@@ -402,7 +402,7 @@ Expected: 精确主题查询返回一个 merge 记录，且其第二父提交为
 - Produces: 实际模拟器记录、已推送的 `codex/content-release-integration-v1.14`。
 - Preserves: 未执行实体设备、体验版、上传、审核和发布的事实。
 
-- [ ] **Step 1: 在微信开发者工具执行模拟器回归**
+- [x] **Step 1: 在微信开发者工具执行模拟器回归**
 
 从绑定 `wxb10a8a067e2709e9` 的项目实例打开本工作树，分别使用 iPhone 14 Pro Max 与 Nexus 5 模拟器。两台都验证：
 
@@ -415,7 +415,7 @@ Expected: 精确主题查询返回一个 merge 记录，且其第二父提交为
 
 不扫描真机调试二维码、不上传、不生成体验版。
 
-- [ ] **Step 2: 写入真实验证记录**
+- [x] **Step 2: 写入真实验证记录**
 
 在本计划末尾增加 `## Verification Record`，记录实际命令末行、两个模拟器、访问页面、控制台结果、云图降级结果与未执行动作。只写已发生的事实；若某台模拟器未完成，明确写为未完成并保留该项，不用推断补齐。
 
@@ -439,6 +439,100 @@ git push -u origin codex/content-release-integration-v1.14
 
 Expected: 远端仅新增集成分支；不创建 PR、标签、RC、体验版或审核请求。
 
+### Task 6: 搜索结果渲染预算回归修复
+
+> 此任务是在执行 Task 5 的 iPhone 模拟器回归时发现的阻断项；完成并复测后再继续 Task 5，不把性能告警写成“无项目错误”。
+
+**Files:**
+- Add: `packages/catalog/utils/search-display.js`
+- Modify: `packages/catalog/pages/search/index.js`
+- Modify: `packages/catalog/pages/search/index.wxml`
+- Modify: `scripts/check-search-experience.js`
+
+**Observed boundary:** 搜索 `s` 实际命中 531 条，`searchAllSubjects('s')` 的 JSON 为 342472 bytes。原页面同时将完整 `results` 和含相同对象的 `groupedResults` 传入 `setData`，微信开发者工具报告约 1036KB 的数据传输性能告警。
+
+**Interfaces:**
+- Preserves: `searchAllSubjects()` 返回完整、排序后的索引结果，筛选总数、类型筛选、旧英语单元搜索和单词/语法直达语义不变。
+- Produces: 一个纯展示层构建器；页面 `data` 仅保存渲染所需的前 60 条命中、准确总数和分组总数。
+- Prohibits: 不得截断搜索索引，不得将完整命中数组或其等价分组副本传入 `setData`，不得改变收藏、路由或搜索排序。
+
+- [x] **Step 1: 为展示层预算写入失败断言**
+
+先在 `scripts/check-search-experience.js` 导入尚不存在的展示层构建器，并对一个超过上限的真实搜索结果写入断言：
+
+1. `searchAllSubjects('s')` 必须仍然超过展示上限；
+2. 展示结果的总数和各类型计数必须等于完整结果；
+3. 扁平化后的渲染条目数不得超过 `60`，且首条结果与完整排序首条相同；
+4. 每个显示分组同时给出完整分组数量和已显示数量；
+5. `packages/catalog/pages/search/index.js` 不得再在 `setData` 数据中包含完整 `results`，而类型切换必须从页面实例缓存读取完整结果。
+
+Run: `node scripts/check-search-experience.js`
+
+Expected: 因展示层模块或预算接口尚不存在而失败，不能因为既有搜索语义失败。
+
+- [x] **Step 2: 实现纯展示构建器和页面缓存边界**
+
+新增 `packages/catalog/utils/search-display.js`，导出：
+
+```js
+const MAX_RENDERED_RESULTS = 60;
+function buildSearchDisplay(results, selectedType = 'all') { /* ... */ }
+```
+
+构建器应在完整数组上计算类型与分组总数，在排序不变的前 `MAX_RENDERED_RESULTS` 条中生成可渲染分组；每个组应包含 `count`、`displayedCount` 与 `items`。`index.js` 将完整结果保存为非响应式 `this.allResults`，任何 `setData` 调用只传 `groupedResults`、`typeFilters`、`totalResultCount`、`displayedResultCount` 和现有的小型状态字段。清空、失败、重新打开和重新选择学科时同步重置实例缓存。
+
+结果标题与分组标题显示“已显示 / 总数”即可，不增加翻页、测评或新的导航层级。
+
+- [x] **Step 3: 验证静态与模拟器性能回归**
+
+Run:
+
+```bash
+node scripts/check-search-experience.js
+node scripts/check-search-semantics.js
+node scripts/check-v1.11-quality-matrix.js
+```
+
+在 iPhone 14 Pro Max 和 Nexus 5 的搜索页重新输入 `s`，确认不再出现超过 1MB 的 `setData` 传输告警；再搜索 `Same or Different?`、`The Wonder of Nature` 与 `质量守恒定律`，确认首条和路由保持正确。
+
+- [x] **Step 4: 提交展示预算修复**
+
+```bash
+git add packages/catalog/utils/search-display.js packages/catalog/pages/search/index.js packages/catalog/pages/search/index.wxml scripts/check-search-experience.js
+git commit -m "fix(search): bound rendered result payload"
+```
+
 ## Verification Record
 
-在 Task 5 完成后写入实际静态检查、模拟器和推送结果。实体机、弱网、预览、上传、审核和正式发布若未执行，必须保留为未执行状态。
+### Static checks (2026-08-11)
+
+- `node scripts/check-search-experience.js`: `OK 39 search rankings, English/physics/math anchors and subject filtering checked`.
+- `node scripts/check-search-semantics.js`: `OK 22 alias groups, 5 normalizations, highlight ranges and formula lookups checked`.
+- `node scripts/check-v1.11-quality-matrix.js`: `OK v1.11 quality matrix: 125 checks`。其中远程资源清单本地构建为 `prepared 231 remote assets`，检查的是本地压缩清单、尺寸、哈希和引用关系，不等价于已验证正式云存储中的对象存在。
+- Task 4 已完成串行内容审计、发布准备、分包边界、纯知识运行层、云用户追踪与 Git 差异检查；本任务没有运行 `--require-device-evidence` 严格发布命令，因为没有实体设备和包体证据。
+
+### iPhone 14 Pro Max simulator
+
+- 从绑定 `wxb10a8a067e2709e9` 的本工作树项目启动，首页显示 5 个学科、687 条内容；数学、英语、物理、化学和生物的目录或知识入口均实际打开，未出现稳定白屏。
+- 搜索 `s` 返回 `60 / 531` 条，首条仍为 `same`；清空控制台后复测，没有再出现原先超过 1MB 的 `setData` 数据传输提示。
+- `Same or Different?` 打开 `packages/english/pages/unit/index` 的 `Unit 3 Same or Different`；`The Wonder of Nature` 打开同一路由的 `Unit 4 The Wonders of Nature`。
+- `质量守恒定律` 打开化学知识页；`chem-k-oxygen-preparation` 显示“氧气制取与检验”流程图解，`chem-k-resources-environment` 显示“绿色化学持续关系”图解，文字内容均可读。
+- 生物“显微镜与细胞观察”可收藏并从收藏页重新打开。其云图临时链接返回 `STORAGE_FILE_NONEXIST` 后，页面显示“图示暂未加载，完整文字知识仍可继续阅读”，没有空白内容区。
+
+### Nexus 5 simulator
+
+- 切换机型时有一次短暂白色重载画面；约 2.2 秒后首页稳定显示 5 个学科入口和继续阅读内容，后续目录、搜索、收藏回跳均可用。
+- 搜索 `s` 同样显示 `60 / 531`，清空控制台后没有 `setData` 大负载或项目 Error 行。
+- `Same or Different?`、`The Wonder of Nature`、`质量守恒定律` 均命中并打开对应英语单元或化学知识页；氧气流程、绿色化学持续关系和生物代表知识点均可读。
+- 已收藏的“显微镜与细胞观察”在收藏页出现，并可再次打开；该页面同样在云图签名失败时显示完整文字降级。
+
+### Console and remaining deployment boundary
+
+- 两台模拟器的正常交互后未观察到项目 `Error` 行，也未复现搜索 `setData` 大负载告警。
+- 存在微信开发者工具系统级 `reportRealtimeAction:fail not support`、基础库/预加载提示，以及本项目云图签名的 Warning。后者明确报告正式环境云路径缺少 `assets/figures/generated/subjects/biology/topics/bio-unit-cells/cover.png`，服务端签名与客户端回退均得到 `storage file not exists` / `STORAGE_FILE_NONEXIST`。
+- 文字降级行为符合要求，但该云对象缺失是体验完整性风险：在发布或体验版前，必须将 `dist/remote-assets/assets/figures/generated/subjects/biology/` 上传到当前 `cloud1-d3gm5t961d46590c3` 的同名路径，并逐项获取临时链接复核；本分支按全局约束未执行云存储上传。
+
+### Not executed
+
+- 未进行 iPhone/Android 实体机、弱网、二维码真机调试、体验版预览、上传、审核或正式发布。
+- 尚未推送集成分支；该动作只在最终全分支审查完成、并保留上述云资源缺失说明后执行。
