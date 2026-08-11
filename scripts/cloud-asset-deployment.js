@@ -12,6 +12,11 @@ const EVIDENCE_FIELDS = new Set([
   'results',
 ]);
 const RESULT_FIELDS = new Set(['fileID', 'status', 'errCode', 'errMsg', 'hasTempFileURL']);
+const UNSAFE_ERROR_MESSAGE_PATTERNS = [
+  /(?:https?|cloud):\/\//i,
+  /(?:https?|cloud)%3a%2f%2f/i,
+  /\b(?:signature|x-amz-signature|token|credential|expires)\b/i,
+];
 
 function getSubjectFromAsset(source) {
   const normalized = String(source || '').replace(/^\/+/, '');
@@ -106,6 +111,21 @@ function isOptionalScalar(value) {
   return value === undefined || value === null || ['string', 'number', 'boolean'].includes(typeof value);
 }
 
+function isSafeErrorMessage(value) {
+  if (value === undefined || value === null) return true;
+  if (typeof value !== 'string') return false;
+
+  let decoded = value;
+  try {
+    decoded = decodeURIComponent(value);
+  } catch (error) {
+    decoded = value;
+  }
+  return ![value, decoded].some((text) => (
+    UNSAFE_ERROR_MESSAGE_PATTERNS.some((pattern) => pattern.test(text))
+  ));
+}
+
 function validateCloudAssetEvidence({ plan, evidence, expectedCommit }) {
   if (containsTempFileURL(evidence)) throw new Error('证据不得包含临时 URL');
   if (!plan || plan.schemaVersion !== 1) throw new Error('计划 schemaVersion 必须为 1');
@@ -134,6 +154,9 @@ function validateCloudAssetEvidence({ plan, evidence, expectedCommit }) {
     assertAllowedKeys(result, RESULT_FIELDS, '证据结果');
     if (!isOptionalScalar(result.errCode) || !isOptionalScalar(result.errMsg)) {
       throw new Error(`证据结果错误字段必须为标量：${result.fileID || '(empty)'}`);
+    }
+    if (!isSafeErrorMessage(result.errMsg)) {
+      throw new Error(`证据结果 errMsg 必须为安全文本：${result.fileID || '(empty)'}`);
     }
     if (resultFileIDs.has(result.fileID)) throw new Error(`证据结果 fileID 重复：${result.fileID}`);
     resultFileIDs.add(result.fileID);

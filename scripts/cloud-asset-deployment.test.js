@@ -76,6 +76,11 @@ assert.strictEqual(validateCloudAssetEvidence({
   evidence: buildEvidence(),
   expectedCommit: 'abc123',
 }), true);
+assert.strictEqual(validateCloudAssetEvidence({
+  plan,
+  evidence: buildEvidence({ results: [{ ...buildEvidence().results[0], errMsg: '资源校验完成' }, ...buildEvidence().results.slice(1)] }),
+  expectedCommit: 'abc123',
+}), true);
 
 assert.throws(
   () => validateCloudAssetEvidence({
@@ -186,6 +191,20 @@ assert.throws(
   }),
   /错误字段必须为标量/,
 );
+[
+  'https://signed.example/asset.png?X-Amz-Signature=secret',
+  'https%3A%2F%2Fsigned.example%2Fasset.png%3Ftoken%3Dsecret',
+  '签名失败：credential=secret',
+].forEach((errMsg) => {
+  assert.throws(
+    () => validateCloudAssetEvidence({
+      plan,
+      evidence: buildEvidence({ results: [{ ...buildEvidence().results[0], errMsg }, ...buildEvidence().results.slice(1)] }),
+      expectedCommit: 'abc123',
+    }),
+    /安全文本/,
+  );
+});
 assert.throws(
   () => validateCloudAssetEvidence({
     plan,
