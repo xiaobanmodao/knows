@@ -152,6 +152,7 @@ const inheritedReleaseEnvironment = {
   RELEASE_REGRESSION_EVIDENCE: '/tmp/evidence.json',
   PACKAGE_SIZE_REPORT: '/tmp/packages-preview.json',
   CLOUD_ASSET_DEPLOYMENT_EVIDENCE: '/tmp/cloud-asset-evidence.json',
+  CLOUD_ASSET_DEPLOYMENT_MANIFEST: '/tmp/cloud-asset-manifest.json',
 };
 const contractEnvironment = getCheckEnvironment(
   { script: 'scripts/check-roadmap-status.test.js' },

@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 为所有运行时云图片建立可复现的部署与签名验证证据，并在严格发布模式中拒绝缺失、过期或跨环境的云资源证明。
+**Goal:** 为当前 `231` 项可由本地源文件重新部署的 source-managed 云图片建立可复现的部署与签名验证证据，并在严格发布模式中拒绝缺失、过期或跨环境的证明。
 
 **Architecture:** `scripts/cloud-asset-deployment.js` 以现有压缩 manifest 和固定云配置为唯一输入，产生稳定快照、50 项验证批次和不含临时 URL 的证据模型。两个 CLI 只读写 `dist/` 与 `.codex-output/` 产物；严格发布检查调用同一验证器，默认质量矩阵只运行其离线契约测试。
 
@@ -15,6 +15,7 @@
 - 云端结果证据只保存 `fileID`、状态、时间、环境、提交和快照哈希；不得保存 `tempFileURL` 或签名参数。
 - 普通质量矩阵必须能在未登录云环境中运行；只有 `--require-device-evidence` 严格模式要求实际云资源证据。
 - 文字降级继续是运行时可读性保障，不等同于资源部署成功。
+- 当前 `801` 条运行时图片引用中，`570` 条是没有本地原图的历史 cloud-only 路径；本计划的 231 项 source-managed 证明不能代替其独立存量核验。
 
 ---
 
@@ -151,7 +152,7 @@ node scripts/build-cloud-asset-deployment-plan.js \
 wx.cloud.callFunction({ name: 'getImageTempUrls', data: { fileIDs } })
 ```
 
-控制台脚本只输出 `{ fileID, status, errCode, errMsg, hasTempFileURL }`，不得输出临时 URL。验证 CLI 读取 JSON，调用 Task 1 验证器并输出：
+控制台脚本只输出 `{ fileID, status, hasTempFileURL }`，不得输出临时 URL 或云端错误原文。验证 CLI 读取 JSON，调用 Task 1 验证器并输出：
 
 ```text
 OK cloud asset deployment evidence: <count> assets verified
@@ -319,6 +320,7 @@ Expected: 仅新增开发分支，不创建 PR、标签、RC、体验版或审�
 - 此前的 `biology-plan.json` 是基于 `1ff70f1bdf9fa87e8a984d57a68b4d22e8c6abe8` 生成的 `12` 项 biology 人工补传清单，只用于定位待补传资源，不构成严格发布证明。
 - 在当前提交 `d712ba8b4a6a5a62f12eff6f2f30ce75b37f14ab` 上，`node scripts/prepare-remote-assets.js` 通过，生成 `231` 个本地远程资源清单项到 ignored `dist/remote-assets/`。
 - 在同一当前提交上，`node scripts/build-cloud-asset-deployment-plan.js --output dist/cloud-asset-deployment/release-plan.json --commit "$(git rev-parse HEAD)"` 通过；不带 `--subject` 的 `release-plan.json` 为当前完整的 `231` 项严格发布计划。
+- `231` 项计划覆盖的是有本地原图、可重新部署的 source-managed 资源；运行时另有 `570` 条历史 cloud-only 引用没有本地源文件，尚不属于本地哈希证明范围，不能据此写成所有运行时图片已核验。
 - `node scripts/check-cloud-asset-deployment-evidence.js dist/cloud-asset-deployment/release-plan.json /tmp/missing-cloud-evidence.json --commit "$(git rev-parse HEAD)"`：按预期阻断，退出码 `1`，输出 `FOUND_CLOUD_ASSET_DEPLOYMENT_ISSUES: 证据 必须为可读取的 JSON 文件`；`/tmp/missing-cloud-evidence.json` 未被创建。
 - `node scripts/check-release-readiness.js --require-device-evidence`：按预期阻断，包含 `云资源部署证据: 部署证据文件不存在`，并同时保留实体设备回归、包体报告和开发者工具状态报告等已知发布前置条件。
 - `node scripts/check-v1.11-quality-matrix.js`：通过，输出 `OK v1.11 quality matrix: 126 checks`。其中的内容源 URL 可访问性检查可能发出只读 HTTP 探测，不构成任何部署动作。

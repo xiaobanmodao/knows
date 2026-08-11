@@ -10,6 +10,8 @@ const {
 const {
   validateStrictCloudAssetEvidence,
 } = require('./cloud-asset-deployment');
+const { collectRemoteAssets } = require('./asset-inventory');
+const { assertCloudAssetSourceCommitIntegrity } = require('./cloud-asset-source-commit');
 const { validateReleaseToolStateEvidence } = require('./release-tool-state-evidence');
 const { shouldRequireHotfixScope } = require('./check-release-hotfix-scope');
 
@@ -703,7 +705,8 @@ function checkCloudAssetDeploymentEvidence() {
     return;
   }
 
-  const manifestPath = 'dist/remote-assets/manifest.json';
+  const manifestPath = process.env.CLOUD_ASSET_DEPLOYMENT_MANIFEST
+    || 'dist/remote-assets/manifest.json';
   const evidencePath = process.env.CLOUD_ASSET_DEPLOYMENT_EVIDENCE
     || '.codex-output/release-regression-v1.10.1/cloud-asset-evidence.json';
   if (!fileExists(manifestPath)) {
@@ -734,6 +737,17 @@ function checkCloudAssetDeploymentEvidence() {
     }).trim();
   } catch (error) {
     issues.push('云资源部署证据: 无法读取当前 Git 提交');
+    return;
+  }
+
+  try {
+    assertCloudAssetSourceCommitIntegrity({
+      repositoryRoot: root,
+      sourceCommit,
+      sourcePaths: collectRemoteAssets(),
+    });
+  } catch (error) {
+    issues.push('云资源部署证据: 资源输入未与当前 Git 提交一致');
     return;
   }
 

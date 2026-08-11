@@ -21,6 +21,7 @@ const {
   validateRemoteAssetManifest,
 } = require('./remote-asset-manifest');
 const { collectRemoteAssets } = require('./asset-inventory');
+const { assertCloudAssetSourceCommitIntegrity } = require('./cloud-asset-source-commit');
 const { REMOTE_ASSET_BASE } = require('../utils/asset-config');
 
 const currentRemoteAssetSources = collectRemoteAssets();
@@ -32,6 +33,58 @@ assert.throws(
   /远程资源原图缺失/,
   '缺失的已引用原图不得从严格发布集合中静默消失',
 );
+
+const sourceCommitFixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'knows-cloud-source-commit-'));
+const sourceCommitFixtureAsset = 'assets/figures/generated/subjects/english/topics/fixture/cover.png';
+const sourceCommitFixtureInput = 'packages/english/data/english-content.js';
+
+function runFixtureGit(args) {
+  return childProcess.execFileSync('git', args, {
+    cwd: sourceCommitFixtureRoot,
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe'],
+  }).trim();
+}
+
+try {
+  fs.mkdirSync(path.join(sourceCommitFixtureRoot, path.dirname(sourceCommitFixtureAsset)), { recursive: true });
+  fs.mkdirSync(path.join(sourceCommitFixtureRoot, path.dirname(sourceCommitFixtureInput)), { recursive: true });
+  fs.writeFileSync(path.join(sourceCommitFixtureRoot, sourceCommitFixtureAsset), 'fixture-source');
+  fs.writeFileSync(path.join(sourceCommitFixtureRoot, sourceCommitFixtureInput), 'module.exports = { version: 1 };\n');
+  runFixtureGit(['init']);
+  runFixtureGit(['add', '.']);
+  runFixtureGit([
+    '-c', 'user.name=Contract Test',
+    '-c', 'user.email=contract@example.com',
+    'commit', '-m', 'fixture',
+  ]);
+  const fixtureCommit = runFixtureGit(['rev-parse', 'HEAD']);
+  const fixtureOptions = {
+    repositoryRoot: sourceCommitFixtureRoot,
+    sourceCommit: fixtureCommit,
+    sourcePaths: [sourceCommitFixtureAsset],
+    inputPaths: [sourceCommitFixtureInput],
+  };
+  assert.strictEqual(assertCloudAssetSourceCommitIntegrity(fixtureOptions), true);
+
+  fs.writeFileSync(path.join(sourceCommitFixtureRoot, sourceCommitFixtureInput), 'module.exports = { version: 2 };\n');
+  assert.throws(
+    () => assertCloudAssetSourceCommitIntegrity(fixtureOptions),
+    /资源输入存在未提交修改/,
+    '资源输入改动不得复用旧 sourceCommit',
+  );
+  fs.writeFileSync(path.join(sourceCommitFixtureRoot, sourceCommitFixtureInput), 'module.exports = { version: 1 };\n');
+
+  const untrackedAsset = 'assets/figures/generated/subjects/english/topics/fixture/untracked.png';
+  fs.writeFileSync(path.join(sourceCommitFixtureRoot, untrackedAsset), 'untracked-source');
+  assert.throws(
+    () => assertCloudAssetSourceCommitIntegrity({ ...fixtureOptions, sourcePaths: [sourceCommitFixtureAsset, untrackedAsset] }),
+    /资源原图未由当前 Git 提交跟踪/,
+    '未跟踪的原图不得出现在绑定当前提交的部署证据中',
+  );
+} finally {
+  fs.rmSync(sourceCommitFixtureRoot, { recursive: true, force: true });
+}
 
 const manifest = {
   version: 2,
@@ -789,13 +842,22 @@ try {
   const blockedPrepareParent = path.join(prepareFixtureRoot, 'blocked-prepare-parent');
   fs.writeFileSync(blockedPrepareParent, 'not a directory');
   const hostilePrepareOutput = `${blockedPrepareParent}/https://host/a?token=top-secret&signature=x`;
+  const fakePython = path.join(prepareFixtureRoot, 'fake-python.sh');
+  const fakePythonMarker = path.join(prepareFixtureRoot, 'fake-python-invoked');
+  fs.writeFileSync(fakePython, '#!/bin/sh\nprintf invoked > "$PREPARE_MARKER"\nexit 2\n');
+  fs.chmodSync(fakePython, 0o755);
   const prepareFailure = childProcess.spawnSync(
     process.execPath,
     [path.join(__dirname, 'prepare-remote-assets.js'), hostilePrepareOutput],
     {
       cwd: path.resolve(__dirname, '..'),
       encoding: 'utf8',
-      timeout: 30000,
+      timeout: 5000,
+      env: {
+        ...process.env,
+        PYTHON: fakePython,
+        PREPARE_MARKER: fakePythonMarker,
+      },
     },
   );
   const prepareFailureOutput = `${prepareFailure.stdout}${prepareFailure.stderr}`;
@@ -805,6 +867,7 @@ try {
   assert.match(prepareFailureOutput, /FOUND_REMOTE_ASSET_PREPARATION_ISSUES/);
   assert.doesNotMatch(prepareFailureOutput, /https:\/\/|token=|signature=|top-secret/i);
   assert.ok(!prepareFailureOutput.includes(hostilePrepareOutput));
+  assert.ok(!fs.existsSync(fakePythonMarker), '不可创建的输出目录不得启动图像处理器');
 } finally {
   fs.rmSync(prepareFixtureRoot, { recursive: true, force: true });
 }
@@ -867,8 +930,7 @@ if (!fs.existsSync(currentManifestPath)) {
     stdio: 'pipe',
   });
 }
-const originalCurrentManifest = fs.readFileSync(currentManifestPath, 'utf8');
-const currentManifest = JSON.parse(originalCurrentManifest);
+const currentManifest = JSON.parse(fs.readFileSync(currentManifestPath, 'utf8'));
 const currentSourceCommit = childProcess.execFileSync('git', ['rev-parse', 'HEAD'], {
   cwd: repositoryRoot,
   encoding: 'utf8',
@@ -962,6 +1024,10 @@ const malformedEvidencePath = path.join(
   os.tmpdir(),
   `knows-malformed-cloud-evidence-${process.pid}-${Date.now()}.json`,
 );
+const truncatedManifestPath = path.join(
+  os.tmpdir(),
+  `knows-truncated-cloud-manifest-${process.pid}-${Date.now()}.json`,
+);
 try {
   fs.writeFileSync(currentFullEvidencePath, `${JSON.stringify(currentFullEvidence, null, 2)}\n`);
   fs.writeFileSync(currentBiologyEvidencePath, `${JSON.stringify(currentBiologyEvidence, null, 2)}\n`);
@@ -1015,22 +1081,21 @@ try {
     assetCount: currentManifest.assetCount - 1,
     assets: currentManifest.assets.slice(0, -1),
   };
-  const truncatedPlan = buildCloudAssetPlan({
-    manifest: truncatedCurrentManifest,
-    sourceCommit: currentSourceCommit,
-  });
   fs.writeFileSync(
-    currentFullEvidencePath,
-    `${JSON.stringify(buildEvidenceForPlan(truncatedPlan), null, 2)}\n`,
+    truncatedManifestPath,
+    `${JSON.stringify(truncatedCurrentManifest, null, 2)}\n`,
   );
-  fs.writeFileSync(currentManifestPath, `${JSON.stringify(truncatedCurrentManifest, null, 2)}\n`);
   const truncatedManifestReadiness = childProcess.spawnSync(
     process.execPath,
     [readinessScript, '--require-device-evidence'],
     {
       cwd: repositoryRoot,
       encoding: 'utf8',
-      env: { ...process.env, CLOUD_ASSET_DEPLOYMENT_EVIDENCE: currentFullEvidencePath },
+      env: {
+        ...process.env,
+        CLOUD_ASSET_DEPLOYMENT_EVIDENCE: currentFullEvidencePath,
+        CLOUD_ASSET_DEPLOYMENT_MANIFEST: truncatedManifestPath,
+      },
     },
   );
   assert.match(
@@ -1039,10 +1104,10 @@ try {
     '严格门禁必须拒绝被截断的当前 manifest，即使 evidence 与其自洽',
   );
 } finally {
-  fs.writeFileSync(currentManifestPath, originalCurrentManifest);
   fs.rmSync(currentFullEvidencePath, { force: true });
   fs.rmSync(currentBiologyEvidencePath, { force: true });
   fs.rmSync(malformedEvidencePath, { force: true });
+  fs.rmSync(truncatedManifestPath, { force: true });
 }
 
 [
@@ -1058,6 +1123,24 @@ try {
     `${file} 不得把 plan.json 说明为严格发布证据`,
   );
 });
+
+[
+  'docs/superpowers/plans/2026-08-11-cloud-asset-release-evidence-v1.15.md',
+  'docs/superpowers/specs/2026-08-11-cloud-asset-release-evidence-v1.15-design.md',
+].forEach((file) => {
+  const document = fs.readFileSync(path.join(repositoryRoot, file), 'utf8');
+  assert.match(document, /\{ fileID, status, hasTempFileURL \}/, `${file} 必须说明三字段脱敏结果`);
+  assert.doesNotMatch(document, /\{ fileID, status, errCode, errMsg, hasTempFileURL \}/, `${file} 不得说明已拒绝的错误字段`);
+  assert.doesNotMatch(document, /\{ fileID, status, errCode\?, errMsg\? \}/, `${file} 不得说明可选错误字段`);
+});
+const releaseEvidenceDesign = fs.readFileSync(
+  path.join(repositoryRoot, 'docs/superpowers/specs/2026-08-11-cloud-asset-release-evidence-v1.15-design.md'),
+  'utf8',
+);
+assert.match(releaseEvidenceDesign, /cloudEnvId: string/);
+assert.match(releaseEvidenceDesign, /planSnapshotHash: string/);
+assert.doesNotMatch(releaseEvidenceDesign, /environmentId: string/);
+assert.doesNotMatch(releaseEvidenceDesign, /remoteAssetBase: string/);
 
 const consoleLogs = [];
 vm.runInNewContext(buildConsoleVerificationScript(fullPlan), {

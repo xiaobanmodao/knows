@@ -7,6 +7,13 @@ const { createRemoteAssetManifest } = require('./remote-asset-manifest');
 const outRoot = process.argv[2] || 'dist/remote-assets';
 const python = process.env.PYTHON || '/Users/hht/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3';
 
+try {
+  fs.mkdirSync(outRoot, { recursive: true });
+} catch (error) {
+  console.error('FOUND_REMOTE_ASSET_PREPARATION_ISSUES');
+  process.exit(1);
+}
+
 const items = collectRemoteAssets().map((source) => ({
   source,
   out: path.join(outRoot, source),
