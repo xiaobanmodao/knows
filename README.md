@@ -103,14 +103,14 @@ node scripts/check-v1.11-quality-matrix.js
 
 ## 云资源部署证据交接
 
-biology 云图须先按当前提交生成计划，再由具有项目 AppID 开发权限的人员在已绑定 AppID 的微信开发者工具云存储面板中，依照 `dist/cloud-asset-deployment/plan.json` 的 biology 路径手动上传。脚本只生成上传计划并检查已保存的证据，不会自动上传云存储；生成的 `verify-in-devtools.js` 只输出状态和 `hasTempFileURL` 标记，不保留临时 URL。
+biology 云图须先按当前提交生成计划，再由具有项目 AppID 开发权限的人员在已绑定 AppID 的微信开发者工具云存储面板中，依照 `dist/cloud-asset-deployment/plan.json` 的 biology 路径手动上传。脚本只生成上传计划并检查已保存的证据，不会自动上传云存储；生成的 `dist/cloud-asset-deployment/verify-in-devtools.js` 只输出状态和 `hasTempFileURL` 标记，不保留临时 URL。
 
 ```bash
 node scripts/prepare-remote-assets.js
 node scripts/build-cloud-asset-deployment-plan.js --subject biology --commit "$(git rev-parse HEAD)"
 # 在绑定 AppID 的开发者工具云存储面板按 plan.json 上传 biology 路径；此步骤不是脚本自动上传。
-# 在开发者工具控制台运行 verify-in-devtools.js，把去除临时 URL 的输出保存为本地 evidence JSON。
-CLOUD_ASSET_DEPLOYMENT_EVIDENCE=.codex-output/release-regression-v1.10.1/cloud-asset-evidence.json \
+# 在开发者工具控制台运行 dist/cloud-asset-deployment/verify-in-devtools.js，把去除临时 URL 的输出保存为本地 evidence JSON。
+export CLOUD_ASSET_DEPLOYMENT_EVIDENCE=.codex-output/release-regression-v1.10.1/cloud-asset-evidence.json
 node scripts/check-cloud-asset-deployment-evidence.js \
   dist/cloud-asset-deployment/plan.json \
   "$CLOUD_ASSET_DEPLOYMENT_EVIDENCE" \
