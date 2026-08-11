@@ -345,7 +345,7 @@ git commit -m "test(quality): restore release privacy gates"
 - Produces: 当前集成树的静态验证证据；不新增业务代码提交。
 - Preserves: `codex/release-regression-v1.10.1` 的工作树和引用不变。
 
-- [ ] **Step 1: 串行生成依赖审计产物**
+- [x] **Step 1: 串行生成依赖审计产物**
 
 Run in this exact order:
 
@@ -360,7 +360,7 @@ node scripts/check-content-source-catalog.js
 
 Expected: 当前集成树的审计、复核队列和来源目录均从源码重新生成；不要并行这些命令。
 
-- [ ] **Step 2: 运行发布与内容专项门禁**
+- [x] **Step 2: 运行发布与内容专项门禁**
 
 Run:
 
@@ -377,7 +377,7 @@ git diff --check
 
 Expected: 默认矩阵最后输出 `OK v1.11 quality matrix: 125 checks`；内容来源跟进仍可报告 `blocked: math-chapters-v1.11`；不运行 `--require-device-evidence`，也不把默认检查解释成正式发布通过。
 
-- [ ] **Step 3: 审核集成历史与工作树范围**
+- [x] **Step 3: 审核集成历史与工作树范围**
 
 Run:
 
