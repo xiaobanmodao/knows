@@ -191,7 +191,7 @@ git commit -m "feat(release): build cloud asset verification plan"
 - Produces: 严格 `--require-device-evidence` 下的明确发布阻断；默认发布检查不要求现场云资源证据。
 - Preserves: 热修复范围只在 `--require-hotfix-scope` 下执行，默认矩阵继续无云凭据可运行。
 
-- [ ] **Step 1: 写失败的发布门禁断言**
+- [x] **Step 1: 写失败的发布门禁断言**
 
 在领域模型测试中验证缺少严格 evidence 路径时抛出“云资源部署证据”错误。在质量矩阵测试中先加入：
 
@@ -202,13 +202,13 @@ assert.strictEqual(defaultCommands.length, 126, '默认质量矩阵必须保持 
 
 同时把 `check-roadmap-document-consistency.test.js` 的 `bindingQualityCheckCount` 改为 `126`，并把三条“不得记录非 125 项”的负向正则与注入样例同步为 126；该契约仍须拒绝任何与命令实际数量不一致的路线文档。
 
-- [ ] **Step 2: 运行测试并确认失败**
+- [x] **Step 2: 运行测试并确认失败**
 
 Run: `node scripts/check-v1.11-quality-matrix.test.js`
 
 Expected: FAIL，因为新契约尚未登记，默认数量仍为 125。
 
-- [ ] **Step 3: 接入严格门禁**
+- [x] **Step 3: 接入严格门禁**
 
 在 `check-release-readiness.js` 新增只在 `--require-device-evidence` 调用的 `checkCloudAssetDeploymentEvidence()`：
 
@@ -221,7 +221,7 @@ const evidencePath = process.env.CLOUD_ASSET_DEPLOYMENT_EVIDENCE
 
 在 `DEFAULT_CHECKS` 登记离线 `scripts/cloud-asset-deployment.test.js` 并将计数改为 126；不能将真实 evidence CLI 登记为默认检查。
 
-- [ ] **Step 4: 验证默认与严格路径**
+- [x] **Step 4: 验证默认与严格路径**
 
 Run:
 
@@ -233,7 +233,7 @@ node scripts/check-release-readiness.js --require-device-evidence
 
 Expected: 前两条通过并显示 126 项；第三条因实体机、包体和云资源证据未提供而阻断，其中明确出现云资源部署证据提示，且不生成伪造证据。
 
-- [ ] **Step 5: 提交门禁**
+- [x] **Step 5: 提交门禁**
 
 ```bash
 git add scripts/check-release-readiness.js scripts/check-v1.11-quality-matrix.js scripts/check-v1.11-quality-matrix.test.js scripts/check-roadmap-document-consistency.test.js scripts/cloud-asset-deployment.test.js
